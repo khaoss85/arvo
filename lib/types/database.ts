@@ -142,6 +142,10 @@ export type Database = {
           updated_at: string | null
           user_id: string
           weak_points: string[] | null
+          gender: string | null
+          age: number | null
+          weight: number | null
+          height: number | null
         }
         Insert: {
           approach_id?: string | null
@@ -153,6 +157,10 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           weak_points?: string[] | null
+          gender?: string | null
+          age?: number | null
+          weight?: number | null
+          height?: number | null
         }
         Update: {
           approach_id?: string | null
@@ -164,6 +172,10 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           weak_points?: string[] | null
+          gender?: string | null
+          age?: number | null
+          weight?: number | null
+          height?: number | null
         }
         Relationships: [
           {
