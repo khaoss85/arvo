@@ -1,5 +1,4 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   insertTrainingApproachSchema,
   updateTrainingApproachSchema,
@@ -115,6 +114,7 @@ export class TrainingApproachService {
    * Get all training approaches (server-side)
    */
   static async getAllServer(): Promise<TrainingApproach[]> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
     const { data, error } = await supabase

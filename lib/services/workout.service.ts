@@ -1,5 +1,4 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   insertWorkoutSchema,
   updateWorkoutSchema,
@@ -161,6 +160,7 @@ export class WorkoutService {
    * Get workouts by user ID (server-side)
    */
   static async getByUserIdServer(userId: string): Promise<Workout[]> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
     const { data, error } = await supabase
@@ -174,5 +174,70 @@ export class WorkoutService {
     }
 
     return data as Workout[];
+  }
+
+  /**
+   * Get current in-progress workout for user
+   * Used to resume interrupted workouts
+   */
+  static async getInProgressWorkout(userId: string): Promise<Workout | null> {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .order("planned_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      throw new Error(`Failed to fetch in-progress workout: ${error.message}`);
+    }
+
+    return data as Workout | null;
+  }
+
+  /**
+   * Save partial workout progress
+   * Updates workout exercises with current state
+   */
+  static async savePartialProgress(
+    workoutId: string,
+    exercises: any[]
+  ): Promise<Workout> {
+    return this.update(workoutId, { exercises: exercises as any });
+  }
+
+  /**
+   * Mark workout as completed with stats
+   */
+  static async markAsCompletedWithStats(
+    id: string,
+    stats: {
+      totalVolume?: number;
+      duration?: number;
+      completedAt?: Date;
+    }
+  ): Promise<Workout> {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .update({
+        completed: true,
+        updated_at: new Date().toISOString(),
+        // Store stats in exercises array metadata or create a new field
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to mark workout as completed: ${error.message}`);
+    }
+
+    return data as Workout;
   }
 }

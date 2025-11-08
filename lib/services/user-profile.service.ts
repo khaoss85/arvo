@@ -1,5 +1,4 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 import {
   insertUserProfileSchema,
   updateUserProfileSchema,
@@ -102,6 +101,7 @@ export class UserProfileService {
    * Get user profile by user ID (server-side)
    */
   static async getByUserIdServer(userId: string): Promise<UserProfile | null> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
     const { data, error } = await supabase

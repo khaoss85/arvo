@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
-import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
+// TODO: Re-enable after fixing server-only imports
+// import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
 
 export default async function DashboardPage() {
   const user = await getUser();
@@ -33,9 +34,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Workout Generator Section */}
-        <div className="mb-8">
+        {/* TODO: Re-enable after fixing server-only imports */}
+        {/* <div className="mb-8">
           <WorkoutGenerator userId={user.id} />
-        </div>
+        </div> */}
 
         {/* Upcoming Workouts */}
         <div className="mb-8">
@@ -49,7 +51,7 @@ export default async function DashboardPage() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {new Date(workout.planned_at).toLocaleDateString()}
+                      {workout.planned_at ? new Date(workout.planned_at).toLocaleDateString() : 'No date'}
                     </span>
                     <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
                       Upcoming
@@ -82,7 +84,7 @@ export default async function DashboardPage() {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {new Date(workout.planned_at).toLocaleDateString()}
+                      {workout.planned_at ? new Date(workout.planned_at).toLocaleDateString() : 'No date'}
                     </span>
                     <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded">
                       Completed

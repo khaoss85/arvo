@@ -9,11 +9,11 @@ export const WeakPointsSchema = z.object({
 })
 
 export const EquipmentPreferencesSchema = z.object({
-  equipmentPreferences: z.record(z.string())
+  equipmentPreferences: z.record(z.string(), z.string())
 })
 
 export const StrengthBaselineSchema = z.object({
-  strengthBaseline: z.record(z.object({
+  strengthBaseline: z.record(z.string(), z.object({
     weight: z.number().positive(),
     reps: z.number().int().positive(),
     rir: z.number().int().min(0).max(5)

@@ -147,6 +147,18 @@ All tables have Row Level Security (RLS) enabled for data protection.
 
 ## Development Guidelines
 
+**For detailed development principles and guidelines, see [`.claude/instructions.md`](.claude/instructions.md)**
+
+### Core Principles
+
+1. **No Silos** - Integrate with all existing services, avoid isolated solutions
+2. **AI-Driven** - Use agents for decisions, minimize hardcoded logic
+3. **No Duplication** - Reuse existing components and services
+4. **Holistic Vision** - Consider the entire codebase architecture
+5. **Minimal Fallbacks** - Use real data only, no mock data in production
+6. **Clean Testing** - Remove test data after use
+7. **Update Documentation** - Keep docs current with changes
+
 ### Services Layer
 
 All database operations go through the services layer (`lib/services/`). Each service:
@@ -154,6 +166,7 @@ All database operations go through the services layer (`lib/services/`). Each se
 - Provides both client and server methods
 - Handles errors consistently
 - Returns typed data
+- Integrates with existing services (no silos)
 
 ### React Query Hooks
 
@@ -168,6 +181,16 @@ Custom hooks in `lib/hooks/` provide:
 - **Zustand**: Local UI state, active workout state
 - **React Query**: Server state, data fetching
 - **Supabase Realtime**: Live data updates (to be implemented)
+
+### AI-First Development
+
+This app is AI-driven. Key decisions flow through AI agents:
+- Exercise selection based on training approach
+- Set/rep schemes based on user progression
+- Load prescription considering fatigue
+- Volume autoregulation based on performance
+
+Avoid hardcoded workout logic - let AI interpret training approaches.
 
 ## Next Steps
 
