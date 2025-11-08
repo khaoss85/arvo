@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ProgressionCalculator, type ProgressionInput } from '@/lib/agents/progression-calculator.agent'
-import { WorkoutGeneratorService } from '@/lib/services/workout-generator.service'
+import { generateWorkoutAction } from '@/app/actions/ai-actions'
 import { workoutKeys } from './use-workouts'
 
 /**
@@ -27,7 +27,13 @@ export function useGenerateWorkout() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (userId: string) => WorkoutGeneratorService.generateWorkout(userId),
+    mutationFn: async (userId: string) => {
+      const result = await generateWorkoutAction(userId)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate workout')
+      }
+      return result.workout
+    },
     onSuccess: (data) => {
       // Invalidate workout queries to refresh the UI
       queryClient.invalidateQueries({

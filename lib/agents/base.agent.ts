@@ -1,3 +1,4 @@
+import 'server-only'
 import { getOpenAIClient } from '@/lib/ai/client'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
-import { OnboardingService } from '@/lib/services/onboarding.service'
+import { completeOnboardingAction } from '@/app/actions/ai-actions'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { Button } from '@/components/ui/button'
 import type { TrainingApproach } from '@/lib/types/schemas'
@@ -49,13 +49,18 @@ export default function ReviewPage() {
     setError(null)
 
     try {
-      // Complete onboarding - this creates profile and generates first AI workout
-      await OnboardingService.completeOnboarding(user.id, {
+      // Complete onboarding via server action - this creates profile and generates first AI workout
+      const result = await completeOnboardingAction(user.id, {
         approachId: data.approachId,
         weakPoints: data.weakPoints || [],
         equipmentPreferences: data.equipmentPreferences,
         strengthBaseline: data.strengthBaseline || {}
       })
+
+      if (!result.success) {
+        setError(result.error || 'Failed to complete onboarding. Please try again.')
+        return
+      }
 
       // Clear onboarding state
       reset()
