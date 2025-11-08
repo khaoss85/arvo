@@ -39,12 +39,14 @@ export function useGenerateWorkout() {
     },
     onSuccess: (data) => {
       // Invalidate workout queries to refresh the UI
-      queryClient.invalidateQueries({
-        queryKey: workoutKeys.list(data.user_id || undefined)
-      })
-      queryClient.invalidateQueries({
-        queryKey: workoutKeys.upcoming(data.user_id || undefined)
-      })
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: workoutKeys.list(data.user_id || undefined)
+        })
+        queryClient.invalidateQueries({
+          queryKey: workoutKeys.upcoming(data.user_id || undefined)
+        })
+      }
     },
     onError: (error) => {
       console.error('Workout generation error:', error)

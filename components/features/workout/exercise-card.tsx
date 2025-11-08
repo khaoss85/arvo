@@ -50,8 +50,10 @@ export function ExerciseCard({
         },
         {
           onSuccess: (suggestion) => {
-            setAISuggestion(suggestion)
-            setShowSuggestion(true)
+            if (suggestion) {
+              setAISuggestion(suggestion)
+              setShowSuggestion(true)
+            }
           }
         }
       )

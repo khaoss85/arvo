@@ -258,6 +258,46 @@ export class WorkoutService {
   }
 
   /**
+   * Mark workout as started
+   * Sets started_at timestamp if not already set
+   */
+  static async markAsStarted(id: string): Promise<Workout> {
+    const supabase = getSupabaseBrowserClient();
+
+    // Only update if started_at is not already set
+    const { data: existing } = await supabase
+      .from("workouts")
+      .select("started_at")
+      .eq("id", id)
+      .single();
+
+    if (existing?.started_at) {
+      // Already started, return current state
+      const workout = await this.getById(id);
+      if (!workout) {
+        throw new Error('Workout not found');
+      }
+      return workout;
+    }
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .update({
+        started_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to mark workout as started: ${error.message}`);
+    }
+
+    return data as Workout;
+  }
+
+  /**
    * Mark workout as completed with stats
    */
   static async markAsCompletedWithStats(
@@ -265,18 +305,32 @@ export class WorkoutService {
     stats: {
       totalVolume?: number;
       duration?: number;
+      totalSets?: number;
       completedAt?: Date;
     }
   ): Promise<Workout> {
     const supabase = getSupabaseBrowserClient();
 
+    const updateData: any = {
+      completed: true,
+      completed_at: stats.completedAt ? stats.completedAt.toISOString() : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Add optional stats if provided
+    if (stats.totalVolume !== undefined) {
+      updateData.total_volume = stats.totalVolume;
+    }
+    if (stats.duration !== undefined) {
+      updateData.duration_seconds = stats.duration;
+    }
+    if (stats.totalSets !== undefined) {
+      updateData.total_sets = stats.totalSets;
+    }
+
     const { data, error } = await supabase
       .from("workouts")
-      .update({
-        completed: true,
-        updated_at: new Date().toISOString(),
-        // Store stats in exercises array metadata or create a new field
-      })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

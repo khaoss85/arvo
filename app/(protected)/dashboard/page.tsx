@@ -30,10 +30,23 @@ export default async function DashboardPage() {
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold sm:text-4xl">Dashboard</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Welcome back, {user.email}!
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold sm:text-4xl">Dashboard</h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                Welcome back, {user.email}!
+              </p>
+            </div>
+            <Link
+              href="/progress"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              View Progress
+            </Link>
+          </div>
         </div>
 
         {/* Workout Generator Section */}

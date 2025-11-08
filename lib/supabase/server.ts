@@ -1,4 +1,7 @@
-// TODO: Re-enable "server-only" after separating client/server service files
+// NOTE: Cannot enable "server-only" yet because services are imported in both client and server contexts
+// Services like WorkoutService have both client methods (used in Client Components/hooks)
+// and server methods (used in Server Components like dashboard/page.tsx)
+// To enable server-only, we would need to split services into separate client/server files
 // import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/lib/types/database";

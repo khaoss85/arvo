@@ -67,6 +67,12 @@ export const workoutSchema = z.object({
   planned_at: z.string().date().nullable(),
   exercises: z.array(z.record(z.string(), z.unknown())).nullable(),
   completed: z.boolean().nullable(),
+  started_at: z.string().datetime().nullable(),
+  completed_at: z.string().datetime().nullable(),
+  duration_seconds: z.number().int().min(0).nullable(),
+  total_volume: z.number().min(0).nullable(),
+  total_sets: z.number().int().min(0).nullable(),
+  notes: z.string().nullable(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({

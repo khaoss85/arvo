@@ -201,30 +201,48 @@ export type Database = {
         Row: {
           approach_id: string | null
           completed: boolean | null
+          completed_at: string | null
           created_at: string | null
+          duration_seconds: number | null
           exercises: Json[] | null
           id: string
+          notes: string | null
           planned_at: string | null
+          started_at: string | null
+          total_sets: number | null
+          total_volume: number | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           approach_id?: string | null
           completed?: boolean | null
+          completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          notes?: string | null
           planned_at?: string | null
+          started_at?: string | null
+          total_sets?: number | null
+          total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           approach_id?: string | null
           completed?: boolean | null
+          completed_at?: string | null
           created_at?: string | null
+          duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          notes?: string | null
           planned_at?: string | null
+          started_at?: string | null
+          total_sets?: number | null
+          total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
         }

@@ -73,7 +73,13 @@ export class WorkoutGeneratorService {
       approach_id: profile.approach_id,
       planned_at: new Date().toISOString().split('T')[0],
       exercises: exercisesWithTargets as any,
-      completed: false
+      completed: false,
+      started_at: null,
+      completed_at: null,
+      duration_seconds: null,
+      total_volume: null,
+      total_sets: null,
+      notes: null
     }
 
     return await WorkoutService.create(workoutData)

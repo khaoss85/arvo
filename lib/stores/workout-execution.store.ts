@@ -96,6 +96,11 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           lastActivityAt: new Date(),
           isActive: true
         })
+
+        // Mark workout as started in database (fire-and-forget)
+        WorkoutService.markAsStarted(workout.id).catch(err => {
+          console.error('Failed to mark workout as started:', err)
+        })
       },
 
       // Resume an interrupted workout
