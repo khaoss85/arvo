@@ -10,8 +10,8 @@ export default async function WorkoutPage({ params }: { params: { id: string } }
     redirect('/login')
   }
 
-  // Load workout
-  const workout = await WorkoutService.getById(params.id)
+  // Load workout using server-side method
+  const workout = await WorkoutService.getByIdServer(params.id)
 
   if (!workout) {
     redirect('/dashboard')

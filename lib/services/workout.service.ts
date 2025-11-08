@@ -177,11 +177,58 @@ export class WorkoutService {
   }
 
   /**
-   * Get current in-progress workout for user
+   * Get workout by ID (server-side)
+   */
+  static async getByIdServer(id: string): Promise<Workout | null> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw new Error(`Failed to fetch workout: ${error.message}`);
+    }
+
+    return data as Workout;
+  }
+
+  /**
+   * Get current in-progress workout for user (client-side)
    * Used to resume interrupted workouts
    */
   static async getInProgressWorkout(userId: string): Promise<Workout | null> {
     const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("completed", false)
+      .order("planned_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      throw new Error(`Failed to fetch in-progress workout: ${error.message}`);
+    }
+
+    return data as Workout | null;
+  }
+
+  /**
+   * Get current in-progress workout for user (server-side)
+   * Used to resume interrupted workouts
+   */
+  static async getInProgressWorkoutServer(userId: string): Promise<Workout | null> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
 
     const { data, error } = await supabase
       .from("workouts")

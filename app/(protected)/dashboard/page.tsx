@@ -22,7 +22,7 @@ export default async function DashboardPage() {
 
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
-  const inProgressWorkout = await WorkoutService.getInProgressWorkout(user.id);
+  const inProgressWorkout = await WorkoutService.getInProgressWorkoutServer(user.id);
   const upcomingWorkouts = workouts.filter(w => !w.completed).slice(0, 5);
   const completedWorkouts = workouts.filter(w => w.completed).slice(0, 5);
 
