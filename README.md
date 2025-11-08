@@ -1,26 +1,57 @@
-# Training App
+# ARVO - AI-Driven Training App
 
-A Next.js 14 application for parametric training program building and workout tracking, built with TypeScript, Supabase, and modern web technologies.
+A Next.js 14 application for AI-powered parametric training with real-time workout execution and intelligent progression, built with TypeScript, Supabase, and OpenAI.
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS (mobile-first)
-- **Backend**: Supabase (Auth, Database, Realtime)
-- **State Management**: Zustand
+- **AI**: OpenAI (gpt-4o for progression and workout generation)
+- **Styling**: Tailwind CSS (mobile-first, dark theme)
+- **Backend**: Supabase (Auth, Database, RLS)
+- **State Management**: Zustand (with localStorage persistence)
 - **Data Fetching**: React Query (@tanstack/react-query)
-- **Validation**: Zod
+- **Validation**: Zod (runtime type safety)
 - **Dark Mode**: next-themes (system preference)
 
 ## Features
 
-- Magic link authentication
-- Mobile-first responsive design
-- Dark mode with system preference
-- Type-safe database operations
-- Real-time data synchronization
-- Clean architecture with services layer
+### Authentication & Security
+- Magic link authentication (passwordless)
+- Row Level Security (RLS) on all database tables
+- Secure session management with Supabase Auth
+
+### Intelligent Onboarding
+- 5-step guided onboarding flow
+- Interactive body map for weak point selection
+- Equipment preference configuration
+- Strength baseline assessment via 1RM calculator
+- Training approach selection (Kuba Method)
+- AI-generated first workout based on profile
+
+### AI Orchestration Layer
+- **Knowledge Engine**: Parametric training approach system
+- **Progression Calculator Agent**: Real-time set-by-set suggestions using gpt-4o
+- **Exercise Selector Agent**: Smart exercise substitution based on equipment and patterns
+- **Workout Generator Agent**: Creates progressive workouts based on performance history
+
+### Real-Time Workout Execution
+- Mobile-optimized workout interface (44px+ touch targets)
+- Live AI progression suggestions after each set
+- Quick weight adjustments (±10% for too heavy/light)
+- Exercise substitution with automatic weight adjustment
+- Crash recovery with localStorage persistence
+- Wake Lock API (keeps screen on during workouts)
+- Fullscreen mode for distraction-free gym use
+- Navigation guards to prevent accidental exit
+- Personal record tracking and celebration
+
+### Progress Tracking
+- Set-by-set performance logging (weight, reps, RIR)
+- Workout volume calculations
+- Duration tracking
+- Exercise history and personal records
+- Visual progress indicators
 
 ## Getting Started
 
@@ -42,12 +73,20 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
+# Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# OpenAI Configuration
+OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
 
-You can find these values in your Supabase project settings under "API".
+**Where to find these values**:
+- **Supabase**: Project settings → API → Project URL and anon public key
+- **OpenAI**: Platform dashboard → API Keys → Create new secret key
+
+See `.env.local.example` for a complete template.
 
 ### 4. Database Setup
 
@@ -87,42 +126,81 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 arvo/
-├── app/                      # Next.js App Router
-│   ├── (auth)/              # Auth route group
-│   │   └── login/           # Login page
-│   ├── (protected)/         # Protected route group
-│   │   └── dashboard/       # Dashboard page
-│   ├── auth/                # Auth callback
-│   ├── providers.tsx        # React Query & Theme providers
-│   ├── layout.tsx           # Root layout
-│   └── page.tsx             # Home page (redirects)
+├── app/                              # Next.js App Router
+│   ├── (auth)/                      # Auth route group
+│   │   └── login/                   # Login page
+│   ├── (protected)/                 # Protected route group
+│   │   ├── dashboard/               # Dashboard with workout cards
+│   │   ├── onboarding/              # 5-step onboarding flow
+│   │   │   ├── approach/            # Training approach selection
+│   │   │   ├── weak-points/         # Body map weak point selection
+│   │   │   ├── equipment/           # Equipment preferences
+│   │   │   ├── strength/            # Strength baseline (1RM)
+│   │   │   └── review/              # Review and submit
+│   │   └── workout/[id]/            # Active workout execution
+│   ├── auth/                        # Auth callback
+│   ├── providers.tsx                # React Query & Theme providers
+│   ├── layout.tsx                   # Root layout
+│   └── page.tsx                     # Home page (redirects)
 ├── components/
-│   ├── ui/                  # Reusable UI components
-│   └── features/            # Feature-specific components
+│   ├── ui/                          # Reusable UI components (Button, Input, etc.)
+│   └── features/                    # Feature-specific components
+│       ├── dashboard/               # Dashboard components
+│       │   └── workout-generator.tsx # AI workout generation
+│       ├── onboarding/              # Onboarding components
+│       │   ├── approach-card.tsx    # Training approach card
+│       │   └── body-map.tsx         # Interactive SVG body map
+│       └── workout/                 # Workout execution components
+│           ├── workout-execution.tsx  # Main workout container
+│           ├── exercise-card.tsx      # Current exercise display
+│           ├── set-logger.tsx         # Set logging interface
+│           ├── workout-progress.tsx   # Progress indicator
+│           ├── workout-summary.tsx    # Post-workout summary
+│           ├── quick-adjustments.tsx  # Quick action menu
+│           └── exercise-substitution.tsx # Exercise replacement modal
 ├── lib/
-│   ├── supabase/           # Supabase client utilities
-│   │   ├── client.ts       # Browser client
-│   │   ├── server.ts       # Server client
-│   │   └── middleware.ts   # Middleware utilities
-│   ├── services/           # API service layer
+│   ├── ai/                          # AI client configuration
+│   │   └── client.ts                # OpenAI singleton (gpt-4o)
+│   ├── agents/                      # AI agents
+│   │   ├── base.agent.ts            # Abstract base agent class
+│   │   ├── progression-calculator.agent.ts # Set progression AI
+│   │   └── exercise-selector.agent.ts      # Exercise selection AI
+│   ├── knowledge/                   # Knowledge Engine
+│   │   ├── types.ts                 # Training approach types
+│   │   └── engine.ts                # Knowledge Engine class
+│   ├── supabase/                    # Supabase client utilities
+│   │   ├── client.ts                # Browser client
+│   │   ├── server.ts                # Server client
+│   │   └── middleware.ts            # Middleware utilities
+│   ├── services/                    # API service layer
 │   │   ├── auth.service.ts
 │   │   ├── training-approach.service.ts
 │   │   ├── user-profile.service.ts
 │   │   ├── exercise.service.ts
 │   │   ├── workout.service.ts
-│   │   └── set-log.service.ts
-│   ├── stores/             # Zustand stores
+│   │   ├── workout-generator.service.ts # AI workout generation
+│   │   ├── set-log.service.ts
+│   │   └── onboarding.service.ts
+│   ├── stores/                      # Zustand stores
 │   │   ├── auth.store.ts
-│   │   ├── workout.store.ts
-│   │   └── ui.store.ts
-│   ├── types/              # TypeScript types & Zod schemas
-│   │   ├── database.ts     # Database types
-│   │   └── schemas.ts      # Zod schemas
-│   ├── hooks/              # React Query hooks
-│   └── utils/              # Utility functions
+│   │   ├── onboarding.store.ts      # Onboarding flow state
+│   │   └── workout-execution.store.ts # Active workout state
+│   ├── types/                       # TypeScript types & Zod schemas
+│   │   ├── database.ts              # Database types
+│   │   ├── schemas.ts               # Zod schemas
+│   │   └── onboarding.ts            # Onboarding types
+│   ├── hooks/                       # React Query hooks
+│   │   └── useAI.ts                 # AI agent hooks
+│   └── utils/                       # Utility functions
+│       ├── auth.server.ts           # Server-side auth helpers
+│       └── workout-helpers.ts       # Workout calculations
+├── docs/                            # Documentation
+│   └── WORKOUT_EXECUTION.md         # Complete workout execution docs
+├── scripts/                         # Utility scripts
+│   └── seed-kuba-approach.ts        # Seed Kuba Method
 ├── supabase/
-│   └── migrations/         # Database migrations
-└── middleware.ts           # Next.js middleware for auth
+│   └── migrations/                  # Database migrations
+└── middleware.ts                    # Next.js middleware for auth
 ```
 
 ## Database Schema
@@ -192,15 +270,152 @@ This app is AI-driven. Key decisions flow through AI agents:
 
 Avoid hardcoded workout logic - let AI interpret training approaches.
 
-## Next Steps
+## User Journey
 
-This foundation is ready for implementing features:
+### 1. First-Time User
+1. Visit app → Redirected to `/login`
+2. Enter email → Magic link sent
+3. Click magic link → Session created
+4. Redirected to `/onboarding/approach`
+5. Complete 5-step onboarding:
+   - Select training approach (Kuba Method)
+   - Mark weak points on interactive body map
+   - Configure equipment preferences
+   - Input strength baseline (1RM for key lifts)
+   - Review profile and submit
+6. AI generates first workout
+7. Redirected to `/dashboard`
 
-1. **Profile Setup**: Complete user onboarding flow
-2. **Workout Builder**: Create workouts based on training approach
-3. **Workout Logger**: Track sets, reps, weight during workouts
-4. **Progress Tracking**: Visualize strength gains over time
-5. **Exercise Library**: Browse and manage exercises
+### 2. Returning User - Start Workout
+1. Login → Dashboard shows upcoming workouts
+2. Click "Start Workout" on a workout card
+3. Navigate to `/workout/[id]`
+4. Workout execution interface loads:
+   - Screen kept on (Wake Lock)
+   - Navigation guard prevents accidental exit
+   - First exercise displayed
+5. Complete each set:
+   - Input weight, reps, RIR
+   - Log set → AI analyzes performance
+   - AI suggests next set parameters with rationale
+   - Accept suggestion or adjust manually
+6. Quick adjustments available:
+   - Equipment busy → Substitute exercise
+   - Too heavy → Reduce weight 10%
+   - Too light → Increase weight 10%
+7. Complete all exercises
+8. View workout summary (volume, duration, stats)
+9. Generate next workout or return to dashboard
+
+### 3. Advanced Features
+- **Personal Records**: Automatically detected and celebrated
+- **Crash Recovery**: Interrupted workouts resume from localStorage
+- **Volume Tracking**: Total volume calculated across all sets
+- **Exercise History**: View past performance for any exercise
+
+## Architecture Highlights
+
+### AI Agents System
+
+All AI decisions flow through specialized agents using gpt-4o:
+
+```typescript
+// Progression Calculator Agent
+const suggestion = await progressionCalculator.getSuggestion({
+  lastSet: { weight: 100, reps: 8, rir: 1 },
+  setNumber: 2,
+  exerciseType: 'compound',
+  approachId: 'kuba-method-id'
+})
+// → { weight: 100, reps: 9, rirTarget: 1, rationale: "..." }
+
+// Exercise Selector Agent
+const alternatives = await exerciseSelector.selectExercises({
+  targetMuscles: ['quads', 'glutes'],
+  equipment: ['Barbell', 'Dumbbells'],
+  weakPoints: ['quads'],
+  recentExercises: ['Squat', 'Leg Press']
+})
+// → [{ exerciseId, exerciseName, reasoning }, ...]
+
+// Workout Generator
+const workout = await WorkoutGeneratorService.generateWorkout(userId)
+// → { exercises: [...], plannedAt: Date, rationale: "..." }
+```
+
+### Knowledge Engine
+
+Training approaches are parametric and queryable:
+
+```typescript
+const approach = await knowledgeEngine.getApproach('kuba-method-id')
+// Returns formatted context for AI agents:
+{
+  name: "Kuba Method",
+  variables: {
+    setsPerExercise: { working: 3, warmup: "2 progressive sets" },
+    repRanges: { compound: [6, 10], isolation: [8, 15] },
+    rirTarget: { normal: 1, intense: 0, deload: 3 },
+    // ... full parametric definition
+  },
+  progression: { /* progression rules */ },
+  exerciseSelection: { /* selection criteria */ }
+}
+```
+
+### State Management Architecture
+
+```
+UI Layer (React Components)
+    ↓
+Zustand Stores (Client State)
+    ↓
+React Query Hooks (Server State Cache)
+    ↓
+Service Layer (Business Logic)
+    ↓
+Supabase Client (Database Access)
+    ↓
+PostgreSQL with RLS
+```
+
+**State Persistence**:
+- **localStorage**: Active workout crash recovery (workoutId, exercises, currentIndex)
+- **Supabase**: Source of truth for all workouts, sets, profiles
+- **React Query**: Automatic caching, invalidation, optimistic updates
+
+## Documentation
+
+- **[WORKOUT_EXECUTION.md](docs/WORKOUT_EXECUTION.md)**: Complete technical documentation for workout execution system
+- **[.claude/instructions.md](.claude/instructions.md)**: Development principles and guidelines
+
+## Roadmap
+
+### Completed ✅
+- [x] Authentication with magic links
+- [x] AI orchestration layer with OpenAI
+- [x] Knowledge Engine for training approaches
+- [x] 5-step onboarding flow with body map
+- [x] AI workout generation
+- [x] Real-time workout execution interface
+- [x] Set-by-set AI progression suggestions
+- [x] Exercise substitution with weight adjustment
+- [x] Quick workout adjustments
+- [x] Crash recovery system
+- [x] Personal record tracking
+- [x] Workout statistics (volume, duration)
+
+### Planned 🚀
+- [ ] Progress visualization (charts, trends)
+- [ ] Exercise library browsing and filtering
+- [ ] Custom exercise creation
+- [ ] Workout templates
+- [ ] Training plan management (mesocycles)
+- [ ] Voice commands for hands-free logging
+- [ ] Apple Watch integration
+- [ ] Video form analysis with AI
+- [ ] Social features (share PRs, compete)
+- [ ] Advanced analytics (fatigue tracking, deload recommendations)
 
 ## License
 
