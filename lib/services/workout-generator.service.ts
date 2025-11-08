@@ -69,8 +69,13 @@ export class WorkoutGeneratorService {
           targetWeight = last.weight_actual || last.weight_target || 0
           targetReps = last.reps_actual || last.reps_target || exercise.repRange[0]
         } else {
-          // Initial conservative estimate based on exercise type
-          targetWeight = this.estimateInitialWeight(exercise.name)
+          // Initial conservative estimate based on exercise type and demographics
+          targetWeight = this.estimateInitialWeight(
+            exercise.name,
+            profile.gender || 'other',
+            profile.weight || null,
+            profile.strength_baseline as Record<string, any> | null
+          )
         }
 
         return {
@@ -158,22 +163,53 @@ export class WorkoutGeneratorService {
 
   /**
    * Estimate initial weight for an exercise
+   * Uses demographics and strength baseline if available
    */
-  private static estimateInitialWeight(exerciseName: string): number {
+  private static estimateInitialWeight(
+    exerciseName: string,
+    gender: 'male' | 'female' | 'other' = 'other',
+    bodyweight: number | null = null,
+    strengthBaseline: Record<string, { weight: number; reps: number; rir: number }> | null = null
+  ): number {
     const name = exerciseName.toLowerCase()
 
-    // Very conservative starting weights
-    if (name.includes('bench')) return 40
-    if (name.includes('squat')) return 50
-    if (name.includes('deadlift')) return 60
-    if (name.includes('row')) return 30
-    if (name.includes('press') && name.includes('shoulder')) return 20
-    if (name.includes('curl')) return 15
-    if (name.includes('extension')) return 15
-    if (name.includes('raise')) return 10
-    if (name.includes('fly')) return 15
+    // Check if we have a strength baseline for this exercise
+    if (strengthBaseline) {
+      for (const [baselineExercise, data] of Object.entries(strengthBaseline)) {
+        const baselineName = baselineExercise.toLowerCase()
+        // Match similar exercises (e.g., "bench press" matches "bench")
+        if (name.includes(baselineName) || baselineName.includes(name.split(' ')[0])) {
+          // Use 85% of baseline weight as conservative starting point
+          return Math.round(data.weight * 0.85)
+        }
+      }
+    }
+
+    // If bodyweight available, use bodyweight ratios for major lifts
+    if (bodyweight && bodyweight > 0) {
+      const genderMultiplier = gender === 'female' ? 0.6 : 1.0
+
+      if (name.includes('bench')) return Math.round(bodyweight * 0.5 * genderMultiplier)
+      if (name.includes('squat')) return Math.round(bodyweight * 0.6 * genderMultiplier)
+      if (name.includes('deadlift')) return Math.round(bodyweight * 0.8 * genderMultiplier)
+      if (name.includes('row')) return Math.round(bodyweight * 0.4 * genderMultiplier)
+      if (name.includes('press') && name.includes('shoulder')) return Math.round(bodyweight * 0.3 * genderMultiplier)
+    }
+
+    // Fallback to conservative starting weights adjusted by gender
+    const genderMultiplier = gender === 'female' ? 0.6 : 1.0
+
+    if (name.includes('bench')) return Math.round(40 * genderMultiplier)
+    if (name.includes('squat')) return Math.round(50 * genderMultiplier)
+    if (name.includes('deadlift')) return Math.round(60 * genderMultiplier)
+    if (name.includes('row')) return Math.round(30 * genderMultiplier)
+    if (name.includes('press') && name.includes('shoulder')) return Math.round(20 * genderMultiplier)
+    if (name.includes('curl')) return Math.round(15 * genderMultiplier)
+    if (name.includes('extension')) return Math.round(15 * genderMultiplier)
+    if (name.includes('raise')) return Math.round(10 * genderMultiplier)
+    if (name.includes('fly')) return Math.round(15 * genderMultiplier)
 
     // Default conservative weight
-    return 20
+    return Math.round(20 * genderMultiplier)
   }
 }

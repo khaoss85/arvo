@@ -42,6 +42,10 @@ export async function completeOnboardingAction(
         weak_points: data.weakPoints,
         equipment_preferences: data.equipmentPreferences,
         strength_baseline: data.strengthBaseline,
+        gender: data.gender || null,
+        age: data.age || null,
+        weight: data.weight || null,
+        height: data.height || null,
         experience_years: 0
       })
 

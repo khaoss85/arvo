@@ -25,4 +25,9 @@ export type OnboardingData = {
   weakPoints: string[]
   equipmentPreferences: Record<string, string>
   strengthBaseline: Record<string, { weight: number; reps: number; rir: number }>
+  // Demographic fields (optional)
+  gender?: 'male' | 'female' | 'other' | null
+  age?: number | null
+  weight?: number | null
+  height?: number | null
 }

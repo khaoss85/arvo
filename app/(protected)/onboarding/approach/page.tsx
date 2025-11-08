@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { ApproachCard } from '@/components/features/onboarding/approach-card'
 import type { TrainingApproach } from '@/lib/types/schemas'
 
 export default function ApproachSelectionPage() {
+  const router = useRouter()
   const [approaches, setApproaches] = useState<TrainingApproach[]>([])
   const [loading, setLoading] = useState(true)
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
@@ -30,6 +32,7 @@ export default function ApproachSelectionPage() {
   const selectApproach = (approachId: string) => {
     setStepData('approachId', approachId)
     completeStep(1)
+    router.push('/onboarding/profile')
   }
 
   return (

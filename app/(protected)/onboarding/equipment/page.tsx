@@ -44,7 +44,7 @@ export default function EquipmentPreferencesPage() {
   )
 
   useEffect(() => {
-    setStep(3)
+    setStep(4)
   }, [setStep])
 
   const handleSelect = (pattern: string, equipment: string) => {
@@ -54,7 +54,7 @@ export default function EquipmentPreferencesPage() {
 
     // Auto-complete if all patterns selected
     if (Object.keys(updated).length === movementPatterns.length) {
-      completeStep(3)
+      completeStep(4)
     }
   }
 
@@ -96,7 +96,7 @@ export default function EquipmentPreferencesPage() {
 
     setPreferences(presetPreferences)
     setStepData('equipmentPreferences', presetPreferences)
-    completeStep(3)
+    completeStep(4)
   }
 
   return (

@@ -9,6 +9,12 @@ interface OnboardingState {
     weakPoints?: string[]
     equipmentPreferences?: Record<string, string>
     strengthBaseline?: Record<string, { weight: number; reps: number; rir: number }>
+    // Demographic fields
+    gender?: 'male' | 'female' | 'other' | null
+    age?: number | null
+    weight?: number | null // kg
+    height?: number | null // cm
+    confirmedExperience?: number | null // years - if user overrides AI inference
   }
   setStep: (step: number) => void
   setStepData: <K extends keyof OnboardingState['data']>(

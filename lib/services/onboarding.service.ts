@@ -15,6 +15,10 @@ export class OnboardingService {
         weak_points: data.weakPoints,
         equipment_preferences: data.equipmentPreferences as any,
         strength_baseline: data.strengthBaseline as any,
+        gender: data.gender || null,
+        age: data.age || null,
+        weight: data.weight || null,
+        height: data.height || null,
         experience_years: 0, // Can be added to onboarding later
         preferred_split: null // Default split, can be updated later
       })

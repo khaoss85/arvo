@@ -19,7 +19,7 @@ export default function StrengthBaselinePage() {
   )
 
   useEffect(() => {
-    setStep(4)
+    setStep(5)
   }, [setStep])
 
   const handleUpdate = (liftId: string, field: 'weight' | 'reps' | 'rir', value: string) => {
@@ -44,11 +44,11 @@ export default function StrengthBaselinePage() {
 
   const handleSkip = () => {
     setStepData('strengthBaseline', {})
-    completeStep(4)
+    completeStep(5)
   }
 
   const handleContinue = () => {
-    completeStep(4)
+    completeStep(5)
   }
 
   const isValidEntry = (entry: any) => {

@@ -7,6 +7,10 @@ export interface ExerciseSelectionInput {
   equipmentPreferences: Record<string, string>
   recentExercises: string[]
   approachId: string
+  // User demographics for personalized exercise selection
+  experienceYears?: number | null
+  userAge?: number | null
+  userGender?: 'male' | 'female' | 'other' | null
 }
 
 export interface SelectedExercise {
@@ -50,16 +54,28 @@ Consider equipment preferences and provide alternatives.`
       .select('*')
       .ilike('pattern', `%${input.workoutType}%`)
 
+    const demographicContext = input.experienceYears || input.userAge || input.userGender
+      ? `
+User Demographics:
+${input.experienceYears ? `- Training Experience: ${input.experienceYears} years` : ''}
+${input.userAge ? `- Age: ${input.userAge} years old` : ''}
+${input.userGender ? `- Gender: ${input.userGender}` : ''}
+`
+      : ''
+
     const prompt = `
 Create a ${input.workoutType} workout.
 
 Approach context:
 ${context}
-
+${demographicContext}
 User weak points: ${input.weakPoints.join(', ')}
 Equipment preferences: ${JSON.stringify(input.equipmentPreferences)}
 Recent exercises to avoid: ${input.recentExercises.join(', ')}
 Available exercises: ${JSON.stringify(exercises)}
+
+${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
+${input.userAge && input.userAge > 50 ? `Consider that the user is ${input.userAge} years old - prioritize joint-friendly exercise variations when possible.` : ''}
 
 Select 4-6 exercises following the approach philosophy.
 

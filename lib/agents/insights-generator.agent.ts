@@ -73,16 +73,35 @@ Format your response as JSON with these keys:
       const volumeTrend = this.calculateVolumeTrend(volumeData)
       const consistency = this.calculateConsistency(volumeData)
 
+      // Build demographic context
+      const demographics = {
+        gender: profile.gender || 'Not specified',
+        age: profile.age ? `${profile.age} years old` : 'Not specified',
+        bodyweight: profile.weight ? `${profile.weight}kg` : 'Not specified',
+        height: profile.height ? `${profile.height}cm` : 'Not specified',
+        experienceYears: profile.experience_years ? `${profile.experience_years} years` : 'Not specified'
+      }
+
+      // Calculate relative strength if bodyweight available
+      const relativeStrength = profile.weight && topExercises.length > 0
+        ? topExercises.map(pr => ({
+            exercise: pr.exerciseName,
+            ratio: (pr.e1rm / profile.weight!).toFixed(2)
+          }))
+        : null
+
       // Build context for AI
       const context = {
         timeframe: `${days} days`,
         trainingApproach: approach.name,
         weakPoints: profile.weak_points || [],
+        demographics,
         personalRecords: topExercises.map(pr => ({
           exercise: pr.exerciseName,
           best: `${pr.weight}kg × ${pr.reps} reps`,
           e1RM: `${Math.round(pr.e1rm)}kg`
         })),
+        relativeStrength,
         progressTrends: trends,
         volumeTrend,
         consistency,
@@ -97,8 +116,18 @@ TIME PERIOD: ${context.timeframe}
 TRAINING APPROACH: ${context.trainingApproach}
 TARGETED WEAK POINTS: ${context.weakPoints.join(', ') || 'None specified'}
 
+USER DEMOGRAPHICS:
+- Gender: ${context.demographics.gender}
+- Age: ${context.demographics.age}
+- Bodyweight: ${context.demographics.bodyweight}
+- Height: ${context.demographics.height}
+- Training Experience: ${context.demographics.experienceYears}
+
 PERSONAL RECORDS:
 ${context.personalRecords.map(pr => `- ${pr.exercise}: ${pr.best} (Est. 1RM: ${pr.e1RM})`).join('\n')}
+${context.relativeStrength ? `
+RELATIVE STRENGTH (bodyweight multipliers):
+${context.relativeStrength.map(rs => `- ${rs.exercise}: ${rs.ratio}x BW`).join('\n')}` : ''}
 
 PROGRESS TRENDS:
 ${JSON.stringify(context.progressTrends, null, 2)}
@@ -106,6 +135,12 @@ ${JSON.stringify(context.progressTrends, null, 2)}
 VOLUME TREND: ${context.volumeTrend}
 WORKOUT FREQUENCY: ${context.workoutFrequency}
 CONSISTENCY SCORE: ${context.consistency}%
+
+When providing insights:
+- Consider age for recovery recommendations (older athletes may need more recovery)
+- Use gender-specific strength standards when evaluating progress
+- Reference relative strength (bodyweight ratios) when applicable to provide context
+- Adjust expectations based on training experience level
 
 Provide insights in JSON format with keys: summary, strengths (array of 3), improvements (array of 3), recommendations (array of 3), nextFocus (string).`
 

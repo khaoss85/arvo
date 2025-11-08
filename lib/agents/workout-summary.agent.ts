@@ -12,6 +12,10 @@ export interface WorkoutSummaryInput {
   totalVolume: number          // in kg
   workoutType: string
   approachId: string
+  // User demographics for personalized feedback
+  userAge?: number | null
+  userGender?: 'male' | 'female' | 'other' | null
+  experienceYears?: number | null
 }
 
 export interface WorkoutSummaryOutput {
@@ -55,6 +59,15 @@ Guidelines:
     const completionRate = input.exercises.reduce((sum, e) => sum + e.completedSets, 0) /
                            input.exercises.reduce((sum, e) => sum + e.sets, 0)
 
+    const demographicContext = input.userAge || input.userGender || input.experienceYears
+      ? `
+User Demographics:
+- Age: ${input.userAge ? `${input.userAge} years old` : 'Not specified'}
+- Gender: ${input.userGender || 'Not specified'}
+- Training Experience: ${input.experienceYears ? `${input.experienceYears} years` : 'Not specified'}
+`
+      : ''
+
     const prompt = `Provide immediate feedback on this just-completed workout:
 
 Workout Type: ${input.workoutType}
@@ -66,9 +79,14 @@ Exercises Completed:
 ${input.exercises.map(e =>
   `- ${e.name}: ${e.completedSets}/${e.sets} sets, ${e.totalVolume}kg total volume, avg RIR ${e.avgRIR.toFixed(1)}`
 ).join('\n')}
-
+${demographicContext}
 Training Approach Context:
 ${context}
+
+When providing feedback:
+${input.userAge ? `- Consider that the user is ${input.userAge} years old when recommending recovery time (older athletes may need more recovery)` : ''}
+${input.experienceYears ? `- Adjust feedback for ${input.experienceYears} years of training experience` : ''}
+- Provide practical, actionable recovery recommendations
 
 Provide encouraging, specific feedback on today's performance.
 

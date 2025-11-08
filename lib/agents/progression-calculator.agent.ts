@@ -25,13 +25,24 @@ Output valid JSON with the exact structure requested.`
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'progression')
 
+    const demographicContext = input.experienceYears || input.userAge
+      ? `
+User Context:
+${input.experienceYears ? `- Training Experience: ${input.experienceYears} years` : ''}
+${input.userAge ? `- Age: ${input.userAge} years old` : ''}
+`
+      : ''
+
     const prompt = `
 Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}
 This is set number: ${input.setNumber}
 Exercise type: ${input.exerciseType}
-
+${demographicContext}
 Training approach context:
 ${context}
+
+${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of training experience when suggesting progression - beginners may need smaller jumps, advanced lifters can handle larger changes.` : ''}
+${input.userAge && input.userAge > 40 ? `Consider that the user is ${input.userAge} years old - older athletes may benefit from slightly more conservative progression to manage fatigue.` : ''}
 
 Based on this approach, suggest the next set.
 
