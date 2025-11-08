@@ -39,6 +39,7 @@ export const userProfileSchema = z.object({
   experience_years: z.number().int().min(0).nullable(),
   strength_baseline: z.record(z.string(), z.unknown()).nullable(),
   equipment_preferences: z.record(z.string(), z.unknown()).nullable(),
+  preferred_split: z.string().nullable(),
 });
 
 export const insertUserProfileSchema = userProfileSchema;
@@ -73,6 +74,10 @@ export const workoutSchema = z.object({
   total_volume: z.number().min(0).nullable(),
   total_sets: z.number().int().min(0).nullable(),
   notes: z.string().nullable(),
+  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body']).nullable(),
+  workout_name: z.string().nullable(),
+  target_muscle_groups: z.array(z.string()).nullable(),
+  split_type: z.string().nullable(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({

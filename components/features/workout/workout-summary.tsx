@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Sparkles, TrendingUp, Target, Heart } from 'lucide-react'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import { useGenerateWorkout } from '@/lib/hooks/useAI'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
+import { generateWorkoutSummaryAction } from '@/app/actions/ai-actions'
 import { Button } from '@/components/ui/button'
 import { formatDuration } from '@/lib/utils/workout-helpers'
+import type { WorkoutSummaryOutput } from '@/lib/agents/workout-summary.agent'
 
 interface WorkoutSummaryProps {
   workoutId: string
@@ -16,13 +19,15 @@ interface WorkoutSummaryProps {
 
 export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const router = useRouter()
-  const { reset, startedAt, exercises } = useWorkoutExecutionStore()
+  const { reset, startedAt, exercises, workout } = useWorkoutExecutionStore()
   const { mutate: generateWorkout, isPending } = useGenerateWorkout()
   const [stats, setStats] = useState<{
     duration: number
     totalVolume: number
     totalSets: number
   } | null>(null)
+  const [aiSummary, setAiSummary] = useState<WorkoutSummaryOutput | null>(null)
+  const [loadingAiSummary, setLoadingAiSummary] = useState(false)
 
   useEffect(() => {
     loadStats()
@@ -38,8 +43,40 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
       // Mark workout as completed
       await WorkoutService.markAsCompletedWithStats(workoutId, { totalVolume: volume, duration })
+
+      // Generate AI summary
+      generateAISummary(duration, volume, totalSets)
     } catch (error) {
       console.error('Failed to load stats:', error)
+    }
+  }
+
+  const generateAISummary = async (duration: number, totalVolume: number, totalSets: number) => {
+    if (!workout || !workout.approach_id) return
+
+    setLoadingAiSummary(true)
+    try {
+      const result = await generateWorkoutSummaryAction({
+        exercises: exercises.map(ex => ({
+          name: ex.exerciseName,
+          sets: ex.targetSets,
+          totalVolume: ex.completedSets.reduce((sum, set) => sum + (set.weight * set.reps), 0),
+          avgRIR: ex.completedSets.reduce((sum, set) => sum + set.rir, 0) / ex.completedSets.length,
+          completedSets: ex.completedSets.length
+        })),
+        totalDuration: duration,
+        totalVolume,
+        workoutType: workout.workout_type || 'general',
+        approachId: workout.approach_id
+      })
+
+      if (result.success && result.summary) {
+        setAiSummary(result.summary)
+      }
+    } catch (error) {
+      console.error('Failed to generate AI summary:', error)
+    } finally {
+      setLoadingAiSummary(false)
     }
   }
 
@@ -88,6 +125,71 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
                 {formatDuration(stats.duration)}
               </div>
               <div className="text-sm text-gray-400">Duration</div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Summary */}
+        {loadingAiSummary && (
+          <div className="mb-8 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/50 rounded-lg p-6 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
+            <p className="text-sm text-blue-300">Generating AI feedback...</p>
+          </div>
+        )}
+
+        {aiSummary && !loadingAiSummary && (
+          <div className="mb-8 text-left space-y-4">
+            {/* Performance Badge */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-yellow-400" />
+              <span className={`text-lg font-semibold ${
+                aiSummary.overallPerformance === 'excellent' ? 'text-green-400' :
+                aiSummary.overallPerformance === 'good' ? 'text-blue-400' :
+                aiSummary.overallPerformance === 'fair' ? 'text-yellow-400' :
+                'text-orange-400'
+              }`}>
+                {aiSummary.overallPerformance.charAt(0).toUpperCase() + aiSummary.overallPerformance.slice(1)} Performance
+              </span>
+            </div>
+
+            {/* Key Highlights */}
+            <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-800/50 rounded-lg p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <TrendingUp className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <h3 className="text-sm font-semibold text-green-300">Today's Highlights</h3>
+              </div>
+              <ul className="space-y-1.5 ml-6">
+                {aiSummary.keyHighlights.map((highlight, idx) => (
+                  <li key={idx} className="text-sm text-green-100">{highlight}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Immediate Insights */}
+            <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-800/50 rounded-lg p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <Target className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                <h3 className="text-sm font-semibold text-blue-300">Quick Observations</h3>
+              </div>
+              <ul className="space-y-1.5 ml-6">
+                {aiSummary.immediateInsights.map((insight, idx) => (
+                  <li key={idx} className="text-sm text-blue-100">{insight}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Recovery Recommendation */}
+            <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-800/50 rounded-lg p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <Heart className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                <h3 className="text-sm font-semibold text-purple-300">Recovery Advice</h3>
+              </div>
+              <p className="text-sm text-purple-100 ml-6">{aiSummary.recoveryRecommendation}</p>
+            </div>
+
+            {/* Motivational Message */}
+            <div className="bg-gradient-to-br from-orange-900/20 to-yellow-900/20 border border-orange-800/50 rounded-lg p-4 text-center">
+              <p className="text-sm text-orange-100 italic font-medium">{aiSummary.motivationalMessage}</p>
             </div>
           </div>
         )}

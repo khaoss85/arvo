@@ -1,8 +1,15 @@
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { WorkoutService } from './workout.service'
 import { UserProfileService } from './user-profile.service'
-import { SetLogService } from './set-log.service'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import {
+  getNextWorkoutType,
+  getTargetMuscleGroups,
+  generateWorkoutName,
+  inferWorkoutType,
+  type WorkoutType,
+  type SplitType
+} from './muscle-groups.service'
 import type { Workout, InsertWorkout } from '@/lib/types/schemas'
 
 export class WorkoutGeneratorService {
@@ -24,7 +31,20 @@ export class WorkoutGeneratorService {
 
     // Get recent workouts to determine rotation
     const recentWorkouts = await WorkoutService.getCompleted(userId, 3)
-    const workoutType = this.determineNextWorkoutType(recentWorkouts)
+
+    // Get user's preferred split type (defaults to push_pull_legs)
+    const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
+
+    // Determine next workout type based on preferred split and last workout
+    let lastWorkoutType: WorkoutType | null = null
+    if (recentWorkouts && recentWorkouts.length > 0) {
+      const lastWorkout = recentWorkouts[0]
+      // Try to get workout_type from database, fallback to inference
+      lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
+                       inferWorkoutType(lastWorkout.exercises as any[] || [])
+    }
+
+    const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
     // Select exercises using AI
     const selection = await exerciseSelector.selectExercises({
@@ -67,6 +87,12 @@ export class WorkoutGeneratorService {
       })
     )
 
+    // Calculate target muscle groups from exercises
+    const targetMuscleGroups = getTargetMuscleGroups(exercisesWithTargets)
+
+    // Generate descriptive workout name
+    const workoutName = generateWorkoutName(workoutType, targetMuscleGroups)
+
     // Create workout
     const workoutData: InsertWorkout = {
       user_id: userId,
@@ -79,49 +105,14 @@ export class WorkoutGeneratorService {
       duration_seconds: null,
       total_volume: null,
       total_sets: null,
-      notes: null
+      notes: null,
+      workout_type: workoutType,
+      workout_name: workoutName,
+      target_muscle_groups: targetMuscleGroups,
+      split_type: preferredSplit
     }
 
     return await WorkoutService.create(workoutData)
-  }
-
-  /**
-   * Determine next workout type based on recent workouts
-   */
-  private static determineNextWorkoutType(
-    recentWorkouts: Workout[]
-  ): 'push' | 'pull' | 'legs' | 'upper' | 'lower' {
-    // Default sequence: push -> pull -> legs
-    const sequence: ('push' | 'pull' | 'legs')[] = ['push', 'pull', 'legs']
-
-    if (recentWorkouts.length === 0) {
-      return 'push'
-    }
-
-    // Try to extract workout type from last workout's exercises
-    const lastWorkout = recentWorkouts[0]
-    const exercises = lastWorkout.exercises as any[]
-
-    if (!exercises || exercises.length === 0) {
-      return 'push'
-    }
-
-    // Simple heuristic: check first exercise name for workout type indicators
-    const firstExerciseName = exercises[0]?.name?.toLowerCase() || ''
-
-    let lastType: 'push' | 'pull' | 'legs' = 'legs'
-
-    if (firstExerciseName.includes('bench') || firstExerciseName.includes('press') || firstExerciseName.includes('dip')) {
-      lastType = 'push'
-    } else if (firstExerciseName.includes('row') || firstExerciseName.includes('pull') || firstExerciseName.includes('lat')) {
-      lastType = 'pull'
-    } else if (firstExerciseName.includes('squat') || firstExerciseName.includes('leg') || firstExerciseName.includes('lunge')) {
-      lastType = 'legs'
-    }
-
-    // Rotate to next in sequence
-    const lastIndex = sequence.indexOf(lastType)
-    return sequence[(lastIndex + 1) % sequence.length]
   }
 
   /**

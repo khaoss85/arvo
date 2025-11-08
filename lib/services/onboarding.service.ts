@@ -15,7 +15,8 @@ export class OnboardingService {
         weak_points: data.weakPoints,
         equipment_preferences: data.equipmentPreferences as any,
         strength_baseline: data.strengthBaseline as any,
-        experience_years: 0 // Can be added to onboarding later
+        experience_years: 0, // Can be added to onboarding later
+        preferred_split: null // Default split, can be updated later
       })
 
       // Generate first AI-powered workout using the collected preferences

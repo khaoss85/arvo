@@ -54,6 +54,9 @@ interface WorkoutExecutionState {
   // Exercise substitution
   substituteExercise: (index: number, newExercise: ExerciseExecution) => void
 
+  // Exercise reordering
+  reorderExercises: (newOrder: ExerciseExecution[]) => void
+
   // Persistence
   saveProgress: () => Promise<void>
 
@@ -272,6 +275,23 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         set({
           exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+      },
+
+      // Reorder exercises
+      reorderExercises: (newOrder: ExerciseExecution[]) => {
+        const { currentExerciseIndex, exercises } = get()
+        const currentExercise = exercises[currentExerciseIndex]
+
+        // Find new index of current exercise
+        const newCurrentIndex = newOrder.findIndex(
+          ex => ex.exerciseName === currentExercise?.exerciseName
+        )
+
+        set({
+          exercises: newOrder,
+          currentExerciseIndex: newCurrentIndex >= 0 ? newCurrentIndex : currentExerciseIndex,
           lastActivityAt: new Date()
         })
       },

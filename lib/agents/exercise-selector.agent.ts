@@ -2,7 +2,7 @@ import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
 export interface ExerciseSelectionInput {
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower'
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
   weakPoints: string[]
   equipmentPreferences: Record<string, string>
   recentExercises: string[]

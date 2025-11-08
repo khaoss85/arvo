@@ -1,7 +1,10 @@
 'use client'
 
+import { useState } from 'react'
+import { Info } from 'lucide-react'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { Card } from '@/components/ui/card'
+import { ApproachDetails } from './approach-details'
 
 interface ApproachCardProps {
   approach: TrainingApproach
@@ -12,16 +15,23 @@ interface ApproachCardProps {
 export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps) {
   const variables = approach.variables as any
   const progression = approach.progression_rules as any
+  const [showDetails, setShowDetails] = useState(false)
+
+  const handleLearnMore = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card selection when clicking Learn More
+    setShowDetails(true)
+  }
 
   return (
-    <Card
-      className={`p-6 cursor-pointer transition-all ${
-        selected
-          ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md'
-          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-      }`}
-      onClick={onSelect}
-    >
+    <>
+      <Card
+        className={`p-6 cursor-pointer transition-all ${
+          selected
+            ? 'border-blue-600 dark:border-blue-500 bg-blue-50 dark:bg-blue-950 shadow-md'
+            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+        }`}
+        onClick={onSelect}
+      >
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-xl font-bold">{approach.name}</h3>
@@ -84,6 +94,24 @@ export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps
           </span>
         </div>
       </div>
+
+      {/* Learn More Button */}
+      <button
+        onClick={handleLearnMore}
+        className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-950 rounded-lg transition-colors"
+      >
+        <Info className="w-4 h-4" />
+        Learn More
+      </button>
     </Card>
+
+    {/* Details Modal */}
+    {showDetails && (
+      <ApproachDetails
+        approach={approach}
+        onClose={() => setShowDetails(false)}
+      />
+    )}
+  </>
   )
 }

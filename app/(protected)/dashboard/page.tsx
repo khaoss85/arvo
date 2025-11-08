@@ -5,7 +5,12 @@ import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
 import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
 import { Button } from "@/components/ui/button";
-import { formatDuration } from "@/lib/utils/workout-helpers";
+import {
+  inferWorkoutType,
+  getWorkoutTypeColor,
+  getWorkoutTypeIcon,
+  type WorkoutType
+} from "@/lib/services/muscle-groups.service";
 
 export default async function DashboardPage() {
   const user = await getUser();
@@ -83,15 +88,64 @@ export default async function DashboardPage() {
                 const isInProgress = inProgressWorkout?.id === workout.id;
                 const estimatedDuration = exercises.length * 10; // ~10 min per exercise estimate
 
+                // Get workout type (from DB or infer from exercises)
+                const workoutType = (workout.workout_type as WorkoutType) || inferWorkoutType(exercises);
+                const workoutTypeColor = getWorkoutTypeColor(workoutType);
+                const workoutTypeIcon = getWorkoutTypeIcon(workoutType);
+                const workoutName = workout.workout_name;
+                const muscleGroups = workout.target_muscle_groups || [];
+
+                // Color mapping for borders and badges
+                const typeColorClasses: Record<string, { border: string; badge: string; button: string }> = {
+                  red: {
+                    border: 'border-red-300 dark:border-red-700',
+                    badge: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
+                    button: 'bg-red-600 hover:bg-red-700'
+                  },
+                  blue: {
+                    border: 'border-blue-300 dark:border-blue-700',
+                    badge: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+                    button: 'bg-blue-600 hover:bg-blue-700'
+                  },
+                  green: {
+                    border: 'border-green-300 dark:border-green-700',
+                    badge: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300',
+                    button: 'bg-green-600 hover:bg-green-700'
+                  },
+                  orange: {
+                    border: 'border-orange-300 dark:border-orange-700',
+                    badge: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
+                    button: 'bg-orange-600 hover:bg-orange-700'
+                  },
+                  purple: {
+                    border: 'border-purple-300 dark:border-purple-700',
+                    badge: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+                    button: 'bg-purple-600 hover:bg-purple-700'
+                  },
+                  yellow: {
+                    border: 'border-yellow-300 dark:border-yellow-700',
+                    badge: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
+                    button: 'bg-yellow-600 hover:bg-yellow-700'
+                  },
+                  gray: {
+                    border: 'border-gray-300 dark:border-gray-700',
+                    badge: 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300',
+                    button: 'bg-gray-600 hover:bg-gray-700'
+                  }
+                };
+
+                const colors = typeColorClasses[workoutTypeColor] || typeColorClasses.gray;
+
                 return (
                   <div
                     key={workout.id}
-                    className={`bg-white dark:bg-gray-900 rounded-lg border p-5 transition-all ${
+                    className={`bg-white dark:bg-gray-900 rounded-lg border-2 p-5 transition-all ${
                       isInProgress
                         ? 'border-orange-500 dark:border-orange-500 shadow-lg'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                        : `${colors.border} hover:shadow-md`
                     }`}
                   >
+                    {/* Header with Date and Status */}
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         {workout.planned_at ? new Date(workout.planned_at).toLocaleDateString() : 'No date'}
@@ -99,12 +153,40 @@ export default async function DashboardPage() {
                       <span className={`px-2 py-1 text-xs font-medium rounded ${
                         isInProgress
                           ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
-                          : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                          : colors.badge
                       }`}>
                         {isInProgress ? 'In Progress' : 'Upcoming'}
                       </span>
                     </div>
 
+                    {/* Workout Type Badge */}
+                    <div className="mb-3">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md ${colors.badge}`}>
+                        <span>{workoutTypeIcon}</span>
+                        <span>{workoutName || workoutType.toUpperCase()}</span>
+                      </span>
+                    </div>
+
+                    {/* Muscle Groups Tags */}
+                    {muscleGroups.length > 0 && (
+                      <div className="mb-3 flex flex-wrap gap-1.5">
+                        {muscleGroups.slice(0, 3).map((group, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded"
+                          >
+                            {group}
+                          </span>
+                        ))}
+                        {muscleGroups.length > 3 && (
+                          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
+                            +{muscleGroups.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Exercise Count and Duration */}
                     <div className="mb-4">
                       <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
                         {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
@@ -119,7 +201,7 @@ export default async function DashboardPage() {
                       <div className="mb-4 space-y-1">
                         {exercises.slice(0, 3).map((ex: any, idx: number) => (
                           <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            • {ex.exercise_name || 'Exercise'}
+                            • {ex.name || ex.exercise_name || 'Exercise'}
                           </div>
                         ))}
                         {exercises.length > 3 && (
@@ -131,7 +213,7 @@ export default async function DashboardPage() {
                     )}
 
                     <Link href={`/workout/${workout.id}`} className="block">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button className={`w-full ${isInProgress ? 'bg-orange-600 hover:bg-orange-700' : colors.button} text-white`}>
                         {isInProgress ? 'Resume' : 'Start Workout'}
                       </Button>
                     </Link>
@@ -156,11 +238,18 @@ export default async function DashboardPage() {
               {completedWorkouts.map((workout) => {
                 const exercises = (workout.exercises as any[]) || [];
 
+                // Get workout type (from DB or infer from exercises)
+                const workoutType = (workout.workout_type as WorkoutType) || inferWorkoutType(exercises);
+                const workoutTypeIcon = getWorkoutTypeIcon(workoutType);
+                const workoutName = workout.workout_name;
+                const muscleGroups = workout.target_muscle_groups || [];
+
                 return (
                   <div
                     key={workout.id}
-                    className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-5 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                    className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all opacity-90"
                   >
+                    {/* Header with Date and Status */}
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-gray-600 dark:text-gray-400">
                         {workout.planned_at
@@ -172,10 +261,42 @@ export default async function DashboardPage() {
                       </span>
                     </div>
 
+                    {/* Workout Type Badge */}
+                    <div className="mb-3">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                        <span>{workoutTypeIcon}</span>
+                        <span>{workoutName || workoutType.toUpperCase()}</span>
+                      </span>
+                    </div>
+
+                    {/* Muscle Groups Tags */}
+                    {muscleGroups.length > 0 && (
+                      <div className="mb-3 flex flex-wrap gap-1.5">
+                        {muscleGroups.slice(0, 3).map((group, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded"
+                          >
+                            {group}
+                          </span>
+                        ))}
+                        {muscleGroups.length > 3 && (
+                          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
+                            +{muscleGroups.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="mb-3">
                       <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
                         {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
                       </p>
+                      {workout.duration_seconds && (
+                        <p className="text-xs text-gray-500 dark:text-gray-500">
+                          Duration: {Math.round(workout.duration_seconds / 60)} min
+                        </p>
+                      )}
                     </div>
 
                     {/* Exercise Preview */}
@@ -183,7 +304,7 @@ export default async function DashboardPage() {
                       <div className="space-y-1">
                         {exercises.slice(0, 3).map((ex: any, idx: number) => (
                           <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            • {ex.exercise_name || 'Exercise'}
+                            • {ex.name || ex.exercise_name || 'Exercise'}
                           </div>
                         ))}
                         {exercises.length > 3 && (

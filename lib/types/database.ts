@@ -137,6 +137,7 @@ export type Database = {
           created_at: string | null
           equipment_preferences: Json | null
           experience_years: number | null
+          preferred_split: string | null
           strength_baseline: Json | null
           updated_at: string | null
           user_id: string
@@ -147,6 +148,7 @@ export type Database = {
           created_at?: string | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
           user_id: string
@@ -157,6 +159,7 @@ export type Database = {
           created_at?: string | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
           user_id?: string
@@ -208,11 +211,15 @@ export type Database = {
           id: string
           notes: string | null
           planned_at: string | null
+          split_type: string | null
           started_at: string | null
+          target_muscle_groups: string[] | null
           total_sets: number | null
           total_volume: number | null
           updated_at: string | null
           user_id: string | null
+          workout_name: string | null
+          workout_type: Database["public"]["Enums"]["workout_type"] | null
         }
         Insert: {
           approach_id?: string | null
@@ -224,11 +231,15 @@ export type Database = {
           id?: string
           notes?: string | null
           planned_at?: string | null
+          split_type?: string | null
           started_at?: string | null
+          target_muscle_groups?: string[] | null
           total_sets?: number | null
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          workout_name?: string | null
+          workout_type?: Database["public"]["Enums"]["workout_type"] | null
         }
         Update: {
           approach_id?: string | null
@@ -240,11 +251,15 @@ export type Database = {
           id?: string
           notes?: string | null
           planned_at?: string | null
+          split_type?: string | null
           started_at?: string | null
+          target_muscle_groups?: string[] | null
           total_sets?: number | null
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          workout_name?: string | null
+          workout_type?: Database["public"]["Enums"]["workout_type"] | null
         }
         Relationships: [
           {
@@ -271,7 +286,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"
+      workout_type: "push" | "pull" | "legs" | "upper" | "lower" | "full_body"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -398,6 +414,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      split_type: ["push_pull_legs", "upper_lower", "full_body", "custom"],
+      workout_type: ["push", "pull", "legs", "upper", "lower", "full_body"],
+    },
   },
 } as const

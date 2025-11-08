@@ -6,6 +6,14 @@ import { ProgressionCalculator } from '@/lib/agents/progression-calculator.agent
 import { ReorderValidator } from '@/lib/agents/reorder-validator.agent'
 import { WorkoutSummaryAgent } from '@/lib/agents/workout-summary.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
+import {
+  getNextWorkoutType,
+  getTargetMuscleGroups,
+  generateWorkoutName,
+  inferWorkoutType,
+  type WorkoutType,
+  type SplitType
+} from '@/lib/services/muscle-groups.service'
 import type { ProgressionInput } from '@/lib/types/progression'
 import type { OnboardingData } from '@/lib/types/onboarding'
 import type { Workout, InsertWorkout } from '@/lib/types/schemas'
@@ -86,7 +94,19 @@ async function generateWorkoutWithServerClient(
     .order('planned_at', { ascending: false })
     .limit(3)
 
-  const workoutType = determineNextWorkoutType(recentWorkouts || [])
+  // Get user's preferred split type (defaults to push_pull_legs)
+  const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
+
+  // Determine next workout type based on preferred split and last workout
+  let lastWorkoutType: WorkoutType | null = null
+  if (recentWorkouts && recentWorkouts.length > 0) {
+    const lastWorkout = recentWorkouts[0]
+    // Try to get workout_type from database, fallback to inference
+    lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
+                     inferWorkoutType(lastWorkout.exercises as any[] || [])
+  }
+
+  const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
   // Select exercises using AI
   const selection = await exerciseSelector.selectExercises({
@@ -129,6 +149,12 @@ async function generateWorkoutWithServerClient(
     })
   )
 
+  // Calculate target muscle groups from exercises
+  const targetMuscleGroups = getTargetMuscleGroups(exercisesWithTargets)
+
+  // Generate descriptive workout name
+  const workoutName = generateWorkoutName(workoutType, targetMuscleGroups)
+
   // Create workout using server client
   const workoutData: InsertWorkout = {
     user_id: userId,
@@ -141,7 +167,11 @@ async function generateWorkoutWithServerClient(
     duration_seconds: null,
     total_volume: null,
     total_sets: null,
-    notes: null
+    notes: null,
+    workout_type: workoutType,
+    workout_name: workoutName,
+    target_muscle_groups: targetMuscleGroups,
+    split_type: preferredSplit
   }
 
   const { data: workout, error: workoutError } = await supabase
@@ -155,45 +185,6 @@ async function generateWorkoutWithServerClient(
   }
 
   return workout as Workout
-}
-
-/**
- * Determine next workout type based on recent workouts
- */
-function determineNextWorkoutType(
-  recentWorkouts: Workout[]
-): 'push' | 'pull' | 'legs' | 'upper' | 'lower' {
-  // Default sequence: push -> pull -> legs
-  const sequence: ('push' | 'pull' | 'legs')[] = ['push', 'pull', 'legs']
-
-  if (recentWorkouts.length === 0) {
-    return 'push'
-  }
-
-  // Try to extract workout type from last workout's exercises
-  const lastWorkout = recentWorkouts[0]
-  const exercises = lastWorkout.exercises as any[]
-
-  if (!exercises || exercises.length === 0) {
-    return 'push'
-  }
-
-  // Simple heuristic: check first exercise name for workout type indicators
-  const firstExerciseName = exercises[0]?.name?.toLowerCase() || ''
-
-  let lastType: 'push' | 'pull' | 'legs' = 'legs'
-
-  if (firstExerciseName.includes('bench') || firstExerciseName.includes('press') || firstExerciseName.includes('dip')) {
-    lastType = 'push'
-  } else if (firstExerciseName.includes('row') || firstExerciseName.includes('pull') || firstExerciseName.includes('lat')) {
-    lastType = 'pull'
-  } else if (firstExerciseName.includes('squat') || firstExerciseName.includes('leg') || firstExerciseName.includes('lunge')) {
-    lastType = 'legs'
-  }
-
-  // Rotate to next in sequence
-  const lastIndex = sequence.indexOf(lastType)
-  return sequence[(lastIndex + 1) % sequence.length]
 }
 
 /**
@@ -432,6 +423,36 @@ export async function generateWorkoutSummaryAction(input: WorkoutSummaryInput) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate workout summary'
+    }
+  }
+}
+
+/**
+ * Server action to update user's preferred split type
+ * Updates the user_profiles table with the selected split preference
+ */
+export async function updatePreferredSplitAction(
+  userId: string,
+  splitType: SplitType
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ preferred_split: splitType })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to update preferred split: ${error.message}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Update preferred split error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update preferred split'
     }
   }
 }
