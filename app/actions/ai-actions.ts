@@ -46,7 +46,7 @@ export async function completeOnboardingAction(
         age: data.age || null,
         weight: data.weight || null,
         height: data.height || null,
-        experience_years: 0
+        experience_years: data.confirmedExperience || 0
       })
 
     if (profileError) {
@@ -118,7 +118,10 @@ async function generateWorkoutWithServerClient(
     weakPoints: profile.weak_points || [],
     equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {},
     recentExercises: extractRecentExercises(recentWorkouts || []),
-    approachId: profile.approach_id
+    approachId: profile.approach_id,
+    experienceYears: profile.experience_years,
+    userAge: profile.age,
+    userGender: profile.gender
   })
 
   // Get exercise history and calculate initial targets
@@ -457,6 +460,71 @@ export async function updatePreferredSplitAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update preferred split'
+    }
+  }
+}
+
+/**
+ * Server action to update user's weak points
+ * Updates the user_profiles table with the selected weak points (max 5)
+ */
+export async function updateWeakPointsAction(
+  userId: string,
+  weakPoints: string[]
+) {
+  try {
+    // Validate max 5 weak points
+    if (weakPoints.length > 5) {
+      throw new Error('Maximum 5 weak points allowed')
+    }
+
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ weak_points: weakPoints })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to update weak points: ${error.message}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Update weak points error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update weak points'
+    }
+  }
+}
+
+/**
+ * Server action to update user's equipment preferences
+ * Updates the user_profiles table with equipment preferences for each category
+ */
+export async function updateEquipmentPreferencesAction(
+  userId: string,
+  equipmentPreferences: Record<string, string>
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ equipment_preferences: equipmentPreferences })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to update equipment preferences: ${error.message}`)
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Update equipment preferences error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update equipment preferences'
     }
   }
 }

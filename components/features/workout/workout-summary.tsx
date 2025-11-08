@@ -7,6 +7,7 @@ import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import { useGenerateWorkout } from '@/lib/hooks/useAI'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
+import { UserProfileService } from '@/lib/services/user-profile.service'
 import { generateWorkoutSummaryAction } from '@/app/actions/ai-actions'
 import { Button } from '@/components/ui/button'
 import { formatDuration } from '@/lib/utils/workout-helpers'
@@ -29,9 +30,32 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const [aiSummary, setAiSummary] = useState<WorkoutSummaryOutput | null>(null)
   const [loadingAiSummary, setLoadingAiSummary] = useState(false)
 
+  // User demographics for personalized feedback
+  const [userAge, setUserAge] = useState<number | null>(null)
+  const [userGender, setUserGender] = useState<'male' | 'female' | 'other' | null>(null)
+  const [userExperienceYears, setUserExperienceYears] = useState<number | null>(null)
+
   useEffect(() => {
     loadStats()
   }, [workoutId])
+
+  // Fetch user demographics for personalized summary
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await UserProfileService.getByUserId(userId)
+        if (profile) {
+          setUserAge(profile.age)
+          setUserGender(profile.gender)
+          setUserExperienceYears(profile.experience_years)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile for demographics:', error)
+      }
+    }
+
+    fetchUserProfile()
+  }, [userId])
 
   const loadStats = async () => {
     try {
@@ -67,7 +91,10 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         totalDuration: duration,
         totalVolume,
         workoutType: workout.workout_type || 'general',
-        approachId: workout.approach_id
+        approachId: workout.approach_id,
+        userAge: userAge,
+        userGender: userGender,
+        experienceYears: userExperienceYears
       })
 
       if (result.success && result.summary) {

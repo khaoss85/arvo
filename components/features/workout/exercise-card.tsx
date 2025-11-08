@@ -5,6 +5,7 @@ import { HelpCircle } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
+import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { Button } from '@/components/ui/button'
 
@@ -33,9 +34,30 @@ export function ExerciseCard({
   const [progressionExplanation, setProgressionExplanation] = useState('')
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
 
+  // User demographics for personalized progression
+  const [userExperienceYears, setUserExperienceYears] = useState<number | null>(null)
+  const [userAge, setUserAge] = useState<number | null>(null)
+
   const currentSetNumber = exercise.completedSets.length + 1
   const isLastSet = currentSetNumber > exercise.targetSets
   const lastCompletedSet = exercise.completedSets[exercise.completedSets.length - 1]
+
+  // Fetch user demographics for personalized progression
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await UserProfileService.getByUserId(userId)
+        if (profile) {
+          setUserExperienceYears(profile.experience_years)
+          setUserAge(profile.age)
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile for demographics:', error)
+      }
+    }
+
+    fetchUserProfile()
+  }, [userId])
 
   // Load exercise selection explanation
   const loadExerciseExplanation = async () => {
@@ -103,7 +125,9 @@ export function ExerciseCard({
                        exercise.exerciseName.toLowerCase().includes('press')
             ? 'compound'
             : 'isolation',
-          approachId
+          approachId,
+          experienceYears: userExperienceYears,
+          userAge: userAge
         },
         {
           onSuccess: (suggestion) => {

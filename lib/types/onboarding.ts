@@ -30,4 +30,5 @@ export type OnboardingData = {
   age?: number | null
   weight?: number | null
   height?: number | null
+  confirmedExperience?: number | null
 }

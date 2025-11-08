@@ -3,6 +3,8 @@ import Link from "next/link"
 import { getUser } from "@/lib/utils/auth.server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { SplitSelector } from "@/components/features/settings/split-selector"
+import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
+import { EquipmentPreferencesEditor } from "@/components/features/settings/equipment-preferences-editor"
 import { Card } from "@/components/ui/card"
 
 export default async function SettingsPage() {
@@ -51,77 +53,18 @@ export default async function SettingsPage() {
 
           {/* Weak Points Section */}
           <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Weak Points</h3>
-                <p className="text-sm text-muted-foreground">
-                  Areas you want to prioritize in your training
-                </p>
-              </div>
-
-              {profile.weak_points && profile.weak_points.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.weak_points.map((point, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1.5 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 text-sm font-medium rounded-md"
-                    >
-                      {point}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  No weak points selected
-                </p>
-              )}
-
-              <div className="pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  To update your weak points, please complete the onboarding flow again or contact support.
-                </p>
-              </div>
-            </div>
+            <WeakPointsEditor
+              userId={user.id}
+              initialWeakPoints={profile.weak_points || []}
+            />
           </Card>
 
           {/* Equipment Preferences Section */}
           <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Equipment Preferences</h3>
-                <p className="text-sm text-muted-foreground">
-                  Your preferred equipment for different exercise types
-                </p>
-              </div>
-
-              {profile.equipment_preferences && Object.keys(profile.equipment_preferences).length > 0 ? (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {Object.entries(profile.equipment_preferences as Record<string, string>).map(([category, preference]) => (
-                    <div
-                      key={category}
-                      className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
-                    >
-                      <div className="text-xs font-medium text-gray-500 dark:text-gray-500 uppercase mb-1">
-                        {category.replace(/_/g, ' ')}
-                      </div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {preference}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  No equipment preferences set
-                </p>
-              )}
-
-              <div className="pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  To update your equipment preferences, please complete the onboarding flow again or contact support.
-                </p>
-              </div>
-            </div>
+            <EquipmentPreferencesEditor
+              userId={user.id}
+              initialPreferences={(profile.equipment_preferences as Record<string, string>) || {}}
+            />
           </Card>
 
           {/* Training Approach Section */}
