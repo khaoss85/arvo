@@ -1,6 +1,6 @@
 'use server'
 
-import { OnboardingService } from '@/lib/services/onboarding.service'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { WorkoutGeneratorService } from '@/lib/services/workout-generator.service'
 import type { OnboardingData } from '@/lib/types/onboarding'
 
@@ -14,8 +14,28 @@ export async function completeOnboardingAction(
   data: OnboardingData
 ) {
   try {
-    const result = await OnboardingService.completeOnboarding(userId, data)
-    return { success: true, workoutId: result.workoutId }
+    const supabase = await getSupabaseServerClient()
+
+    // Upsert user profile using server client (bypasses RLS with server role)
+    const { error: profileError } = await supabase
+      .from('user_profiles')
+      .upsert({
+        user_id: userId,
+        approach_id: data.approachId,
+        weak_points: data.weakPoints,
+        equipment_preferences: data.equipmentPreferences,
+        strength_baseline: data.strengthBaseline,
+        experience_years: 0
+      })
+
+    if (profileError) {
+      throw new Error(`Failed to create user profile: ${profileError.message}`)
+    }
+
+    // Generate first AI-powered workout
+    const workout = await WorkoutGeneratorService.generateWorkout(userId)
+
+    return { success: true, workoutId: workout.id }
   } catch (error) {
     console.error('Server action - Onboarding completion error:', error)
     return {
