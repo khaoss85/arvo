@@ -17,10 +17,13 @@ export class AuthService {
     const validated = magicLinkSchema.parse({ email });
     const supabase = getSupabaseBrowserClient();
 
+    // Use environment variable for redirect URL to ensure consistency across environments
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+
     const { data, error } = await supabase.auth.signInWithOtp({
       email: validated.email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${appUrl}/auth/callback`,
       },
     });
 
