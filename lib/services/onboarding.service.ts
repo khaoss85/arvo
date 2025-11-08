@@ -8,8 +8,8 @@ export class OnboardingService {
    */
   static async completeOnboarding(userId: string, data: OnboardingData) {
     try {
-      // Create user profile with collected data
-      await UserProfileService.create({
+      // Create or update user profile with collected data
+      await UserProfileService.upsert({
         user_id: userId,
         approach_id: data.approachId,
         weak_points: data.weakPoints,
