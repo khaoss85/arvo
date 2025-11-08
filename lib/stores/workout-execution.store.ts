@@ -122,7 +122,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               weight: s.weight_actual || 0,
               reps: s.reps_actual || 0,
               rir: s.rir_actual || 0,
-              loggedAt: new Date(s.created_at)
+              loggedAt: s.created_at ? new Date(s.created_at) : new Date()
             })),
             currentAISuggestion: null
           }

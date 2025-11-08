@@ -2,8 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
-// TODO: Re-enable after fixing server-only imports
-// import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
+import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
 
 export default async function DashboardPage() {
   const user = await getUser();
@@ -34,10 +33,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Workout Generator Section */}
-        {/* TODO: Re-enable after fixing server-only imports */}
-        {/* <div className="mb-8">
+        <div className="mb-8">
           <WorkoutGenerator userId={user.id} />
-        </div> */}
+        </div>
 
         {/* Upcoming Workouts */}
         <div className="mb-8">

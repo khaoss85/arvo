@@ -87,10 +87,12 @@ export const setLogSchema = z.object({
   reps_actual: z.number().int().min(0).nullable(),
   rir_actual: z.number().int().min(0).max(10).nullable(),
   notes: z.string().nullable(),
+  created_at: z.string().nullable(),
 });
 
-export const insertSetLogSchema = setLogSchema.omit({ id: true }).extend({
+export const insertSetLogSchema = setLogSchema.omit({ id: true, created_at: true }).extend({
   id: z.string().uuid().optional(),
+  created_at: z.string().optional(),
 });
 
 export const updateSetLogSchema = insertSetLogSchema.partial();
