@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { List } from 'lucide-react'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import type { Workout } from '@/lib/types/schemas'
@@ -18,22 +18,61 @@ interface WorkoutExecutionProps {
 export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
   const {
     isActive,
+    workoutId,
     startWorkout,
+    resumeWorkout,
     currentExerciseIndex,
     exercises,
     endWorkout
   } = useWorkoutExecutionStore()
   const [showReorderModal, setShowReorderModal] = useState(false)
+  const hasInitialized = useRef(false)
 
-  // Initialize workout on mount
+  // Initialize or resume workout on mount
   useEffect(() => {
-    if (!isActive) {
-      startWorkout(workout)
+    // Only initialize once
+    if (hasInitialized.current) return
+
+    const initWorkout = async () => {
+      try {
+        // If workout is marked as active but has no exercises (page refresh case)
+        if (isActive && exercises.length === 0 && workoutId) {
+          await resumeWorkout(workoutId)
+        }
+        // If workout is not active, start it fresh
+        else if (!isActive) {
+          startWorkout(workout)
+        }
+
+        hasInitialized.current = true
+      } catch (error) {
+        console.error('Failed to initialize workout:', error)
+        // Fallback to starting fresh if resume fails
+        startWorkout(workout)
+        hasInitialized.current = true
+      }
     }
-  }, [workout, isActive, startWorkout])
+
+    initWorkout()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Show loading state while exercises are being initialized
+  if (exercises.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
+          <p className="text-gray-400">Loading workout...</p>
+        </div>
+      </div>
+    )
+  }
 
   const currentExercise = exercises[currentExerciseIndex]
-  const isWorkoutComplete = exercises.every(
+
+  // Check if workout is complete - only if we have exercises loaded
+  const isWorkoutComplete = exercises.length > 0 && exercises.every(
     ex => ex.completedSets.length >= ex.targetSets
   )
 
