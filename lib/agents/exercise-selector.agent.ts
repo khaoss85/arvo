@@ -26,7 +26,12 @@ export interface ExerciseSelectionOutput {
 }
 
 export class ExerciseSelector extends BaseAgent {
-  private supabase = getSupabaseBrowserClient()
+  private supabase: any
+
+  constructor(supabaseClient?: any) {
+    super(supabaseClient)
+    this.supabase = supabaseClient || getSupabaseBrowserClient()
+  }
 
   get systemPrompt() {
     return `You are a bodybuilding coach creating workout plans.

@@ -1,32 +1,13 @@
 import { BaseAgent } from './base.agent'
+import type { ProgressionInput, ProgressionOutput } from '@/lib/types/progression'
 
-export interface ProgressionInput {
-  lastSet: {
-    weight: number
-    reps: number
-    rir: number
-  }
-  setNumber: number
-  exerciseType: 'compound' | 'isolation'
-  approachId: string
-}
-
-export interface ProgressionOutput {
-  suggestion: {
-    weight: number
-    reps: number
-    rirTarget: number
-  }
-  rationale: string
-  alternatives: Array<{
-    weight: number
-    reps: number
-    focus: 'volume' | 'intensity' | 'pump'
-    explanation: string
-  }>
-}
+export type { ProgressionInput, ProgressionOutput }
 
 export class ProgressionCalculator extends BaseAgent {
+  constructor(supabaseClient?: any) {
+    super(supabaseClient)
+  }
+
   get systemPrompt() {
     return `You are an expert bodybuilding coach specializing in set progression.
 Based on the training approach philosophy and the previous set performance,

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ProgressionCalculator, type ProgressionInput } from '@/lib/agents/progression-calculator.agent'
-import { generateWorkoutAction } from '@/app/actions/ai-actions'
+import type { ProgressionInput } from '@/lib/types/progression'
+import { generateWorkoutAction, calculateProgressionAction } from '@/app/actions/ai-actions'
 import { workoutKeys } from './use-workouts'
 
 /**
@@ -10,8 +10,11 @@ import { workoutKeys } from './use-workouts'
 export function useProgressionSuggestion() {
   return useMutation({
     mutationFn: async (input: ProgressionInput) => {
-      const calculator = new ProgressionCalculator()
-      return calculator.suggestNextSet(input)
+      const result = await calculateProgressionAction(input)
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to calculate progression')
+      }
+      return result.suggestion
     },
     onError: (error) => {
       console.error('Progression suggestion error:', error)

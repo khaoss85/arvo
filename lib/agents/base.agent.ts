@@ -1,10 +1,16 @@
-import 'server-only'
 import { getOpenAIClient } from '@/lib/ai/client'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
 
 export abstract class BaseAgent {
-  protected openai = getOpenAIClient()
-  protected knowledge = new KnowledgeEngine()
+  protected openai: ReturnType<typeof getOpenAIClient>
+  protected knowledge: KnowledgeEngine
+
+  constructor(supabaseClient?: any) {
+    // Initialize OpenAI client (will only work on server due to server-only in client.ts)
+    this.openai = getOpenAIClient()
+    // Pass Supabase client to KnowledgeEngine for server-side usage
+    this.knowledge = new KnowledgeEngine(supabaseClient)
+  }
 
   abstract get systemPrompt(): string
   abstract get temperature(): number

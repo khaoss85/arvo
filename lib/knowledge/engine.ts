@@ -1,8 +1,14 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { TrainingApproach } from './types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export class KnowledgeEngine {
-  private supabase = getSupabaseBrowserClient()
+  private supabase: any
+
+  constructor(supabaseClient?: any) {
+    // Accept optional Supabase client for server-side usage
+    this.supabase = supabaseClient || getSupabaseBrowserClient()
+  }
 
   async loadApproach(approachId: string): Promise<TrainingApproach> {
     const { data, error } = await this.supabase
