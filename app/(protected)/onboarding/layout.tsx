@@ -1,15 +1,13 @@
 'use client'
 
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
 
 const steps = [
-  { id: 1, name: 'Approach', path: '/onboarding/approach' },
-  { id: 2, name: 'Weak Points', path: '/onboarding/weak-points' },
-  { id: 3, name: 'Equipment', path: '/onboarding/equipment' },
-  { id: 4, name: 'Strength', path: '/onboarding/strength' },
-  { id: 5, name: 'Review', path: '/onboarding/review' }
+  { id: 1, name: 'Approach' },
+  { id: 2, name: 'Weak Points' },
+  { id: 3, name: 'Equipment' },
+  { id: 4, name: 'Strength' },
+  { id: 5, name: 'Review' }
 ]
 
 export default function OnboardingLayout({
@@ -17,25 +15,7 @@ export default function OnboardingLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { currentStep, completedSteps } = useOnboardingStore()
-  const router = useRouter()
-
-  const canGoBack = currentStep > 1
-  const canGoNext = completedSteps.includes(currentStep) && currentStep < steps.length
-
-  const goBack = () => {
-    const prevStep = steps[currentStep - 2]
-    if (prevStep) {
-      router.push(prevStep.path)
-    }
-  }
-
-  const goNext = () => {
-    const nextStep = steps[currentStep]
-    if (nextStep) {
-      router.push(nextStep.path)
-    }
-  }
+  const { currentStep } = useOnboardingStore()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -69,27 +49,6 @@ export default function OnboardingLayout({
       <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-4xl mx-auto">
           {children}
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="p-4 border-t bg-white dark:bg-gray-900">
-        <div className="max-w-4xl mx-auto flex justify-between">
-          <Button
-            variant="outline"
-            onClick={goBack}
-            disabled={!canGoBack}
-          >
-            Back
-          </Button>
-          {currentStep < steps.length && (
-            <Button
-              onClick={goNext}
-              disabled={!canGoNext}
-            >
-              Next
-            </Button>
-          )}
         </div>
       </div>
     </div>
