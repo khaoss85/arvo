@@ -1,11 +1,10 @@
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-
 /**
  * Server-side authentication utilities
  * These can only be used in Server Components and Server Actions
  */
 
 export async function getSession() {
+  const { getSupabaseServerClient } = await import("@/lib/supabase/server");
   const supabase = await getSupabaseServerClient();
 
   const {
@@ -13,14 +12,16 @@ export async function getSession() {
     error,
   } = await supabase.auth.getSession();
 
-  if (error) {
-    throw new Error(error.message);
+  // If there's no session or auth error, return null
+  if (error || !session) {
+    return null;
   }
 
   return session;
 }
 
 export async function getUser() {
+  const { getSupabaseServerClient } = await import("@/lib/supabase/server");
   const supabase = await getSupabaseServerClient();
 
   const {
@@ -28,8 +29,9 @@ export async function getUser() {
     error,
   } = await supabase.auth.getUser();
 
-  if (error) {
-    throw new Error(error.message);
+  // If there's no user or auth error, return null instead of throwing
+  if (error || !user) {
+    return null;
   }
 
   return user;

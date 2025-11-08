@@ -63,7 +63,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           exerciseIndex={currentExerciseIndex}
           totalExercises={exercises.length}
           userId={userId}
-          approachId={workout.approach_id}
+          approachId={workout.approach_id || ''}
         />
       </div>
     </div>

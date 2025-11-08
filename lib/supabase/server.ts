@@ -1,7 +1,6 @@
 // TODO: Re-enable "server-only" after separating client/server service files
 // import "server-only";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import type { Database } from "@/lib/types/database";
 
 /**
@@ -9,6 +8,8 @@ import type { Database } from "@/lib/types/database";
  * This creates a new client for each request to ensure proper cookie handling
  */
 export async function getSupabaseServerClient() {
+  // Dynamic import of next/headers to avoid bundling issues with client components
+  const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
 
   return createServerClient<Database>(

@@ -48,8 +48,7 @@ export default async function DashboardPage() {
               <div>
                 <h3 className="text-xl font-bold mb-2">Workout In Progress</h3>
                 <p className="text-sm text-white/90">
-                  {(inProgressWorkout.exercises as any[])?.length || 0} exercises •
-                  Started {inProgressWorkout.started_at ? new Date(inProgressWorkout.started_at).toLocaleDateString() : 'recently'}
+                  {(inProgressWorkout.exercises as any[])?.length || 0} exercises • Started recently
                 </p>
               </div>
               <Link href={`/workout/${inProgressWorkout.id}`}>
@@ -143,9 +142,6 @@ export default async function DashboardPage() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {completedWorkouts.map((workout) => {
                 const exercises = (workout.exercises as any[]) || [];
-                const stats = workout.stats as any;
-                const duration = stats?.duration ? formatDuration(stats.duration) : null;
-                const volume = stats?.totalVolume ? Math.round(stats.totalVolume) : null;
 
                 return (
                   <div
@@ -154,9 +150,7 @@ export default async function DashboardPage() {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {workout.completed_at
-                          ? new Date(workout.completed_at).toLocaleDateString()
-                          : workout.planned_at
+                        {workout.planned_at
                           ? new Date(workout.planned_at).toLocaleDateString()
                           : 'No date'}
                       </span>
@@ -169,12 +163,6 @@ export default async function DashboardPage() {
                       <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
                         {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
                       </p>
-                      {(duration || volume) && (
-                        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
-                          {duration && <span>{duration}</span>}
-                          {volume && <span>{volume}kg total</span>}
-                        </div>
-                      )}
                     </div>
 
                     {/* Exercise Preview */}
