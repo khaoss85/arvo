@@ -3,9 +3,15 @@
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { ProgressionCalculator } from '@/lib/agents/progression-calculator.agent'
+import { ReorderValidator } from '@/lib/agents/reorder-validator.agent'
+import { WorkoutSummaryAgent } from '@/lib/agents/workout-summary.agent'
+import { ExplanationService } from '@/lib/services/explanation.service'
 import type { ProgressionInput } from '@/lib/types/progression'
 import type { OnboardingData } from '@/lib/types/onboarding'
 import type { Workout, InsertWorkout } from '@/lib/types/schemas'
+import type { ExplanationType, ExplanationContext } from '@/lib/services/explanation.service'
+import type { ReorderValidationInput } from '@/lib/agents/reorder-validator.agent'
+import type { WorkoutSummaryInput } from '@/lib/agents/workout-summary.agent'
 
 /**
  * Server action to complete onboarding
@@ -305,6 +311,127 @@ export async function calculateProgressionAction(input: ProgressionInput) {
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to calculate progression'
+    }
+  }
+}
+
+/**
+ * Server action to explain a training decision
+ * Uses GPT-5-mini to generate user-friendly explanations
+ * This runs on the server and has access to OPENAI_API_KEY
+ */
+export async function explainDecisionAction(
+  type: ExplanationType,
+  context: ExplanationContext,
+  approachId: string
+) {
+  try {
+    const explanation = await ExplanationService.explainDecision(type, context, approachId)
+
+    return { success: true, explanation }
+  } catch (error) {
+    console.error('Server action - Explanation generation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate explanation'
+    }
+  }
+}
+
+/**
+ * Server action to explain exercise selection
+ * Convenience wrapper for exercise selection explanations
+ */
+export async function explainExerciseSelectionAction(
+  exerciseName: string,
+  weakPoints: string[],
+  rationale: string,
+  approachId: string
+) {
+  try {
+    const explanation = await ExplanationService.explainExerciseSelection(
+      exerciseName,
+      weakPoints,
+      rationale,
+      approachId
+    )
+
+    return { success: true, explanation }
+  } catch (error) {
+    console.error('Server action - Exercise selection explanation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to explain exercise selection'
+    }
+  }
+}
+
+/**
+ * Server action to explain set progression
+ * Convenience wrapper for progression explanations
+ */
+export async function explainProgressionAction(
+  currentSet: { weight: number; reps: number; rir: number },
+  suggestionRationale: string,
+  approachId: string
+) {
+  try {
+    const explanation = await ExplanationService.explainProgression(
+      currentSet,
+      suggestionRationale,
+      approachId
+    )
+
+    return { success: true, explanation }
+  } catch (error) {
+    console.error('Server action - Progression explanation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to explain progression'
+    }
+  }
+}
+
+/**
+ * Server action to validate exercise reordering
+ * Uses ReorderValidator agent with GPT-5-mini
+ * This runs on the server and has access to OPENAI_API_KEY
+ */
+export async function validateReorderAction(input: ReorderValidationInput) {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const validator = new ReorderValidator(supabase)
+
+    const result = await validator.validateReorder(input)
+
+    return { success: true, validation: result }
+  } catch (error) {
+    console.error('Server action - Reorder validation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate reorder'
+    }
+  }
+}
+
+/**
+ * Server action to generate workout summary
+ * Uses WorkoutSummaryAgent with GPT-5-mini for immediate post-workout feedback
+ * This runs on the server and has access to OPENAI_API_KEY
+ */
+export async function generateWorkoutSummaryAction(input: WorkoutSummaryInput) {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const summaryAgent = new WorkoutSummaryAgent(supabase)
+
+    const result = await summaryAgent.summarizeWorkout(input)
+
+    return { success: true, summary: result }
+  } catch (error) {
+    console.error('Server action - Workout summary generation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate workout summary'
     }
   }
 }

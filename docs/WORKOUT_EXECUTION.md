@@ -20,7 +20,7 @@ User → Dashboard → Workout Page → Execution Store → AI Agents → Databa
 2. **Crash Recovery**: Essential state persisted to localStorage for interruption recovery
 3. **Mobile-First**: Optimized for gym use with large touch targets (44px+), high contrast
 4. **Real-time Feedback**: Immediate visual confirmation and progression guidance
-5. **Zero Mock Data**: All suggestions are real AI calls using gpt-4o
+5. **Zero Mock Data**: All suggestions are real AI calls using GPT-5-mini
 
 ## Core Components
 
@@ -215,7 +215,7 @@ Post-workout summary with stats and next workout generation.
 }
 ```
 
-**Logic** (via gpt-4o):
+**Logic** (via GPT-5-mini):
 - Analyzes last set RIR and performance
 - Consults training approach parameters (Kuba Method)
 - Suggests progressive overload or weight adjustment

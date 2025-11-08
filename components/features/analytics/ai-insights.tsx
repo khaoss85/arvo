@@ -38,7 +38,7 @@ export function AIInsights({ insights, loading = false, className = '' }: AIInsi
           <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2 flex items-center gap-2">
             AI Training Insights
             <span className="text-xs font-normal text-blue-600 dark:text-blue-400 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/50 rounded">
-              Powered by gpt-4o
+              Powered by GPT-5-mini
             </span>
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">

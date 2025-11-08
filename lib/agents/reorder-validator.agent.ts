@@ -1,0 +1,79 @@
+import { BaseAgent } from './base.agent'
+
+export interface ReorderValidationInput {
+  originalOrder: string[]        // Exercise names in original order
+  newOrder: string[]             // Proposed new order
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower'
+  approachId: string
+}
+
+export interface ReorderValidationOutput {
+  isValid: boolean
+  recommendation: 'proceed' | 'caution' | 'not_recommended'
+  reasoning: string
+  warnings: string[]             // Issues to warn user about
+  suggestions: string[]          // Better alternatives if invalid
+}
+
+/**
+ * ReorderValidator Agent
+ *
+ * Validates exercise reordering decisions based on training principles
+ * Extends BaseAgent to use GPT-5-mini with medium reasoning effort
+ */
+export class ReorderValidator extends BaseAgent {
+  get systemPrompt(): string {
+    return `You are a strength training expert validating exercise order changes.
+
+Key principles:
+1. Compound movements should typically come before isolation exercises
+2. Fresh muscles perform better on heavy compound lifts
+3. Pre-exhaustion techniques are intentional and valid in some approaches
+4. Muscle fatigue affects subsequent exercise performance
+5. Some reorders are for practical gym reasons (equipment busy)
+
+Evaluate reordering based on training approach philosophy.
+Provide warnings for suboptimal orders but allow user choice.
+Be practical - gym logistics matter too.`
+  }
+
+  async validateReorder(input: ReorderValidationInput): Promise<ReorderValidationOutput> {
+    const approach = await this.knowledge.loadApproach(input.approachId)
+    const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
+
+    const prompt = `Validate this exercise reordering:
+
+Original Order: ${input.originalOrder.join(' → ')}
+New Order: ${input.newOrder.join(' → ')}
+Workout Type: ${input.workoutType}
+
+Training Approach Context:
+${context}
+
+Evaluate if the new order makes sense. Consider:
+- Compound vs isolation sequencing
+- Muscle fatigue patterns
+- Approach-specific principles
+- Safety implications
+- Practical gym considerations
+
+Determine:
+- isValid: Can the user proceed?
+- recommendation: "proceed" (good order), "caution" (works but suboptimal), or "not_recommended" (poor choice)
+- reasoning: 2-3 sentences explaining your assessment
+- warnings: Array of specific issues (e.g., "Heavy squats after leg extensions may compromise form")
+- suggestions: Array of better orderings if not optimal
+
+Required JSON structure:
+{
+  "isValid": boolean,
+  "recommendation": "proceed" | "caution" | "not_recommended",
+  "reasoning": "string",
+  "warnings": ["string array"],
+  "suggestions": ["string array"]
+}
+`
+
+    return await this.complete<ReorderValidationOutput>(prompt)
+  }
+}

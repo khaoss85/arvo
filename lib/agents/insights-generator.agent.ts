@@ -41,10 +41,6 @@ Format your response as JSON with these keys:
 - nextFocus: Single sentence about what to prioritize this week`
   }
 
-  get temperature(): number {
-    return 0.7 // Slightly creative but consistent
-  }
-
   /**
    * Generate personalized training insights
    */

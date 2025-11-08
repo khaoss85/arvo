@@ -40,10 +40,6 @@ Prioritize exercise order based on approach philosophy.
 Consider equipment preferences and provide alternatives.`
   }
 
-  get temperature() {
-    return 0.5
-  }
-
   async selectExercises(input: ExerciseSelectionInput): Promise<ExerciseSelectionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')

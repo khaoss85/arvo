@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { HelpCircle } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
+import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
 import { SetLogger } from './set-logger'
 import { Button } from '@/components/ui/button'
 
@@ -24,10 +26,65 @@ export function ExerciseCard({
   const { nextExercise, previousExercise, setAISuggestion } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
   const [showSuggestion, setShowSuggestion] = useState(false)
+  const [showExerciseExplanation, setShowExerciseExplanation] = useState(false)
+  const [exerciseExplanation, setExerciseExplanation] = useState('')
+  const [loadingExerciseExplanation, setLoadingExerciseExplanation] = useState(false)
+  const [showProgressionExplanation, setShowProgressionExplanation] = useState(false)
+  const [progressionExplanation, setProgressionExplanation] = useState('')
+  const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
 
   const currentSetNumber = exercise.completedSets.length + 1
   const isLastSet = currentSetNumber > exercise.targetSets
   const lastCompletedSet = exercise.completedSets[exercise.completedSets.length - 1]
+
+  // Load exercise selection explanation
+  const loadExerciseExplanation = async () => {
+    if (exerciseExplanation) {
+      setShowExerciseExplanation(!showExerciseExplanation)
+      return
+    }
+
+    setLoadingExerciseExplanation(true)
+    const result = await explainExerciseSelectionAction(
+      exercise.exerciseName,
+      [], // Weak points would come from user profile
+      'Selected by AI based on training approach',
+      approachId
+    )
+
+    if (result.success && result.explanation) {
+      setExerciseExplanation(result.explanation)
+      setShowExerciseExplanation(true)
+    }
+    setLoadingExerciseExplanation(false)
+  }
+
+  // Load progression explanation
+  const loadProgressionExplanation = async () => {
+    if (!lastCompletedSet || !exercise.currentAISuggestion) return
+
+    if (progressionExplanation) {
+      setShowProgressionExplanation(!showProgressionExplanation)
+      return
+    }
+
+    setLoadingProgressionExplanation(true)
+    const result = await explainProgressionAction(
+      {
+        weight: lastCompletedSet.weight,
+        reps: lastCompletedSet.reps,
+        rir: lastCompletedSet.rir
+      },
+      exercise.currentAISuggestion.rationale,
+      approachId
+    )
+
+    if (result.success && result.explanation) {
+      setProgressionExplanation(result.explanation)
+      setShowProgressionExplanation(true)
+    }
+    setLoadingProgressionExplanation(false)
+  }
 
   // Request AI suggestion after completing a set
   useEffect(() => {
@@ -72,11 +129,32 @@ export function ExerciseCard({
       {/* Exercise Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-2xl font-bold text-white">{exercise.exerciseName}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-white">{exercise.exerciseName}</h2>
+            <button
+              onClick={loadExerciseExplanation}
+              disabled={loadingExerciseExplanation}
+              className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              title="Why this exercise?"
+            >
+              {loadingExerciseExplanation ? (
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-400" />
+              )}
+            </button>
+          </div>
           <span className="text-sm text-gray-400">
             Exercise {exerciseIndex + 1} of {totalExercises}
           </span>
         </div>
+
+        {/* Exercise Explanation */}
+        {showExerciseExplanation && exerciseExplanation && (
+          <div className="mb-3 bg-blue-900/20 border border-blue-800/50 rounded-lg p-3">
+            <p className="text-sm text-blue-200">{exerciseExplanation}</p>
+          </div>
+        )}
 
         <div className="flex items-center gap-4 text-sm text-gray-400">
           <span>{exercise.targetSets} sets</span>
@@ -110,11 +188,32 @@ export function ExerciseCard({
       {/* AI Suggestion */}
       {showSuggestion && exercise.currentAISuggestion && (
         <div className="mb-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-blue-300 mb-2">AI Suggestion for Set {currentSetNumber}</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-blue-300">AI Suggestion for Set {currentSetNumber}</h3>
+            <button
+              onClick={loadProgressionExplanation}
+              disabled={loadingProgressionExplanation}
+              className="p-1 hover:bg-blue-800/50 rounded transition-colors disabled:opacity-50"
+              title="Why this progression?"
+            >
+              {loadingProgressionExplanation ? (
+                <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <HelpCircle className="w-3.5 h-3.5 text-blue-400 hover:text-blue-300" />
+              )}
+            </button>
+          </div>
           <div className="text-white font-medium mb-2">
             {exercise.currentAISuggestion.suggestion.weight}kg × {exercise.currentAISuggestion.suggestion.reps} @ RIR {exercise.currentAISuggestion.suggestion.rirTarget}
           </div>
-          <p className="text-sm text-blue-200">{exercise.currentAISuggestion.rationale}</p>
+          <p className="text-sm text-blue-200 mb-2">{exercise.currentAISuggestion.rationale}</p>
+
+          {/* Progression Explanation */}
+          {showProgressionExplanation && progressionExplanation && (
+            <div className="mt-3 pt-3 border-t border-blue-800/50">
+              <p className="text-xs text-blue-300 italic">{progressionExplanation}</p>
+            </div>
+          )}
         </div>
       )}
 

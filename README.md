@@ -6,7 +6,7 @@ A Next.js 14 application for AI-powered parametric training with real-time worko
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **AI**: OpenAI (gpt-4o for progression and workout generation)
+- **AI**: OpenAI (GPT-5-mini for progression and workout generation)
 - **Styling**: Tailwind CSS (mobile-first, dark theme)
 - **Backend**: Supabase (Auth, Database, RLS)
 - **State Management**: Zustand (with localStorage persistence)
@@ -31,7 +31,7 @@ A Next.js 14 application for AI-powered parametric training with real-time worko
 
 ### AI Orchestration Layer
 - **Knowledge Engine**: Parametric training approach system
-- **Progression Calculator Agent**: Real-time set-by-set suggestions using gpt-4o
+- **Progression Calculator Agent**: Real-time set-by-set suggestions using GPT-5-mini
 - **Exercise Selector Agent**: Smart exercise substitution based on equipment and patterns
 - **Workout Generator Agent**: Creates progressive workouts based on performance history
 
@@ -160,7 +160,7 @@ arvo/
 │           └── exercise-substitution.tsx # Exercise replacement modal
 ├── lib/
 │   ├── ai/                          # AI client configuration
-│   │   └── client.ts                # OpenAI singleton (gpt-4o)
+│   │   └── client.ts                # OpenAI singleton (GPT-5-mini)
 │   ├── agents/                      # AI agents
 │   │   ├── base.agent.ts            # Abstract base agent class
 │   │   ├── progression-calculator.agent.ts # Set progression AI
@@ -317,7 +317,7 @@ Avoid hardcoded workout logic - let AI interpret training approaches.
 
 ### AI Agents System
 
-All AI decisions flow through specialized agents using gpt-4o:
+All AI decisions flow through specialized agents using GPT-5-mini:
 
 ```typescript
 // Progression Calculator Agent

@@ -21,10 +21,6 @@ ALWAYS provide:
 Output valid JSON with the exact structure requested.`
   }
 
-  get temperature() {
-    return 0.3
-  }
-
   async suggestNextSet(input: ProgressionInput): Promise<ProgressionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'progression')

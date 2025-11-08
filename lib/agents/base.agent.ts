@@ -13,27 +13,29 @@ export abstract class BaseAgent {
   }
 
   abstract get systemPrompt(): string
-  abstract get temperature(): number
 
   protected async complete<T>(
-    userPrompt: string,
-    responseFormat?: any
+    userPrompt: string
   ): Promise<T> {
     try {
-      const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: this.systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: this.temperature,
-        response_format: responseFormat || { type: 'json_object' }
+      // Combine system and user prompts for Responses API
+      // GPT-5 relies on instruction following for JSON formatting (no response_format parameter)
+      const combinedInput = `${this.systemPrompt}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
+
+      const response = await this.openai.responses.create({
+        model: 'gpt-5-mini',
+        input: combinedInput,
+        reasoning: { effort: 'medium' },
+        text: { verbosity: 'medium' }
       })
 
-      const content = completion.choices[0]?.message?.content
+      const content = response.output_text
       if (!content) throw new Error('No response from AI')
 
-      return JSON.parse(content) as T
+      // Clean up any potential markdown code blocks or extra whitespace
+      const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '')
+
+      return JSON.parse(cleanedContent) as T
     } catch (error) {
       console.error('AI completion error:', error)
       throw error
