@@ -11,6 +11,7 @@ export interface ExerciseSelectionInput {
   recentExercises: string[]
   approachId: string
   userId?: string | null // For exercise tracking consistency
+  skipSaving?: boolean // Skip saving exercises to database (for onboarding performance)
   // User demographics for personalized exercise selection
   experienceYears?: number | null
   userAge?: number | null
@@ -308,7 +309,8 @@ Required JSON structure:
     const result = await this.complete<ExerciseSelectionOutput>(prompt)
 
     // Save generated exercises to database for consistency tracking
-    if (input.userId) {
+    // Skip during onboarding for performance (skipSaving flag)
+    if (input.userId && !input.skipSaving) {
       await this.saveGeneratedExercises(result.exercises, input.userId)
     }
 

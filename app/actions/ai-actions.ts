@@ -33,31 +33,7 @@ export async function completeOnboardingAction(
   try {
     const supabase = await getSupabaseServerClient()
 
-    // Determine split plan ID if split selection was made
-    let splitPlanId: string | null = null
-
-    // Generate split plan if user selected a split type
-    if (data.splitType && data.weeklyFrequency) {
-      const { generateSplitPlanAction } = await import('./split-actions')
-
-      const splitResult = await generateSplitPlanAction({
-        userId,
-        approachId: data.approachId,
-        splitType: data.splitType,
-        weeklyFrequency: data.weeklyFrequency,
-        weakPoints: data.weakPoints || [],
-        equipmentAvailable: data.availableEquipment || [],
-        experienceYears: data.confirmedExperience || null,
-        userAge: data.age || null,
-        userGender: data.gender || null
-      })
-
-      if (splitResult.success && splitResult.data) {
-        splitPlanId = splitResult.data.splitPlan.id
-      }
-    }
-
-    // Upsert user profile using server client (bypasses RLS with server role)
+    // Step 1: Create user profile first (workout generation needs it)
     const { error: profileError } = await supabase
       .from('user_profiles')
       .upsert({
@@ -74,16 +50,46 @@ export async function completeOnboardingAction(
         height: data.height || null,
         experience_years: data.confirmedExperience || 0,
         preferred_split: data.splitType || null,
-        active_split_plan_id: splitPlanId,
-        current_cycle_day: splitPlanId ? 1 : null
+        active_split_plan_id: null, // Will be updated after split plan generation
+        current_cycle_day: null
       })
 
     if (profileError) {
       throw new Error(`Failed to create user profile: ${profileError.message}`)
     }
 
-    // Generate first AI-powered workout using server client
-    const workout = await generateWorkoutWithServerClient(userId, supabase, data.approachId!)
+    // Step 2: Parallelize split plan generation and workout generation
+    const splitPlanPromise = (data.splitType && data.weeklyFrequency)
+      ? (async () => {
+          const { generateSplitPlanAction } = await import('./split-actions')
+          return generateSplitPlanAction({
+            userId,
+            approachId: data.approachId,
+            splitType: data.splitType!,
+            weeklyFrequency: data.weeklyFrequency!,
+            weakPoints: data.weakPoints || [],
+            equipmentAvailable: data.availableEquipment || [],
+            experienceYears: data.confirmedExperience || null,
+            userAge: data.age || null,
+            userGender: data.gender || null
+          })
+        })()
+      : Promise.resolve(null)
+
+    const workoutPromise = generateWorkoutWithServerClient(userId, supabase, data.approachId!, true)
+
+    const [splitResult, workout] = await Promise.all([splitPlanPromise, workoutPromise])
+
+    // Step 3: Update profile with split plan ID if available
+    if (splitResult?.success && splitResult.data) {
+      await supabase
+        .from('user_profiles')
+        .update({
+          active_split_plan_id: splitResult.data.splitPlan.id,
+          current_cycle_day: 1
+        })
+        .eq('user_id', userId)
+    }
 
     return { success: true, workoutId: workout.id }
   } catch (error) {
@@ -102,7 +108,8 @@ export async function completeOnboardingAction(
 async function generateWorkoutWithServerClient(
   userId: string,
   supabase: any,
-  approachId: string
+  approachId: string,
+  skipExerciseSaving?: boolean // Skip saving exercises to DB for onboarding performance
 ): Promise<Workout> {
   // Pass server client to ExerciseSelector for database access
   const exerciseSelector = new ExerciseSelector(supabase)
@@ -152,6 +159,8 @@ async function generateWorkoutWithServerClient(
     experienceYears: profile.experience_years,
     userAge: profile.age,
     userGender: profile.gender,
+    userId: userId,
+    skipSaving: skipExerciseSaving, // Skip DB saves during onboarding for performance
     // Mesocycle context for periodization-aware exercise selection
     mesocycleWeek: profile.current_mesocycle_week,
     mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null

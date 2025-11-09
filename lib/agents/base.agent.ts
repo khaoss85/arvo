@@ -5,14 +5,17 @@ export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
   protected supabase: any
+  protected reasoningEffort: 'low' | 'medium' | 'high' = 'low'
 
-  constructor(supabaseClient?: any) {
+  constructor(supabaseClient?: any, reasoningEffort?: 'low' | 'medium' | 'high') {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
     this.openai = getOpenAIClient()
     // Pass Supabase client to KnowledgeEngine for server-side usage
     this.knowledge = new KnowledgeEngine(supabaseClient)
     // Store supabase client for direct database access in agents
     this.supabase = supabaseClient
+    // Configure reasoning effort (default: low for better performance)
+    if (reasoningEffort) this.reasoningEffort = reasoningEffort
   }
 
   abstract get systemPrompt(): string
@@ -28,7 +31,7 @@ export abstract class BaseAgent {
       const response = await this.openai.responses.create({
         model: 'gpt-5-mini',
         input: combinedInput,
-        reasoning: { effort: 'medium' },
+        reasoning: { effort: this.reasoningEffort },
         text: { verbosity: 'medium' }
       })
 
