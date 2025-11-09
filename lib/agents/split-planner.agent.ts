@@ -14,6 +14,9 @@ export interface SplitPlannerInput {
   userGender?: 'male' | 'female' | 'other' | null
   // Schedule constraints
   preferredRestDay?: number // 1-7, where 1 = Monday
+  // Periodization context
+  mesocycleWeek?: number | null // Current week of mesocycle (1-12)
+  mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
 }
 
 export interface SessionDefinition {
@@ -108,6 +111,34 @@ ${approach.splitVariations.rotationLogic}
 ` : ''}
 ` : ''}
 
+${approach.periodization ? `
+=== PERIODIZATION MODEL ===
+Mesocycle Structure:
+- Total Length: ${approach.periodization.mesocycleLength || '6 weeks'}
+- Phases: ${approach.periodization.phases?.map((p: any) => p.name).join(', ') || 'Accumulation, Intensification, Deload'}
+
+${approach.periodization.phases?.map((phase: any) => `
+Phase: ${phase.name} (Weeks ${phase.weeks})
+- Volume Multiplier: ${phase.volumeMultiplier || 1.0}x
+- Intensity Multiplier: ${phase.intensityMultiplier || 1.0}x
+- Focus: ${phase.focus || 'Not specified'}
+`).join('') || ''}
+
+Deload Strategy:
+${approach.periodization.deloadPhase ? `
+- Frequency: ${approach.periodization.deloadPhase.frequency || 'Every 6 weeks'}
+- Volume Reduction: ${approach.periodization.deloadPhase.volumeReduction || '50%'}
+- Maintain Intensity: ${approach.periodization.deloadPhase.maintainIntensity ? 'Yes' : 'No'}
+` : 'Not specified'}
+
+${input.mesocycleWeek && input.mesocyclePhase ? `
+CURRENT MESOCYCLE CONTEXT:
+- Week: ${input.mesocycleWeek}
+- Phase: ${input.mesocyclePhase.toUpperCase()}
+- Adjust volume and intensity according to periodization model above
+` : ''}
+` : ''}
+
 === USER PROFILE ===
 Split Type: ${input.splitType}
 Weekly Training Frequency: ${input.weeklyFrequency} days per week
@@ -159,6 +190,24 @@ ${input.userAge && input.userAge > 50 ? `
 ${input.weakPoints.length > 0 ? `
 - WEAK POINTS (${input.weakPoints.join(', ')}): Increase frequency or volume for these areas
 - Consider adding weak point emphasis in both A and B variations
+` : ''}
+${input.mesocyclePhase === 'accumulation' ? `
+- ACCUMULATION PHASE: Focus on volume accumulation
+- Apply volume multiplier from periodization model (typically 100% or higher)
+- Intensity at ~85% of maximum
+- Prioritize compound movements and progressive overload
+` : ''}
+${input.mesocyclePhase === 'intensification' ? `
+- INTENSIFICATION PHASE: Shift focus to intensity and quality
+- Apply intensity multiplier (typically 100%), reduce volume slightly (90-95%)
+- This is when advanced techniques (drop sets, myoreps, rest-pause) may be introduced
+- Favor high stimulus-to-fatigue exercises (machines/cables)
+` : ''}
+${input.mesocyclePhase === 'deload' ? `
+- DELOAD PHASE: Prioritize recovery
+- Reduce volume by ${approach.periodization?.deloadPhase?.volumeReduction || '50%'}
+- Maintain exercise selection but reduce sets significantly
+- ${approach.periodization?.deloadPhase?.maintainIntensity ? 'Keep intensity/weight high' : 'Reduce both volume and intensity'}
 ` : ''}
 
 Output the split plan as JSON with this EXACT structure:

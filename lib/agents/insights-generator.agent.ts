@@ -138,6 +138,48 @@ VOLUME TREND: ${context.volumeTrend}
 WORKOUT FREQUENCY: ${context.workoutFrequency}
 CONSISTENCY SCORE: ${context.consistency}%
 
+${approach.volumeLandmarks ? `
+VOLUME LANDMARKS (from training approach):
+${Object.entries(approach.volumeLandmarks.muscleGroups || {}).map(([muscle, landmarks]: [string, any]) => `
+${muscle}:
+- MEV (Minimum Effective Volume): ${landmarks.mev} sets/week
+- MAV (Maximum Adaptive Volume): ${landmarks.mav} sets/week
+- MRV (Maximum Recoverable Volume): ${landmarks.mrv} sets/week
+`).join('')}
+
+IMPORTANT: Compare user's actual volume (from VOLUME TREND data) to these landmarks:
+- Below MEV: User needs to add volume for growth
+- Between MEV-MAV: Optimal range for hypertrophy
+- At/above MAV: Near maximum stimulus - can push but watch for recovery
+- Above MRV: Over-reaching territory - recommend volume reduction
+
+Provide specific feedback like: "You're at ~12 sets/week for chest, which is 67% of MAV (18 sets). Consider adding 2-4 sets for optimal growth."
+` : ''}
+
+${approach.frequencyGuidelines ? `
+FREQUENCY GUIDELINES (from approach):
+- Optimal Range: ${approach.frequencyGuidelines.optimalRange?.join('-')} times per week per muscle
+${approach.frequencyGuidelines.muscleSpecific ? `
+Muscle-Specific Guidelines:
+${Object.entries(approach.frequencyGuidelines.muscleSpecific).map(([muscle, freq]) => `- ${muscle}: ${freq}`).join('\n')}
+` : ''}
+
+Compare user's actual training frequency to these guidelines and provide feedback if they're under/over-training specific muscles.
+` : ''}
+
+${approach.periodization && profile.mesocycle_phase ? `
+PERIODIZATION CONTEXT:
+- Current Phase: ${profile.mesocycle_phase?.toUpperCase()}
+- Week: ${profile.current_mesocycle_week || '?'}
+${profile.mesocycle_phase === 'deload' ? `
+⚠️ USER IS IN DELOAD PHASE - Volume should be reduced by ${approach.periodization.deloadPhase?.volumeReduction || '50%'}
+` : ''}
+${approach.periodization.deloadPhase?.frequency ? `
+Deload Frequency: ${approach.periodization.deloadPhase.frequency}
+- If user hasn't deloaded recently, recommend scheduling one soon
+` : ''}
+` : ''}
+
 MENTAL READINESS ANALYTICS:
 ${context.mentalReadiness.hasData ? `
 - Average Mental State: ${context.mentalReadiness.average.toFixed(1)}/5 (${context.mentalReadiness.label})

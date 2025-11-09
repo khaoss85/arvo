@@ -17,6 +17,9 @@ export interface ExerciseSelectionInput {
   sessionFocus?: string[] // Muscle groups for this session
   targetVolume?: Record<string, number> // Target sets per muscle
   sessionPrinciples?: string[] // Principles to emphasize
+  // Periodization context
+  mesocycleWeek?: number | null
+  mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
 }
 
 export interface WarmupSet {
@@ -41,6 +44,7 @@ export interface SelectedExercise {
   sets: number
   repRange: [number, number]
   restSeconds: number
+  tempo?: string // Tempo prescription from approach (e.g., "3-1-1-1")
   rationaleForSelection: string
   alternatives: string[]
   // Metadata for exercise generation tracking
@@ -131,6 +135,39 @@ ${approach.stimulusToFatigue.applicationGuidelines ? `\nApplication: ${approach.
 `
       : ''
 
+    // Build periodization context
+    const periodizationContext = approach.periodization && input.mesocyclePhase
+      ? `
+=== PERIODIZATION CONTEXT ===
+Current Mesocycle: Week ${input.mesocycleWeek || '?'} - ${input.mesocyclePhase.toUpperCase()} Phase
+
+${input.mesocyclePhase === 'accumulation' ? `
+Phase Focus: Volume accumulation and progressive overload
+Exercise Selection Strategy:
+- Balance of compound and isolation exercises
+- Standard exercise variations
+- Focus on technical mastery and building work capacity
+` : ''}
+${input.mesocyclePhase === 'intensification' ? `
+Phase Focus: Intensity and quality over volume
+Exercise Selection Strategy:
+- PRIORITIZE high stimulus-to-fatigue exercises (machines, cables)
+- Favor isolation over heavy compounds
+- Select exercises that allow pushing to/beyond failure safely
+- This is when advanced techniques (drop sets, myoreps, rest-pause) are most appropriate
+Advanced Techniques Available (from approach):
+${approach.advancedTechniques?.map((t: any) => `- ${t.name}: ${t.when}`).join('\n') || 'None specified'}
+` : ''}
+${input.mesocyclePhase === 'deload' ? `
+Phase Focus: Active recovery and maintenance
+Exercise Selection Strategy:
+- Maintain same exercises as previous weeks
+- Focus on movement quality over load
+- User will perform significantly reduced volume
+` : ''}
+`
+      : ''
+
     // Build session context if provided (for split-based workouts)
     const sessionContext = input.sessionFocus || input.targetVolume || input.sessionPrinciples
       ? `
@@ -150,6 +187,7 @@ ${demographicContext}
 ${exercisePrinciplesContext}
 ${romEmphasisContext}
 ${stimulusToFatigueContext}
+${periodizationContext}
 ${sessionContext}
 
 User weak points: ${input.weakPoints.join(', ') || 'None specified'}
@@ -198,6 +236,7 @@ Required JSON structure:
       "sets": number,
       "repRange": [number, number],
       "restSeconds": number,
+      "tempo": "${approach.variables?.tempo || 'not specified'}", // Tempo from approach (e.g., "3-1-1-1")
       "rationaleForSelection": "string",
       "alternatives": ["string"],
       "primaryMuscles": ["string"],

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { HelpCircle, ChevronDown, Target } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
@@ -44,6 +44,12 @@ export function ExerciseCard({
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
   const [showTechnicalCues, setShowTechnicalCues] = useState(false)
 
+  // Rest timer state
+  const [isResting, setIsResting] = useState(false)
+  const [restTimeRemaining, setRestTimeRemaining] = useState(0)
+  const restTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [lastCompletedSetCount, setLastCompletedSetCount] = useState(0)
+
   // User demographics for personalized progression
   const [userExperienceYears, setUserExperienceYears] = useState<number | null>(null)
   const [userAge, setUserAge] = useState<number | null>(null)
@@ -74,6 +80,45 @@ export function ExerciseCard({
 
     fetchUserProfile()
   }, [userId])
+
+  // Rest timer management - start when a new set is completed
+  useEffect(() => {
+    // Check if a new set was just completed
+    if (exercise.completedSets.length > lastCompletedSetCount && !isLastSet) {
+      // A set was just logged - start rest timer
+      const restSeconds = exercise.restSeconds || 90 // Default to 90s if not specified
+      setRestTimeRemaining(restSeconds)
+      setIsResting(true)
+      setLastCompletedSetCount(exercise.completedSets.length)
+    }
+  }, [exercise.completedSets.length, lastCompletedSetCount, isLastSet, exercise.restSeconds])
+
+  // Countdown timer
+  useEffect(() => {
+    if (isResting && restTimeRemaining > 0) {
+      restTimerRef.current = setTimeout(() => {
+        setRestTimeRemaining(prev => prev - 1)
+      }, 1000)
+    } else if (restTimeRemaining === 0 && isResting) {
+      // Timer completed
+      setIsResting(false)
+    }
+
+    return () => {
+      if (restTimerRef.current) {
+        clearTimeout(restTimerRef.current)
+      }
+    }
+  }, [isResting, restTimeRemaining])
+
+  // Skip rest function
+  const skipRest = () => {
+    setIsResting(false)
+    setRestTimeRemaining(0)
+    if (restTimerRef.current) {
+      clearTimeout(restTimerRef.current)
+    }
+  }
 
   // Load exercise selection explanation
   const loadExerciseExplanation = async () => {
@@ -311,6 +356,49 @@ export function ExerciseCard({
         </div>
       )}
 
+      {/* Rest Timer */}
+      {isResting && !isLastSet && (
+        <div className="mb-6 bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-500/50 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
+              <h3 className="text-lg font-medium text-amber-200">Rest Period</h3>
+            </div>
+            <button
+              onClick={skipRest}
+              className="flex items-center gap-1 px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded text-sm text-amber-300 transition-colors"
+            >
+              <SkipForward className="w-3.5 h-3.5" />
+              Skip
+            </button>
+          </div>
+
+          {/* Countdown Display */}
+          <div className="flex flex-col items-center justify-center py-4">
+            <div className="text-6xl font-bold text-white font-mono mb-2">
+              {Math.floor(restTimeRemaining / 60)}:{String(restTimeRemaining % 60).padStart(2, '0')}
+            </div>
+            <div className="text-sm text-amber-300">
+              {exercise.restSeconds ? `${exercise.restSeconds}s rest prescribed` : 'Default rest period'}
+            </div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-1000 ease-linear"
+              style={{
+                width: `${exercise.restSeconds ? ((exercise.restSeconds - restTimeRemaining) / exercise.restSeconds) * 100 : 0}%`
+              }}
+            />
+          </div>
+
+          <p className="text-xs text-gray-400 mt-3 text-center italic">
+            Rest allows ATP recovery for optimal performance on your next set
+          </p>
+        </div>
+      )}
+
       {/* Current Set Logger or Next Exercise */}
       {isLastSet ? (
         <div className="text-center py-8">
@@ -330,17 +418,21 @@ export function ExerciseCard({
         </div>
       ) : (
         <>
-          <SetLogger
-            exercise={exercise}
-            setNumber={currentSetNumber}
-            suggestion={exercise.currentAISuggestion?.suggestion}
-          />
+          {!isResting && (
+            <>
+              <SetLogger
+                exercise={exercise}
+                setNumber={currentSetNumber}
+                suggestion={exercise.currentAISuggestion?.suggestion}
+              />
 
-          {isSuggestionPending && (
-            <div className="mt-4 text-center text-sm text-gray-400">
-              <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-              Getting AI suggestion...
-            </div>
+              {isSuggestionPending && (
+                <div className="mt-4 text-center text-sm text-gray-400">
+                  <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                  Getting AI suggestion...
+                </div>
+              )}
+            </>
           )}
         </>
       )}

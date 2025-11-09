@@ -198,6 +198,42 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         </div>
       </div>
 
+      {/* Tempo Display - Only show for working sets */}
+      {!isWarmup && exercise.tempo && (
+        <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-2 border-blue-500/40 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-blue-300">⏱️ Tempo Requirement</label>
+            <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">From your approach</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 bg-gray-900/50 rounded-lg p-3 text-center">
+              <div className="text-3xl font-bold text-white font-mono tracking-wider">{exercise.tempo}</div>
+              <div className="text-xs text-gray-400 mt-1 grid grid-cols-4 gap-1 max-w-[240px] mx-auto mt-2">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-blue-300">{exercise.tempo.split('-')[0]}s</span>
+                  <span className="text-[10px]">Down</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-purple-300">{exercise.tempo.split('-')[1]}s</span>
+                  <span className="text-[10px]">Pause</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-green-300">{exercise.tempo.split('-')[2]}s</span>
+                  <span className="text-[10px]">Up</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-amber-300">{exercise.tempo.split('-')[3]}s</span>
+                  <span className="text-[10px]">Squeeze</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-2 text-center italic">
+            Maintain this tempo for optimal time under tension
+          </p>
+        </div>
+      )}
+
       {/* Optional Mental State Selector */}
       <div>
         <button

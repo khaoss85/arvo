@@ -18,6 +18,9 @@ export interface WorkoutSummaryInput {
   experienceYears?: number | null
   // Mental readiness tracking
   mentalReadinessOverall?: number  // 1-5 scale (1=Drained, 5=Locked In)
+  // Periodization context
+  mesocycleWeek?: number | null
+  mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
 }
 
 export interface WorkoutSummaryOutput {
@@ -98,6 +101,31 @@ ${input.exercises.map(e =>
 ${demographicContext}
 Training Approach Context:
 ${context}
+
+${input.mesocyclePhase && approach.periodization ? `
+=== PERIODIZATION CONTEXT ===
+Current Mesocycle: Week ${input.mesocycleWeek || '?'} - ${input.mesocyclePhase.toUpperCase()} Phase
+
+${input.mesocyclePhase === 'accumulation' ? `
+Phase Focus: Volume accumulation - building work capacity
+${input.mesocycleWeek && input.mesocycleWeek >= 3 ? '- Consider transitioning to intensification phase soon' : ''}
+` : ''}
+${input.mesocyclePhase === 'intensification' ? `
+Phase Focus: Intensity and quality
+${input.mesocycleWeek && input.mesocycleWeek >= (approach.periodization.mesocycleLength || 6) - 1 ? `
+⚠️ APPROACHING DELOAD: Week ${input.mesocycleWeek}/${approach.periodization.mesocycleLength || 6}
+IMPORTANT: Recommend deload next week. User has been training hard and needs recovery.
+- Deload frequency: ${approach.periodization.deloadPhase?.frequency || 'Every 6 weeks'}
+- Volume reduction: ${approach.periodization.deloadPhase?.volumeReduction || '50%'}
+` : ''}
+` : ''}
+${input.mesocyclePhase === 'deload' ? `
+Phase Focus: Active recovery and supercompensation
+- This is INTENTIONALLY lighter - celebrate completion, not intensity
+- Focus feedback on movement quality and recovery benefits
+- Prepare user mentally for next mesocycle starting soon
+` : ''}
+` : ''}
 
 When providing feedback:
 ${input.userAge ? `- Consider that the user is ${input.userAge} years old when recommending recovery time (older athletes may need more recovery)` : ''}

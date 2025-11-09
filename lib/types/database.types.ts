@@ -219,8 +219,11 @@ export type Database = {
           approach_id: string | null
           created_at: string | null
           current_cycle_day: number | null
+          current_mesocycle_week: number | null
           equipment_preferences: Json | null
           experience_years: number | null
+          mesocycle_phase: string | null
+          mesocycle_start_date: string | null
           preferred_split: string | null
           strength_baseline: Json | null
           updated_at: string | null
@@ -232,8 +235,11 @@ export type Database = {
           approach_id?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
+          current_mesocycle_week?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          mesocycle_phase?: string | null
+          mesocycle_start_date?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
@@ -245,8 +251,11 @@ export type Database = {
           approach_id?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
+          current_mesocycle_week?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          mesocycle_phase?: string | null
+          mesocycle_start_date?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
@@ -397,7 +406,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_mesocycle_week: {
+        Args: { check_date?: string; start_date: string }
+        Returns: number
+      }
     }
     Enums: {
       split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"

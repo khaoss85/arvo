@@ -45,6 +45,41 @@ ${input.userAge ? `- Age: ${input.userAge} years old` : ''}
       ? `- Mental State during last set: ${mentalReadinessLabels[input.lastSet.mentalReadiness as keyof typeof mentalReadinessLabels]} (${input.lastSet.mentalReadiness}/5)`
       : ''
 
+    const periodizationContext = input.mesocyclePhase
+      ? `
+=== CURRENT MESOCYCLE CONTEXT ===
+Week ${input.mesocycleWeek || '?'} - ${input.mesocyclePhase.toUpperCase()} Phase
+
+${input.mesocyclePhase === 'accumulation' ? `
+Phase Focus: Volume accumulation and progressive overload
+Progression Strategy:
+- Standard progressive overload principles
+- Focus on adding reps or weight when RIR allows
+- Maintain proper form and tempo
+` : ''}
+${input.mesocyclePhase === 'intensification' ? `
+Phase Focus: Intensity and quality - THIS IS WHERE ADVANCED TECHNIQUES SHINE
+Progression Strategy:
+- Push closer to/beyond failure
+- Consider advanced techniques for final sets
+- Quality reps over quantity
+${approach.advancedTechniques ? `
+Available Advanced Techniques (from approach):
+${approach.advancedTechniques.map((t: any) => `- ${t.name}: ${t.when} | Protocol: ${t.protocol}`).join('\n')}
+
+IMPORTANT: If this is the final set or user is plateauing, suggest one of these techniques.
+` : ''}
+` : ''}
+${input.mesocyclePhase === 'deload' ? `
+Phase Focus: Active recovery
+Progression Strategy:
+- MAINTAIN weight if possible, but reduce volume significantly
+- Focus on movement quality and technique refinement
+- Do NOT push to failure
+` : ''}
+`
+      : ''
+
     const prompt = `
 Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}
 ${mentalReadinessContext}
@@ -53,6 +88,19 @@ Exercise type: ${input.exerciseType}
 ${demographicContext}
 Training approach context:
 ${context}
+${periodizationContext}
+
+${approach.variables?.tempo ? `
+TEMPO REQUIREMENT: ${approach.variables.tempo}
+IMPORTANT: Remind the user to maintain this tempo in your response.
+` : ''}
+${approach.variables?.restPeriods ? `
+REST PERIOD GUIDANCE:
+- Compounds: ${approach.variables.restPeriods.compounds || 'Not specified'}
+- Isolation: ${approach.variables.restPeriods.isolation || 'Not specified'}
+${approach.variables.restPeriods.autoRegulation ? `- Autoregulation: ${approach.variables.restPeriods.autoRegulation}` : ''}
+IMPORTANT: Include rest period reminder in your response.
+` : ''}
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of training experience when suggesting progression - beginners may need smaller jumps, advanced lifters can handle larger changes.` : ''}
 ${input.userAge && input.userAge > 40 ? `Consider that the user is ${input.userAge} years old - older athletes may benefit from slightly more conservative progression to manage fatigue.` : ''}
@@ -75,7 +123,14 @@ Required JSON structure:
       "focus": "volume" | "intensity" | "pump",
       "explanation": "string"
     }
-  ]
+  ],
+  "advancedTechniqueSuggestion": {  // OPTIONAL - only in intensification phase on final sets or plateau
+    "technique": "string (e.g., myoreps, drop set, rest-pause)",
+    "when": "string (e.g., on last set, if plateau)",
+    "protocol": "string (brief how-to execute)"
+  },
+  "tempoReminder": "${approach.variables?.tempo ? `Maintain ${approach.variables.tempo} tempo` : null}",  // Include if tempo is specified
+  "restReminder": "string reminder about rest period"  // Include if rest periods specified
 }
     `
 

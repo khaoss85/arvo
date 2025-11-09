@@ -39,6 +39,8 @@ export interface ExerciseExecution {
   technicalCues?: string[] // Brief technical cues for proper form
   warmupSets?: WarmupSet[] // Warmup progression (only for compound movements)
   setGuidance?: SetGuidance[] // Per-set technical and mental focus for working sets
+  tempo?: string // Tempo prescription from approach (e.g., "3-1-1-1" for Kuba Method)
+  restSeconds?: number // Rest period from approach (seconds between sets)
 }
 
 interface WorkoutExecutionState {
