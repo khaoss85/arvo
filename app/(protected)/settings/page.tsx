@@ -5,6 +5,8 @@ import { UserProfileService } from "@/lib/services/user-profile.service"
 import { SplitSelector } from "@/components/features/settings/split-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
 import { EquipmentPreferencesEditor } from "@/components/features/settings/equipment-preferences-editor"
+import { ResetDataSection } from "@/components/features/settings/reset-data-section"
+import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { Card } from "@/components/ui/card"
 
 export default async function SettingsPage() {
@@ -139,6 +141,24 @@ export default async function SettingsPage() {
               </div>
             </div>
           </Card>
+
+          {/* Account Management Section */}
+          <div className="pt-8 border-t-2 border-gray-300 dark:border-gray-700">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Account Management</h2>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Reset your training data or permanently delete your account
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Reset Data Section */}
+              <ResetDataSection />
+
+              {/* Delete Account Section */}
+              <DeleteAccountSection userId={user.id} userEmail={user.email} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
