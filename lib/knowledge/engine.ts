@@ -50,18 +50,18 @@ export class KnowledgeEngine {
         return `
 Training approach: ${approach.name}
 Philosophy: ${approach.philosophy}
-Progression priority: ${approach.progression.priority}
-When to add weight: ${approach.progression.rules.whenToAddWeight}
-Set progression strategy: ${approach.progression.setProgression.strategy}
-Conditions: ${approach.progression.setProgression.conditions}
+Progression priority: ${approach.progression?.priority || 'reps_first'}
+When to add weight: ${approach.progression?.rules?.whenToAddWeight || 'When hitting upper rep range'}
+Set progression strategy: ${approach.progression?.setProgression?.strategy || 'maintain_weight_add_reps'}
+Conditions: ${approach.progression?.setProgression?.conditions || 'N/A'}
         `.trim()
 
       case 'exercise_selection':
         return `
 Approach: ${approach.name}
-Exercises per workout: ${approach.exerciseSelection.exercisesPerWorkout.min}-${approach.exerciseSelection.exercisesPerWorkout.max}
-Priority rules: ${approach.exerciseSelection.priorityRules.join(', ')}
-Distribution: ${approach.exerciseSelection.exercisesPerWorkout.distribution}
+Exercises per workout: ${approach.exerciseSelection?.exercisesPerWorkout?.min || 4}-${approach.exerciseSelection?.exercisesPerWorkout?.max || 6}
+Priority rules: ${approach.exerciseSelection?.priorityRules?.join(', ') || 'Compounds first'}
+Distribution: ${approach.exerciseSelection?.exercisesPerWorkout?.distribution || 'Balanced'}
         `.trim()
 
       case 'split_planning':
@@ -70,15 +70,15 @@ Training Approach: ${approach.name} by ${approach.creator}
 Philosophy: ${approach.philosophy}
 
 Core Training Variables:
-- Sets per exercise: ${approach.variables.setsPerExercise.working} working sets
-- Rep ranges: Compounds ${approach.variables.repRanges.compound.join('-')}, Isolation ${approach.variables.repRanges.isolation.join('-')}
-- RIR targets: Normal=${approach.variables.rirTarget.normal}, Intense=${approach.variables.rirTarget.intense}, Deload=${approach.variables.rirTarget.deload}
-- Training frequency: ${approach.variables.frequency.weeklyPattern}
+- Sets per exercise: ${approach.variables?.setsPerExercise?.working || '2'} working sets
+- Rep ranges: Compounds ${approach.variables?.repRanges?.compound?.join('-') || '6-10'}, Isolation ${approach.variables?.repRanges?.isolation?.join('-') || '10-15'}
+- RIR targets: Normal=${approach.variables?.rirTarget?.normal || 1}, Intense=${approach.variables?.rirTarget?.intense || 0}, Deload=${approach.variables?.rirTarget?.deload || 3}
+- Training frequency: ${approach.variables?.frequency?.weeklyPattern || '3-4 days per week'}
 
 Exercise Selection Philosophy:
-- Priority rules: ${approach.exerciseSelection.priorityRules.join(', ')}
-- Exercises per workout: ${approach.exerciseSelection.exercisesPerWorkout.min}-${approach.exerciseSelection.exercisesPerWorkout.max}
-- Distribution: ${approach.exerciseSelection.exercisesPerWorkout.distribution}
+- Priority rules: ${approach.exerciseSelection?.priorityRules?.join(', ') || 'Compounds first'}
+- Exercises per workout: ${approach.exerciseSelection?.exercisesPerWorkout?.min || 4}-${approach.exerciseSelection?.exercisesPerWorkout?.max || 6}
+- Distribution: ${approach.exerciseSelection?.exercisesPerWorkout?.distribution || 'Balanced'}
         `.trim()
 
       default:
