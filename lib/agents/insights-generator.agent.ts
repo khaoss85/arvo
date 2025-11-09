@@ -47,10 +47,11 @@ Format your response as JSON with these keys:
   async generateInsights(userId: string, days: number = 30): Promise<InsightsOutput> {
     try {
       // Gather analytics data
-      const [profile, prs, volumeData] = await Promise.all([
+      const [profile, prs, volumeData, mentalReadinessData] = await Promise.all([
         UserProfileService.getByUserId(userId),
         AnalyticsService.getPersonalRecords(userId),
-        AnalyticsService.getVolumeAnalytics(userId, days)
+        AnalyticsService.getVolumeAnalytics(userId, days),
+        this.getMentalReadinessAnalytics(userId, days)
       ])
 
       if (!profile) {
@@ -107,7 +108,8 @@ Format your response as JSON with these keys:
         consistency,
         workoutFrequency: volumeData.length > 0
           ? `${volumeData.reduce((sum, w) => sum + w.workoutCount, 0)} workouts in ${days} days`
-          : 'No workouts recorded'
+          : 'No workouts recorded',
+        mentalReadiness: mentalReadinessData
       }
 
       const prompt = `Analyze this training data and provide insights:
@@ -136,11 +138,21 @@ VOLUME TREND: ${context.volumeTrend}
 WORKOUT FREQUENCY: ${context.workoutFrequency}
 CONSISTENCY SCORE: ${context.consistency}%
 
+MENTAL READINESS ANALYTICS:
+${context.mentalReadiness.hasData ? `
+- Average Mental State: ${context.mentalReadiness.average.toFixed(1)}/5 (${context.mentalReadiness.label})
+- Trend: ${context.mentalReadiness.trend}
+- Low Mental State Workouts: ${context.mentalReadiness.lowMentalWorkouts}/${context.mentalReadiness.totalWorkouts} workouts
+${context.mentalReadiness.average < 3 ? '⚠️ ALERT: Consistently low mental readiness may indicate overtraining or burnout' : ''}
+` : 'No mental readiness data tracked yet'}
+
 When providing insights:
 - Consider age for recovery recommendations (older athletes may need more recovery)
 - Use gender-specific strength standards when evaluating progress
 - Reference relative strength (bodyweight ratios) when applicable to provide context
 - Adjust expectations based on training experience level
+${context.mentalReadiness.hasData && context.mentalReadiness.average < 3 ? '- IMPORTANT: Low mental readiness is a key indicator - recommend deload or recovery focus even if physical metrics look good' : ''}
+${context.mentalReadiness.hasData && context.mentalReadiness.trend === 'declining' ? '- IMPORTANT: Declining mental readiness trend suggests accumulated fatigue - prioritize recovery strategies' : ''}
 
 Provide insights in JSON format with keys: summary, strengths (array of 3), improvements (array of 3), recommendations (array of 3), nextFocus (string).`
 
@@ -227,5 +239,86 @@ Provide insights in JSON format with keys: summary, strengths (array of 3), impr
     const targetPerWeek = 3 // Assume 3x per week target
 
     return Math.min(100, Math.round((totalWorkouts / (weeks * targetPerWeek)) * 100))
+  }
+
+  /**
+   * Get mental readiness analytics for a user over a time period
+   */
+  private async getMentalReadinessAnalytics(userId: string, days: number): Promise<{
+    hasData: boolean
+    average: number
+    trend: 'improving' | 'declining' | 'stable'
+    label: string
+    lowMentalWorkouts: number
+    totalWorkouts: number
+  }> {
+    try {
+      const { data, error } = await this.supabase
+        .from('workouts')
+        .select('mental_readiness_overall, completed_at')
+        .eq('user_id', userId)
+        .eq('completed', true)
+        .not('mental_readiness_overall', 'is', null)
+        .gte('completed_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+        .order('completed_at', { ascending: true })
+
+      if (error || !data || data.length === 0) {
+        return {
+          hasData: false,
+          average: 0,
+          trend: 'stable',
+          label: 'No data',
+          lowMentalWorkouts: 0,
+          totalWorkouts: 0
+        }
+      }
+
+      const mentalReadinessValues = data.map((w: any) => w.mental_readiness_overall!)
+      const average = mentalReadinessValues.reduce((sum: number, val: number) => sum + val, 0) / mentalReadinessValues.length
+      const lowMentalWorkouts = mentalReadinessValues.filter((val: number) => val <= 2).length
+
+      // Calculate trend (compare first half vs second half)
+      const midpoint = Math.floor(mentalReadinessValues.length / 2)
+      const firstHalf = mentalReadinessValues.slice(0, midpoint)
+      const secondHalf = mentalReadinessValues.slice(midpoint)
+
+      const firstAvg = firstHalf.reduce((sum: number, val: number) => sum + val, 0) / firstHalf.length
+      const secondAvg = secondHalf.reduce((sum: number, val: number) => sum + val, 0) / secondHalf.length
+
+      let trend: 'improving' | 'declining' | 'stable' = 'stable'
+      const change = secondAvg - firstAvg
+      if (change > 0.5) trend = 'improving'
+      else if (change < -0.5) trend = 'declining'
+
+      const labels = {
+        1: 'Drained',
+        2: 'Struggling',
+        3: 'Neutral',
+        4: 'Engaged',
+        5: 'Locked In'
+      }
+
+      const roundedAvg = Math.round(average) as 1 | 2 | 3 | 4 | 5
+      const label = labels[roundedAvg] || 'Neutral'
+
+      return {
+        hasData: true,
+        average,
+        trend,
+        label,
+        lowMentalWorkouts,
+        totalWorkouts: data.length
+      }
+    } catch (error) {
+      console.error('Error fetching mental readiness analytics:', error)
+      return {
+        hasData: false,
+        average: 0,
+        trend: 'stable',
+        label: 'Error',
+        lowMentalWorkouts: 0,
+        totalWorkouts: 0
+      }
+    }
   }
 }

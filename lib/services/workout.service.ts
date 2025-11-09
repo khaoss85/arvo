@@ -307,6 +307,7 @@ export class WorkoutService {
       duration?: number;
       totalSets?: number;
       completedAt?: Date;
+      mentalReadinessOverall?: number;
     }
   ): Promise<Workout> {
     const supabase = getSupabaseBrowserClient();
@@ -326,6 +327,9 @@ export class WorkoutService {
     }
     if (stats.totalSets !== undefined) {
       updateData.total_sets = stats.totalSets;
+    }
+    if (stats.mentalReadinessOverall !== undefined) {
+      updateData.mental_readiness_overall = stats.mentalReadinessOverall;
     }
 
     const { data, error } = await supabase

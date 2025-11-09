@@ -111,7 +111,144 @@ Mobile-optimized interface for logging set performance.
 - RIR 0-5
 - All fields required before logging
 
-### 4. Quick Adjustments (`components/features/workout/quick-adjustments.tsx`)
+**Mental Readiness Tracking** (Optional):
+- Collapsible 1-5 emoji-based selector
+- Tracks psychological state during sets
+- Independent from physical metrics (RIR)
+- Optional per set, required at workout completion
+- Scales: 😫 (Drained) → 🔥 (Locked In)
+
+### 4. Mental Readiness System
+
+**Overview**:
+Mental readiness tracking captures the user's psychological state during training to provide holistic insights beyond physical performance metrics.
+
+**Design Philosophy**:
+- **Dual-Level Tracking**: Set-level (optional) + Workout-level (required)
+- **Low Friction**: Collapsible UI, emoji-based for quick selection
+- **AI Integration**: Influences progression, recovery recommendations, and insights
+- **Early Warning**: Detects mental fatigue before physical burnout
+
+**Implementation**:
+
+1. **Set-Level (Optional)**:
+```typescript
+// In SetLogger component
+const [mentalReadiness, setMentalReadiness] = useState<number | undefined>()
+const [showMentalSelector, setShowMentalSelector] = useState(false)
+
+// Logged with each set
+logSet({ weight, reps, rir, mentalReadiness })
+```
+
+2. **Workout-Level (Required)**:
+```typescript
+// In WorkoutSummary component
+const [mentalReadinessSelected, setMentalReadinessSelected] = useState<number | null>(null)
+
+// Required before completing workout
+handleCompleteSummary() {
+  if (!mentalReadinessSelected) {
+    alert('Please select your mental state')
+    return
+  }
+  markAsCompletedWithStats({ ..., mentalReadinessOverall })
+}
+```
+
+**Scale Definition**:
+```typescript
+{
+  1: { emoji: '😫', label: 'Drained', description: 'Struggled mentally throughout' },
+  2: { emoji: '😕', label: 'Struggling', description: 'Lacked motivation' },
+  3: { emoji: '😐', label: 'Neutral', description: 'Average mental state' },
+  4: { emoji: '🙂', label: 'Engaged', description: 'Focused and present' },
+  5: { emoji: '🔥', label: 'Locked In', description: 'Peak mental flow state' }
+}
+```
+
+**Database Schema**:
+```sql
+-- Set-level tracking (optional)
+ALTER TABLE sets_log
+  ADD COLUMN mental_readiness INTEGER CHECK (mental_readiness >= 1 AND mental_readiness <= 5);
+
+-- Workout-level tracking (required on completion)
+ALTER TABLE workouts
+  ADD COLUMN mental_readiness_overall INTEGER CHECK (mental_readiness_overall >= 1 AND mental_readiness_overall <= 5);
+
+-- Analytics indexes
+CREATE INDEX idx_sets_log_mental_readiness ON sets_log(mental_readiness) WHERE mental_readiness IS NOT NULL;
+CREATE INDEX idx_workouts_mental_readiness ON workouts(mental_readiness_overall, completed_at) WHERE mental_readiness_overall IS NOT NULL AND completed = true;
+```
+
+**AI Integration**:
+
+1. **ProgressionCalculator Agent**:
+```typescript
+// Input includes mental readiness from last set
+{
+  lastSet: { weight, reps, rir, mentalReadiness?: number },
+  // ...
+}
+
+// AI considers mental state for progression
+// Low mental readiness (≤2) → More conservative progression even if physical targets met
+```
+
+2. **WorkoutSummaryAgent**:
+```typescript
+// Input includes overall mental state
+{
+  // ...
+  mentalReadinessOverall?: number
+}
+
+// AI factors mental state into:
+// - Recovery recommendations
+// - Performance assessment
+// - Deload signals
+```
+
+3. **InsightsGenerator Agent**:
+```typescript
+// Fetches mental readiness analytics
+const mentalData = await getMentalReadinessAnalytics(userId, days)
+
+// Provides trend analysis:
+// - Average mental state over period
+// - Trend (improving/declining/stable)
+// - Low mental state workout count
+// - Alerts for consistent low readiness (burnout indicator)
+```
+
+**Analytics**:
+```typescript
+// Mental readiness analytics structure
+{
+  hasData: boolean
+  average: number              // Average mental state (1-5)
+  trend: 'improving' | 'declining' | 'stable'
+  label: string                // 'Drained' to 'Locked In'
+  lowMentalWorkouts: number    // Count of workouts with mental readiness ≤ 2
+  totalWorkouts: number
+}
+```
+
+**Use Cases**:
+
+1. **Early Burnout Detection**: Physical PRs but declining mental readiness = deload signal
+2. **Smarter Progression**: Don't push weight if mentally drained even if physically capable
+3. **Pattern Recognition**: "Always mentally drained on legs day" = programming issue
+4. **Holistic Training**: Acknowledges that bodybuilding is both physical and mental
+
+**Display**:
+- Set Logger: Optional collapsible selector (hidden by default)
+- Exercise Card: Shows emoji next to completed sets if logged
+- Workout Summary: Required 5-option grid selector before completion
+- Progress Analytics: Mental readiness trends in insights dashboard
+
+### 5. Quick Adjustments (`components/features/workout/quick-adjustments.tsx`)
 
 Modal with common workout adjustments.
 
@@ -197,10 +334,17 @@ Post-workout summary with stats and next workout generation.
 **Input**:
 ```typescript
 {
-  lastSet: { weight: number, reps: number, rir: number },
+  lastSet: {
+    weight: number,
+    reps: number,
+    rir: number,
+    mentalReadiness?: number  // 1-5 scale (optional)
+  },
   setNumber: number,
   exerciseType: 'compound' | 'isolation',
-  approachId: string
+  approachId: string,
+  experienceYears?: number | null,
+  userAge?: number | null
 }
 ```
 
@@ -376,10 +520,13 @@ document.documentElement.requestFullscreen()
 - `id`, `user_id`, `planned_at`, `completed`, `started_at`, `completed_at`
 - `exercises` (JSONB): Array of exercise details
 - `stats` (JSONB): `{ totalVolume, duration }`
+- `mental_readiness_overall` (INTEGER, 1-5): Overall mental state for workout
+- `duration_seconds`, `total_volume`, `total_sets`
 
 **set_logs**:
 - `id`, `workout_id`, `exercise_id`, `set_number`
 - `weight_actual`, `reps_actual`, `rir_actual`
+- `mental_readiness` (INTEGER, 1-5, nullable): Set-level mental state
 - `created_at`
 
 **exercises**:

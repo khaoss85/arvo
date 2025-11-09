@@ -9,6 +9,15 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { Button } from '@/components/ui/button'
 
+// Mental readiness emoji mapping
+const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
+  1: { emoji: '😫', label: 'Drained' },
+  2: { emoji: '😕', label: 'Struggling' },
+  3: { emoji: '😐', label: 'Neutral' },
+  4: { emoji: '🙂', label: 'Engaged' },
+  5: { emoji: '🔥', label: 'Locked In' },
+}
+
 interface ExerciseCardProps {
   exercise: ExerciseExecution
   exerciseIndex: number
@@ -116,7 +125,8 @@ export function ExerciseCard({
           lastSet: {
             weight: lastCompletedSet.weight,
             reps: lastCompletedSet.reps,
-            rir: lastCompletedSet.rir
+            rir: lastCompletedSet.rir,
+            mentalReadiness: lastCompletedSet.mentalReadiness
           },
           setNumber: currentSetNumber,
           exerciseType: exercise.exerciseName.toLowerCase().includes('squat') ||
@@ -199,7 +209,17 @@ export function ExerciseCard({
                 key={idx}
                 className="flex items-center justify-between bg-gray-800 rounded p-3"
               >
-                <span className="text-sm text-gray-300">Set {idx + 1}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-300">Set {idx + 1}</span>
+                  {set.mentalReadiness && (
+                    <span
+                      className="text-lg"
+                      title={`Mental state: ${MENTAL_READINESS_EMOJIS[set.mentalReadiness].label}`}
+                    >
+                      {MENTAL_READINESS_EMOJIS[set.mentalReadiness].emoji}
+                    </span>
+                  )}
+                </div>
                 <span className="text-white font-medium">
                   {set.weight}kg × {set.reps} @ RIR {set.rir}
                 </span>

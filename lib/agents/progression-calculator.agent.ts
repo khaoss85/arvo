@@ -33,8 +33,21 @@ ${input.userAge ? `- Age: ${input.userAge} years old` : ''}
 `
       : ''
 
+    const mentalReadinessLabels = {
+      1: 'Drained (😫)',
+      2: 'Struggling (😕)',
+      3: 'Neutral (😐)',
+      4: 'Engaged (🙂)',
+      5: 'Locked In (🔥)'
+    }
+
+    const mentalReadinessContext = input.lastSet.mentalReadiness
+      ? `- Mental State during last set: ${mentalReadinessLabels[input.lastSet.mentalReadiness as keyof typeof mentalReadinessLabels]} (${input.lastSet.mentalReadiness}/5)`
+      : ''
+
     const prompt = `
 Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}
+${mentalReadinessContext}
 This is set number: ${input.setNumber}
 Exercise type: ${input.exerciseType}
 ${demographicContext}
@@ -43,6 +56,7 @@ ${context}
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of training experience when suggesting progression - beginners may need smaller jumps, advanced lifters can handle larger changes.` : ''}
 ${input.userAge && input.userAge > 40 ? `Consider that the user is ${input.userAge} years old - older athletes may benefit from slightly more conservative progression to manage fatigue.` : ''}
+${input.lastSet.mentalReadiness && input.lastSet.mentalReadiness <= 2 ? `IMPORTANT: The user reported low mental readiness (${input.lastSet.mentalReadiness}/5). Even if they hit their physical targets, consider a more conservative progression to avoid burnout. Mental fatigue is a real indicator.` : ''}
 
 Based on this approach, suggest the next set.
 

@@ -4,12 +4,15 @@ import { KnowledgeEngine } from '@/lib/knowledge/engine'
 export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
+  protected supabase: any
 
   constructor(supabaseClient?: any) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
     this.openai = getOpenAIClient()
     // Pass Supabase client to KnowledgeEngine for server-side usage
     this.knowledge = new KnowledgeEngine(supabaseClient)
+    // Store supabase client for direct database access in agents
+    this.supabase = supabaseClient
   }
 
   abstract get systemPrompt(): string

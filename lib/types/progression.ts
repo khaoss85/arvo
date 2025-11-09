@@ -3,6 +3,7 @@ export interface ProgressionInput {
     weight: number
     reps: number
     rir: number
+    mentalReadiness?: number  // 1-5 scale (1=Drained, 5=Locked In)
   }
   setNumber: number
   exerciseType: 'compound' | 'isolation'

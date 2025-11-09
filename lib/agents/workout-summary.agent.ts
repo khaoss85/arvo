@@ -16,6 +16,8 @@ export interface WorkoutSummaryInput {
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
   experienceYears?: number | null
+  // Mental readiness tracking
+  mentalReadinessOverall?: number  // 1-5 scale (1=Drained, 5=Locked In)
 }
 
 export interface WorkoutSummaryOutput {
@@ -68,13 +70,27 @@ User Demographics:
 `
       : ''
 
+    const mentalReadinessLabels = {
+      1: 'Drained (😫)',
+      2: 'Struggling (😕)',
+      3: 'Neutral (😐)',
+      4: 'Engaged (🙂)',
+      5: 'Locked In (🔥)'
+    }
+
+    const mentalReadinessContext = input.mentalReadinessOverall
+      ? `
+Mental State: ${mentalReadinessLabels[input.mentalReadinessOverall as keyof typeof mentalReadinessLabels]} - rated ${input.mentalReadinessOverall}/5
+`
+      : ''
+
     const prompt = `Provide immediate feedback on this just-completed workout:
 
 Workout Type: ${input.workoutType}
 Duration: ${durationMinutes} minutes
 Total Volume: ${input.totalVolume} kg
 Completion Rate: ${Math.round(completionRate * 100)}%
-
+${mentalReadinessContext}
 Exercises Completed:
 ${input.exercises.map(e =>
   `- ${e.name}: ${e.completedSets}/${e.sets} sets, ${e.totalVolume}kg total volume, avg RIR ${e.avgRIR.toFixed(1)}`
@@ -86,6 +102,7 @@ ${context}
 When providing feedback:
 ${input.userAge ? `- Consider that the user is ${input.userAge} years old when recommending recovery time (older athletes may need more recovery)` : ''}
 ${input.experienceYears ? `- Adjust feedback for ${input.experienceYears} years of training experience` : ''}
+${input.mentalReadinessOverall ? `- IMPORTANT: The user reported a mental readiness of ${input.mentalReadinessOverall}/5 (${mentalReadinessLabels[input.mentalReadinessOverall as keyof typeof mentalReadinessLabels]}). Factor this into your feedback and recovery recommendations. Low mental readiness may indicate need for deload or extra recovery even if physical performance was good.` : ''}
 - Provide practical, actionable recovery recommendations
 
 Provide encouraging, specific feedback on today's performance.

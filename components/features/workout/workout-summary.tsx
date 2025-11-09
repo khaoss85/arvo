@@ -18,9 +18,18 @@ interface WorkoutSummaryProps {
   userId: string
 }
 
+// Mental readiness emoji mapping
+const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string; description: string }> = {
+  1: { emoji: '😫', label: 'Drained', description: 'Struggled mentally throughout' },
+  2: { emoji: '😕', label: 'Struggling', description: 'Lacked motivation' },
+  3: { emoji: '😐', label: 'Neutral', description: 'Average mental state' },
+  4: { emoji: '🙂', label: 'Engaged', description: 'Focused and present' },
+  5: { emoji: '🔥', label: 'Locked In', description: 'Peak mental flow state' },
+}
+
 export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const router = useRouter()
-  const { reset, startedAt, exercises, workout } = useWorkoutExecutionStore()
+  const { reset, startedAt, exercises, workout, setOverallMentalReadiness, overallMentalReadiness } = useWorkoutExecutionStore()
   const { mutate: generateWorkout, isPending } = useGenerateWorkout()
   const [stats, setStats] = useState<{
     duration: number
@@ -29,6 +38,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   } | null>(null)
   const [aiSummary, setAiSummary] = useState<WorkoutSummaryOutput | null>(null)
   const [loadingAiSummary, setLoadingAiSummary] = useState(false)
+  const [mentalReadinessSelected, setMentalReadinessSelected] = useState<number | null>(overallMentalReadiness)
 
   // User demographics for personalized feedback
   const [userAge, setUserAge] = useState<number | null>(null)
@@ -65,17 +75,38 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
       setStats({ duration, totalVolume: volume, totalSets })
 
-      // Mark workout as completed
-      await WorkoutService.markAsCompletedWithStats(workoutId, { totalVolume: volume, duration })
-
-      // Generate AI summary
-      generateAISummary(duration, volume, totalSets)
+      // Don't auto-complete - wait for mental readiness selection
     } catch (error) {
       console.error('Failed to load stats:', error)
     }
   }
 
-  const generateAISummary = async (duration: number, totalVolume: number, totalSets: number) => {
+  const handleCompleteSummary = async () => {
+    if (!mentalReadinessSelected || !stats) {
+      alert('Please select your mental state before completing the workout')
+      return
+    }
+
+    try {
+      // Save mental readiness to store
+      setOverallMentalReadiness(mentalReadinessSelected)
+
+      // Mark workout as completed with mental readiness
+      await WorkoutService.markAsCompletedWithStats(workoutId, {
+        totalVolume: stats.totalVolume,
+        duration: stats.duration,
+        mentalReadinessOverall: mentalReadinessSelected
+      })
+
+      // Generate AI summary with mental readiness data
+      generateAISummary(stats.duration, stats.totalVolume, stats.totalSets, mentalReadinessSelected)
+    } catch (error) {
+      console.error('Failed to complete workout:', error)
+      alert('Failed to complete workout. Please try again.')
+    }
+  }
+
+  const generateAISummary = async (duration: number, totalVolume: number, totalSets: number, mentalReadinessOverall: number) => {
     if (!workout || !workout.approach_id) return
 
     setLoadingAiSummary(true)
@@ -94,7 +125,8 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         approachId: workout.approach_id,
         userAge: userAge,
         userGender: userGender,
-        experienceYears: userExperienceYears
+        experienceYears: userExperienceYears,
+        mentalReadinessOverall: mentalReadinessOverall
       })
 
       if (result.success && result.summary) {
@@ -134,8 +166,49 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         <h1 className="text-3xl font-bold text-white mb-2">Workout Complete!</h1>
         <p className="text-gray-400 mb-8">Great work! Here's your summary:</p>
 
+        {/* Mental Readiness Selector - Required before completion */}
+        {!aiSummary && (
+          <div className="mb-8">
+            <h3 className="text-lg font-medium text-white mb-3 text-center">How did you feel mentally during this workout?</h3>
+            <p className="text-sm text-gray-400 mb-4 text-center">This helps us understand your overall mental state and optimize future workouts</p>
+
+            <div className="grid grid-cols-5 gap-3">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  onClick={() => setMentalReadinessSelected(value)}
+                  className={`h-24 rounded-lg font-medium transition-all flex flex-col items-center justify-center gap-2 ${
+                    mentalReadinessSelected === value
+                      ? 'bg-purple-600 text-white ring-2 ring-purple-400 shadow-lg scale-105'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:scale-102'
+                  }`}
+                  title={MENTAL_READINESS_EMOJIS[value].description}
+                >
+                  <span className="text-3xl">{MENTAL_READINESS_EMOJIS[value].emoji}</span>
+                  <span className="text-xs font-semibold">{MENTAL_READINESS_EMOJIS[value].label}</span>
+                  <span className="text-xs opacity-75">{value}</span>
+                </button>
+              ))}
+            </div>
+
+            {mentalReadinessSelected && (
+              <p className="text-sm text-purple-300 mt-3 text-center">
+                {MENTAL_READINESS_EMOJIS[mentalReadinessSelected].description}
+              </p>
+            )}
+
+            <Button
+              onClick={handleCompleteSummary}
+              disabled={!mentalReadinessSelected || !stats}
+              className="w-full h-12 mt-6 bg-green-600 hover:bg-green-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {mentalReadinessSelected ? 'Complete Workout & Generate AI Summary' : 'Select Mental State to Continue'}
+            </Button>
+          </div>
+        )}
+
         {/* Stats */}
-        {stats && (
+        {stats && aiSummary && (
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-2xl font-bold text-white mb-1">{stats.totalSets}</div>
@@ -221,36 +294,40 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
           </div>
         )}
 
-        {/* Exercise Breakdown */}
-        <div className="mb-8 text-left">
-          <h3 className="text-lg font-medium text-white mb-4">Exercises Completed</h3>
-          <div className="space-y-2">
-            {exercises.map((ex, idx) => (
-              <div key={idx} className="bg-gray-800 rounded p-3 flex items-center justify-between">
-                <span className="text-sm text-gray-300">{ex.exerciseName}</span>
-                <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
-              </div>
-            ))}
+        {/* Exercise Breakdown - Only show after AI summary */}
+        {aiSummary && (
+          <div className="mb-8 text-left">
+            <h3 className="text-lg font-medium text-white mb-4">Exercises Completed</h3>
+            <div className="space-y-2">
+              {exercises.map((ex, idx) => (
+                <div key={idx} className="bg-gray-800 rounded p-3 flex items-center justify-between">
+                  <span className="text-sm text-gray-300">{ex.exerciseName}</span>
+                  <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Actions */}
-        <div className="space-y-3">
-          <Button
-            onClick={handleGenerateNext}
-            disabled={isPending}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            {isPending ? 'Generating...' : 'Generate Next Workout'}
-          </Button>
-          <Button
-            onClick={handleFinish}
-            variant="outline"
-            className="w-full h-12 border-gray-700 text-gray-300"
-          >
-            Back to Dashboard
-          </Button>
-        </div>
+        {/* Actions - Only show after AI summary */}
+        {aiSummary && (
+          <div className="space-y-3">
+            <Button
+              onClick={handleGenerateNext}
+              disabled={isPending}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isPending ? 'Generating...' : 'Generate Next Workout'}
+            </Button>
+            <Button
+              onClick={handleFinish}
+              variant="outline"
+              className="w-full h-12 border-gray-700 text-gray-300"
+            >
+              Back to Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

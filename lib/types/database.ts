@@ -14,27 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      exercises: {
+      exercise_generations: {
         Row: {
           created_at: string | null
-          equipment_variants: Json | null
+          generated_by_ai: boolean | null
           id: string
+          last_used_at: string | null
+          metadata: Json | null
           name: string
-          pattern: string | null
+          usage_count: number | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
-          equipment_variants?: Json | null
+          generated_by_ai?: boolean | null
           id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
           name: string
-          pattern?: string | null
+          usage_count?: number | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
-          equipment_variants?: Json | null
+          generated_by_ai?: boolean | null
           id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
           name?: string
-          pattern?: string | null
+          usage_count?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -43,6 +52,7 @@ export type Database = {
           created_at: string | null
           exercise_id: string | null
           id: string
+          mental_readiness: number | null
           notes: string | null
           reps_actual: number | null
           reps_target: number | null
@@ -56,6 +66,7 @@ export type Database = {
           created_at?: string | null
           exercise_id?: string | null
           id?: string
+          mental_readiness?: number | null
           notes?: string | null
           reps_actual?: number | null
           reps_target?: number | null
@@ -69,6 +80,7 @@ export type Database = {
           created_at?: string | null
           exercise_id?: string | null
           id?: string
+          mental_readiness?: number | null
           notes?: string | null
           reps_actual?: number | null
           reps_target?: number | null
@@ -80,13 +92,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "sets_log_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "sets_log_workout_id_fkey"
             columns: ["workout_id"]
             isOneToOne: false
@@ -95,46 +100,122 @@ export type Database = {
           },
         ]
       }
+      split_plans: {
+        Row: {
+          active: boolean | null
+          approach_id: string | null
+          created_at: string | null
+          cycle_days: number
+          frequency_map: Json
+          id: string
+          sessions: Json
+          split_type: Database["public"]["Enums"]["split_type"]
+          updated_at: string | null
+          user_id: string
+          volume_distribution: Json
+        }
+        Insert: {
+          active?: boolean | null
+          approach_id?: string | null
+          created_at?: string | null
+          cycle_days: number
+          frequency_map: Json
+          id?: string
+          sessions: Json
+          split_type: Database["public"]["Enums"]["split_type"]
+          updated_at?: string | null
+          user_id: string
+          volume_distribution: Json
+        }
+        Update: {
+          active?: boolean | null
+          approach_id?: string | null
+          created_at?: string | null
+          cycle_days?: number
+          frequency_map?: Json
+          id?: string
+          sessions?: Json
+          split_type?: Database["public"]["Enums"]["split_type"]
+          updated_at?: string | null
+          user_id?: string
+          volume_distribution?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "split_plans_approach_id_fkey"
+            columns: ["approach_id"]
+            isOneToOne: false
+            referencedRelation: "training_approaches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_approaches: {
         Row: {
+          advanced_techniques: Json | null
           created_at: string | null
           creator: string | null
           exercise_rules: Json
+          exercise_selection_principles: Json | null
+          frequency_guidelines: Json | null
           id: string
           name: string
+          periodization: Json | null
           philosophy: string | null
           progression_rules: Json
           rationales: Json | null
+          rom_emphasis: Json | null
+          split_variations: Json | null
+          stimulus_to_fatigue: Json | null
           variables: Json
+          volume_landmarks: Json | null
         }
         Insert: {
+          advanced_techniques?: Json | null
           created_at?: string | null
           creator?: string | null
           exercise_rules: Json
+          exercise_selection_principles?: Json | null
+          frequency_guidelines?: Json | null
           id?: string
           name: string
+          periodization?: Json | null
           philosophy?: string | null
           progression_rules: Json
           rationales?: Json | null
+          rom_emphasis?: Json | null
+          split_variations?: Json | null
+          stimulus_to_fatigue?: Json | null
           variables: Json
+          volume_landmarks?: Json | null
         }
         Update: {
+          advanced_techniques?: Json | null
           created_at?: string | null
           creator?: string | null
           exercise_rules?: Json
+          exercise_selection_principles?: Json | null
+          frequency_guidelines?: Json | null
           id?: string
           name?: string
+          periodization?: Json | null
           philosophy?: string | null
           progression_rules?: Json
           rationales?: Json | null
+          rom_emphasis?: Json | null
+          split_variations?: Json | null
+          stimulus_to_fatigue?: Json | null
           variables?: Json
+          volume_landmarks?: Json | null
         }
         Relationships: []
       }
       user_profiles: {
         Row: {
+          active_split_plan_id: string | null
           approach_id: string | null
           created_at: string | null
+          current_cycle_day: number | null
           equipment_preferences: Json | null
           experience_years: number | null
           preferred_split: string | null
@@ -142,14 +223,12 @@ export type Database = {
           updated_at: string | null
           user_id: string
           weak_points: string[] | null
-          gender: string | null
-          age: number | null
-          weight: number | null
-          height: number | null
         }
         Insert: {
+          active_split_plan_id?: string | null
           approach_id?: string | null
           created_at?: string | null
+          current_cycle_day?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           preferred_split?: string | null
@@ -157,14 +236,12 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           weak_points?: string[] | null
-          gender?: string | null
-          age?: number | null
-          weight?: number | null
-          height?: number | null
         }
         Update: {
+          active_split_plan_id?: string | null
           approach_id?: string | null
           created_at?: string | null
+          current_cycle_day?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           preferred_split?: string | null
@@ -172,12 +249,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           weak_points?: string[] | null
-          gender?: string | null
-          age?: number | null
-          weight?: number | null
-          height?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "user_profiles_active_split_plan_id_fkey"
+            columns: ["active_split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_profiles_approach_id_fkey"
             columns: ["approach_id"]
@@ -218,11 +298,14 @@ export type Database = {
           completed: boolean | null
           completed_at: string | null
           created_at: string | null
+          cycle_day: number | null
           duration_seconds: number | null
           exercises: Json[] | null
           id: string
+          mental_readiness_overall: number | null
           notes: string | null
           planned_at: string | null
+          split_plan_id: string | null
           split_type: string | null
           started_at: string | null
           target_muscle_groups: string[] | null
@@ -230,6 +313,7 @@ export type Database = {
           total_volume: number | null
           updated_at: string | null
           user_id: string | null
+          variation: Database["public"]["Enums"]["workout_variation"] | null
           workout_name: string | null
           workout_type: Database["public"]["Enums"]["workout_type"] | null
         }
@@ -238,11 +322,14 @@ export type Database = {
           completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
+          cycle_day?: number | null
           duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          mental_readiness_overall?: number | null
           notes?: string | null
           planned_at?: string | null
+          split_plan_id?: string | null
           split_type?: string | null
           started_at?: string | null
           target_muscle_groups?: string[] | null
@@ -250,6 +337,7 @@ export type Database = {
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          variation?: Database["public"]["Enums"]["workout_variation"] | null
           workout_name?: string | null
           workout_type?: Database["public"]["Enums"]["workout_type"] | null
         }
@@ -258,11 +346,14 @@ export type Database = {
           completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
+          cycle_day?: number | null
           duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          mental_readiness_overall?: number | null
           notes?: string | null
           planned_at?: string | null
+          split_plan_id?: string | null
           split_type?: string | null
           started_at?: string | null
           target_muscle_groups?: string[] | null
@@ -270,6 +361,7 @@ export type Database = {
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          variation?: Database["public"]["Enums"]["workout_variation"] | null
           workout_name?: string | null
           workout_type?: Database["public"]["Enums"]["workout_type"] | null
         }
@@ -279,6 +371,13 @@ export type Database = {
             columns: ["approach_id"]
             isOneToOne: false
             referencedRelation: "training_approaches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workouts_split_plan_id_fkey"
+            columns: ["split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
             referencedColumns: ["id"]
           },
           {
@@ -300,6 +399,7 @@ export type Database = {
     Enums: {
       split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"
       workout_type: "push" | "pull" | "legs" | "upper" | "lower" | "full_body"
+      workout_variation: "A" | "B"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -429,6 +529,7 @@ export const Constants = {
     Enums: {
       split_type: ["push_pull_legs", "upper_lower", "full_body", "custom"],
       workout_type: ["push", "pull", "legs", "upper", "lower", "full_body"],
+      workout_variation: ["A", "B"],
     },
   },
 } as const

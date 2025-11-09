@@ -83,6 +83,7 @@ export const workoutSchema = z.object({
   workout_name: z.string().nullable(),
   target_muscle_groups: z.array(z.string()).nullable(),
   split_type: z.string().nullable(),
+  mental_readiness_overall: z.number().int().min(1).max(5).nullable(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({
@@ -102,6 +103,7 @@ export const setLogSchema = z.object({
   reps_target: z.number().int().min(1).nullable(),
   reps_actual: z.number().int().min(0).nullable(),
   rir_actual: z.number().int().min(0).max(10).nullable(),
+  mental_readiness: z.number().int().min(1).max(5).nullable(),
   notes: z.string().nullable(),
   created_at: z.string().nullable(),
 });

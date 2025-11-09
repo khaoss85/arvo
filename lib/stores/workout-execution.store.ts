@@ -15,6 +15,7 @@ export interface ExerciseExecution {
     weight: number
     reps: number
     rir: number
+    mentalReadiness?: number // Optional 1-5 rating
     loggedAt: Date
   }>
   currentAISuggestion: ProgressionOutput | null
@@ -30,6 +31,7 @@ interface WorkoutExecutionState {
   // Workout metadata
   startedAt: Date | null
   lastActivityAt: Date | null
+  overallMentalReadiness: number | null // Overall mental state (1-5, required when completing)
 
   // State management
   isActive: boolean
@@ -45,7 +47,10 @@ interface WorkoutExecutionState {
   goToExercise: (index: number) => void
 
   // Set logging
-  logSet: (setData: { weight: number; reps: number; rir: number }) => Promise<void>
+  logSet: (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => Promise<void>
+
+  // Mental readiness tracking
+  setOverallMentalReadiness: (value: number) => void
 
   // AI suggestions
   setAISuggestion: (suggestion: ProgressionOutput) => void
@@ -76,6 +81,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       currentExerciseIndex: 0,
       startedAt: null,
       lastActivityAt: null,
+      overallMentalReadiness: null,
       isActive: false,
 
       // Start a new workout
@@ -130,6 +136,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               weight: s.weight_actual || 0,
               reps: s.reps_actual || 0,
               rir: s.rir_actual || 0,
+              mentalReadiness: s.mental_readiness || undefined,
               loggedAt: s.created_at ? new Date(s.created_at) : new Date()
             })),
             currentAISuggestion: null
@@ -190,7 +197,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       },
 
       // Log a set
-      logSet: async (setData: { weight: number; reps: number; rir: number }) => {
+      logSet: async (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => {
         const { workoutId, exercises, currentExerciseIndex } = get()
 
         if (!workoutId) {
@@ -213,6 +220,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             reps_target: currentExercise.targetReps[0],
             reps_actual: setData.reps,
             rir_actual: setData.rir,
+            mental_readiness: setData.mentalReadiness || null,
             notes: null
           })
 
@@ -223,7 +231,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             completedSets: [
               ...currentExercise.completedSets,
               {
-                ...setData,
+                weight: setData.weight,
+                reps: setData.reps,
+                rir: setData.rir,
+                mentalReadiness: setData.mentalReadiness,
                 loggedAt: new Date()
               }
             ]
@@ -240,6 +251,14 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           console.error('Failed to log set:', error)
           throw error
         }
+      },
+
+      // Set overall mental readiness for the workout
+      setOverallMentalReadiness: (value: number) => {
+        if (value < 1 || value > 5) {
+          throw new Error('Mental readiness must be between 1 and 5')
+        }
+        set({ overallMentalReadiness: value })
       },
 
       // AI suggestions
@@ -319,6 +338,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           currentExerciseIndex: 0,
           startedAt: null,
           lastActivityAt: null,
+          overallMentalReadiness: null,
           isActive: false
         })
       }
