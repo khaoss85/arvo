@@ -59,7 +59,7 @@ export default function ReviewPage() {
       return
     }
 
-    if (!data.approachId || !data.equipmentPreferences) {
+    if (!data.approachId) {
       setError('Please complete all required steps.')
       return
     }
@@ -72,8 +72,10 @@ export default function ReviewPage() {
       const result = await completeOnboardingAction(user.id, {
         approachId: data.approachId,
         weakPoints: data.weakPoints || [],
-        equipmentPreferences: data.equipmentPreferences,
+        availableEquipment: data.availableEquipment || [],
+        equipmentPreferences: data.equipmentPreferences || {}, // Keep for backward compatibility
         strengthBaseline: data.strengthBaseline || {},
+        firstName: data.firstName || null,
         gender: data.gender || null,
         age: data.age || null,
         weight: data.weight || null,
@@ -200,8 +202,14 @@ export default function ReviewPage() {
               Edit
             </Button>
           </div>
-          {data.gender || data.age || data.weight || data.height ? (
+          {data.firstName || data.gender || data.age || data.weight || data.height ? (
             <div className="space-y-1 text-sm">
+              {data.firstName && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Name:</span>
+                  <span className="font-medium">{data.firstName}</span>
+                </div>
+              )}
               {data.gender && (
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Gender:</span>
@@ -260,10 +268,10 @@ export default function ReviewPage() {
           )}
         </div>
 
-        {/* Equipment Preferences */}
+        {/* Available Equipment */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Equipment Preferences</h3>
+            <h3 className="font-semibold">Available Equipment</h3>
             <Button
               variant="outline"
               size="sm"
@@ -272,19 +280,19 @@ export default function ReviewPage() {
               Edit
             </Button>
           </div>
-          {data.equipmentPreferences && Object.keys(data.equipmentPreferences).length > 0 ? (
-            <div className="space-y-1 text-sm">
-              {Object.entries(data.equipmentPreferences).map(([pattern, equipment]) => (
-                <div key={pattern} className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400 capitalize">
-                    {pattern.replace('_', ' ')}:
-                  </span>
-                  <span className="font-medium">{equipment}</span>
-                </div>
+          {data.availableEquipment && data.availableEquipment.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {data.availableEquipment.map((equipment) => (
+                <span
+                  key={equipment}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-full text-sm"
+                >
+                  {equipment}
+                </span>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">No equipment preferences set</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">No equipment selected</p>
           )}
         </div>
 
