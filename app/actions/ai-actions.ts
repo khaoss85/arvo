@@ -169,6 +169,12 @@ async function generateWorkoutWithServerClient(
         targetWeight = estimateInitialWeight(exercise.name)
       }
 
+      // Calculate warmup set weights if warmupSets are provided
+      const warmupSetsWithWeights = exercise.warmupSets?.map(warmup => ({
+        ...warmup,
+        weight: Math.round((warmup.weightPercentage / 100) * targetWeight * 4) / 4 // Round to nearest 0.25kg
+      }))
+
       return {
         name: exercise.name,
         equipmentVariant: exercise.equipmentVariant,
@@ -178,7 +184,10 @@ async function generateWorkoutWithServerClient(
         targetWeight,
         targetReps,
         rationale: exercise.rationaleForSelection,
-        alternatives: exercise.alternatives
+        alternatives: exercise.alternatives,
+        technicalCues: exercise.technicalCues,
+        warmupSets: warmupSetsWithWeights,
+        setGuidance: exercise.setGuidance
       }
     })
   )

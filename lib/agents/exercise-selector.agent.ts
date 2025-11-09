@@ -19,6 +19,22 @@ export interface ExerciseSelectionInput {
   sessionPrinciples?: string[] // Principles to emphasize
 }
 
+export interface WarmupSet {
+  setNumber: number
+  weightPercentage: number  // % of target weight (e.g., 50, 65)
+  weight: number            // Calculated weight
+  reps: number
+  rir: number
+  restSeconds: number
+  technicalFocus?: string
+}
+
+export interface SetGuidance {
+  setNumber: number         // Set number (1-based, refers to working sets)
+  technicalFocus?: string  // What to focus on technically (e.g., "Full range of motion", "Squeeze at top")
+  mentalFocus?: string     // Mindset/mental approach (e.g., "Stay controlled, no rushing", "Push through discomfort")
+}
+
 export interface SelectedExercise {
   name: string
   equipmentVariant: string
@@ -35,6 +51,8 @@ export interface SelectedExercise {
   unilateral?: boolean
   // Technical guidance for execution
   technicalCues?: string[] // 2-4 brief, actionable technical cues for proper form
+  warmupSets?: WarmupSet[] // Warm-up progression before working sets (only for compound movements)
+  setGuidance?: SetGuidance[] // Per-set technical and mental focus for working sets
 }
 
 export interface ExerciseSelectionOutput {
@@ -159,6 +177,15 @@ For each exercise, also provide:
   * Make them ACTIONABLE and easy to remember in the gym
   * Tailor to the approach philosophy (e.g., Kuba Method emphasizes stretch, contraction, ROM)
   * Examples: "Semi-bent arms throughout the movement", "Squeeze pecs hard at top", "Avoid lockout on elbows"
+- warmupSets: ONLY for compound movements (squat, deadlift, bench, overhead press, rows), provide 2 warmup sets:
+  * Set 1: 50% weight, 15 reps, RIR 5, 60s rest, technicalFocus: "Feel the movement pattern"
+  * Set 2: 65% weight, 12 reps, RIR 3, 90s rest, technicalFocus: "Build mind-muscle connection"
+  * Isolation exercises (curls, raises, flyes) do NOT need warmup sets
+- setGuidance: For ALL exercises, provide per-set technical and mental focus for EACH working set:
+  * technicalFocus: What to focus on technically (e.g., "Full ROM", "Squeeze at top", "Control the eccentric")
+  * mentalFocus: Mental approach for that set (e.g., "Stay controlled", "Push through fatigue", "Quality over speed")
+  * Progression across sets: early sets focus on technique, later sets on intensity and mental toughness
+  * Keep VERY brief (max 5-6 words each)
 
 Select 4-6 exercises following the approach philosophy.
 
@@ -178,7 +205,42 @@ Required JSON structure:
       "movementPattern": "string",
       "romEmphasis": "lengthened" | "shortened" | "full_range",
       "unilateral": boolean,
-      "technicalCues": ["string"]
+      "technicalCues": ["string"],
+      "warmupSets": [  // ONLY if compound movement
+        {
+          "setNumber": 1,
+          "weightPercentage": 50,
+          "reps": 15,
+          "rir": 5,
+          "restSeconds": 60,
+          "technicalFocus": "Feel the movement pattern"
+        },
+        {
+          "setNumber": 2,
+          "weightPercentage": 65,
+          "reps": 12,
+          "rir": 3,
+          "restSeconds": 90,
+          "technicalFocus": "Build mind-muscle connection"
+        }
+      ],
+      "setGuidance": [  // For ALL exercises, for each working set
+        {
+          "setNumber": 1,
+          "technicalFocus": "Full range of motion",
+          "mentalFocus": "Stay controlled, no rushing"
+        },
+        {
+          "setNumber": 2,
+          "technicalFocus": "Squeeze hard at top",
+          "mentalFocus": "Push through discomfort"
+        },
+        {
+          "setNumber": 3,
+          "technicalFocus": "Maintain form to failure",
+          "mentalFocus": "One more quality rep"
+        }
+      ]
     }
   ],
   "workoutRationale": "string",

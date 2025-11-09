@@ -1,14 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
+import { useState, useEffect } from 'react'
+import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 interface SetLoggerProps {
-  exerciseId: string
+  exercise: ExerciseExecution
   setNumber: number
-  targetWeight: number
   suggestion?: {
     weight: number
     reps: number
@@ -25,14 +24,50 @@ const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> 
   5: { emoji: '🔥', label: 'Locked In' },
 }
 
-export function SetLogger({ exerciseId, setNumber, targetWeight, suggestion }: SetLoggerProps) {
+export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const { logSet } = useWorkoutExecutionStore()
-  const [weight, setWeight] = useState(suggestion?.weight || targetWeight)
-  const [reps, setReps] = useState(suggestion?.reps || 8)
-  const [rir, setRir] = useState(suggestion?.rirTarget || 1)
+
+  // Determine if current set is warmup
+  const warmupSetsCount = exercise.warmupSets?.length || 0
+  const isWarmup = setNumber <= warmupSetsCount
+  const currentWarmup = isWarmup ? exercise.warmupSets?.[setNumber - 1] : undefined
+  const workingSetNumber = isWarmup ? 0 : setNumber - warmupSetsCount
+
+  // Get guidance for current working set
+  const currentGuidance = !isWarmup && exercise.setGuidance?.find(g => g.setNumber === workingSetNumber)
+
+  // Initialize state based on warmup vs working set
+  const getInitialWeight = () => {
+    if (currentWarmup) return currentWarmup.weight
+    if (suggestion) return suggestion.weight
+    return exercise.targetWeight
+  }
+
+  const getInitialReps = () => {
+    if (currentWarmup) return currentWarmup.reps
+    if (suggestion) return suggestion.reps
+    return 8
+  }
+
+  const getInitialRir = () => {
+    if (currentWarmup) return currentWarmup.rir
+    if (suggestion) return suggestion.rirTarget
+    return 1
+  }
+
+  const [weight, setWeight] = useState(getInitialWeight())
+  const [reps, setReps] = useState(getInitialReps())
+  const [rir, setRir] = useState(getInitialRir())
   const [mentalReadiness, setMentalReadiness] = useState<number | undefined>(undefined)
   const [showMentalSelector, setShowMentalSelector] = useState(false)
   const [isLogging, setIsLogging] = useState(false)
+
+  // Update values when warmup/suggestion changes
+  useEffect(() => {
+    setWeight(getInitialWeight())
+    setReps(getInitialReps())
+    setRir(getInitialRir())
+  }, [setNumber, suggestion])
 
   const handleLogSet = async () => {
     setIsLogging(true)
@@ -48,8 +83,48 @@ export function SetLogger({ exerciseId, setNumber, targetWeight, suggestion }: S
 
   return (
     <div className="space-y-4">
+      {/* Set Type Badge */}
       <div className="text-center mb-4">
-        <h3 className="text-lg font-medium text-white">Log Set {setNumber}</h3>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span
+            className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${
+              isWarmup
+                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                : 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
+            }`}
+          >
+            {isWarmup ? `Riscaldamento ${setNumber}/${warmupSetsCount}` : `Serie ${workingSetNumber}/${exercise.targetSets}`}
+          </span>
+        </div>
+
+        {/* Technical Focus for Warmup Set */}
+        {currentWarmup?.technicalFocus && (
+          <div className="mt-2 bg-amber-900/20 border border-amber-800/30 rounded-lg px-3 py-2">
+            <p className="text-sm text-amber-200">
+              🎯 {currentWarmup.technicalFocus}
+            </p>
+          </div>
+        )}
+
+        {/* Technical & Mental Focus for Working Sets */}
+        {currentGuidance && (currentGuidance.technicalFocus || currentGuidance.mentalFocus) && (
+          <div className="mt-2 space-y-2">
+            {currentGuidance.technicalFocus && (
+              <div className="bg-blue-900/20 border border-blue-800/30 rounded-lg px-3 py-2">
+                <p className="text-base text-blue-200 font-medium">
+                  🎯 {currentGuidance.technicalFocus}
+                </p>
+              </div>
+            )}
+            {currentGuidance.mentalFocus && (
+              <div className="bg-purple-900/20 border border-purple-800/30 rounded-lg px-3 py-2">
+                <p className="text-base text-purple-200 font-medium">
+                  🧠 {currentGuidance.mentalFocus}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Weight Input */}

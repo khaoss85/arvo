@@ -5,6 +5,22 @@ import type { ProgressionOutput } from '@/lib/agents/progression-calculator.agen
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 
+export interface WarmupSet {
+  setNumber: number
+  weightPercentage: number
+  weight: number
+  reps: number
+  rir: number
+  restSeconds: number
+  technicalFocus?: string
+}
+
+export interface SetGuidance {
+  setNumber: number
+  technicalFocus?: string
+  mentalFocus?: string
+}
+
 export interface ExerciseExecution {
   exerciseId: string
   exerciseName: string
@@ -17,9 +33,12 @@ export interface ExerciseExecution {
     rir: number
     mentalReadiness?: number // Optional 1-5 rating
     loggedAt: Date
+    isWarmup?: boolean // Track if this was a warmup set
   }>
   currentAISuggestion: ProgressionOutput | null
   technicalCues?: string[] // Brief technical cues for proper form
+  warmupSets?: WarmupSet[] // Warmup progression (only for compound movements)
+  setGuidance?: SetGuidance[] // Per-set technical and mental focus for working sets
 }
 
 interface WorkoutExecutionState {
@@ -95,7 +114,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           targetWeight: ex.targetWeight || 0,
           completedSets: [],
           currentAISuggestion: null,
-          technicalCues: ex.technicalCues || []
+          technicalCues: ex.technicalCues || [],
+          warmupSets: ex.warmupSets || [],
+          setGuidance: ex.setGuidance || []
         }))
 
         set({
@@ -140,9 +161,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               rir: s.rir_actual || 0,
               mentalReadiness: s.mental_readiness || undefined,
               loggedAt: s.created_at ? new Date(s.created_at) : new Date()
+              // Note: isWarmup info is lost on resume - we rely on set_number and warmupSets length
             })),
             currentAISuggestion: null,
-            technicalCues: ex.technicalCues || []
+            technicalCues: ex.technicalCues || [],
+            warmupSets: ex.warmupSets || [],
+            setGuidance: ex.setGuidance || []
           }
         })
 

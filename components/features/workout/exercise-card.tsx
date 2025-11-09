@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { HelpCircle } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
@@ -42,14 +42,21 @@ export function ExerciseCard({
   const [showProgressionExplanation, setShowProgressionExplanation] = useState(false)
   const [progressionExplanation, setProgressionExplanation] = useState('')
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
+  const [showTechnicalCues, setShowTechnicalCues] = useState(false)
 
   // User demographics for personalized progression
   const [userExperienceYears, setUserExperienceYears] = useState<number | null>(null)
   const [userAge, setUserAge] = useState<number | null>(null)
 
+  const warmupSetsCount = exercise.warmupSets?.length || 0
+  const totalSets = warmupSetsCount + exercise.targetSets
   const currentSetNumber = exercise.completedSets.length + 1
-  const isLastSet = currentSetNumber > exercise.targetSets
+  const isLastSet = currentSetNumber > totalSets
   const lastCompletedSet = exercise.completedSets[exercise.completedSets.length - 1]
+
+  // Progress tracking
+  const completedWarmupSets = Math.min(exercise.completedSets.length, warmupSetsCount)
+  const completedWorkingSets = Math.max(0, exercise.completedSets.length - warmupSetsCount)
 
   // Fetch user demographics for personalized progression
   useEffect(() => {
@@ -191,13 +198,56 @@ export function ExerciseCard({
         )}
 
         <div className="flex items-center gap-4 text-sm text-gray-400">
-          <span>{exercise.targetSets} sets</span>
+          {warmupSetsCount > 0 && (
+            <>
+              <span className="text-amber-400">
+                Riscaldamento: {completedWarmupSets}/{warmupSetsCount}
+              </span>
+              <span>•</span>
+            </>
+          )}
+          <span>
+            Serie: {completedWorkingSets}/{exercise.targetSets}
+          </span>
           <span>•</span>
           <span>{exercise.targetReps[0]}-{exercise.targetReps[1]} reps</span>
           <span>•</span>
           <span>Target: {exercise.targetWeight}kg</span>
         </div>
       </div>
+
+      {/* Technical Cues (Collapsible) */}
+      {exercise.technicalCues && exercise.technicalCues.length > 0 && (
+        <div className="mb-6">
+          <button
+            onClick={() => setShowTechnicalCues(!showTechnicalCues)}
+            className="w-full flex items-center justify-between p-3 bg-gray-800/50 hover:bg-gray-800 rounded-lg transition-colors border border-gray-700"
+          >
+            <div className="flex items-center gap-2">
+              <Target className="w-4 h-4 text-blue-400" />
+              <span className="text-sm font-medium text-gray-300">Tecnica Esercizio</span>
+            </div>
+            <ChevronDown
+              className={`w-4 h-4 text-gray-400 transition-transform ${
+                showTechnicalCues ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {showTechnicalCues && (
+            <div className="mt-2 bg-blue-900/10 border border-blue-800/30 rounded-lg p-4">
+              <ul className="space-y-2">
+                {exercise.technicalCues.map((cue, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span>
+                    <span className="text-base text-gray-200">{cue}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Completed Sets Summary */}
       {exercise.completedSets.length > 0 && (
@@ -281,9 +331,8 @@ export function ExerciseCard({
       ) : (
         <>
           <SetLogger
-            exerciseId={exercise.exerciseId}
+            exercise={exercise}
             setNumber={currentSetNumber}
-            targetWeight={exercise.targetWeight}
             suggestion={exercise.currentAISuggestion?.suggestion}
           />
 
