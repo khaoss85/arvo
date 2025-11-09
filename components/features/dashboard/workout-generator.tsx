@@ -15,8 +15,8 @@ export function WorkoutGenerator({ userId }: WorkoutGeneratorProps) {
   const handleGenerate = () => {
     generateWorkout(userId, {
       onSuccess: (workout) => {
-        // Refresh the page to show the new workout
-        router.refresh()
+        // Redirect to the newly generated workout
+        router.push(`/workout/${workout.id}`)
       }
     })
   }
