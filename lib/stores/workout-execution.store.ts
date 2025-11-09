@@ -109,7 +109,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       // Start a new workout
       startWorkout: (workout: Workout) => {
         const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex) => ({
-          exerciseId: ex.id || '',
+          exerciseId: ex.id || null,
           exerciseName: ex.name,
           targetSets: ex.sets || 2,
           targetReps: ex.repRange || [6, 10],
