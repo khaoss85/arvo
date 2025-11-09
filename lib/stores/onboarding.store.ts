@@ -11,6 +11,7 @@ interface OnboardingState {
     availableEquipment?: string[] // New multiselect equipment array
     strengthBaseline?: Record<string, { weight: number; reps: number; rir: number }>
     // Demographic fields
+    firstName?: string | null // User's first name for personalization
     gender?: 'male' | 'female' | 'other' | null
     age?: number | null
     weight?: number | null // kg

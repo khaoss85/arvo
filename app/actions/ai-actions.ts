@@ -67,6 +67,7 @@ export async function completeOnboardingAction(
         available_equipment: data.availableEquipment || [],
         equipment_preferences: data.equipmentPreferences, // Keep for backward compatibility
         strength_baseline: data.strengthBaseline,
+        first_name: data.firstName || null,
         gender: data.gender || null,
         age: data.age || null,
         weight: data.weight || null,

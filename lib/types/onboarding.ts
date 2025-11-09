@@ -28,9 +28,11 @@ export const SplitSelectionSchema = z.object({
 export type OnboardingData = {
   approachId: string
   weakPoints: string[]
-  equipmentPreferences: Record<string, string>
+  equipmentPreferences: Record<string, string> // DEPRECATED: Use availableEquipment
+  availableEquipment?: string[] // New multiselect equipment array
   strengthBaseline: Record<string, { weight: number; reps: number; rir: number }>
   // Demographic fields (optional)
+  firstName?: string | null
   gender?: 'male' | 'female' | 'other' | null
   age?: number | null
   weight?: number | null

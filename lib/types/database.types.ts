@@ -217,11 +217,13 @@ export type Database = {
         Row: {
           active_split_plan_id: string | null
           approach_id: string | null
+          available_equipment: string[] | null
           created_at: string | null
           current_cycle_day: number | null
           current_mesocycle_week: number | null
           equipment_preferences: Json | null
           experience_years: number | null
+          first_name: string | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
           preferred_split: string | null
@@ -233,11 +235,13 @@ export type Database = {
         Insert: {
           active_split_plan_id?: string | null
           approach_id?: string | null
+          available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          first_name?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_split?: string | null
@@ -249,11 +253,13 @@ export type Database = {
         Update: {
           active_split_plan_id?: string | null
           approach_id?: string | null
+          available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
+          first_name?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_split?: string | null

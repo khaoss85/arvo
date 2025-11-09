@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +15,7 @@ const keyLifts = [
 ]
 
 export default function StrengthBaselinePage() {
+  const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [baseline, setBaseline] = useState<Record<string, { weight: number; reps: number; rir: number }>>(
     data.strengthBaseline || {}
@@ -45,10 +48,12 @@ export default function StrengthBaselinePage() {
   const handleSkip = () => {
     setStepData('strengthBaseline', {})
     completeStep(6)
+    router.push('/onboarding/review')
   }
 
   const handleContinue = () => {
     completeStep(6)
+    router.push('/onboarding/review')
   }
 
   const isValidEntry = (entry: any) => {
@@ -59,6 +64,15 @@ export default function StrengthBaselinePage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
+      {/* Back Button */}
+      <button
+        onClick={() => router.push('/onboarding/equipment')}
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Equipment</span>
+      </button>
+
       <h1 className="text-3xl font-bold mb-2">Strength Baseline</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
         Record your current strength levels for key lifts. This helps the AI set appropriate starting weights for your workouts.

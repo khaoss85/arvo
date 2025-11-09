@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
 type SplitType = 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
@@ -70,6 +71,15 @@ export default function SplitSelectionPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
+      {/* Back Button */}
+      <button
+        onClick={() => router.push('/onboarding/approach')}
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Training Approach</span>
+      </button>
+
       <h1 className="text-3xl font-bold mb-2">Choose Your Training Split</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
         Select how you want to organize your training week. This determines how muscle groups are distributed across workouts.

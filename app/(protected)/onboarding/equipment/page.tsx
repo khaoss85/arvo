@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { EquipmentSelector } from '@/components/equipment/equipment-selector'
 
@@ -26,6 +27,15 @@ export default function EquipmentPreferencesPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Page header */}
       <div className="p-6 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/onboarding/weak-points')}
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Weak Points</span>
+        </button>
+
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Equipment Preferences
         </h1>

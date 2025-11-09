@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Calendar, Scale, Ruler, HelpCircle } from 'lucide-react'
+import { User, Calendar, Scale, Ruler, HelpCircle, ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -11,6 +11,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
+  const [firstName, setFirstName] = useState<string>(data.firstName || '')
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(data.gender || null)
   const [age, setAge] = useState<number | null>(data.age || null)
   const [weight, setWeight] = useState<number | null>(data.weight || null)
@@ -21,6 +22,11 @@ export default function ProfilePage() {
   useEffect(() => {
     setStep(3)
   }, [setStep])
+
+  const handleFirstNameChange = (value: string) => {
+    setFirstName(value)
+    setStepData('firstName', value || null)
+  }
 
   const handleGenderChange = (value: 'male' | 'female' | 'other') => {
     setGender(value)
@@ -49,6 +55,7 @@ export default function ProfilePage() {
   }
 
   const handleSkip = () => {
+    setStepData('firstName', null)
     setStepData('gender', null)
     setStepData('age', null)
     setStepData('weight', null)
@@ -63,6 +70,7 @@ export default function ProfilePage() {
   }
 
   const tooltips = {
+    firstName: 'Your name helps us personalize your experience with greetings and feedback',
     gender: 'Used for more accurate strength standards and initial weight estimations',
     age: 'Helps the AI adjust recovery recommendations and progression rates',
     weight: 'Essential for calculating relative strength (e.g., 1.5x bodyweight squat) and Wilks score',
@@ -71,6 +79,15 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
+      {/* Back Button */}
+      <button
+        onClick={() => router.push('/onboarding/split')}
+        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span>Back to Training Split</span>
+      </button>
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Your Profile (Optional)</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -82,6 +99,36 @@ export default function ProfilePage() {
       </div>
 
       <Card className="p-6 space-y-6">
+        {/* First Name */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <User className="w-5 h-5 text-gray-500" />
+            <label className="font-medium text-gray-900 dark:text-white">
+              First Name
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+            </label>
+            <button
+              className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+              onMouseEnter={() => setShowTooltip('firstName')}
+              onMouseLeave={() => setShowTooltip(null)}
+            >
+              <HelpCircle className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+          {showTooltip === 'firstName' && (
+            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
+              {tooltips.firstName}
+            </div>
+          )}
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => handleFirstNameChange(e.target.value)}
+            placeholder="e.g., Mario"
+            className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+
         {/* Gender */}
         <div>
           <div className="flex items-center gap-2 mb-3">
