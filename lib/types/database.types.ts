@@ -216,6 +216,7 @@ export type Database = {
       user_profiles: {
         Row: {
           active_split_plan_id: string | null
+          age: number | null
           approach_id: string | null
           available_equipment: string[] | null
           created_at: string | null
@@ -224,6 +225,8 @@ export type Database = {
           equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
+          gender: string | null
+          height: number | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
           preferred_split: string | null
@@ -231,9 +234,11 @@ export type Database = {
           updated_at: string | null
           user_id: string
           weak_points: string[] | null
+          weight: number | null
         }
         Insert: {
           active_split_plan_id?: string | null
+          age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
           created_at?: string | null
@@ -242,6 +247,8 @@ export type Database = {
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
+          gender?: string | null
+          height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_split?: string | null
@@ -249,9 +256,11 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           weak_points?: string[] | null
+          weight?: number | null
         }
         Update: {
           active_split_plan_id?: string | null
+          age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
           created_at?: string | null
@@ -260,6 +269,8 @@ export type Database = {
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
+          gender?: string | null
+          height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_split?: string | null
@@ -267,6 +278,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           weak_points?: string[] | null
+          weight?: number | null
         }
         Relationships: [
           {
