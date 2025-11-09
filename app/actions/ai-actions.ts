@@ -353,27 +353,61 @@ export async function generateWorkoutAction(userId: string) {
  * This runs on the server and has access to OPENAI_API_KEY
  */
 export async function calculateProgressionAction(userId: string, input: ProgressionInput) {
+  console.log('[calculateProgressionAction] Received request', {
+    userId,
+    input: {
+      lastSet: input.lastSet,
+      setNumber: input.setNumber,
+      exerciseType: input.exerciseType,
+      approachId: input.approachId,
+      experienceYears: input.experienceYears,
+      userAge: input.userAge
+    },
+    timestamp: new Date().toISOString()
+  })
+
   try {
     const supabase = await getSupabaseServerClient()
 
     // Fetch user profile for mesocycle context
+    console.log('[calculateProgressionAction] Fetching user profile for mesocycle context')
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('current_mesocycle_week, mesocycle_phase')
       .eq('user_id', userId)
       .single()
 
+    console.log('[calculateProgressionAction] User profile fetched', {
+      hasProfile: !!profile,
+      mesocycleWeek: profile?.current_mesocycle_week,
+      mesocyclePhase: profile?.mesocycle_phase
+    })
+
     const calculator = new ProgressionCalculator(supabase)
 
-    const result = await calculator.suggestNextSet({
+    const enrichedInput = {
       ...input,
       mesocycleWeek: profile?.current_mesocycle_week || null,
       mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+    }
+
+    console.log('[calculateProgressionAction] Calling ProgressionCalculator.suggestNextSet with enriched input')
+    const result = await calculator.suggestNextSet(enrichedInput)
+
+    console.log('[calculateProgressionAction] Suggestion generated successfully', {
+      suggestion: result.suggestion,
+      hasRationale: !!result.rationale,
+      hasAlternatives: !!result.alternatives
     })
 
     return { success: true, suggestion: result }
   } catch (error) {
-    console.error('Server action - Progression calculation error:', error)
+    console.error('[calculateProgressionAction] Error:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      inputLastSet: input.lastSet
+    })
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to calculate progression'

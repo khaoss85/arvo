@@ -22,7 +22,28 @@ Output valid JSON with the exact structure requested.`
   }
 
   async suggestNextSet(input: ProgressionInput): Promise<ProgressionOutput> {
+    console.log('[ProgressionCalculator] Starting suggestNextSet', {
+      input: {
+        lastSet: input.lastSet,
+        setNumber: input.setNumber,
+        exerciseType: input.exerciseType,
+        approachId: input.approachId,
+        experienceYears: input.experienceYears,
+        userAge: input.userAge,
+        mesocyclePhase: input.mesocyclePhase,
+        mesocycleWeek: input.mesocycleWeek
+      },
+      timestamp: new Date().toISOString()
+    })
+
     const approach = await this.knowledge.loadApproach(input.approachId)
+    console.log('[ProgressionCalculator] Loaded approach:', {
+      name: approach.name,
+      hasAdvancedTechniques: !!approach.advancedTechniques,
+      hasTempo: !!approach.variables?.tempo,
+      hasRestPeriods: !!approach.variables?.restPeriods
+    })
+
     const context = this.knowledge.formatContextForAI(approach, 'progression')
 
     const demographicContext = input.experienceYears || input.userAge
@@ -134,12 +155,50 @@ Required JSON structure:
 }
     `
 
+    console.log('[ProgressionCalculator] Sending prompt to AI', {
+      promptLength: prompt.length,
+      hasMesocycleContext: !!periodizationContext,
+      hasDemographicContext: !!demographicContext,
+      mentalReadiness: input.lastSet.mentalReadiness
+    })
+
     const result = await this.complete<ProgressionOutput>(prompt)
+
+    console.log('[ProgressionCalculator] AI response received', {
+      suggestion: result.suggestion,
+      rationalePreview: result.rationale?.substring(0, 100),
+      alternativesCount: result.alternatives?.length || 0,
+      hasAdvancedTechnique: !!result.advancedTechniqueSuggestion,
+      hasTempoReminder: !!result.tempoReminder,
+      hasRestReminder: !!result.restReminder
+    })
 
     // Validate result
     if (!result.suggestion || !result.rationale) {
+      console.error('[ProgressionCalculator] Invalid AI response - missing suggestion or rationale', {
+        hasSuggestion: !!result.suggestion,
+        hasRationale: !!result.rationale,
+        result
+      })
       throw new Error('Invalid progression suggestion')
     }
+
+    // Validate suggestion values
+    if (!result.suggestion.weight || !result.suggestion.reps || result.suggestion.rirTarget === undefined) {
+      console.error('[ProgressionCalculator] Invalid suggestion values', {
+        weight: result.suggestion.weight,
+        reps: result.suggestion.reps,
+        rirTarget: result.suggestion.rirTarget
+      })
+      throw new Error('Invalid progression suggestion - missing weight, reps, or RIR target')
+    }
+
+    console.log('[ProgressionCalculator] Suggestion validated successfully', {
+      previousSet: `${input.lastSet.weight}kg × ${input.lastSet.reps} @ RIR ${input.lastSet.rir}`,
+      nextSet: `${result.suggestion.weight}kg × ${result.suggestion.reps} @ RIR ${result.suggestion.rirTarget}`,
+      weightChange: result.suggestion.weight - input.lastSet.weight,
+      repsChange: result.suggestion.reps - input.lastSet.reps
+    })
 
     return result
   }

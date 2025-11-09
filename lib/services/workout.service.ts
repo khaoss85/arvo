@@ -312,12 +312,49 @@ export class WorkoutService {
       mentalReadinessOverall?: number;
     }
   ): Promise<Workout> {
+    console.log('[WorkoutService] Starting markAsCompletedWithStats', {
+      workoutId: id,
+      stats,
+      timestamp: new Date().toISOString()
+    });
+
     const supabase = getSupabaseBrowserClient();
 
-    // Get workout to check if it's split-based
-    const workout = await this.getById(id);
+    // Validate input
+    if (!id || typeof id !== 'string') {
+      throw new Error('Invalid workout ID provided');
+    }
+
+    // Get workout to check if it exists and is split-based
+    console.log('[WorkoutService] Fetching workout by ID:', id);
+    let workout: Workout | null;
+    try {
+      workout = await this.getById(id);
+    } catch (error) {
+      console.error('[WorkoutService] Failed to fetch workout:', {
+        workoutId: id,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      throw new Error(`Failed to fetch workout: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
     if (!workout) {
-      throw new Error('Workout not found');
+      console.error('[WorkoutService] Workout not found:', id);
+      throw new Error(`Workout not found with ID: ${id}`);
+    }
+
+    console.log('[WorkoutService] Workout found:', {
+      workoutId: id,
+      userId: workout.user_id,
+      completed: workout.completed,
+      splitPlanId: workout.split_plan_id,
+      approachId: workout.approach_id
+    });
+
+    // Check if already completed
+    if (workout.completed) {
+      console.warn('[WorkoutService] Workout already marked as completed:', id);
+      return workout;
     }
 
     const updateData: any = {
@@ -340,6 +377,12 @@ export class WorkoutService {
       updateData.mental_readiness_overall = stats.mentalReadinessOverall;
     }
 
+    console.log('[WorkoutService] Updating workout with completion data:', {
+      workoutId: id,
+      updateFields: Object.keys(updateData),
+      updateData
+    });
+
     const { data, error } = await supabase
       .from("workouts")
       .update(updateData)
@@ -348,19 +391,54 @@ export class WorkoutService {
       .single();
 
     if (error) {
-      throw new Error(`Failed to mark workout as completed: ${error.message}`);
-    }
+      console.error('[WorkoutService] Database update failed:', {
+        workoutId: id,
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
 
-    // If this workout is part of a split plan, advance the cycle
-    if (workout.split_plan_id && workout.user_id) {
-      try {
-        await SplitPlanService.advanceCycle(workout.user_id);
-      } catch (error) {
-        console.error('Failed to advance split cycle:', error);
-        // Don't throw - workout completion is more important than cycle advancement
+      // Provide specific error messages based on error code
+      if (error.code === 'PGRST116') {
+        throw new Error(`Workout not found in database: ${id}`);
+      } else if (error.code === '42501' || error.message.includes('permission')) {
+        throw new Error('Database permission denied. Please ensure you have access to update this workout.');
+      } else {
+        throw new Error(`Failed to mark workout as completed: ${error.message}`);
       }
     }
 
+    console.log('[WorkoutService] Workout marked as completed successfully:', {
+      workoutId: id,
+      completed_at: data.completed_at
+    });
+
+    // If this workout is part of a split plan, advance the cycle
+    if (workout.split_plan_id && workout.user_id) {
+      console.log('[WorkoutService] Workout is part of split plan, advancing cycle...', {
+        splitPlanId: workout.split_plan_id,
+        userId: workout.user_id
+      });
+
+      try {
+        await SplitPlanService.advanceCycle(workout.user_id);
+        console.log('[WorkoutService] Split plan cycle advanced successfully');
+      } catch (error) {
+        console.error('[WorkoutService] Failed to advance split cycle:', {
+          userId: workout.user_id,
+          splitPlanId: workout.split_plan_id,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        // Don't throw - workout completion is more important than cycle advancement
+        // The workout is already marked as completed, so we don't want to fail the entire operation
+      }
+    } else {
+      console.log('[WorkoutService] Workout is not part of a split plan, skipping cycle advancement');
+    }
+
+    console.log('[WorkoutService] markAsCompletedWithStats completed successfully');
     return data as Workout;
   }
 }

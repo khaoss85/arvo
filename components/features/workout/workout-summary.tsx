@@ -87,38 +87,121 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       return
     }
 
+    console.log('[WorkoutSummary] Starting workout completion', {
+      workoutId,
+      userId,
+      mentalReadiness: mentalReadinessSelected,
+      stats: {
+        totalVolume: stats.totalVolume,
+        duration: stats.duration,
+        totalSets: stats.totalSets
+      },
+      exerciseCount: exercises.length,
+      timestamp: new Date().toISOString()
+    })
+
     try {
       // Save mental readiness to store
+      console.log('[WorkoutSummary] Saving mental readiness to store:', mentalReadinessSelected)
       setOverallMentalReadiness(mentalReadinessSelected)
 
       // Mark workout as completed with mental readiness
+      console.log('[WorkoutSummary] Calling WorkoutService.markAsCompletedWithStats...', {
+        workoutId,
+        stats: {
+          totalVolume: stats.totalVolume,
+          duration: stats.duration,
+          mentalReadinessOverall: mentalReadinessSelected
+        }
+      })
+
       await WorkoutService.markAsCompletedWithStats(workoutId, {
         totalVolume: stats.totalVolume,
         duration: stats.duration,
         mentalReadinessOverall: mentalReadinessSelected
       })
 
+      console.log('[WorkoutSummary] Workout marked as completed successfully')
+
       // Generate AI summary with mental readiness data
+      console.log('[WorkoutSummary] Generating AI summary...')
       generateAISummary(stats.duration, stats.totalVolume, stats.totalSets, mentalReadinessSelected)
     } catch (error) {
-      console.error('Failed to complete workout:', error)
-      alert('Failed to complete workout. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+
+      console.error('[WorkoutSummary] Failed to complete workout:', {
+        error: errorMessage,
+        stack: errorStack,
+        workoutId,
+        userId,
+        stats,
+        mentalReadinessSelected,
+        workoutData: {
+          approach_id: workout?.approach_id,
+          workout_type: workout?.workout_type,
+          exerciseCount: exercises.length
+        },
+        timestamp: new Date().toISOString()
+      })
+
+      // Provide more specific error message
+      const specificError = errorMessage.includes('not found')
+        ? 'Workout not found in database. Please refresh and try again.'
+        : errorMessage.includes('permission') || errorMessage.includes('denied')
+        ? 'Database permission error. Please contact support.'
+        : errorMessage.includes('split plan') || errorMessage.includes('cycle')
+        ? 'Failed to advance training cycle. Please try again.'
+        : errorMessage.includes('network') || errorMessage.includes('fetch')
+        ? 'Network error. Check your connection and try again.'
+        : `Failed to complete workout: ${errorMessage}`
+
+      alert(specificError)
     }
   }
 
   const generateAISummary = async (duration: number, totalVolume: number, totalSets: number, mentalReadinessOverall: number) => {
-    if (!workout || !workout.approach_id) return
+    if (!workout || !workout.approach_id) {
+      console.warn('[WorkoutSummary] Cannot generate AI summary - missing workout or approach_id', {
+        hasWorkout: !!workout,
+        approachId: workout?.approach_id
+      })
+      return
+    }
+
+    console.log('[WorkoutSummary] Starting AI summary generation', {
+      userId,
+      workoutId,
+      duration,
+      totalVolume,
+      totalSets,
+      mentalReadinessOverall,
+      approachId: workout.approach_id,
+      exerciseCount: exercises.length,
+      userDemographics: {
+        age: userAge,
+        gender: userGender,
+        experienceYears: userExperienceYears
+      }
+    })
 
     setLoadingAiSummary(true)
     try {
+      const exerciseData = exercises.map(ex => ({
+        name: ex.exerciseName,
+        sets: ex.targetSets,
+        totalVolume: ex.completedSets.reduce((sum, set) => sum + (set.weight * set.reps), 0),
+        avgRIR: ex.completedSets.reduce((sum, set) => sum + set.rir, 0) / ex.completedSets.length,
+        completedSets: ex.completedSets.length
+      }))
+
+      console.log('[WorkoutSummary] Calling generateWorkoutSummaryAction with data:', {
+        exerciseDataSample: exerciseData[0],
+        exerciseCount: exerciseData.length
+      })
+
       const result = await generateWorkoutSummaryAction(userId, {
-        exercises: exercises.map(ex => ({
-          name: ex.exerciseName,
-          sets: ex.targetSets,
-          totalVolume: ex.completedSets.reduce((sum, set) => sum + (set.weight * set.reps), 0),
-          avgRIR: ex.completedSets.reduce((sum, set) => sum + set.rir, 0) / ex.completedSets.length,
-          completedSets: ex.completedSets.length
-        })),
+        exercises: exerciseData,
         totalDuration: duration,
         totalVolume,
         workoutType: workout.workout_type || 'general',
@@ -129,13 +212,37 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         mentalReadinessOverall: mentalReadinessOverall
       })
 
+      console.log('[WorkoutSummary] AI summary generation result:', {
+        success: result.success,
+        hasSummary: !!result.summary,
+        error: result.error
+      })
+
       if (result.success && result.summary) {
+        console.log('[WorkoutSummary] AI summary generated successfully', {
+          overallPerformance: result.summary.overallPerformance,
+          highlightsCount: result.summary.keyHighlights.length,
+          insightsCount: result.summary.immediateInsights.length
+        })
         setAiSummary(result.summary)
+      } else {
+        console.error('[WorkoutSummary] AI summary generation failed:', result.error)
       }
     } catch (error) {
-      console.error('Failed to generate AI summary:', error)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      const errorStack = error instanceof Error ? error.stack : undefined
+
+      console.error('[WorkoutSummary] Failed to generate AI summary:', {
+        error: errorMessage,
+        stack: errorStack,
+        userId,
+        workoutId,
+        approachId: workout.approach_id,
+        timestamp: new Date().toISOString()
+      })
     } finally {
       setLoadingAiSummary(false)
+      console.log('[WorkoutSummary] AI summary generation completed (success or failure)')
     }
   }
 
