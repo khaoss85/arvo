@@ -1,6 +1,7 @@
 import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services/exercise-generation.service'
+import { findEquipmentById } from '@/lib/constants/equipment-taxonomy'
 
 export interface ExerciseSelectionInput {
   workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
@@ -157,7 +158,7 @@ Exercise Selection Strategy:
 - Select exercises that allow pushing to/beyond failure safely
 - This is when advanced techniques (drop sets, myoreps, rest-pause) are most appropriate
 Advanced Techniques Available (from approach):
-${approach.advancedTechniques?.map((t: any) => `- ${t.name}: ${t.when}`).join('\n') || 'None specified'}
+${approach.advancedTechniques ? Object.entries(approach.advancedTechniques).map(([name, t]: [string, any]) => `- ${name}: ${t.when || 'N/A'}`).join('\n') : 'None specified'}
 ` : ''}
 ${input.mesocyclePhase === 'deload' ? `
 Phase Focus: Active recovery and maintenance
@@ -196,7 +197,6 @@ User weak points: ${input.weakPoints.join(', ') || 'None specified'}
 Available Equipment:
 ${input.availableEquipment && input.availableEquipment.length > 0
   ? input.availableEquipment.map((id: string) => {
-      const { findEquipmentById } = require('@/lib/constants/equipment-taxonomy')
       const equipment = findEquipmentById(id)
       return equipment ? `- ${equipment.label} (${equipment.commonFor.join(', ')})` : `- ${id}`
     }).join('\n')

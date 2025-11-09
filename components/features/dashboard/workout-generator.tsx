@@ -16,7 +16,9 @@ export function WorkoutGenerator({ userId }: WorkoutGeneratorProps) {
     generateWorkout(userId, {
       onSuccess: (workout) => {
         // Redirect to the newly generated workout
-        router.push(`/workout/${workout.id}`)
+        if (workout?.id) {
+          router.push(`/workout/${workout.id}`)
+        }
       }
     })
   }

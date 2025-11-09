@@ -1,6 +1,5 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { TrainingApproach } from './types'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 export class KnowledgeEngine {
   private supabase: any

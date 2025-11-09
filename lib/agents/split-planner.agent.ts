@@ -115,20 +115,26 @@ ${approach.periodization ? `
 === PERIODIZATION MODEL ===
 Mesocycle Structure:
 - Total Length: ${approach.periodization.mesocycleLength || '6 weeks'}
-- Phases: ${approach.periodization.phases?.map((p: any) => p.name).join(', ') || 'Accumulation, Intensification, Deload'}
+- Phases: Accumulation, Intensification, Deload
 
-${approach.periodization.phases?.map((phase: any) => `
-Phase: ${phase.name} (Weeks ${phase.weeks})
-- Volume Multiplier: ${phase.volumeMultiplier || 1.0}x
-- Intensity Multiplier: ${phase.intensityMultiplier || 1.0}x
-- Focus: ${phase.focus || 'Not specified'}
-`).join('') || ''}
+${approach.periodization.accumulationPhase ? `
+Phase: Accumulation (Weeks ${approach.periodization.accumulationPhase.weeks})
+- Volume Multiplier: ${approach.periodization.accumulationPhase.volumeMultiplier || 1.0}x
+- Intensity Multiplier: ${approach.periodization.accumulationPhase.intensityMultiplier || 1.0}x
+- Focus: ${approach.periodization.accumulationPhase.focus || 'Building volume'}
+` : ''}
+${approach.periodization.intensificationPhase ? `
+Phase: Intensification (Weeks ${approach.periodization.intensificationPhase.weeks})
+- Volume Multiplier: ${approach.periodization.intensificationPhase.volumeMultiplier || 1.0}x
+- Intensity Multiplier: ${approach.periodization.intensificationPhase.intensityMultiplier || 1.0}x
+- Focus: ${approach.periodization.intensificationPhase.focus || 'Increasing intensity'}
+` : ''}
 
 Deload Strategy:
 ${approach.periodization.deloadPhase ? `
 - Frequency: ${approach.periodization.deloadPhase.frequency || 'Every 6 weeks'}
 - Volume Reduction: ${approach.periodization.deloadPhase.volumeReduction || '50%'}
-- Maintain Intensity: ${approach.periodization.deloadPhase.maintainIntensity ? 'Yes' : 'No'}
+- Duration: ${approach.periodization.deloadPhase.duration || '1 week'}
 ` : 'Not specified'}
 
 ${input.mesocycleWeek && input.mesocyclePhase ? `
@@ -207,7 +213,7 @@ ${input.mesocyclePhase === 'deload' ? `
 - DELOAD PHASE: Prioritize recovery
 - Reduce volume by ${approach.periodization?.deloadPhase?.volumeReduction || '50%'}
 - Maintain exercise selection but reduce sets significantly
-- ${approach.periodization?.deloadPhase?.maintainIntensity ? 'Keep intensity/weight high' : 'Reduce both volume and intensity'}
+- Intensity: ${approach.periodization?.deloadPhase?.intensityMaintenance || 'Reduce both volume and intensity'}
 ` : ''}
 
 Output the split plan as JSON with this EXACT structure:

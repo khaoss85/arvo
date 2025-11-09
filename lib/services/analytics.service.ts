@@ -59,7 +59,7 @@ export class AnalyticsService {
     })
 
     // Calculate stats for each workout
-    const progressData = Array.from(byWorkout.entries()).map(([workoutId, sets]) => {
+    const progressData = Array.from(byWorkout.entries()).map(([_workoutId, sets]) => {
       // Find best set by e1RM
       const bestSet = sets.reduce((max: any, set: any) => {
         const maxE1RM = this.calculateE1RM(max.weight_actual || 0, max.reps_actual || 0)

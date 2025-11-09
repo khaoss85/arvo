@@ -65,7 +65,7 @@ Progression Strategy:
 - Quality reps over quantity
 ${approach.advancedTechniques ? `
 Available Advanced Techniques (from approach):
-${approach.advancedTechniques.map((t: any) => `- ${t.name}: ${t.when} | Protocol: ${t.protocol}`).join('\n')}
+${Object.entries(approach.advancedTechniques).map(([name, t]: [string, any]) => `- ${name}: ${t.when || 'N/A'} | Protocol: ${t.protocol || 'N/A'}`).join('\n')}
 
 IMPORTANT: If this is the final set or user is plateauing, suggest one of these techniques.
 ` : ''}
@@ -96,7 +96,7 @@ IMPORTANT: Remind the user to maintain this tempo in your response.
 ` : ''}
 ${approach.variables?.restPeriods ? `
 REST PERIOD GUIDANCE:
-- Compounds: ${approach.variables.restPeriods.compounds || 'Not specified'}
+- Compounds: ${approach.variables.restPeriods.compound || 'Not specified'}
 - Isolation: ${approach.variables.restPeriods.isolation || 'Not specified'}
 ${approach.variables.restPeriods.autoRegulation ? `- Autoregulation: ${approach.variables.restPeriods.autoRegulation}` : ''}
 IMPORTANT: Include rest period reminder in your response.
