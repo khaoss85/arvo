@@ -46,7 +46,7 @@ export async function completeOnboardingAction(
         splitType: data.splitType,
         weeklyFrequency: data.weeklyFrequency,
         weakPoints: data.weakPoints || [],
-        equipmentAvailable: data.equipmentPreferences ? Object.values(data.equipmentPreferences) : [],
+        equipmentAvailable: data.availableEquipment || [],
         experienceYears: data.confirmedExperience || null,
         userAge: data.age || null,
         userGender: data.gender || null
@@ -64,7 +64,8 @@ export async function completeOnboardingAction(
         user_id: userId,
         approach_id: data.approachId,
         weak_points: data.weakPoints,
-        equipment_preferences: data.equipmentPreferences,
+        available_equipment: data.availableEquipment || [],
+        equipment_preferences: data.equipmentPreferences, // Keep for backward compatibility
         strength_baseline: data.strengthBaseline,
         gender: data.gender || null,
         age: data.age || null,
@@ -143,7 +144,8 @@ async function generateWorkoutWithServerClient(
   const selection = await exerciseSelector.selectExercises({
     workoutType,
     weakPoints: profile.weak_points || [],
-    equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {},
+    availableEquipment: profile.available_equipment || [],
+    equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for old data
     recentExercises: extractRecentExercises(recentWorkouts || []),
     approachId: profile.approach_id,
     experienceYears: profile.experience_years,

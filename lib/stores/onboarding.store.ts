@@ -7,7 +7,8 @@ interface OnboardingState {
   data: {
     approachId?: string
     weakPoints?: string[]
-    equipmentPreferences?: Record<string, string>
+    equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment instead
+    availableEquipment?: string[] // New multiselect equipment array
     strengthBaseline?: Record<string, { weight: number; reps: number; rir: number }>
     // Demographic fields
     gender?: 'male' | 'female' | 'other' | null

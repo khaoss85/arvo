@@ -5,7 +5,8 @@ import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services
 export interface ExerciseSelectionInput {
   workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
   weakPoints: string[]
-  equipmentPreferences: Record<string, string>
+  equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment
+  availableEquipment?: string[] // New multiselect equipment array
   recentExercises: string[]
   approachId: string
   userId?: string | null // For exercise tracking consistency
@@ -191,7 +192,24 @@ ${periodizationContext}
 ${sessionContext}
 
 User weak points: ${input.weakPoints.join(', ') || 'None specified'}
-Equipment preferences: ${JSON.stringify(input.equipmentPreferences)}
+
+Available Equipment:
+${input.availableEquipment && input.availableEquipment.length > 0
+  ? input.availableEquipment.map((id: string) => {
+      const { findEquipmentById } = require('@/lib/constants/equipment-taxonomy')
+      const equipment = findEquipmentById(id)
+      return equipment ? `- ${equipment.label} (${equipment.commonFor.join(', ')})` : `- ${id}`
+    }).join('\n')
+  : input.equipmentPreferences
+    ? `DEPRECATED FORMAT: ${JSON.stringify(input.equipmentPreferences)}`
+    : 'No equipment specified - use bodyweight exercises or basic equipment'}
+
+When selecting exercises, you may use ANY of the available equipment above. Choose equipment that:
+1. Matches the movement pattern requirements
+2. Aligns with the training approach philosophy
+3. Provides variety across the workout
+4. Optimizes stimulus-to-fatigue ratio based on the current phase
+
 Recent exercises to avoid: ${input.recentExercises.join(', ') || 'None'}
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
