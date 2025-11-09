@@ -19,7 +19,7 @@ export default function ProfilePage() {
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
   useEffect(() => {
-    setStep(2)
+    setStep(3)
   }, [setStep])
 
   const handleGenderChange = (value: 'male' | 'female' | 'other') => {
@@ -53,12 +53,12 @@ export default function ProfilePage() {
     setStepData('age', null)
     setStepData('weight', null)
     setStepData('height', null)
-    completeStep(2)
+    completeStep(3)
     router.push('/onboarding/weak-points')
   }
 
   const handleContinue = () => {
-    completeStep(2)
+    completeStep(3)
     router.push('/onboarding/weak-points')
   }
 

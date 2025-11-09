@@ -4,10 +4,12 @@ import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
 const steps = [
   { id: 1, name: 'Approach' },
-  { id: 2, name: 'Weak Points' },
-  { id: 3, name: 'Equipment' },
-  { id: 4, name: 'Strength' },
-  { id: 5, name: 'Review' }
+  { id: 2, name: 'Split' },
+  { id: 3, name: 'Profile' },
+  { id: 4, name: 'Weak Points' },
+  { id: 5, name: 'Equipment' },
+  { id: 6, name: 'Strength' },
+  { id: 7, name: 'Review' }
 ]
 
 export default function OnboardingLayout({

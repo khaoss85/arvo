@@ -1,5 +1,6 @@
 'use server'
 
+import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { InsightsGenerator } from '@/lib/agents/insights-generator.agent'
 import type { InsightsOutput } from '@/lib/agents/insights-generator.agent'
 
@@ -8,7 +9,8 @@ export async function generateInsightsAction(
   days: number = 30
 ): Promise<{ success: boolean; insights?: InsightsOutput; error?: string }> {
   try {
-    const generator = new InsightsGenerator()
+    const supabase = await getSupabaseServerClient()
+    const generator = new InsightsGenerator(supabase)
     const insights = await generator.generateInsights(userId, days)
 
     return {

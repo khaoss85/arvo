@@ -20,6 +20,11 @@ export const StrengthBaselineSchema = z.object({
   }))
 })
 
+export const SplitSelectionSchema = z.object({
+  splitType: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom']),
+  weeklyFrequency: z.number().int().min(1).max(7)
+})
+
 export type OnboardingData = {
   approachId: string
   weakPoints: string[]
@@ -31,4 +36,7 @@ export type OnboardingData = {
   weight?: number | null
   height?: number | null
   confirmedExperience?: number | null
+  // Split selection (optional)
+  splitType?: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
+  weeklyFrequency?: number
 }

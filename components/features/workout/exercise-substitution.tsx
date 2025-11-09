@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
-import { ExerciseService } from '@/lib/services/exercise.service'
+// TODO: Reimplemented with AI-driven exercise generation (Step 2.1)
+// import { ExerciseService } from '@/lib/services/exercise.service'
 import { adjustWeightForEquipment, extractMovementPattern } from '@/lib/utils/workout-helpers'
 import { Button } from '@/components/ui/button'
 import type { Exercise } from '@/lib/types/schemas'
@@ -31,16 +32,12 @@ export function ExerciseSubstitution({
     try {
       setLoading(true)
 
-      // Get movement pattern from exercise name
-      const pattern = extractMovementPattern(currentExercise.exerciseName)
+      // TODO (Step 2.1): Reimplement with AI-driven exercise generation
+      // Will use ExerciseGenerationService to find or generate alternatives
+      // based on movement pattern, equipment, and approach principles
 
-      // Fetch similar exercises
-      const exercises = await ExerciseService.getByPattern(pattern)
-
-      // Filter out current exercise
-      const filtered = exercises.filter(ex => ex.name !== currentExercise.exerciseName)
-
-      setAlternatives(filtered)
+      // Temporarily return empty array - feature disabled during migration
+      setAlternatives([])
     } catch (error) {
       console.error('Failed to load alternatives:', error)
     } finally {
@@ -131,7 +128,8 @@ export function ExerciseSubstitution({
             </div>
           ) : alternatives.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-400">No alternatives found for this exercise pattern.</p>
+              <p className="text-gray-400">Exercise substitution is being upgraded to AI-driven generation.</p>
+              <p className="text-gray-500 text-sm mt-2">This feature will be available soon.</p>
             </div>
           ) : (
             <div className="space-y-2">

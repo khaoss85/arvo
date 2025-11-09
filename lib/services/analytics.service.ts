@@ -108,8 +108,7 @@ export class AnalyticsService {
       .from('sets_log')
       .select(`
         *,
-        workouts!inner(user_id),
-        exercises!inner(name)
+        workouts!inner(user_id)
       `)
       .eq('workouts.user_id', userId)
       .not('weight_actual', 'is', null)
@@ -118,19 +117,19 @@ export class AnalyticsService {
     if (error) throw new Error(`Failed to fetch personal records: ${error.message}`)
     if (!data || data.length === 0) return []
 
-    // Group by exercise and find best e1RM for each
+    // Group by exercise name and find best e1RM for each
     const prsByExercise = new Map<string, any>()
 
     data.forEach((set: any) => {
-      const exerciseId = set.exercise_id
+      const exerciseName = set.exercise_name
       const e1rm = this.calculateE1RM(set.weight_actual, set.reps_actual)
       const volume = set.weight_actual * set.reps_actual
 
-      const current = prsByExercise.get(exerciseId)
+      const current = prsByExercise.get(exerciseName)
       if (!current || e1rm > current.e1rm) {
-        prsByExercise.set(exerciseId, {
-          exerciseId,
-          exerciseName: (set.exercises as any).name,
+        prsByExercise.set(exerciseName, {
+          exerciseId: set.exercise_id || exerciseName, // Use exercise_id if available, fallback to name
+          exerciseName: exerciseName,
           weight: set.weight_actual,
           reps: set.reps_actual,
           e1rm,

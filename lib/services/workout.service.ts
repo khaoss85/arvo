@@ -6,6 +6,7 @@ import {
   type InsertWorkout,
   type UpdateWorkout,
 } from "@/lib/types/schemas";
+import { SplitPlanService } from "./split-plan.service";
 
 export class WorkoutService {
   /**
@@ -299,6 +300,7 @@ export class WorkoutService {
 
   /**
    * Mark workout as completed with stats
+   * Automatically advances cycle day if workout is part of a split plan
    */
   static async markAsCompletedWithStats(
     id: string,
@@ -311,6 +313,12 @@ export class WorkoutService {
     }
   ): Promise<Workout> {
     const supabase = getSupabaseBrowserClient();
+
+    // Get workout to check if it's split-based
+    const workout = await this.getById(id);
+    if (!workout) {
+      throw new Error('Workout not found');
+    }
 
     const updateData: any = {
       completed: true,
@@ -341,6 +349,16 @@ export class WorkoutService {
 
     if (error) {
       throw new Error(`Failed to mark workout as completed: ${error.message}`);
+    }
+
+    // If this workout is part of a split plan, advance the cycle
+    if (workout.split_plan_id && workout.user_id) {
+      try {
+        await SplitPlanService.advanceCycle(workout.user_id);
+      } catch (error) {
+        console.error('Failed to advance split cycle:', error);
+        // Don't throw - workout completion is more important than cycle advancement
+      }
     }
 
     return data as Workout;

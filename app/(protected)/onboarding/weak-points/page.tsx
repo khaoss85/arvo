@@ -10,7 +10,7 @@ export default function WeakPointsPage() {
   const [selectedParts, setSelectedParts] = useState<string[]>(data.weakPoints || [])
 
   useEffect(() => {
-    setStep(3)
+    setStep(4)
   }, [setStep])
 
   const handleToggle = (part: string) => {
@@ -31,11 +31,11 @@ export default function WeakPointsPage() {
 
   const handleSkip = () => {
     setStepData('weakPoints', [])
-    completeStep(3)
+    completeStep(4)
   }
 
   const handleContinue = () => {
-    completeStep(3)
+    completeStep(4)
   }
 
   return (

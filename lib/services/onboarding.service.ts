@@ -20,7 +20,9 @@ export class OnboardingService {
         weight: data.weight || null,
         height: data.height || null,
         experience_years: 0, // Can be added to onboarding later
-        preferred_split: null // Default split, can be updated later
+        preferred_split: null, // Default split, can be updated later
+        active_split_plan_id: null, // No split plan yet
+        current_cycle_day: null // No active cycle yet
       })
 
       // Generate first AI-powered workout using the collected preferences

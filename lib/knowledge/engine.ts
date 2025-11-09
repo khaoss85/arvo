@@ -29,7 +29,17 @@ export class KnowledgeEngine {
       variables: data.variables as TrainingApproach['variables'],
       progression: data.progression_rules as TrainingApproach['progression'],
       exerciseSelection: data.exercise_rules as TrainingApproach['exerciseSelection'],
-      rationales: data.rationales as Record<string, string> || {}
+      rationales: data.rationales as Record<string, string> || {},
+
+      // Optional Kuba methodology fields (approach-agnostic)
+      volumeLandmarks: data.volume_landmarks || undefined,
+      frequencyGuidelines: data.frequency_guidelines || undefined,
+      romEmphasis: data.rom_emphasis || undefined,
+      exerciseSelectionPrinciples: data.exercise_selection_principles || undefined,
+      stimulusToFatigue: data.stimulus_to_fatigue || undefined,
+      advancedTechniques: data.advanced_techniques || undefined,
+      splitVariations: data.split_variations || undefined,
+      periodization: data.periodization || undefined
     }
   }
 
@@ -52,6 +62,23 @@ Approach: ${approach.name}
 Exercises per workout: ${approach.exerciseSelection.exercisesPerWorkout.min}-${approach.exerciseSelection.exercisesPerWorkout.max}
 Priority rules: ${approach.exerciseSelection.priorityRules.join(', ')}
 Distribution: ${approach.exerciseSelection.exercisesPerWorkout.distribution}
+        `.trim()
+
+      case 'split_planning':
+        return `
+Training Approach: ${approach.name} by ${approach.creator}
+Philosophy: ${approach.philosophy}
+
+Core Training Variables:
+- Sets per exercise: ${approach.variables.setsPerExercise.working} working sets
+- Rep ranges: Compounds ${approach.variables.repRanges.compound.join('-')}, Isolation ${approach.variables.repRanges.isolation.join('-')}
+- RIR targets: Normal=${approach.variables.rirTarget.normal}, Intense=${approach.variables.rirTarget.intense}, Deload=${approach.variables.rirTarget.deload}
+- Training frequency: ${approach.variables.frequency.weeklyPattern}
+
+Exercise Selection Philosophy:
+- Priority rules: ${approach.exerciseSelection.priorityRules.join(', ')}
+- Exercises per workout: ${approach.exerciseSelection.exercisesPerWorkout.min}-${approach.exerciseSelection.exercisesPerWorkout.max}
+- Distribution: ${approach.exerciseSelection.exercisesPerWorkout.distribution}
         `.trim()
 
       default:

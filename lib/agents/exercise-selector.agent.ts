@@ -1,5 +1,6 @@
 import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services/exercise-generation.service'
 
 export interface ExerciseSelectionInput {
   workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
@@ -7,10 +8,15 @@ export interface ExerciseSelectionInput {
   equipmentPreferences: Record<string, string>
   recentExercises: string[]
   approachId: string
+  userId?: string | null // For exercise tracking consistency
   // User demographics for personalized exercise selection
   experienceYears?: number | null
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
+  // Split context (optional)
+  sessionFocus?: string[] // Muscle groups for this session
+  targetVolume?: Record<string, number> // Target sets per muscle
+  sessionPrinciples?: string[] // Principles to emphasize
 }
 
 export interface SelectedExercise {
@@ -21,6 +27,14 @@ export interface SelectedExercise {
   restSeconds: number
   rationaleForSelection: string
   alternatives: string[]
+  // Metadata for exercise generation tracking
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+  movementPattern?: string
+  romEmphasis?: 'lengthened' | 'shortened' | 'full_range'
+  unilateral?: boolean
+  // Technical guidance for execution
+  technicalCues?: string[] // 2-4 brief, actionable technical cues for proper form
 }
 
 export interface ExerciseSelectionOutput {
@@ -30,7 +44,7 @@ export interface ExerciseSelectionOutput {
 }
 
 export class ExerciseSelector extends BaseAgent {
-  private supabase: any
+  protected supabase: any
 
   constructor(supabaseClient?: any) {
     super(supabaseClient)
@@ -48,12 +62,6 @@ Consider equipment preferences and provide alternatives.`
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
 
-    // Get available exercises from database
-    const { data: exercises } = await this.supabase
-      .from('exercises')
-      .select('*')
-      .ilike('pattern', `%${input.workoutType}%`)
-
     const demographicContext = input.experienceYears || input.userAge || input.userGender
       ? `
 User Demographics:
@@ -63,19 +71,94 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}
 `
       : ''
 
+    // Build exercise selection principles context if available
+    const exercisePrinciplesContext = approach.exerciseSelectionPrinciples
+      ? `
+Exercise Selection Principles:
+${approach.exerciseSelectionPrinciples.movementPatterns ? `
+Movement Patterns Available:
+${JSON.stringify(approach.exerciseSelectionPrinciples.movementPatterns, null, 2)}
+` : ''}
+${approach.exerciseSelectionPrinciples.unilateralRequirements ? `
+Unilateral Requirements:
+- Minimum per workout: ${approach.exerciseSelectionPrinciples.unilateralRequirements.minPerWorkout}
+- Target muscles: ${approach.exerciseSelectionPrinciples.unilateralRequirements.targetMuscles.join(', ')}
+- Rationale: ${approach.exerciseSelectionPrinciples.unilateralRequirements.rationale}
+` : ''}
+${approach.exerciseSelectionPrinciples.compoundToIsolationRatio ? `
+Compound/Isolation Ratio:
+- Compound: ${approach.exerciseSelectionPrinciples.compoundToIsolationRatio.compound}%
+- Isolation: ${approach.exerciseSelectionPrinciples.compoundToIsolationRatio.isolation}%
+- Rationale: ${approach.exerciseSelectionPrinciples.compoundToIsolationRatio.rationale}
+` : ''}
+`
+      : ''
+
+    const romEmphasisContext = approach.romEmphasis
+      ? `
+ROM Emphasis Guidelines:
+- Lengthened-biased exercises: ${approach.romEmphasis.lengthened}%
+- Shortened-biased exercises: ${approach.romEmphasis.shortened}%
+- Full-range exercises: ${approach.romEmphasis.fullRange}%
+Principles:
+${approach.romEmphasis.principles.map(p => `- ${p}`).join('\n')}
+`
+      : ''
+
+    const stimulusToFatigueContext = approach.stimulusToFatigue
+      ? `
+Stimulus-to-Fatigue Considerations:
+${approach.stimulusToFatigue.principles.map(p => `- ${p}`).join('\n')}
+${approach.stimulusToFatigue.applicationGuidelines ? `\nApplication: ${approach.stimulusToFatigue.applicationGuidelines}` : ''}
+`
+      : ''
+
+    // Build session context if provided (for split-based workouts)
+    const sessionContext = input.sessionFocus || input.targetVolume || input.sessionPrinciples
+      ? `
+=== SESSION CONTEXT ===
+${input.sessionFocus ? `Muscle Groups Focus: ${input.sessionFocus.join(', ')}` : ''}
+${input.targetVolume ? `Target Volume per Muscle: ${JSON.stringify(input.targetVolume, null, 2)}` : ''}
+${input.sessionPrinciples ? `Session Principles:\n${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
+`
+      : ''
+
     const prompt = `
-Create a ${input.workoutType} workout.
+Create a ${input.workoutType} workout using AI-generated exercises.
 
 Approach context:
 ${context}
 ${demographicContext}
-User weak points: ${input.weakPoints.join(', ')}
+${exercisePrinciplesContext}
+${romEmphasisContext}
+${stimulusToFatigueContext}
+${sessionContext}
+
+User weak points: ${input.weakPoints.join(', ') || 'None specified'}
 Equipment preferences: ${JSON.stringify(input.equipmentPreferences)}
-Recent exercises to avoid: ${input.recentExercises.join(', ')}
-Available exercises: ${JSON.stringify(exercises)}
+Recent exercises to avoid: ${input.recentExercises.join(', ') || 'None'}
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
 ${input.userAge && input.userAge > 50 ? `Consider that the user is ${input.userAge} years old - prioritize joint-friendly exercise variations when possible.` : ''}
+
+IMPORTANT: Generate exercises from first principles based on the approach philosophy above.
+Do NOT rely on a pre-existing exercise database. Create exercise names that are:
+- Descriptive (e.g., "Incline Dumbbell Press" not "Exercise 1")
+- Specific to equipment variant
+- Anatomically accurate
+- Consistent with standard exercise nomenclature
+
+For each exercise, also provide:
+- primaryMuscles: array of primary muscles worked
+- secondaryMuscles: array of secondary muscles
+- movementPattern: the movement type (e.g., "horizontal_push", "vertical_pull", "squat", "hinge")
+- romEmphasis: "lengthened", "shortened", or "full_range"
+- unilateral: true if single-limb exercise
+- technicalCues: 2-4 brief, actionable technical cues for proper form
+  * Keep cues SHORT and CLEAR (max 8-10 words each)
+  * Make them ACTIONABLE and easy to remember in the gym
+  * Tailor to the approach philosophy (e.g., Kuba Method emphasizes stretch, contraction, ROM)
+  * Examples: "Semi-bent arms throughout the movement", "Squeeze pecs hard at top", "Avoid lockout on elbows"
 
 Select 4-6 exercises following the approach philosophy.
 
@@ -89,7 +172,13 @@ Required JSON structure:
       "repRange": [number, number],
       "restSeconds": number,
       "rationaleForSelection": "string",
-      "alternatives": ["string"]
+      "alternatives": ["string"],
+      "primaryMuscles": ["string"],
+      "secondaryMuscles": ["string"],
+      "movementPattern": "string",
+      "romEmphasis": "lengthened" | "shortened" | "full_range",
+      "unilateral": boolean,
+      "technicalCues": ["string"]
     }
   ],
   "workoutRationale": "string",
@@ -97,6 +186,46 @@ Required JSON structure:
 }
     `
 
-    return await this.complete<ExerciseSelectionOutput>(prompt)
+    const result = await this.complete<ExerciseSelectionOutput>(prompt)
+
+    // Save generated exercises to database for consistency tracking
+    if (input.userId) {
+      await this.saveGeneratedExercises(result.exercises, input.userId)
+    }
+
+    return result
+  }
+
+  /**
+   * Save AI-generated exercises to database for naming consistency
+   * Uses findOrCreate to reuse existing exercises with same name
+   */
+  private async saveGeneratedExercises(
+    exercises: SelectedExercise[],
+    userId: string | null
+  ): Promise<void> {
+    try {
+      await Promise.all(
+        exercises.map(async (exercise) => {
+          const metadata: ExerciseMetadata = {
+            primaryMuscles: exercise.primaryMuscles,
+            secondaryMuscles: exercise.secondaryMuscles,
+            movementPattern: exercise.movementPattern,
+            romEmphasis: exercise.romEmphasis,
+            unilateral: exercise.unilateral,
+            equipmentUsed: exercise.equipmentVariant ? [exercise.equipmentVariant] : [],
+          }
+
+          await ExerciseGenerationService.findOrCreate(
+            exercise.name,
+            metadata,
+            userId
+          )
+        })
+      )
+    } catch (error) {
+      console.error('Failed to save generated exercises:', error)
+      // Don't throw - this is background tracking, not critical
+    }
   }
 }

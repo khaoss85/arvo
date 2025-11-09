@@ -33,6 +33,30 @@ export async function completeOnboardingAction(
   try {
     const supabase = await getSupabaseServerClient()
 
+    // Determine split plan ID if split selection was made
+    let splitPlanId: string | null = null
+
+    // Generate split plan if user selected a split type
+    if (data.splitType && data.weeklyFrequency) {
+      const { generateSplitPlanAction } = await import('./split-actions')
+
+      const splitResult = await generateSplitPlanAction({
+        userId,
+        approachId: data.approachId,
+        splitType: data.splitType,
+        weeklyFrequency: data.weeklyFrequency,
+        weakPoints: data.weakPoints || [],
+        equipmentAvailable: data.equipmentPreferences ? Object.values(data.equipmentPreferences) : [],
+        experienceYears: data.confirmedExperience || null,
+        userAge: data.age || null,
+        userGender: data.gender || null
+      })
+
+      if (splitResult.success && splitResult.data) {
+        splitPlanId = splitResult.data.splitPlan.id
+      }
+    }
+
     // Upsert user profile using server client (bypasses RLS with server role)
     const { error: profileError } = await supabase
       .from('user_profiles')
@@ -46,7 +70,10 @@ export async function completeOnboardingAction(
         age: data.age || null,
         weight: data.weight || null,
         height: data.height || null,
-        experience_years: data.confirmedExperience || 0
+        experience_years: data.confirmedExperience || 0,
+        preferred_split: data.splitType || null,
+        active_split_plan_id: splitPlanId,
+        current_cycle_day: splitPlanId ? 1 : null
       })
 
     if (profileError) {
@@ -178,7 +205,12 @@ async function generateWorkoutWithServerClient(
     workout_type: workoutType,
     workout_name: workoutName,
     target_muscle_groups: targetMuscleGroups,
-    split_type: preferredSplit
+    split_type: preferredSplit,
+    // Split plan fields (null for non-split workouts)
+    split_plan_id: null,
+    cycle_day: null,
+    variation: null,
+    mental_readiness_overall: null
   }
 
   const { data: workout, error: workoutError } = await supabase

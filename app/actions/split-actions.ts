@@ -1,0 +1,210 @@
+'use server'
+
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
+import { SplitPlanService, type SessionDefinition } from '@/lib/services/split-plan.service'
+import type { SplitPlan } from '@/lib/types/schemas'
+
+/**
+ * Generate a new split plan using AI
+ * Server action to access OpenAI API key
+ */
+export async function generateSplitPlanAction(input: SplitPlannerInput) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Use SplitPlanner agent with server client
+    const splitPlanner = new SplitPlanner(supabase)
+
+    // Generate split plan using AI
+    const splitPlanData = await splitPlanner.planSplit(input)
+
+    // Create split plan in database
+    const splitPlan = await SplitPlanService.createServer({
+      user_id: input.userId,
+      approach_id: input.approachId,
+      split_type: input.splitType,
+      cycle_days: splitPlanData.cycleDays,
+      sessions: splitPlanData.sessions as any,
+      frequency_map: splitPlanData.frequencyMap as any,
+      volume_distribution: splitPlanData.volumeDistribution as any,
+      active: true,
+    })
+
+    return {
+      success: true,
+      data: {
+        splitPlan,
+        rationale: splitPlanData.rationale,
+        weeklyScheduleExample: splitPlanData.weeklyScheduleExample,
+      }
+    }
+  } catch (error: any) {
+    console.error('Error generating split plan:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to generate split plan'
+    }
+  }
+}
+
+/**
+ * Get active split plan for user
+ */
+export async function getActiveSplitPlanAction(userId: string) {
+  try {
+    const splitPlan = await SplitPlanService.getActiveServer(userId)
+
+    return {
+      success: true,
+      data: splitPlan
+    }
+  } catch (error: any) {
+    console.error('Error getting active split plan:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get active split plan'
+    }
+  }
+}
+
+/**
+ * Get preview of next workout based on current cycle
+ */
+export async function getNextWorkoutPreviewAction(userId: string) {
+  try {
+    const nextWorkoutData = await SplitPlanService.getNextWorkout(userId)
+
+    if (!nextWorkoutData) {
+      return {
+        success: false,
+        error: 'No active split plan found'
+      }
+    }
+
+    const { session, splitPlan, cycleDay } = nextWorkoutData
+
+    return {
+      success: true,
+      data: {
+        sessionName: session.name,
+        workoutType: session.workoutType,
+        variation: session.variation,
+        focus: session.focus,
+        targetVolume: session.targetVolume,
+        principles: session.principles,
+        cycleDay,
+        totalCycleDays: splitPlan.cycle_days,
+        splitType: splitPlan.split_type,
+      }
+    }
+  } catch (error: any) {
+    console.error('Error getting next workout preview:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get next workout preview'
+    }
+  }
+}
+
+/**
+ * Manually advance split cycle (for rest days or missed workouts)
+ */
+export async function advanceSplitCycleAction(userId: string) {
+  try {
+    const nextDay = await SplitPlanService.advanceCycle(userId)
+
+    return {
+      success: true,
+      data: { nextDay }
+    }
+  } catch (error: any) {
+    console.error('Error advancing split cycle:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to advance split cycle'
+    }
+  }
+}
+
+/**
+ * Deactivate current split plan
+ */
+export async function deactivateSplitPlanAction(userId: string) {
+  try {
+    await SplitPlanService.deactivateAll(userId)
+
+    return {
+      success: true,
+      data: null
+    }
+  } catch (error: any) {
+    console.error('Error deactivating split plan:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to deactivate split plan'
+    }
+  }
+}
+
+/**
+ * Get all split plans for user (including inactive)
+ */
+export async function getAllSplitPlansAction(userId: string) {
+  try {
+    const splitPlans = await SplitPlanService.getAll(userId)
+
+    return {
+      success: true,
+      data: splitPlans
+    }
+  } catch (error: any) {
+    console.error('Error getting split plans:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get split plans'
+    }
+  }
+}
+
+/**
+ * Activate an existing split plan
+ */
+export async function activateSplitPlanAction(
+  splitPlanId: string,
+  userId: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Deactivate all other plans
+    await SplitPlanService.deactivateAll(userId)
+
+    // Activate this plan
+    await supabase
+      .from('split_plans')
+      .update({ active: true })
+      .eq('id', splitPlanId)
+      .eq('user_id', userId)
+
+    // Update user profile
+    await supabase
+      .from('user_profiles')
+      .update({
+        active_split_plan_id: splitPlanId,
+        current_cycle_day: 1,
+      })
+      .eq('user_id', userId)
+
+    return {
+      success: true,
+      data: null
+    }
+  } catch (error: any) {
+    console.error('Error activating split plan:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to activate split plan'
+    }
+  }
+}

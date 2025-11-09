@@ -27,7 +27,7 @@ export class UserProfileService {
       throw new Error(`Failed to fetch user profile: ${error.message}`);
     }
 
-    return data as UserProfile;
+    return data as any as UserProfile;
   }
 
   /**
@@ -48,7 +48,7 @@ export class UserProfileService {
       throw new Error(`Failed to create user profile: ${error.message}`);
     }
 
-    return data as UserProfile;
+    return data as any as UserProfile;
   }
 
   /**
@@ -73,7 +73,7 @@ export class UserProfileService {
       throw new Error(`Failed to update user profile: ${error.message}`);
     }
 
-    return data as UserProfile;
+    return data as any as UserProfile;
   }
 
   /**
@@ -94,7 +94,7 @@ export class UserProfileService {
       throw new Error(`Failed to upsert user profile: ${error.message}`);
     }
 
-    return data as UserProfile;
+    return data as any as UserProfile;
   }
 
   /**
@@ -117,6 +117,6 @@ export class UserProfileService {
       throw new Error(`Failed to fetch user profile: ${error.message}`);
     }
 
-    return data as UserProfile;
+    return data as any as UserProfile;
   }
 }

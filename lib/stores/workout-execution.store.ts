@@ -19,6 +19,7 @@ export interface ExerciseExecution {
     loggedAt: Date
   }>
   currentAISuggestion: ProgressionOutput | null
+  technicalCues?: string[] // Brief technical cues for proper form
 }
 
 interface WorkoutExecutionState {
@@ -93,7 +94,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           targetReps: ex.repRange || [6, 10],
           targetWeight: ex.targetWeight || 0,
           completedSets: [],
-          currentAISuggestion: null
+          currentAISuggestion: null,
+          technicalCues: ex.technicalCues || []
         }))
 
         set({
@@ -139,7 +141,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               mentalReadiness: s.mental_readiness || undefined,
               loggedAt: s.created_at ? new Date(s.created_at) : new Date()
             })),
-            currentAISuggestion: null
+            currentAISuggestion: null,
+            technicalCues: ex.technicalCues || []
           }
         })
 
@@ -213,7 +216,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         try {
           await SetLogService.create({
             workout_id: workoutId,
-            exercise_id: currentExercise.exerciseId,
+            exercise_id: currentExercise.exerciseId || null,
+            exercise_name: currentExercise.exerciseName,
             set_number: currentExercise.completedSets.length + 1,
             weight_target: currentExercise.targetWeight,
             weight_actual: setData.weight,

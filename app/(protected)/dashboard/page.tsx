@@ -4,6 +4,7 @@ import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
 import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
+import { SplitCycleView } from "@/components/features/dashboard/split-cycle-view";
 import { Button } from "@/components/ui/button";
 import {
   inferWorkoutType,
@@ -64,6 +65,11 @@ export default async function DashboardPage() {
               </Link>
             </div>
           </div>
+        </div>
+
+        {/* Split Cycle View - Shows active split plan and next workout */}
+        <div className="mb-8">
+          <SplitCycleView userId={user.id} />
         </div>
 
         {/* Workout Generator Section */}

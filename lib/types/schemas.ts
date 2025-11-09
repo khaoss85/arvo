@@ -40,6 +40,9 @@ export const userProfileSchema = z.object({
   strength_baseline: z.record(z.string(), z.unknown()).nullable(),
   equipment_preferences: z.record(z.string(), z.unknown()).nullable(),
   preferred_split: z.string().nullable(),
+  // Split planning fields
+  active_split_plan_id: z.string().uuid().nullable(),
+  current_cycle_day: z.number().int().min(1).nullable(),
   // Demographic fields for personalized AI training
   gender: z.enum(['male', 'female', 'other']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
@@ -51,7 +54,51 @@ export const insertUserProfileSchema = userProfileSchema;
 
 export const updateUserProfileSchema = userProfileSchema.partial().required({ user_id: true });
 
-// Exercises Schema
+// Split Plans Schema
+export const splitPlanSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  approach_id: z.string().uuid().nullable(),
+  split_type: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom']),
+  cycle_days: z.number().int().min(1), // e.g., 8 for Kuba's 3 on 1 off cycle
+  sessions: z.array(z.record(z.string(), z.unknown())), // Array of SessionDefinition objects
+  frequency_map: z.record(z.string(), z.number()), // muscle group -> frequency per week
+  volume_distribution: z.record(z.string(), z.number()), // muscle group -> total sets in cycle
+  active: z.boolean().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertSplitPlanSchema = splitPlanSchema.omit({ id: true, created_at: true, updated_at: true }).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateSplitPlanSchema = insertSplitPlanSchema.partial();
+
+// Exercise Generations Schema (AI-generated exercises)
+export const exerciseGenerationSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1, "Exercise name is required"),
+  generated_by_ai: z.boolean().nullable(),
+  metadata: z.record(z.string(), z.unknown()).nullable(), // primaryMuscles, secondaryMuscles, movementPattern, romEmphasis, unilateral, equipmentUsed
+  user_id: z.string().uuid().nullable(), // NULL for global exercises
+  usage_count: z.number().int().min(0).nullable(),
+  last_used_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertExerciseGenerationSchema = exerciseGenerationSchema.omit({ id: true, created_at: true, last_used_at: true }).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  last_used_at: z.string().datetime().optional(),
+});
+
+export const updateExerciseGenerationSchema = insertExerciseGenerationSchema.partial();
+
+// DEPRECATED: Old exercises table (dropped in migration)
+// Kept for backwards compatibility with existing code
 export const exerciseSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, "Exercise name is required"),
@@ -84,6 +131,10 @@ export const workoutSchema = z.object({
   target_muscle_groups: z.array(z.string()).nullable(),
   split_type: z.string().nullable(),
   mental_readiness_overall: z.number().int().min(1).max(5).nullable(),
+  // Split planning fields
+  split_plan_id: z.string().uuid().nullable(),
+  cycle_day: z.number().int().min(1).nullable(), // Which day of the cycle (1 to cycle_days)
+  variation: z.enum(['A', 'B']).nullable(), // A/B variation
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({
@@ -97,6 +148,7 @@ export const setLogSchema = z.object({
   id: z.string().uuid(),
   workout_id: z.string().uuid().nullable(),
   exercise_id: z.string().uuid().nullable(),
+  exercise_name: z.string().min(1, "Exercise name is required"),
   set_number: z.number().int().min(1).nullable(),
   weight_target: z.number().min(0).nullable(),
   weight_actual: z.number().min(0).nullable(),
@@ -139,3 +191,11 @@ export type UpdateWorkout = z.infer<typeof updateWorkoutSchema>;
 export type SetLog = z.infer<typeof setLogSchema>;
 export type InsertSetLog = z.infer<typeof insertSetLogSchema>;
 export type UpdateSetLog = z.infer<typeof updateSetLogSchema>;
+
+export type SplitPlan = z.infer<typeof splitPlanSchema>;
+export type InsertSplitPlan = z.infer<typeof insertSplitPlanSchema>;
+export type UpdateSplitPlan = z.infer<typeof updateSplitPlanSchema>;
+
+export type ExerciseGeneration = z.infer<typeof exerciseGenerationSchema>;
+export type InsertExerciseGeneration = z.infer<typeof insertExerciseGenerationSchema>;
+export type UpdateExerciseGeneration = z.infer<typeof updateExerciseGenerationSchema>;

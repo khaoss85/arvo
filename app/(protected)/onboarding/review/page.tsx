@@ -24,7 +24,7 @@ export default function ReviewPage() {
   const [isEditingExperience, setIsEditingExperience] = useState(false)
 
   useEffect(() => {
-    setStep(6)
+    setStep(7)
     if (data.approachId) {
       loadApproach()
     }
@@ -77,7 +77,10 @@ export default function ReviewPage() {
         gender: data.gender || null,
         age: data.age || null,
         weight: data.weight || null,
-        height: data.height || null
+        height: data.height || null,
+        confirmedExperience: data.confirmedExperience || null,
+        splitType: data.splitType,
+        weeklyFrequency: data.weeklyFrequency
       })
 
       if (!result.success) {
@@ -157,6 +160,34 @@ export default function ReviewPage() {
           )}
         </div>
 
+        {/* Split Selection */}
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold">Training Split</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleEdit(2, '/onboarding/split')}
+            >
+              Edit
+            </Button>
+          </div>
+          {data.splitType && data.weeklyFrequency ? (
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Split Type:</span>
+                <span className="font-medium capitalize">{data.splitType.replace(/_/g, ' ')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600 dark:text-gray-400">Training Frequency:</span>
+                <span className="font-medium">{data.weeklyFrequency} days/week</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 dark:text-gray-400">No split selected</p>
+          )}
+        </div>
+
         {/* Profile */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
@@ -164,7 +195,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(2, '/onboarding/profile')}
+              onClick={() => handleEdit(3, '/onboarding/profile')}
             >
               Edit
             </Button>
@@ -208,7 +239,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(3, '/onboarding/weak-points')}
+              onClick={() => handleEdit(4, '/onboarding/weak-points')}
             >
               Edit
             </Button>
@@ -236,7 +267,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(4, '/onboarding/equipment')}
+              onClick={() => handleEdit(5, '/onboarding/equipment')}
             >
               Edit
             </Button>
@@ -264,7 +295,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(5, '/onboarding/strength')}
+              onClick={() => handleEdit(6, '/onboarding/strength')}
             >
               Edit
             </Button>

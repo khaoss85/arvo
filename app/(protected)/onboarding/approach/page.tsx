@@ -32,7 +32,7 @@ export default function ApproachSelectionPage() {
   const selectApproach = (approachId: string) => {
     setStepData('approachId', approachId)
     completeStep(1)
-    router.push('/onboarding/profile')
+    router.push('/onboarding/split')
   }
 
   return (

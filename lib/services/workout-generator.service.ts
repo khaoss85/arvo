@@ -1,6 +1,7 @@
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { WorkoutService } from './workout.service'
 import { UserProfileService } from './user-profile.service'
+import { SplitPlanService } from './split-plan.service'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import {
   getNextWorkoutType,
@@ -15,6 +16,7 @@ import type { Workout, InsertWorkout } from '@/lib/types/schemas'
 export class WorkoutGeneratorService {
   /**
    * Generate AI-powered workout for user
+   * Supports both split-based and rotation-based generation
    */
   static async generateWorkout(userId: string): Promise<Workout> {
     const exerciseSelector = new ExerciseSelector()
@@ -29,22 +31,49 @@ export class WorkoutGeneratorService {
       throw new Error('No training approach selected. Please select a training approach in your profile.')
     }
 
-    // Get recent workouts to determine rotation
+    // Get recent workouts
     const recentWorkouts = await WorkoutService.getCompleted(userId, 3)
 
-    // Get user's preferred split type (defaults to push_pull_legs)
-    const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
+    // Check if user has an active split plan
+    const nextWorkoutData = await SplitPlanService.getNextWorkout(userId)
 
-    // Determine next workout type based on preferred split and last workout
-    let lastWorkoutType: WorkoutType | null = null
-    if (recentWorkouts && recentWorkouts.length > 0) {
-      const lastWorkout = recentWorkouts[0]
-      // Try to get workout_type from database, fallback to inference
-      lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
-                       inferWorkoutType(lastWorkout.exercises as any[] || [])
+    let workoutType: WorkoutType
+    let splitPlanId: string | null = null
+    let cycleDay: number | null = null
+    let variation: 'A' | 'B' | null = null
+    let sessionContext: {
+      sessionFocus?: string[]
+      targetVolume?: Record<string, number>
+      sessionPrinciples?: string[]
+    } = {}
+
+    if (nextWorkoutData) {
+      // SPLIT-BASED GENERATION
+      const { session, splitPlan } = nextWorkoutData
+      workoutType = session.workoutType as WorkoutType
+      splitPlanId = splitPlan.id
+      cycleDay = nextWorkoutData.cycleDay
+      variation = session.variation
+
+      // Pass session context to exercise selector
+      sessionContext = {
+        sessionFocus: session.focus,
+        targetVolume: session.targetVolume,
+        sessionPrinciples: session.principles
+      }
+    } else {
+      // ROTATION-BASED GENERATION (fallback for users without split plan)
+      const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
+
+      let lastWorkoutType: WorkoutType | null = null
+      if (recentWorkouts && recentWorkouts.length > 0) {
+        const lastWorkout = recentWorkouts[0]
+        lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
+                         inferWorkoutType(lastWorkout.exercises as any[] || [])
+      }
+
+      workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
     }
-
-    const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
     // Select exercises using AI
     const selection = await exerciseSelector.selectExercises({
@@ -52,7 +81,12 @@ export class WorkoutGeneratorService {
       weakPoints: profile.weak_points || [],
       equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {},
       recentExercises: this.extractRecentExercises(recentWorkouts),
-      approachId: profile.approach_id
+      approachId: profile.approach_id,
+      userId,
+      experienceYears: profile.experience_years,
+      userAge: profile.age,
+      userGender: profile.gender,
+      ...sessionContext
     })
 
     // Get exercise history and calculate initial targets
@@ -114,7 +148,12 @@ export class WorkoutGeneratorService {
       workout_type: workoutType,
       workout_name: workoutName,
       target_muscle_groups: targetMuscleGroups,
-      split_type: preferredSplit
+      split_type: profile.preferred_split || 'push_pull_legs',
+      // Split plan fields
+      split_plan_id: splitPlanId,
+      cycle_day: cycleDay,
+      variation: variation,
+      mental_readiness_overall: null
     }
 
     return await WorkoutService.create(workoutData)
@@ -132,6 +171,7 @@ export class WorkoutGeneratorService {
 
   /**
    * Get exercise history for a specific exercise
+   * Uses exercise_name since exercises table was replaced with exercise_generations
    */
   private static async getExerciseHistory(
     userId: string,
@@ -139,22 +179,12 @@ export class WorkoutGeneratorService {
   ): Promise<any[]> {
     const supabase = getSupabaseBrowserClient()
 
-    // Get exercise ID by name
-    const { data: exercise } = await supabase
-      .from('exercises')
-      .select('id')
-      .eq('name', exerciseName)
-      .single()
-
-    if (!exercise) {
-      return []
-    }
-
-    // Get recent sets for this exercise
+    // Query sets_log by exercise_name (case-insensitive)
     const { data: sets } = await supabase
       .from('sets_log')
-      .select('*')
-      .eq('exercise_id', exercise.id)
+      .select('*, workouts!inner(user_id)')
+      .ilike('exercise_name', exerciseName)
+      .eq('workouts.user_id', userId)
       .order('created_at', { ascending: false })
       .limit(5)
 

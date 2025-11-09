@@ -190,22 +190,11 @@ export class SetLogService {
   ): Promise<SetLog | null> {
     const supabase = getSupabaseBrowserClient();
 
-    // First, get the exercise ID by name
-    const { data: exercise } = await supabase
-      .from("exercises")
-      .select("id")
-      .eq("name", exerciseName)
-      .single();
-
-    if (!exercise) {
-      return null;
-    }
-
-    // Get the most recent set for this exercise by this user
+    // Query directly by exercise_name (case-insensitive)
     const { data, error } = await supabase
       .from("sets_log")
       .select("*, workouts!inner(user_id)")
-      .eq("exercise_id", exercise.id)
+      .ilike("exercise_name", exerciseName)
       .eq("workouts.user_id", userId)
       .order("created_at", { ascending: false })
       .limit(1)

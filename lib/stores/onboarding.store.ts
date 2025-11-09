@@ -15,6 +15,9 @@ interface OnboardingState {
     weight?: number | null // kg
     height?: number | null // cm
     confirmedExperience?: number | null // years - if user overrides AI inference
+    // Split selection
+    splitType?: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
+    weeklyFrequency?: number // days per week user can train
   }
   setStep: (step: number) => void
   setStepData: <K extends keyof OnboardingState['data']>(
