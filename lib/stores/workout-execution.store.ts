@@ -238,6 +238,14 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           throw new Error('No current exercise')
         }
 
+        // Check if all sets are already completed
+        const warmupSetsCount = currentExercise.warmupSets?.length || 0
+        const totalSets = warmupSetsCount + currentExercise.targetSets
+
+        if (currentExercise.completedSets.length >= totalSets) {
+          throw new Error('All sets already completed for this exercise')
+        }
+
         // Save to database
         try {
           await SetLogService.create({
@@ -277,6 +285,17 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
           // Save progress to database
           await get().saveProgress()
+
+          // Auto-advance to next exercise if all sets are completed
+          const newCompletedCount = currentExercise.completedSets.length + 1
+
+          if (newCompletedCount >= totalSets) {
+            // Exercise is now complete - auto-advance to next exercise
+            const { currentExerciseIndex, exercises } = get()
+            if (currentExerciseIndex < exercises.length - 1) {
+              get().nextExercise()
+            }
+          }
         } catch (error) {
           console.error('Failed to log set:', error)
           throw error
