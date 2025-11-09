@@ -9,8 +9,8 @@ import { workoutKeys } from './use-workouts'
  */
 export function useProgressionSuggestion() {
   return useMutation({
-    mutationFn: async (input: ProgressionInput) => {
-      const result = await calculateProgressionAction(input)
+    mutationFn: async ({ userId, input }: { userId: string; input: ProgressionInput }) => {
+      const result = await calculateProgressionAction(userId, input)
       if (!result.success) {
         throw new Error(result.error || 'Failed to calculate progression')
       }

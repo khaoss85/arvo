@@ -22,7 +22,10 @@ export class OnboardingService {
         experience_years: 0, // Can be added to onboarding later
         preferred_split: null, // Default split, can be updated later
         active_split_plan_id: null, // No split plan yet
-        current_cycle_day: null // No active cycle yet
+        current_cycle_day: null, // No active cycle yet
+        current_mesocycle_week: null, // No mesocycle started yet
+        mesocycle_phase: null, // No phase yet
+        mesocycle_start_date: null // No start date yet
       })
 
       // Generate first AI-powered workout using the collected preferences

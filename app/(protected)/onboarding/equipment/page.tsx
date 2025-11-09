@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 
@@ -38,6 +39,7 @@ const movementPatterns = [
 ]
 
 export default function EquipmentPreferencesPage() {
+  const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [preferences, setPreferences] = useState<Record<string, string>>(
     data.equipmentPreferences || {}
@@ -55,6 +57,7 @@ export default function EquipmentPreferencesPage() {
     // Auto-complete if all patterns selected
     if (Object.keys(updated).length === movementPatterns.length) {
       completeStep(5)
+      router.push('/onboarding/strength')
     }
   }
 
@@ -97,6 +100,7 @@ export default function EquipmentPreferencesPage() {
     setPreferences(presetPreferences)
     setStepData('equipmentPreferences', presetPreferences)
     completeStep(5)
+    router.push('/onboarding/strength')
   }
 
   return (

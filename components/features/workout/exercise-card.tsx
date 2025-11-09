@@ -174,22 +174,25 @@ export function ExerciseCard({
     if (lastCompletedSet && !exercise.currentAISuggestion && !isLastSet) {
       getSuggestion(
         {
-          lastSet: {
-            weight: lastCompletedSet.weight,
-            reps: lastCompletedSet.reps,
-            rir: lastCompletedSet.rir,
-            mentalReadiness: lastCompletedSet.mentalReadiness
-          },
-          setNumber: currentSetNumber,
-          exerciseType: exercise.exerciseName.toLowerCase().includes('squat') ||
-                       exercise.exerciseName.toLowerCase().includes('deadlift') ||
-                       exercise.exerciseName.toLowerCase().includes('bench') ||
-                       exercise.exerciseName.toLowerCase().includes('press')
-            ? 'compound'
-            : 'isolation',
-          approachId,
-          experienceYears: userExperienceYears,
-          userAge: userAge
+          userId,
+          input: {
+            lastSet: {
+              weight: lastCompletedSet.weight,
+              reps: lastCompletedSet.reps,
+              rir: lastCompletedSet.rir,
+              mentalReadiness: lastCompletedSet.mentalReadiness
+            },
+            setNumber: currentSetNumber,
+            exerciseType: exercise.exerciseName.toLowerCase().includes('squat') ||
+                         exercise.exerciseName.toLowerCase().includes('deadlift') ||
+                         exercise.exerciseName.toLowerCase().includes('bench') ||
+                         exercise.exerciseName.toLowerCase().includes('press')
+              ? 'compound'
+              : 'isolation',
+            approachId,
+            experienceYears: userExperienceYears,
+            userAge: userAge
+          }
         },
         {
           onSuccess: (suggestion) => {

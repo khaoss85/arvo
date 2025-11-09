@@ -111,7 +111,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
     setLoadingAiSummary(true)
     try {
-      const result = await generateWorkoutSummaryAction({
+      const result = await generateWorkoutSummaryAction(userId, {
         exercises: exercises.map(ex => ({
           name: ex.exerciseName,
           sets: ex.targetSets,

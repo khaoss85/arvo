@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { BodyMap } from '@/components/features/onboarding/body-map'
 import { Button } from '@/components/ui/button'
 
 export default function WeakPointsPage() {
+  const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [selectedParts, setSelectedParts] = useState<string[]>(data.weakPoints || [])
 
@@ -20,8 +22,8 @@ export default function WeakPointsPage() {
       setSelectedParts(updated)
       setStepData('weakPoints', updated)
     } else {
-      // Add part (max 5)
-      if (selectedParts.length < 5) {
+      // Add part (max 3)
+      if (selectedParts.length < 3) {
         const updated = [...selectedParts, part]
         setSelectedParts(updated)
         setStepData('weakPoints', updated)
@@ -32,17 +34,19 @@ export default function WeakPointsPage() {
   const handleSkip = () => {
     setStepData('weakPoints', [])
     completeStep(4)
+    router.push('/onboarding/equipment')
   }
 
   const handleContinue = () => {
     completeStep(4)
+    router.push('/onboarding/equipment')
   }
 
   return (
     <div className="max-w-3xl mx-auto py-8">
       <h1 className="text-3xl font-bold mb-2">Identify Your Weak Points</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
-        Select up to 5 muscle groups that you want to prioritize. The AI will adjust workout volume and exercise selection accordingly.
+        Select up to 3 muscle groups that you want to prioritize. The AI will adjust workout volume and exercise selection accordingly.
         <span className="block mt-2 text-sm italic">
           This is optional - you can skip if you don't have specific weak points.
         </span>

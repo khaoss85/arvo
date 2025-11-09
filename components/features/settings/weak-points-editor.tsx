@@ -23,8 +23,8 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
     if (tempWeakPoints.includes(part)) {
       setTempWeakPoints(tempWeakPoints.filter(p => p !== part))
     } else {
-      if (tempWeakPoints.length >= 5) {
-        setMessage({ type: 'error', text: 'Maximum 5 weak points allowed' })
+      if (tempWeakPoints.length >= 3) {
+        setMessage({ type: 'error', text: 'Maximum 3 weak points allowed' })
         setTimeout(() => setMessage(null), 3000)
         return
       }

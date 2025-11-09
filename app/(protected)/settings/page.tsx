@@ -7,6 +7,7 @@ import { WeakPointsEditor } from "@/components/features/settings/weak-points-edi
 import { EquipmentPreferencesEditor } from "@/components/features/settings/equipment-preferences-editor"
 import { ResetDataSection } from "@/components/features/settings/reset-data-section"
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
+import { MethodDetails } from "@/components/features/settings/method-details"
 import { Card } from "@/components/ui/card"
 
 export default async function SettingsPage() {
@@ -106,6 +107,11 @@ export default async function SettingsPage() {
               </div>
             </div>
           </Card>
+
+          {/* Method Details - Educational view of training methodology */}
+          {profile.approach_id && (
+            <MethodDetails approachId={profile.approach_id} />
+          )}
 
           {/* Account Info Section */}
           <Card className="p-6">

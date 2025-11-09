@@ -148,7 +148,10 @@ async function generateWorkoutWithServerClient(
     approachId: profile.approach_id,
     experienceYears: profile.experience_years,
     userAge: profile.age,
-    userGender: profile.gender
+    userGender: profile.gender,
+    // Mesocycle context for periodization-aware exercise selection
+    mesocycleWeek: profile.current_mesocycle_week,
+    mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
   })
 
   // Get exercise history and calculate initial targets
@@ -337,12 +340,24 @@ export async function generateWorkoutAction(userId: string) {
  * Uses AI to suggest optimal weight, reps, and RIR based on previous set
  * This runs on the server and has access to OPENAI_API_KEY
  */
-export async function calculateProgressionAction(input: ProgressionInput) {
+export async function calculateProgressionAction(userId: string, input: ProgressionInput) {
   try {
     const supabase = await getSupabaseServerClient()
+
+    // Fetch user profile for mesocycle context
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('current_mesocycle_week, mesocycle_phase')
+      .eq('user_id', userId)
+      .single()
+
     const calculator = new ProgressionCalculator(supabase)
 
-    const result = await calculator.suggestNextSet(input)
+    const result = await calculator.suggestNextSet({
+      ...input,
+      mesocycleWeek: profile?.current_mesocycle_week || null,
+      mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+    })
 
     return { success: true, suggestion: result }
   } catch (error) {
@@ -458,12 +473,24 @@ export async function validateReorderAction(input: ReorderValidationInput) {
  * Uses WorkoutSummaryAgent with GPT-5-mini for immediate post-workout feedback
  * This runs on the server and has access to OPENAI_API_KEY
  */
-export async function generateWorkoutSummaryAction(input: WorkoutSummaryInput) {
+export async function generateWorkoutSummaryAction(userId: string, input: WorkoutSummaryInput) {
   try {
     const supabase = await getSupabaseServerClient()
+
+    // Fetch user profile for mesocycle context
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('current_mesocycle_week, mesocycle_phase')
+      .eq('user_id', userId)
+      .single()
+
     const summaryAgent = new WorkoutSummaryAgent(supabase)
 
-    const result = await summaryAgent.summarizeWorkout(input)
+    const result = await summaryAgent.summarizeWorkout({
+      ...input,
+      mesocycleWeek: profile?.current_mesocycle_week || null,
+      mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+    })
 
     return { success: true, summary: result }
   } catch (error) {

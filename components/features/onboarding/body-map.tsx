@@ -8,18 +8,18 @@ interface BodyMapProps {
 }
 
 const muscleGroups = [
-  { id: 'chest_upper', label: 'Upper Chest', x: 150, y: 120 },
-  { id: 'chest_lower', label: 'Lower Chest', x: 150, y: 140 },
-  { id: 'shoulders', label: 'Shoulders', x: 120, y: 110 },
+  { id: 'chest_upper', label: 'Upper Chest', x: 150, y: 120, view: 'front' },
+  { id: 'chest_lower', label: 'Lower Chest', x: 150, y: 140, view: 'front' },
+  { id: 'shoulders', label: 'Shoulders', x: 120, y: 110, view: 'front' },
   { id: 'back_width', label: 'Back Width', x: 150, y: 130, view: 'back' },
   { id: 'back_thickness', label: 'Back Thickness', x: 150, y: 150, view: 'back' },
-  { id: 'biceps', label: 'Biceps', x: 110, y: 160 },
-  { id: 'triceps', label: 'Triceps', x: 190, y: 160 },
-  { id: 'quads', label: 'Quadriceps', x: 140, y: 230 },
+  { id: 'biceps', label: 'Biceps', x: 110, y: 160, view: 'front' },
+  { id: 'triceps', label: 'Triceps', x: 190, y: 160, view: 'front' },
+  { id: 'quads', label: 'Quadriceps', x: 140, y: 230, view: 'front' },
   { id: 'hamstrings', label: 'Hamstrings', x: 160, y: 240, view: 'back' },
   { id: 'glutes', label: 'Glutes', x: 150, y: 200, view: 'back' },
-  { id: 'calves', label: 'Calves', x: 150, y: 300 },
-  { id: 'abs', label: 'Abs', x: 150, y: 180 }
+  { id: 'calves', label: 'Calves', x: 150, y: 300, view: 'back' },
+  { id: 'abs', label: 'Abs', x: 150, y: 180, view: 'front' }
 ]
 
 export function BodyMap({ selectedParts, onToggle }: BodyMapProps) {
@@ -147,7 +147,7 @@ export function BodyMap({ selectedParts, onToggle }: BodyMapProps) {
       {/* Selected parts list */}
       <div className="mt-6">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          Selected weak points: {selectedParts.length}/5
+          Selected weak points: {selectedParts.length}/3
         </p>
         <div className="flex flex-wrap gap-2">
           {selectedParts.map(part => {

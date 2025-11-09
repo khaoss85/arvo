@@ -43,6 +43,10 @@ export const userProfileSchema = z.object({
   // Split planning fields
   active_split_plan_id: z.string().uuid().nullable(),
   current_cycle_day: z.number().int().min(1).nullable(),
+  // Mesocycle tracking fields
+  current_mesocycle_week: z.number().int().min(1).max(12).nullable(),
+  mesocycle_phase: z.enum(['accumulation', 'intensification', 'deload', 'transition']).nullable(),
+  mesocycle_start_date: z.string().datetime().nullable(),
   // Demographic fields for personalized AI training
   gender: z.enum(['male', 'female', 'other']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
