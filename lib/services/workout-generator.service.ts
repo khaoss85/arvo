@@ -70,7 +70,7 @@ export class WorkoutGeneratorService {
 
       // If target day is specified, get session for that day instead of current day
       if (targetDay !== undefined) {
-        const targetSession = splitPlan.sessions.find((s: any) => s.cycleDay === targetDay)
+        const targetSession = splitPlan.sessions.find((s: any) => s.day === targetDay)
         if (!targetSession) {
           throw new Error(`No session found for cycle day ${targetDay}`)
         }

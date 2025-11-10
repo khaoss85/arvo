@@ -98,20 +98,24 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [showProgress, setShowProgress] = useState(false)
 
   const handlePreGenerate = () => {
+    setIsGenerating(true)
     setShowProgress(true)
   }
 
   const handleGenerationComplete = (workout: any) => {
+    setIsGenerating(false)
     setShowProgress(false)
     onRefreshTimeline?.()
   }
 
   const handleGenerationError = (error: string) => {
+    setIsGenerating(false)
     setShowProgress(false)
     alert(`Failed to generate workout: ${error}`)
   }
 
   const handleGenerationCancel = () => {
+    setIsGenerating(false)
     setShowProgress(false)
   }
 
@@ -284,7 +288,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         <div className="mb-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <Button
             onClick={handlePreGenerate}
-            disabled={isGenerating}
+            disabled={isGenerating || showProgress}
             variant="outline"
             className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
           >
