@@ -2,6 +2,7 @@ import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services/exercise-generation.service'
 import { findEquipmentById } from '@/lib/constants/equipment-taxonomy'
+import { AnimationService } from '@/lib/services/animation.service'
 
 export interface ExerciseSelectionInput {
   workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
@@ -60,6 +61,9 @@ export interface SelectedExercise {
   technicalCues?: string[] // 2-4 brief, actionable technical cues for proper form
   warmupSets?: WarmupSet[] // Warm-up progression before working sets (only for compound movements)
   setGuidance?: SetGuidance[] // Per-set technical and mental focus for working sets
+  // Visual guidance (populated automatically by AnimationService)
+  animationUrl?: string | null
+  hasAnimation?: boolean
 }
 
 export interface ExerciseSelectionOutput {
@@ -86,6 +90,11 @@ Consider equipment preferences and provide alternatives.`
   async selectExercises(input: ExerciseSelectionInput): Promise<ExerciseSelectionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
+
+    // Load user's recently used exercises for naming consistency
+    const recentExercises = input.userId
+      ? await ExerciseGenerationService.getRecentlyUsed(this.supabase, input.userId, 20)
+      : []
 
     const demographicContext = input.experienceYears || input.userAge || input.userGender
       ? `
@@ -213,6 +222,15 @@ When selecting exercises, you may use ANY of the available equipment above. Choo
 
 Recent exercises to avoid: ${input.recentExercises.join(', ') || 'None'}
 
+${recentExercises.length > 0 ? `
+=== PREVIOUSLY USED EXERCISES (for naming consistency) ===
+The user has previously performed these exercises. When selecting the SAME exercise for this workout, REUSE THE EXACT NAME to maintain training history and progression tracking:
+
+${recentExercises.map(ex => `- ${ex.name}${ex.metadata?.equipment_variant ? ` (${ex.metadata.equipment_variant})` : ''}`).join('\n')}
+
+IMPORTANT: Only create a new exercise name if the exercise is truly different from the ones listed above. Naming consistency is crucial for tracking progress over time.
+` : ''}
+
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
 ${input.userAge && input.userAge > 50 ? `Consider that the user is ${input.userAge} years old - prioritize joint-friendly exercise variations when possible.` : ''}
 
@@ -307,6 +325,21 @@ Required JSON structure:
     `
 
     const result = await this.complete<ExerciseSelectionOutput>(prompt)
+
+    // Populate animation URLs for each exercise using AnimationService
+    result.exercises = result.exercises.map(exercise => {
+      const animationUrl = AnimationService.getAnimationUrl({
+        name: exercise.name,
+        canonicalPattern: exercise.movementPattern,
+        equipmentVariant: exercise.equipmentVariant
+      })
+
+      return {
+        ...exercise,
+        animationUrl,
+        hasAnimation: !!animationUrl
+      }
+    })
 
     // Save generated exercises to database for consistency tracking
     // Skip during onboarding for performance (skipSaving flag)

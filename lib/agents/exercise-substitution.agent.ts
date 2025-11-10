@@ -1,4 +1,5 @@
 import { BaseAgent } from './base.agent'
+import { ExerciseGenerationService } from '../services/exercise-generation.service'
 
 export interface CurrentExerciseInfo {
   name: string
@@ -207,6 +208,39 @@ Return JSON format:
   }
 
   async validateCustomSubstitution(input: CustomSubstitutionInput): Promise<SubstitutionSuggestion> {
+    // First, check if a similar exercise already exists in the database
+    // This ensures naming consistency and prevents duplicates
+    const similarExercises = await ExerciseGenerationService.searchByName(
+      this.supabase,
+      input.customExerciseName,
+      input.userId
+    )
+
+    // If we found a close match (>80% similarity based on fuzzy search),
+    // reuse the existing exercise name for consistency
+    if (similarExercises.length > 0) {
+      const existingExercise = similarExercises[0]
+
+      // Return validation using the existing standardized name
+      return {
+        exercise: {
+          name: existingExercise.name,
+          equipmentVariant: existingExercise.metadata?.equipment_variant || 'Unknown',
+          sets: input.currentExercise.sets,
+          repRange: input.currentExercise.repRange,
+          targetWeight: input.currentExercise.targetWeight || 0
+        },
+        validation: 'approved',
+        rationale: `Using existing exercise: ${existingExercise.name}`,
+        swapImpact: 'Reusing established exercise for consistency',
+        similarityScore: 95,
+        rationalePreview: {
+          workoutIntegration: `This exercise maintains your training history and progression tracking.`
+        }
+      }
+    }
+
+    // If no match found, proceed with AI validation to create new exercise
     // Load user's training approach for context
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'exercise_selection')

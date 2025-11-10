@@ -271,22 +271,12 @@ async function getExerciseHistoryServer(
   supabase: any,
   exerciseName: string
 ): Promise<any[]> {
-  // Get exercise ID by name
-  const { data: exercise } = await supabase
-    .from('exercises')
-    .select('id')
-    .eq('name', exerciseName)
-    .single()
-
-  if (!exercise) {
-    return []
-  }
-
-  // Get recent sets for this exercise
+  // Get recent sets for this exercise by name
+  // Note: exercise_id is nullable, so we query by exercise_name instead
   const { data: sets } = await supabase
     .from('sets_log')
     .select('*')
-    .eq('exercise_id', exercise.id)
+    .ilike('exercise_name', exerciseName)
     .order('created_at', { ascending: false })
     .limit(5)
 
@@ -675,7 +665,7 @@ export async function suggestExerciseSubstitutionAction(
       ...input,
       approachId: profile.approach_id || '',
       weakPoints: profile.weak_points || [],
-      availableEquipment: [], // Equipment will be loaded from equipment_preferences
+      availableEquipment: profile.available_equipment || [],
       experienceYears: profile.experience_years || undefined,
       mesocycleWeek: profile.current_mesocycle_week || undefined,
       mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined
@@ -780,7 +770,7 @@ export async function validateCustomSubstitutionAction(
       ...input,
       approachId: profile.approach_id || '',
       weakPoints: profile.weak_points || [],
-      availableEquipment: [], // Equipment will be loaded from equipment_preferences
+      availableEquipment: profile.available_equipment || [],
       experienceYears: profile.experience_years || undefined,
       mesocycleWeek: profile.current_mesocycle_week || undefined,
       mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined

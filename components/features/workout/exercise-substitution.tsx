@@ -1,11 +1,35 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles } from 'lucide-react'
+import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle } from 'lucide-react'
+import { ExerciseAnimationModal } from './exercise-animation-modal'
+
+/**
+ * Extract equipment variant from exercise name
+ * Looks for patterns like "(Barbell)", "(Dumbbell)", etc.
+ * Falls back to "Unknown" if not found
+ */
+function extractEquipmentVariant(exerciseName: string): string {
+  const match = exerciseName.match(/\((Barbell|Dumbbell|Cable|Machine|Bodyweight)\)/i)
+  if (match) {
+    return match[1]
+  }
+
+  // Fallback: check if equipment type is mentioned in the name
+  const lowerName = exerciseName.toLowerCase()
+  if (lowerName.includes('barbell')) return 'Barbell'
+  if (lowerName.includes('dumbbell') || lowerName.includes('db')) return 'Dumbbell'
+  if (lowerName.includes('cable')) return 'Cable'
+  if (lowerName.includes('machine')) return 'Machine'
+  if (lowerName.includes('bodyweight')) return 'Bodyweight'
+
+  return 'Unknown'
+}
 
 interface ExerciseSubstitutionProps {
   currentExercise: ExerciseExecution
@@ -36,6 +60,9 @@ export function ExerciseSubstitution({
   const [customResult, setCustomResult] = useState<SubstitutionSuggestion | null>(null)
   const [customError, setCustomError] = useState<string | null>(null)
 
+  // Animation modal state
+  const [animationModalExercise, setAnimationModalExercise] = useState<{ name: string; url: string | null } | null>(null)
+
   useEffect(() => {
     loadSuggestions()
   }, [currentExercise])
@@ -50,7 +77,7 @@ export function ExerciseSubstitution({
       const input: SubstitutionInput = {
         currentExercise: {
           name: currentExercise.exerciseName,
-          equipmentVariant: 'Barbell', // TODO: Extract from exercise name or metadata
+          equipmentVariant: extractEquipmentVariant(currentExercise.exerciseName),
           sets: currentExercise.targetSets,
           repRange: currentExercise.targetReps,
           targetWeight: currentExercise.targetWeight,
@@ -114,7 +141,7 @@ export function ExerciseSubstitution({
       const input: CustomSubstitutionInput = {
         currentExercise: {
           name: currentExercise.exerciseName,
-          equipmentVariant: 'Barbell',
+          equipmentVariant: extractEquipmentVariant(currentExercise.exerciseName),
           sets: currentExercise.targetSets,
           repRange: currentExercise.targetReps,
           targetWeight: currentExercise.targetWeight,
@@ -199,8 +226,27 @@ export function ExerciseSubstitution({
           {/* Current Exercise Info */}
           <div className="bg-gray-800 rounded-lg p-4 mb-4">
             <h3 className="text-sm text-gray-400 mb-1">Current Exercise</h3>
-            <p className="text-lg font-medium text-white">{currentExercise.exerciseName}</p>
-            <p className="text-sm text-gray-400">
+            <div className="flex items-center gap-2">
+              {/* Play icon for current exercise */}
+              {currentExercise.hasAnimation && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setAnimationModalExercise({
+                      name: currentExercise.exerciseName,
+                      url: currentExercise.animationUrl || null
+                    })
+                  }}
+                  className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                  aria-label={`View ${currentExercise.exerciseName} animation`}
+                  title="Visualizza esercizio"
+                >
+                  <PlayCircle className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                </button>
+              )}
+              <p className="text-lg font-medium text-white">{currentExercise.exerciseName}</p>
+            </div>
+            <p className="text-sm text-gray-400 mt-1">
               {currentExercise.targetSets} sets × {currentExercise.targetReps[0]}-{currentExercise.targetReps[1]} reps @ {currentExercise.targetWeight}kg
             </p>
           </div>
@@ -353,14 +399,26 @@ export function ExerciseSubstitution({
                   🤖 AI Suggestions ({suggestions.length})
                 </h3>
                 {suggestions.map((suggestion, index) => (
-                  <button
+                  <div
                     key={index}
                     onClick={() => handleSelectSuggestion(suggestion)}
-                    className="w-full text-left bg-gray-800 hover:bg-gray-750 rounded-lg p-4 transition-all border border-gray-700 hover:border-gray-600 hover:shadow-lg min-h-[88px]"
+                    className="relative bg-gray-800 hover:bg-gray-750 rounded-lg p-4 transition-all border border-gray-700 hover:border-gray-600 hover:shadow-lg min-h-[88px] cursor-pointer"
                   >
                     {/* Exercise Name + Validation Icon */}
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2 flex-1">
+                        {/* Play icon for animation preview */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setAnimationModalExercise({ name: suggestion.exercise.name, url: null })
+                          }}
+                          className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group flex-shrink-0"
+                          aria-label={`View ${suggestion.exercise.name} animation`}
+                          title="Visualizza esercizio"
+                        >
+                          <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                        </button>
                         {getValidationIcon(suggestion.validation)}
                         <h4 className="font-semibold text-white text-base leading-tight">
                           {suggestion.exercise.name}
@@ -387,7 +445,7 @@ export function ExerciseSubstitution({
                         {suggestion.swapImpact}
                       </span>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 
@@ -478,6 +536,16 @@ export function ExerciseSubstitution({
           )}
         </div>
       </div>
+
+      {/* Animation Modal */}
+      {animationModalExercise && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => setAnimationModalExercise(null)}
+          exerciseName={animationModalExercise.name}
+          animationUrl={animationModalExercise.url}
+        />
+      )}
     </div>
   )
 }
