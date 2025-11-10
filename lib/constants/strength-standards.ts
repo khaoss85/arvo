@@ -139,12 +139,41 @@ export const ABSOLUTE_FEMALE_STANDARDS: Record<
 /**
  * Exercise name mappings to standard lift types
  * Case-insensitive partial matching
+ * Includes Italian and common variations
  */
 export const LIFT_NAME_MAPPINGS = {
-  bench: ['bench', 'chest press', 'pec'],
-  squat: ['squat', 'front squat', 'back squat'],
-  deadlift: ['deadlift', 'romanian deadlift', 'rdl', 'sumo'],
-  overhead: ['overhead press', 'shoulder press', 'military press', 'ohp', 'strict press'],
+  bench: [
+    // English
+    'bench', 'bench press', 'chest press', 'pec', 'press',
+    // Italian
+    'panca', 'panca piana', 'panca orizzontale', 'distensioni panca',
+    // Variations
+    'flat bench', 'barbell bench', 'dumbbell bench', 'db bench', 'bb bench'
+  ],
+  squat: [
+    // English
+    'squat', 'front squat', 'back squat', 'high bar', 'low bar',
+    // Italian
+    'squat', 'accosciata', 'squat frontale', 'squat posteriore',
+    // Variations
+    'barbell squat', 'bb squat', 'olympic squat', 'full squat'
+  ],
+  deadlift: [
+    // English
+    'deadlift', 'romanian deadlift', 'rdl', 'sumo', 'conventional',
+    // Italian
+    'stacco', 'stacco da terra', 'stacco rumeno', 'stacco sumo', 'stacco convenzionale',
+    // Variations
+    'barbell deadlift', 'bb deadlift', 'straight leg deadlift', 'sldl'
+  ],
+  overhead: [
+    // English
+    'overhead press', 'shoulder press', 'military press', 'ohp', 'strict press',
+    // Italian
+    'military press', 'lento avanti', 'distensioni sopra la testa', 'shoulder press',
+    // Variations
+    'seated press', 'standing press', 'barbell press', 'dumbbell press', 'db press'
+  ],
 } as const
 
 export type LiftType = keyof typeof LIFT_NAME_MAPPINGS

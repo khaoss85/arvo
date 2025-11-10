@@ -10,7 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { useAuthStore } from '@/lib/stores/auth.store'
-import { estimateExperience, getExperienceLevelDescription, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
+import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
+
+// Standard lifts for badge identification
+const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
 
 export default function ReviewPage() {
   const router = useRouter()
@@ -310,14 +313,33 @@ export default function ReviewPage() {
           </div>
           {data.strengthBaseline && Object.keys(data.strengthBaseline).length > 0 ? (
             <div className="space-y-2 text-sm">
-              {Object.entries(data.strengthBaseline).map(([lift, values]) => (
-                <div key={lift}>
-                  <span className="font-medium capitalize">{lift.replace('_', ' ')}: </span>
-                  <span className="text-gray-600 dark:text-gray-400">
-                    {values.weight}kg × {values.reps} reps @ RIR {values.rir}
-                  </span>
-                </div>
-              ))}
+              {Object.entries(data.strengthBaseline).map(([lift, values]) => {
+                const isStandard = STANDARD_LIFTS.includes(lift)
+                const liftType = identifyLiftType(lift)
+                const displayName = lift.split('_').map(word =>
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ')
+
+                return (
+                  <div key={lift} className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium">{displayName}:</span>
+                      {isStandard ? (
+                        <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
+                          Standard
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded">
+                          Custom {liftType ? `(→ ${liftType})` : ''}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                      {values.weight}kg × {values.reps} @ RIR {values.rir}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           ) : (
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -386,20 +408,34 @@ export default function ReviewPage() {
                   View lift-by-lift breakdown
                 </summary>
                 <div className="mt-2 space-y-2 pl-2">
-                  {experienceEstimate.breakdown.map((lift, idx) => (
-                    <div key={idx} className="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700 last:border-0">
-                      <span className="text-gray-700 dark:text-gray-300">{lift.liftName}</span>
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          e1RM: {lift.e1RM}kg
-                          {lift.relativeStrength && ` (${lift.relativeStrength}x BW)`}
-                        </span>
-                        <span className="capitalize px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
-                          {lift.suggestedLevel}
-                        </span>
+                  {experienceEstimate.breakdown.map((lift, idx) => {
+                    // Check if this lift is from the original baseline
+                    const liftId = lift.liftName.toLowerCase().replace(/\s+/g, '_')
+                    const isStandard = STANDARD_LIFTS.includes(liftId)
+                    const liftType = identifyLiftType(lift.liftName)
+
+                    return (
+                      <div key={idx} className="flex justify-between items-center py-1 border-b border-gray-200 dark:border-gray-700 last:border-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-700 dark:text-gray-300">{lift.liftName}</span>
+                          {!isStandard && liftType && (
+                            <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded">
+                              Custom
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            e1RM: {lift.e1RM}kg
+                            {lift.relativeStrength && ` (${lift.relativeStrength}x BW)`}
+                          </span>
+                          <span className="capitalize px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
+                            {lift.suggestedLevel}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </details>
             )}
