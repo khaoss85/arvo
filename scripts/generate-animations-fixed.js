@@ -25,15 +25,16 @@ function createTransform() {
 }
 
 /**
- * Create a stroke (white, 3px)
+ * Create a stroke (cyan, 5px)
+ * Cyan color provides excellent contrast on dark backgrounds
  */
 function createStroke() {
   return {
     ty: 'st',
     nm: 'Stroke',
-    c: { a: 0, k: [1, 1, 1] }, // white
+    c: { a: 0, k: [0.2, 0.8, 1] }, // cyan - highly visible on dark backgrounds
     o: { a: 0, k: 100 },
-    w: { a: 0, k: 3 },
+    w: { a: 0, k: 5 }, // increased from 3 to 5 for better visibility
     lc: 2,
     lj: 2,
     ml: 4,

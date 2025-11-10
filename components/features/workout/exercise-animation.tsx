@@ -104,7 +104,7 @@ export function ExerciseAnimation({ animationUrl, exerciseName, className = '' }
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="w-full h-full"
+            className="w-full h-full bg-gray-900/50 rounded-lg"
           >
             <Lottie
               animationData={animationData}
