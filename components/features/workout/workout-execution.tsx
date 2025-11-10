@@ -8,7 +8,7 @@ import { ExerciseCard } from './exercise-card'
 import { WorkoutProgress } from './workout-progress'
 import { WorkoutSummary } from './workout-summary'
 import { ReorderExercisesModal } from './reorder-exercises-modal'
-import { WorkoutRationale } from './workout-rationale'
+import { WorkoutRationale, type WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { Button } from '@/components/ui/button'
 
@@ -30,6 +30,12 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
   const [showReorderModal, setShowReorderModal] = useState(false)
   const [swapExerciseIndex, setSwapExerciseIndex] = useState<number | null>(null)
   const hasInitialized = useRef(false)
+  const rationaleRef = useRef<WorkoutRationaleHandle>(null)
+
+  // Callback to invalidate rationale when exercises are modified
+  const handleRationaleInvalidate = () => {
+    rationaleRef.current?.invalidate()
+  }
 
   // Initialize or resume workout on mount
   useEffect(() => {
@@ -122,6 +128,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       {/* Workout Rationale */}
       <div className="mt-4">
         <WorkoutRationale
+          ref={rationaleRef}
           workoutType={workout.workout_type || 'general'}
           exercises={exercises}
           userId={userId}
@@ -157,6 +164,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           workoutType={workout.workout_type || 'general'}
           approachId={workout.approach_id || ''}
           onClose={() => setShowReorderModal(false)}
+          onRationaleInvalidate={handleRationaleInvalidate}
         />
       )}
 
@@ -167,6 +175,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           exerciseIndex={swapExerciseIndex}
           userId={userId}
           onClose={() => setSwapExerciseIndex(null)}
+          onRationaleInvalidate={handleRationaleInvalidate}
         />
       )}
     </div>

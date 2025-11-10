@@ -13,6 +13,10 @@ export interface ReorderValidationOutput {
   reasoning: string
   warnings: string[]             // Issues to warn user about
   suggestions: string[]          // Better alternatives if invalid
+  rationalePreview?: {           // Preview of workout flow with new order
+    newSequencingRationale: string  // 1-2 sentences: WHY this new order makes sense
+    keyChanges: string[]            // What changes from original order (max 3 items)
+  }
 }
 
 /**
@@ -63,6 +67,15 @@ Determine:
 - reasoning: 2-3 sentences explaining your assessment
 - warnings: Array of specific issues (e.g., "Heavy squats after leg extensions may compromise form")
 - suggestions: Array of better orderings if not optimal
+- rationalePreview: Help user understand the NEW workout flow
+  - newSequencingRationale: 1-2 sentences (MAX 40 words) explaining WHY the NEW order makes sense or what it emphasizes
+  - keyChanges: Array of 2-3 max changes from original (e.g., "Isolation before compound", "Posterior chain prioritized")
+
+Example rationalePreview:
+{
+  "newSequencingRationale": "RDL first emphasizes posterior chain when fresh, then squats target quads with pre-fatigued hamstrings for balance.",
+  "keyChanges": ["Posterior chain prioritized", "Pre-exhaustion technique for balanced leg development"]
+}
 
 Required JSON structure:
 {
@@ -70,7 +83,11 @@ Required JSON structure:
   "recommendation": "proceed" | "caution" | "not_recommended",
   "reasoning": "string",
   "warnings": ["string array"],
-  "suggestions": ["string array"]
+  "suggestions": ["string array"],
+  "rationalePreview": {
+    "newSequencingRationale": "string (1-2 sentences, MAX 40 words)",
+    "keyChanges": ["string array, max 3 items"]
+  }
 }
 `
 

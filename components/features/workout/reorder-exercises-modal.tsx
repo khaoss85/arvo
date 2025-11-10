@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { X, GripVertical, AlertTriangle, CheckCircle, Info } from 'lucide-react'
+import { X, GripVertical, AlertTriangle, CheckCircle, Info, Sparkles, ArrowRight } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { validateReorderAction } from '@/app/actions/ai-actions'
 import type { ReorderValidationOutput } from '@/lib/agents/reorder-validator.agent'
@@ -12,9 +12,10 @@ interface ReorderExercisesModalProps {
   workoutType: string
   approachId: string
   onClose: () => void
+  onRationaleInvalidate?: () => void
 }
 
-export function ReorderExercisesModal({ workoutType, approachId, onClose }: ReorderExercisesModalProps) {
+export function ReorderExercisesModal({ workoutType, approachId, onClose, onRationaleInvalidate }: ReorderExercisesModalProps) {
   const { exercises, reorderExercises } = useWorkoutExecutionStore()
   const [orderedExercises, setOrderedExercises] = useState<ExerciseExecution[]>(exercises)
   const [validation, setValidation] = useState<ReorderValidationOutput | null>(null)
@@ -58,6 +59,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose }: Reor
 
   const handleApply = () => {
     reorderExercises(orderedExercises)
+    onRationaleInvalidate?.() // Invalidate rationale since exercises changed
     onClose()
   }
 
@@ -191,6 +193,34 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose }: Reor
                   </div>
                 </div>
               </div>
+
+              {/* Rationale Preview */}
+              {validation.rationalePreview && (
+                <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                  <h4 className="font-semibold text-purple-900 dark:text-purple-300 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Workout Flow Preview
+                  </h4>
+                  <p className="text-sm text-purple-800 dark:text-purple-200 mb-3 leading-relaxed">
+                    {validation.rationalePreview.newSequencingRationale}
+                  </p>
+                  {validation.rationalePreview.keyChanges.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                        Key Changes:
+                      </p>
+                      <ul className="space-y-1">
+                        {validation.rationalePreview.keyChanges.map((change, idx) => (
+                          <li key={idx} className="text-sm text-purple-800 dark:text-purple-200 flex items-start gap-2">
+                            <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5 text-purple-500" />
+                            <span>{change}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Warnings */}
               {validation.warnings.length > 0 && (

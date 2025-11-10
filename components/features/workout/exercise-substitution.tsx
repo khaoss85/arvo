@@ -5,20 +5,22 @@ import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/w
 import { suggestExerciseSubstitutionAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, AlertCircle, XCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles } from 'lucide-react'
 
 interface ExerciseSubstitutionProps {
   currentExercise: ExerciseExecution
   exerciseIndex: number
   userId: string
   onClose: () => void
+  onRationaleInvalidate?: () => void
 }
 
 export function ExerciseSubstitution({
   currentExercise,
   exerciseIndex,
   userId,
-  onClose
+  onClose,
+  onRationaleInvalidate
 }: ExerciseSubstitutionProps) {
   const { substituteExercise } = useWorkoutExecutionStore()
   const [suggestions, setSuggestions] = useState<SubstitutionSuggestion[]>([])
@@ -92,6 +94,7 @@ export function ExerciseSubstitution({
     }
 
     substituteExercise(exerciseIndex, newExercise)
+    onRationaleInvalidate?.() // Invalidate rationale since exercise changed
     onClose()
   }
 
@@ -243,6 +246,24 @@ export function ExerciseSubstitution({
                     <p className="text-sm text-gray-300 mb-3">
                       {selectedSuggestion.swapImpact}
                     </p>
+
+                    {/* Rationale Preview */}
+                    {selectedSuggestion.rationalePreview && (
+                      <div className="bg-purple-800/30 border border-purple-600 rounded-lg p-3 mb-3">
+                        <div className="flex items-start gap-2">
+                          <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="text-xs font-medium text-purple-300 uppercase tracking-wide mb-1">
+                              Impact on Workout
+                            </p>
+                            <p className="text-sm text-purple-100 leading-snug">
+                              {selectedSuggestion.rationalePreview.workoutIntegration}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="space-y-1 text-sm">
                       <p className="text-gray-400">
                         <span className="font-medium text-gray-300">Sets:</span> {selectedSuggestion.exercise.sets}

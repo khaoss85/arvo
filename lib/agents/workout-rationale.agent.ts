@@ -30,10 +30,10 @@ export interface ExerciseConnection {
 }
 
 export interface WorkoutRationaleOutput {
-  overallFocus: string // 2-3 sentences explaining the workout's purpose
-  exerciseSequencing: string // 2-3 sentences explaining WHY this order
+  overallFocus: string // 1-2 sentences explaining the workout's purpose
+  exerciseSequencing: string // 1-2 sentences explaining WHY this order
   exerciseConnections: ExerciseConnection[] // Pairwise connections between exercises
-  exerciseRationales: ExerciseRationale[]
+  exerciseRationales: ExerciseRationale[] // Only key exercises (3-4 max)
 }
 
 /**
@@ -55,25 +55,22 @@ Key Principles:
 5. Be encouraging but factual - no fluff
 
 Output Structure:
-- Overall Focus: 2-3 sentences explaining the workout's purpose
-  - What muscle groups/movement patterns are emphasized
-  - How it fits into their mesocycle phase
-  - What training adaptation is being targeted
+- Overall Focus: 1-2 sentences (max 40 words)
+  - Primary workout goal and key muscle groups
+  - Connection to mesocycle phase or training approach
 
-- Exercise Sequencing: 2-3 sentences explaining WHY this specific order
-  - Why exercises are arranged this way (compound→isolation, fatigue management)
-  - How the order supports training goals and recovery
-  - Connection to approach philosophy and weak points
+- Exercise Sequencing: 1-2 sentences (max 40 words)
+  - WHY this order (compound→isolation, fatigue management)
+  - Connection to training goals and weak points
 
-- Exercise Connections: For each adjacent pair, explain how they connect (1 sentence each)
-  - How the first exercise affects the second
-  - Why the transition makes sense
-  - Focus on fatigue patterns, muscle synergy/antagonism
+- Exercise Connections: 1 sentence per transition (max 15 words)
+  - How exercises connect (fatigue, synergy, contrast)
+  - Brief and direct
 
-- Exercise Rationales: 1 sentence per exercise
-  - Why this specific exercise was chosen
-  - How it addresses weak points or approach principles
-  - Keep it gym-friendly and motivating
+- Exercise Rationales: ONLY for 3-4 key exercises (compound movements priority)
+  - 1 sentence each (max 20 words)
+  - Specific to user's weak points or approach
+  - Skip isolation/accessory exercises unless specifically relevant
 
 Tone: Direct, knowledgeable, supportive (like a good coach)`
   }
@@ -116,36 +113,29 @@ TRAINING APPROACH:
 ${approachContext}
 
 REQUIREMENTS:
-1. Overall Focus (2-3 sentences):
-   - Explain the primary goal of this workout
-   - Connect it to the user's mesocycle phase and approach
-   - Mention key muscle groups or movement patterns being emphasized
+1. Overall Focus (1-2 sentences, MAX 40 words):
+   - Primary workout goal + key muscle groups
+   - Brief connection to mesocycle phase or approach
+   - Example: "This push session targets chest and triceps with compound-focused volume. Emphasizes strength in your accumulation phase."
 
-2. Exercise Sequencing (2-3 sentences):
-   - Explain WHY exercises are ordered this way
-   - Consider: compound→isolation, heavy→light, CNS demand, fatigue management
-   - Connect order to user's weak points, approach, and training phase
+2. Exercise Sequencing (1-2 sentences, MAX 40 words):
+   - WHY this order (compound→isolation, fatigue management)
+   - Brief connection to weak points or approach
+   - Example: "Heavy compound first when fresh, then isolation for volume without CNS fatigue."
+
+3. Exercise Connections (1 sentence per transition, MAX 15 words):
+   - How exercises connect (fatigue, synergy, contrast)
    - Examples:
-     * "Squats first when you're fresh for maximal load, then RDL shifts to posterior chain"
-     * "Compound presses before isolation to maximize strength, then accessories for volume"
-     * "Heavy bilateral work first, then unilateral for balance and technique refinement"
+     * "Squat fatigues quads, RDL shifts to posterior chain."
+     * "Flat bench overall chest, incline targets upper weakness."
+     * "Deadlift hip hinge, row adds pulling without lower back stress."
 
-3. Exercise Connections (1 sentence per transition):
-   - For each adjacent pair (1→2, 2→3, etc.), explain how they connect
-   - Focus on:
-     * How first exercise fatigues muscles
-     * How second exercise complements or contrasts
-     * Synergy or antagonism between movements
-   - Examples:
-     * "Squat fatigues quads heavily, so RDL shifts focus to posterior chain for balance"
-     * "Flat bench presses overall chest, incline targets upper chest weak point"
-     * "Deadlift trains hip hinge, cable row adds pulling without taxing lower back"
-
-4. Exercise Rationales (1 sentence each):
-   - For each exercise, explain WHY it was chosen
-   - Reference weak points, approach principles, or periodization when relevant
-   - Keep it concise and gym-friendly (max 20 words per exercise)
+4. Exercise Rationales - IMPORTANT: Select only 3-4 KEY exercises:
+   - Prioritize compound movements (squats, deadlifts, presses, rows)
+   - Skip isolation/accessory exercises UNLESS specifically addressing a weak point
+   - 1 sentence each (MAX 20 words)
    - Be specific to THIS user's context, not generic
+   - If workout has 6+ exercises, explain only the 3-4 most important ones
 
 Examples of good exercise rationales:
 - "Lengthened partial squat emphasizes quad stretch for hypertrophy in your accumulation phase."
@@ -157,19 +147,19 @@ Avoid generic statements like "good for building strength" - be specific!
 
 Return JSON format:
 {
-  "overallFocus": "2-3 sentence explanation",
-  "exerciseSequencing": "2-3 sentences explaining WHY this order",
+  "overallFocus": "1-2 sentences (MAX 40 words)",
+  "exerciseSequencing": "1-2 sentences (MAX 40 words)",
   "exerciseConnections": [
     {
       "fromExerciseIndex": 0,
       "toExerciseIndex": 1,
-      "connectionRationale": "How exercise 1 connects to exercise 2"
+      "connectionRationale": "1 sentence (MAX 15 words)"
     }
   ],
   "exerciseRationales": [
     {
       "exerciseName": "Exercise Name",
-      "rationale": "1 sentence max, specific reason"
+      "rationale": "1 sentence (MAX 20 words) - ONLY 3-4 key exercises"
     }
   ]
 }`

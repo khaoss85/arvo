@@ -41,6 +41,9 @@ export interface SubstitutionSuggestion {
   rationale: string // Max 10 words: gym-friendly, quick to read
   swapImpact: string // What changes (1 sentence, max 15 words)
   similarityScore: number // 0-100: how similar to original
+  rationalePreview?: {   // Preview of how new exercise integrates
+    workoutIntegration: string // How new exercise fits into workout flow (1-2 sentences, MAX 40 words)
+  }
 }
 
 export interface SubstitutionOutput {
@@ -147,6 +150,7 @@ REQUIREMENTS:
    - Brief rationale (MAX 10 words, gym-friendly, specific)
    - Swap impact (1 sentence, MAX 15 words, what changes)
    - Similarity score (0-100: how closely it matches original)
+   - Rationale preview: workoutIntegration (1-2 sentences, MAX 40 words, how new exercise integrates into the overall workout flow)
 
 3. Adjust weight recommendations based on equipment:
    - Barbell → Dumbbells: ~40-45% per hand (accounts for stability demand)
@@ -166,6 +170,11 @@ ${input.mesocyclePhase === 'accumulation' ? '   - Accumulation: Volume focus, va
 
 6. Overall reasoning (2-3 sentences): Why these alternatives fit the workout plan
 
+Example rationalePreview for substitution:
+{
+  "workoutIntegration": "Leg Press maintains quad focus like Squat but reduces lower back fatigue, fitting well after RDL in this workout."
+}
+
 Return JSON format:
 {
   "suggestions": [
@@ -180,7 +189,10 @@ Return JSON format:
       "validation": "approved" | "caution" | "not_recommended",
       "rationale": "10 words max",
       "swapImpact": "15 words max",
-      "similarityScore": number
+      "similarityScore": number,
+      "rationalePreview": {
+        "workoutIntegration": "1-2 sentences (MAX 40 words)"
+      }
     }
   ],
   "reasoning": "2-3 sentences"
