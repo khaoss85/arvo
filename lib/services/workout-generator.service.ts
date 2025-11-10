@@ -30,7 +30,10 @@ export class WorkoutGeneratorService {
       status?: WorkoutStatus
     }
   ): Promise<Workout> {
-    const exerciseSelector = new ExerciseSelector()
+    // Get server Supabase client for server-side operations
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
+    const exerciseSelector = new ExerciseSelector(supabase)
 
     // Get user profile
     const profile = await UserProfileService.getByUserIdServer(userId)
