@@ -19,6 +19,11 @@ export default function ProfilePage() {
 
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
+  // Error states for validation feedback
+  const [ageError, setAgeError] = useState<string | null>(null)
+  const [weightError, setWeightError] = useState<string | null>(null)
+  const [heightError, setHeightError] = useState<string | null>(null)
+
   useEffect(() => {
     setStep(3)
   }, [setStep])
@@ -34,24 +39,90 @@ export default function ProfilePage() {
   }
 
   const handleAgeChange = (value: string) => {
-    const num = value === '' ? null : parseInt(value, 10)
-    if (num !== null && (num < 13 || num > 120)) return // Validation
+    // Allow empty input
+    if (value === '') {
+      setAge(null)
+      setStepData('age', null)
+      setAgeError(null)
+      return
+    }
+
+    // Only allow numeric input
+    if (!/^\d+$/.test(value)) return
+
+    const num = parseInt(value, 10)
     setAge(num)
     setStepData('age', num)
+
+    // Clear error while typing
+    setAgeError(null)
+  }
+
+  const handleAgeBlur = () => {
+    // Validate only when user finishes typing
+    if (age !== null && (age < 13 || age > 120)) {
+      setAgeError('Age must be between 13 and 120')
+    } else {
+      setAgeError(null)
+    }
   }
 
   const handleWeightChange = (value: string) => {
+    // Allow empty input
+    if (value === '') {
+      setWeight(null)
+      setStepData('weight', null)
+      setWeightError(null)
+      return
+    }
+
+    // Only allow numeric input with optional decimal
+    if (!/^\d*\.?\d*$/.test(value)) return
+
     const num = value === '' ? null : parseFloat(value)
-    if (num !== null && num <= 0) return // Validation
     setWeight(num)
     setStepData('weight', num)
+
+    // Clear error while typing
+    setWeightError(null)
+  }
+
+  const handleWeightBlur = () => {
+    // Validate only when user finishes typing
+    if (weight !== null && weight <= 0) {
+      setWeightError('Weight must be greater than 0')
+    } else {
+      setWeightError(null)
+    }
   }
 
   const handleHeightChange = (value: string) => {
+    // Allow empty input
+    if (value === '') {
+      setHeight(null)
+      setStepData('height', null)
+      setHeightError(null)
+      return
+    }
+
+    // Only allow numeric input with optional decimal
+    if (!/^\d*\.?\d*$/.test(value)) return
+
     const num = value === '' ? null : parseFloat(value)
-    if (num !== null && num <= 0) return // Validation
     setHeight(num)
     setStepData('height', num)
+
+    // Clear error while typing
+    setHeightError(null)
+  }
+
+  const handleHeightBlur = () => {
+    // Validate only when user finishes typing
+    if (height !== null && height <= 0) {
+      setHeightError('Height must be greater than 0')
+    } else {
+      setHeightError(null)
+    }
   }
 
   const handleSkip = () => {
@@ -192,17 +263,21 @@ export default function ProfilePage() {
             </div>
           )}
           <input
-            type="number"
-            min="13"
-            max="120"
+            type="text"
+            inputMode="numeric"
             value={age || ''}
             onChange={(e) => handleAgeChange(e.target.value)}
+            onBlur={handleAgeBlur}
             placeholder="e.g., 28"
-            className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:border-blue-500 focus:outline-none"
+            className={`w-full p-3 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
+              ageError
+                ? 'border-red-500 focus:border-red-500'
+                : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'
+            }`}
           />
-          {age !== null && (age < 13 || age > 120) && (
+          {ageError && (
             <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-              Age must be between 13 and 120
+              {ageError}
             </p>
           )}
         </div>
@@ -230,18 +305,27 @@ export default function ProfilePage() {
           )}
           <div className="relative">
             <input
-              type="number"
-              min="0"
-              step="0.1"
+              type="text"
+              inputMode="decimal"
               value={weight || ''}
               onChange={(e) => handleWeightChange(e.target.value)}
+              onBlur={handleWeightBlur}
               placeholder="e.g., 75"
-              className="w-full p-3 pr-12 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:border-blue-500 focus:outline-none"
+              className={`w-full p-3 pr-12 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
+                weightError
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'
+              }`}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
               kg
             </span>
           </div>
+          {weightError && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              {weightError}
+            </p>
+          )}
         </div>
 
         {/* Height */}
@@ -267,18 +351,27 @@ export default function ProfilePage() {
           )}
           <div className="relative">
             <input
-              type="number"
-              min="0"
-              step="0.1"
+              type="text"
+              inputMode="decimal"
               value={height || ''}
               onChange={(e) => handleHeightChange(e.target.value)}
+              onBlur={handleHeightBlur}
               placeholder="e.g., 180"
-              className="w-full p-3 pr-12 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:border-blue-500 focus:outline-none"
+              className={`w-full p-3 pr-12 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
+                heightError
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-200 dark:border-gray-700 focus:border-blue-500'
+              }`}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
               cm
             </span>
           </div>
+          {heightError && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              {heightError}
+            </p>
+          )}
         </div>
       </Card>
 
