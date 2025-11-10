@@ -124,6 +124,31 @@ export class ExerciseGenerationService {
   }
 
   /**
+   * Server-side version: Search for exercises by name (fuzzy match)
+   * Uses provided Supabase server client for proper RLS/auth context
+   */
+  static async searchByNameServer(
+    supabase: any,
+    query: string,
+    userId?: string | null,
+    limit: number = 10
+  ): Promise<ExerciseGeneration[]> {
+    const { data, error } = await supabase
+      .from("exercise_generations")
+      .select("*")
+      .ilike("name", `%${query.trim()}%`)
+      .or(`user_id.is.null${userId ? `,user_id.eq.${userId}` : ''}`)
+      .order("usage_count", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw new Error(`Failed to search exercises: ${error.message}`);
+    }
+
+    return data as ExerciseGeneration[];
+  }
+
+  /**
    * Get recently used exercises for a user
    */
   static async getRecentlyUsed(
@@ -132,6 +157,29 @@ export class ExerciseGenerationService {
   ): Promise<ExerciseGeneration[]> {
     const supabase = getSupabaseBrowserClient();
 
+    const { data, error } = await supabase
+      .from("exercise_generations")
+      .select("*")
+      .or(`user_id.is.null${userId ? `,user_id.eq.${userId}` : ''}`)
+      .order("last_used_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw new Error(`Failed to fetch recently used exercises: ${error.message}`);
+    }
+
+    return data as ExerciseGeneration[];
+  }
+
+  /**
+   * Server-side version: Get recently used exercises for a user
+   * Uses provided Supabase server client for proper RLS/auth context
+   */
+  static async getRecentlyUsedServer(
+    supabase: any,
+    userId: string | null,
+    limit: number = 20
+  ): Promise<ExerciseGeneration[]> {
     const { data, error } = await supabase
       .from("exercise_generations")
       .select("*")

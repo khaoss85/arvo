@@ -8,12 +8,14 @@ import { ExerciseSubstitution } from './exercise-substitution'
 interface QuickAdjustmentsProps {
   currentExercise: ExerciseExecution
   exerciseIndex: number
+  userId: string
   onClose: () => void
 }
 
 export function QuickAdjustments({
   currentExercise,
   exerciseIndex,
+  userId,
   onClose
 }: QuickAdjustmentsProps) {
   const { substituteExercise } = useWorkoutExecutionStore()
@@ -63,6 +65,7 @@ export function QuickAdjustments({
       <ExerciseSubstitution
         currentExercise={currentExercise}
         exerciseIndex={exerciseIndex}
+        userId={userId}
         onClose={() => {
           setShowSubstitution(false)
           onClose()

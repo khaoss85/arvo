@@ -665,10 +665,10 @@ export async function suggestExerciseSubstitutionAction(
       ...input,
       approachId: profile.approach_id || '',
       weakPoints: profile.weak_points || [],
-      availableEquipment: profile.available_equipment || [],
-      experienceYears: profile.experience_years || undefined,
-      mesocycleWeek: profile.current_mesocycle_week || undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined
+      availableEquipment: (profile as any).available_equipment || [],
+      experienceYears: profile.experience_years ?? undefined,
+      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
+      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
     // Create agent instance with server Supabase client
@@ -716,11 +716,11 @@ export async function generateWorkoutRationaleAction(
     // Enrich input with user profile data
     const enrichedInput: WorkoutRationaleInput = {
       ...input,
-      approachId: profile.approach_id,
+      approachId: profile.approach_id || '',
       weakPoints: profile.weak_points || [],
-      experienceYears: profile.experience_years,
-      mesocycleWeek: profile.current_mesocycle_week,
-      mesocyclePhase: profile.mesocycle_phase
+      experienceYears: profile.experience_years ?? undefined,
+      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
+      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
     // Create agent instance with server Supabase client
@@ -770,10 +770,10 @@ export async function validateCustomSubstitutionAction(
       ...input,
       approachId: profile.approach_id || '',
       weakPoints: profile.weak_points || [],
-      availableEquipment: profile.available_equipment || [],
-      experienceYears: profile.experience_years || undefined,
-      mesocycleWeek: profile.current_mesocycle_week || undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined
+      availableEquipment: (profile as any).available_equipment || [],
+      experienceYears: profile.experience_years ?? undefined,
+      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
+      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
     // Create agent instance with server Supabase client

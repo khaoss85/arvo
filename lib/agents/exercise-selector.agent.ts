@@ -93,7 +93,7 @@ Consider equipment preferences and provide alternatives.`
 
     // Load user's recently used exercises for naming consistency
     const recentExercises = input.userId
-      ? await ExerciseGenerationService.getRecentlyUsed(this.supabase, input.userId, 20)
+      ? await ExerciseGenerationService.getRecentlyUsedServer(this.supabase, input.userId, 20)
       : []
 
     const demographicContext = input.experienceYears || input.userAge || input.userGender

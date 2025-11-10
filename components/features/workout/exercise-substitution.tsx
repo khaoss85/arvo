@@ -117,7 +117,7 @@ export function ExerciseSubstitution({
 
     // Create new exercise execution with substitution
     const newExercise: ExerciseExecution = {
-      exerciseId: null, // Will be looked up or generated
+      exerciseId: crypto.randomUUID(), // Temporary ID, will be replaced with actual DB ID
       exerciseName: selectedSuggestion.exercise.name,
       targetSets: selectedSuggestion.exercise.sets,
       targetReps: selectedSuggestion.exercise.repRange,
@@ -155,10 +155,10 @@ export function ExerciseSubstitution({
 
       const result = await validateCustomSubstitutionAction(userId, input)
 
-      if (result.success && result.data) {
+      if (result.success) {
         setCustomResult(result.data)
       } else {
-        setCustomError(result.error || 'Failed to validate custom exercise')
+        setCustomError(result.error)
       }
     } catch (err) {
       console.error('Failed to validate custom substitution:', err)

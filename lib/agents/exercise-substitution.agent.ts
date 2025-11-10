@@ -210,10 +210,11 @@ Return JSON format:
   async validateCustomSubstitution(input: CustomSubstitutionInput): Promise<SubstitutionSuggestion> {
     // First, check if a similar exercise already exists in the database
     // This ensures naming consistency and prevents duplicates
-    const similarExercises = await ExerciseGenerationService.searchByName(
+    const similarExercises = await ExerciseGenerationService.searchByNameServer(
       this.supabase,
       input.customExerciseName,
-      input.userId
+      input.userId,
+      10
     )
 
     // If we found a close match (>80% similarity based on fuzzy search),
@@ -225,7 +226,7 @@ Return JSON format:
       return {
         exercise: {
           name: existingExercise.name,
-          equipmentVariant: existingExercise.metadata?.equipment_variant || 'Unknown',
+          equipmentVariant: (existingExercise.metadata as any)?.equipment_variant || 'Unknown',
           sets: input.currentExercise.sets,
           repRange: input.currentExercise.repRange,
           targetWeight: input.currentExercise.targetWeight || 0

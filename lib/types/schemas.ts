@@ -39,6 +39,7 @@ export const userProfileSchema = z.object({
   experience_years: z.number().int().min(0).nullable(),
   strength_baseline: z.record(z.string(), z.unknown()).nullable(),
   equipment_preferences: z.record(z.string(), z.unknown()).nullable(),
+  available_equipment: z.array(z.string()).nullable().optional(),
   preferred_split: z.string().nullable(),
   // Split planning fields
   active_split_plan_id: z.string().uuid().nullable(),
