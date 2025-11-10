@@ -29,8 +29,7 @@ export default async function DashboardPage() {
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
   const inProgressWorkout = await WorkoutService.getInProgressWorkoutServer(user.id);
-  const upcomingWorkouts = workouts.filter(w => !w.completed).slice(0, 5);
-  const completedWorkouts = workouts.filter(w => w.completed).slice(0, 5);
+  const completedWorkouts = workouts.filter(w => w.completed).slice(0, 3); // Reduced to 3 for cleaner UI
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -96,158 +95,6 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Upcoming Workouts */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Upcoming Workouts</h2>
-          {upcomingWorkouts.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {upcomingWorkouts.map((workout) => {
-                const exercises = (workout.exercises as any[]) || [];
-                const isInProgress = inProgressWorkout?.id === workout.id;
-                const estimatedDuration = exercises.length * 10; // ~10 min per exercise estimate
-
-                // Get workout type (from DB or infer from exercises)
-                const workoutType = (workout.workout_type as WorkoutType) || inferWorkoutType(exercises);
-                const workoutTypeColor = getWorkoutTypeColor(workoutType);
-                const workoutTypeIcon = getWorkoutTypeIcon(workoutType);
-                const workoutName = workout.workout_name;
-                const muscleGroups = workout.target_muscle_groups || [];
-
-                // Color mapping for borders and badges
-                const typeColorClasses: Record<string, { border: string; badge: string; button: string }> = {
-                  red: {
-                    border: 'border-red-300 dark:border-red-700',
-                    badge: 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300',
-                    button: 'bg-red-600 hover:bg-red-700'
-                  },
-                  blue: {
-                    border: 'border-blue-300 dark:border-blue-700',
-                    badge: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
-                    button: 'bg-blue-600 hover:bg-blue-700'
-                  },
-                  green: {
-                    border: 'border-green-300 dark:border-green-700',
-                    badge: 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300',
-                    button: 'bg-green-600 hover:bg-green-700'
-                  },
-                  orange: {
-                    border: 'border-orange-300 dark:border-orange-700',
-                    badge: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
-                    button: 'bg-orange-600 hover:bg-orange-700'
-                  },
-                  purple: {
-                    border: 'border-purple-300 dark:border-purple-700',
-                    badge: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
-                    button: 'bg-purple-600 hover:bg-purple-700'
-                  },
-                  yellow: {
-                    border: 'border-yellow-300 dark:border-yellow-700',
-                    badge: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300',
-                    button: 'bg-yellow-600 hover:bg-yellow-700'
-                  },
-                  gray: {
-                    border: 'border-gray-300 dark:border-gray-700',
-                    badge: 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300',
-                    button: 'bg-gray-600 hover:bg-gray-700'
-                  }
-                };
-
-                const colors = typeColorClasses[workoutTypeColor] || typeColorClasses.gray;
-
-                return (
-                  <div
-                    key={workout.id}
-                    className={`bg-white dark:bg-gray-900 rounded-lg border-2 p-5 transition-all ${
-                      isInProgress
-                        ? 'border-orange-500 dark:border-orange-500 shadow-lg'
-                        : `${colors.border} hover:shadow-md`
-                    }`}
-                  >
-                    {/* Header with Date and Status */}
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {workout.planned_at ? new Date(workout.planned_at).toLocaleDateString() : 'No date'}
-                      </span>
-                      <span className={`px-2 py-1 text-xs font-medium rounded ${
-                        isInProgress
-                          ? 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300'
-                          : colors.badge
-                      }`}>
-                        {isInProgress ? 'In Progress' : 'Upcoming'}
-                      </span>
-                    </div>
-
-                    {/* Workout Type Badge */}
-                    <div className="mb-3">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md ${colors.badge}`}>
-                        <span>{workoutTypeIcon}</span>
-                        <span>{workoutName || workoutType.toUpperCase()}</span>
-                      </span>
-                    </div>
-
-                    {/* Muscle Groups Tags */}
-                    {muscleGroups.length > 0 && (
-                      <div className="mb-3 flex flex-wrap gap-1.5">
-                        {muscleGroups.slice(0, 3).map((group, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded"
-                          >
-                            {group}
-                          </span>
-                        ))}
-                        {muscleGroups.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
-                            +{muscleGroups.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Exercise Count and Duration */}
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        ~{estimatedDuration} min estimated
-                      </p>
-                    </div>
-
-                    {/* Exercise Preview */}
-                    {exercises.length > 0 && (
-                      <div className="mb-4 space-y-1">
-                        {exercises.slice(0, 3).map((ex: any, idx: number) => (
-                          <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            • {ex.name || ex.exercise_name || 'Exercise'}
-                          </div>
-                        ))}
-                        {exercises.length > 3 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-500">
-                            +{exercises.length - 3} more
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <Link href={`/workout/${workout.id}`} className="block">
-                      <Button className={`w-full ${isInProgress ? 'bg-orange-600 hover:bg-orange-700' : colors.button} text-white`}>
-                        {isInProgress ? 'Resume' : 'Start Workout'}
-                      </Button>
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
-                No upcoming workouts. Generate your next workout above!
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* Recent Completed Workouts */}
         <div>
           <h2 className="text-2xl font-bold mb-4">Recent Completed Workouts</h2>
@@ -263,76 +110,80 @@ export default async function DashboardPage() {
                 const muscleGroups = workout.target_muscle_groups || [];
 
                 return (
-                  <div
-                    key={workout.id}
-                    className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-md transition-all opacity-90"
-                  >
-                    {/* Header with Date and Status */}
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {workout.planned_at
-                          ? new Date(workout.planned_at).toLocaleDateString()
-                          : 'No date'}
-                      </span>
-                      <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded">
-                        Completed
-                      </span>
-                    </div>
-
-                    {/* Workout Type Badge */}
-                    <div className="mb-3">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                        <span>{workoutTypeIcon}</span>
-                        <span>{workoutName || workoutType.toUpperCase()}</span>
-                      </span>
-                    </div>
-
-                    {/* Muscle Groups Tags */}
-                    {muscleGroups.length > 0 && (
-                      <div className="mb-3 flex flex-wrap gap-1.5">
-                        {muscleGroups.slice(0, 3).map((group, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded"
-                          >
-                            {group}
+                  <Link key={workout.id} href={`/workout/${workout.id}/recap`}>
+                    <div className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg transition-all cursor-pointer group">
+                      {/* Header with Date and Status */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {workout.planned_at
+                            ? new Date(workout.planned_at).toLocaleDateString()
+                            : 'No date'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded">
+                            Completed
                           </span>
-                        ))}
-                        {muscleGroups.length > 3 && (
-                          <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
-                            +{muscleGroups.length - 3}
-                          </span>
+                          <svg className="w-4 h-4 text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </div>
+
+                      {/* Workout Type Badge */}
+                      <div className="mb-3">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                          <span>{workoutTypeIcon}</span>
+                          <span>{workoutName || workoutType.toUpperCase()}</span>
+                        </span>
+                      </div>
+
+                      {/* Muscle Groups Tags */}
+                      {muscleGroups.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-1.5">
+                          {muscleGroups.slice(0, 3).map((group, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded"
+                            >
+                              {group}
+                            </span>
+                          ))}
+                          {muscleGroups.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
+                              +{muscleGroups.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mb-3">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                          {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
+                        </p>
+                        {workout.duration_seconds && (
+                          <p className="text-xs text-gray-500 dark:text-gray-500">
+                            Duration: {Math.round(workout.duration_seconds / 60)} min
+                          </p>
                         )}
                       </div>
-                    )}
 
-                    <div className="mb-3">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                        {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
-                      </p>
-                      {workout.duration_seconds && (
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                          Duration: {Math.round(workout.duration_seconds / 60)} min
-                        </p>
+                      {/* Exercise Preview */}
+                      {exercises.length > 0 && (
+                        <div className="space-y-1">
+                          {exercises.slice(0, 3).map((ex: any, idx: number) => (
+                            <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              • {ex.name || ex.exercise_name || 'Exercise'}
+                            </div>
+                          ))}
+                          {exercises.length > 3 && (
+                            <div className="text-xs text-gray-500 dark:text-gray-500">
+                              +{exercises.length - 3} more
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
-
-                    {/* Exercise Preview */}
-                    {exercises.length > 0 && (
-                      <div className="space-y-1">
-                        {exercises.slice(0, 3).map((ex: any, idx: number) => (
-                          <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                            • {ex.name || ex.exercise_name || 'Exercise'}
-                          </div>
-                        ))}
-                        {exercises.length > 3 && (
-                          <div className="text-xs text-gray-500 dark:text-gray-500">
-                            +{exercises.length - 3} more
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  </Link>
                 );
               })}
             </div>

@@ -1,51 +1,21 @@
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { SplitPlanService, type SessionDefinition } from "@/lib/services/split-plan.service";
-import type { SplitPlan, Workout } from "@/lib/types/schemas";
+import type { Workout } from "@/lib/types/schemas";
+import type {
+  DayStatus,
+  VolumeComparison,
+  CompletedWorkoutData,
+  TimelineDayData,
+  SplitTimelineData,
+} from "@/lib/services/split-timeline.types";
 
-/**
- * Status of a day in the split cycle timeline
- */
-export type DayStatus = 'completed' | 'current' | 'upcoming' | 'rest';
-
-/**
- * Volume comparison data for a muscle group
- */
-export interface VolumeComparison {
-  target: number;
-  actual: number;
-  diff: number;
-  percentage: number;
-}
-
-/**
- * Data for a completed workout in the timeline
- */
-export interface CompletedWorkoutData {
-  id: string;
-  completedAt: string;
-  actualVolume: Record<string, number>; // muscle -> actual sets
-  variance: Record<string, VolumeComparison>; // muscle -> comparison
-}
-
-/**
- * Data for a single day in the timeline
- */
-export interface TimelineDayData {
-  day: number; // 1-based cycle day
-  status: DayStatus;
-  session: SessionDefinition | null; // null for rest days
-  completedWorkout?: CompletedWorkoutData;
-}
-
-/**
- * Complete timeline data for the split cycle
- */
-export interface SplitTimelineData {
-  splitPlan: SplitPlan;
-  currentCycleDay: number;
-  days: TimelineDayData[];
-}
+// Re-export types for convenience
+export type {
+  DayStatus,
+  VolumeComparison,
+  CompletedWorkoutData,
+  TimelineDayData,
+  SplitTimelineData,
+};
 
 /**
  * Exercise pattern matching for muscle groups
@@ -165,6 +135,7 @@ export class SplitTimelineService {
     userId: string,
     splitPlanId: string
   ): Promise<Map<number, Workout>> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
     const { data: workouts, error } = await supabase
@@ -203,6 +174,7 @@ export class SplitTimelineService {
     userId: string,
     splitPlanId: string
   ): Promise<Map<number, Workout>> {
+    const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
     const supabase = getSupabaseBrowserClient();
 
     const { data: workouts, error } = await supabase
@@ -262,6 +234,7 @@ export class SplitTimelineService {
    * Get complete timeline data for user's active split (server-side)
    */
   static async getTimelineDataServer(userId: string): Promise<SplitTimelineData | null> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
     // Get user profile with current cycle day
@@ -344,6 +317,7 @@ export class SplitTimelineService {
    * Get complete timeline data for user's active split (client-side)
    */
   static async getTimelineData(userId: string): Promise<SplitTimelineData | null> {
+    const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
     const supabase = getSupabaseBrowserClient();
 
     // Get user profile with current cycle day

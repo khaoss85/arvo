@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { getSplitTimelineDataAction } from '@/app/actions/split-actions'
-import type { SplitTimelineData } from '@/lib/services/split-timeline.service'
+import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
 import { TimelineDayCard } from './timeline-day-card'
 
 interface SplitCycleTimelineProps {

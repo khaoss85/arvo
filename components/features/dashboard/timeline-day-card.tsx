@@ -1,6 +1,6 @@
 'use client'
 
-import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.service'
+import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 
