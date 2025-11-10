@@ -5,6 +5,8 @@ import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { ProgressionCalculator } from '@/lib/agents/progression-calculator.agent'
 import { ReorderValidator } from '@/lib/agents/reorder-validator.agent'
 import { WorkoutSummaryAgent } from '@/lib/agents/workout-summary.agent'
+import { ExerciseSubstitutionAgent } from '@/lib/agents/exercise-substitution.agent'
+import { WorkoutRationaleAgent } from '@/lib/agents/workout-rationale.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
 import {
   getNextWorkoutType,
@@ -20,6 +22,8 @@ import type { Workout, InsertWorkout } from '@/lib/types/schemas'
 import type { ExplanationType, ExplanationContext } from '@/lib/services/explanation.service'
 import type { ReorderValidationInput } from '@/lib/agents/reorder-validator.agent'
 import type { WorkoutSummaryInput } from '@/lib/agents/workout-summary.agent'
+import type { SubstitutionInput, SubstitutionOutput } from '@/lib/agents/exercise-substitution.agent'
+import type { WorkoutRationaleInput, WorkoutRationaleOutput } from '@/lib/agents/workout-rationale.agent'
 
 /**
  * Server action to complete onboarding
@@ -639,6 +643,111 @@ export async function updateEquipmentPreferencesAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update equipment preferences'
+    }
+  }
+}
+
+/**
+ * Server action to suggest exercise substitutions
+ * Uses AI to generate 3-5 intelligent alternatives with validation
+ * Optimized for gym use: concise rationales, quick decisions
+ */
+export async function suggestExerciseSubstitutionAction(
+  userId: string,
+  input: SubstitutionInput
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Load user profile for context (approach, weak points, equipment, etc.)
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError || !profile) {
+      throw new Error('Failed to load user profile')
+    }
+
+    // Enrich input with user profile data
+    const enrichedInput: SubstitutionInput = {
+      ...input,
+      approachId: profile.approach_id || '',
+      weakPoints: profile.weak_points || [],
+      availableEquipment: [], // Equipment will be loaded from equipment_preferences
+      experienceYears: profile.experience_years || undefined,
+      mesocycleWeek: profile.current_mesocycle_week || undefined,
+      mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined
+    }
+
+    // Create agent instance with server Supabase client
+    const agent = new ExerciseSubstitutionAgent(supabase)
+
+    // Generate substitution suggestions
+    const result = await agent.suggestSubstitutions(enrichedInput)
+
+    return {
+      success: true,
+      data: result
+    }
+  } catch (error) {
+    console.error('Server action - Exercise substitution error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to suggest substitutions'
+    }
+  }
+}
+
+/**
+ * Server action to generate workout rationale
+ * Uses AI to explain why exercises were chosen based on user context
+ * Optimized for gym use: concise explanations, 2-3 sentences overall + 1 per exercise
+ */
+export async function generateWorkoutRationaleAction(
+  userId: string,
+  input: WorkoutRationaleInput
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Load user profile for context
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError || !profile) {
+      throw new Error('Failed to load user profile')
+    }
+
+    // Enrich input with user profile data
+    const enrichedInput: WorkoutRationaleInput = {
+      ...input,
+      approachId: profile.approach_id,
+      weakPoints: profile.weak_points || [],
+      experienceYears: profile.experience_years,
+      mesocycleWeek: profile.current_mesocycle_week,
+      mesocyclePhase: profile.mesocycle_phase
+    }
+
+    // Create agent instance with server Supabase client
+    const agent = new WorkoutRationaleAgent(supabase)
+
+    // Generate rationale
+    const result = await agent.generateRationale(enrichedInput)
+
+    return {
+      success: true,
+      data: result
+    }
+  } catch (error) {
+    console.error('Server action - Workout rationale error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate workout rationale'
     }
   }
 }
