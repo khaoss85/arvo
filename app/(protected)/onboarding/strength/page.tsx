@@ -11,7 +11,11 @@ const STANDARD_LIFTS = [
   { id: 'bench_press', label: 'Bench Press' },
   { id: 'squat', label: 'Squat' },
   { id: 'deadlift', label: 'Deadlift' },
-  { id: 'overhead_press', label: 'Overhead Press' }
+  { id: 'overhead_press', label: 'Overhead Press' },
+  { id: 'hip_thrust', label: 'Hip Thrust' },
+  { id: 'barbell_row', label: 'Barbell Row' },
+  { id: 'pull_ups', label: 'Pull-ups' },
+  { id: 'front_squat', label: 'Front Squat' }
 ]
 
 export default function StrengthBaselinePage() {

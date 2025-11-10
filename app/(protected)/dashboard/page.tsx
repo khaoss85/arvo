@@ -3,15 +3,17 @@ import Link from "next/link";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
-import { WorkoutGenerator } from "@/components/features/dashboard/workout-generator";
-import { SplitCycleTimeline } from "@/components/features/dashboard/split-cycle-timeline";
+import { SplitCycleTimelineWithGenerator } from "@/components/features/dashboard/split-cycle-timeline-with-generator";
 import { Button } from "@/components/ui/button";
 import {
   inferWorkoutType,
-  getWorkoutTypeColor,
   getWorkoutTypeIcon,
   type WorkoutType
 } from "@/lib/services/muscle-groups.service";
+
+// Constants for dashboard display
+const MAX_RECENT_WORKOUTS = 6;
+const MAX_VISIBLE_MUSCLE_GROUPS = 3;
 
 export default async function DashboardPage() {
   const user = await getUser();
@@ -29,7 +31,7 @@ export default async function DashboardPage() {
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
   const inProgressWorkout = await WorkoutService.getInProgressWorkoutServer(user.id);
-  const completedWorkouts = workouts.filter(w => w.completed).slice(0, 3); // Reduced to 3 for cleaner UI
+  const completedWorkouts = workouts.filter(w => w.completed).slice(0, MAX_RECENT_WORKOUTS);
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -68,12 +70,7 @@ export default async function DashboardPage() {
 
         {/* Split Cycle Timeline - Shows complete split programming */}
         <div className="mb-8">
-          <SplitCycleTimeline userId={user.id} />
-        </div>
-
-        {/* Workout Generator Section */}
-        <div className="mb-8">
-          <WorkoutGenerator userId={user.id} />
+          <SplitCycleTimelineWithGenerator userId={user.id} />
         </div>
 
         {/* In-Progress Workout Banner */}
@@ -96,105 +93,133 @@ export default async function DashboardPage() {
         )}
 
         {/* Recent Completed Workouts */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Recent Completed Workouts</h2>
-          {completedWorkouts.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {completedWorkouts.map((workout) => {
-                const exercises = (workout.exercises as any[]) || [];
+        <section aria-labelledby="recent-activity-heading">
+          <div className="flex items-center justify-between mb-4">
+            <h2 id="recent-activity-heading" className="text-2xl font-bold">Recent Activity</h2>
+            <Link
+              href="/progress"
+              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
+            >
+              View All History
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
 
-                // Get workout type (from DB or infer from exercises)
+          {completedWorkouts.length > 0 ? (
+            <ul role="list" className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
+              {completedWorkouts.map((workout) => {
+                const exercises = Array.isArray(workout.exercises) ? (workout.exercises as Array<{ name: string; completedSets?: any; sets?: any }>) : [];
                 const workoutType = (workout.workout_type as WorkoutType) || inferWorkoutType(exercises);
                 const workoutTypeIcon = getWorkoutTypeIcon(workoutType);
                 const workoutName = workout.workout_name;
-                const muscleGroups = workout.target_muscle_groups || [];
+                const muscleGroups = Array.isArray(workout.target_muscle_groups) ? workout.target_muscle_groups : [];
+
+                // Calculate total sets
+                const totalSets = exercises.reduce((sum, ex) => {
+                  const sets = ex.completedSets || ex.sets || [];
+                  return sum + (Array.isArray(sets) ? sets.length : 0);
+                }, 0);
+
+                const workoutDate = workout.planned_at
+                  ? new Date(workout.planned_at).toLocaleDateString()
+                  : 'recent workout';
 
                 return (
-                  <Link key={workout.id} href={`/workout/${workout.id}/recap`}>
-                    <div className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-5 hover:border-green-400 dark:hover:border-green-600 hover:shadow-lg transition-all cursor-pointer group">
-                      {/* Header with Date and Status */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {workout.planned_at
-                            ? new Date(workout.planned_at).toLocaleDateString()
-                            : 'No date'}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded">
-                            Completed
-                          </span>
-                          <svg className="w-4 h-4 text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                  <li key={workout.id}>
+                    <Link
+                      href={`/workout/${workout.id}/recap`}
+                      aria-label={`View ${workoutName || workoutType} workout from ${workoutDate}`}
+                    >
+                      <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer group">
+                        <div className="flex items-center gap-4">
+                        {/* Date */}
+                        <div className="flex-shrink-0 text-center">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 uppercase">
+                            {workout.planned_at
+                              ? new Date(workout.planned_at).toLocaleDateString('en-US', { month: 'short' })
+                              : 'N/A'}
+                          </div>
+                          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                            {workout.planned_at
+                              ? new Date(workout.planned_at).getDate()
+                              : '-'}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Workout Type Badge */}
-                      <div className="mb-3">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
-                          <span>{workoutTypeIcon}</span>
-                          <span>{workoutName || workoutType.toUpperCase()}</span>
-                        </span>
-                      </div>
-
-                      {/* Muscle Groups Tags */}
-                      {muscleGroups.length > 0 && (
-                        <div className="mb-3 flex flex-wrap gap-1.5">
-                          {muscleGroups.slice(0, 3).map((group, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded"
-                            >
-                              {group}
+                        {/* Workout Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-lg">{workoutTypeIcon}</span>
+                            <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">
+                              {workoutName || workoutType.toUpperCase()}
+                            </h3>
+                            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-xs font-medium rounded flex-shrink-0">
+                              ✓ Done
                             </span>
-                          ))}
-                          {muscleGroups.length > 3 && (
-                            <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500 text-xs rounded">
-                              +{muscleGroups.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                          </div>
 
-                      <div className="mb-3">
-                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                          {exercises.length} {exercises.length === 1 ? 'exercise' : 'exercises'}
-                        </p>
-                        {workout.duration_seconds && (
-                          <p className="text-xs text-gray-500 dark:text-gray-500">
-                            Duration: {Math.round(workout.duration_seconds / 60)} min
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Exercise Preview */}
-                      {exercises.length > 0 && (
-                        <div className="space-y-1">
-                          {exercises.slice(0, 3).map((ex: any, idx: number) => (
-                            <div key={idx} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                              • {ex.name || ex.exercise_name || 'Exercise'}
-                            </div>
-                          ))}
-                          {exercises.length > 3 && (
-                            <div className="text-xs text-gray-500 dark:text-gray-500">
-                              +{exercises.length - 3} more
+                          {/* Muscle Groups */}
+                          {muscleGroups.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-1">
+                              {muscleGroups.slice(0, MAX_VISIBLE_MUSCLE_GROUPS).map((group, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs rounded"
+                                >
+                                  {group}
+                                </span>
+                              ))}
+                              {muscleGroups.length > MAX_VISIBLE_MUSCLE_GROUPS && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  +{muscleGroups.length - MAX_VISIBLE_MUSCLE_GROUPS}
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </Link>
+
+                        {/* Stats - Responsive: smaller on mobile */}
+                        <div className="hidden sm:flex items-center gap-3 flex-shrink-0 text-sm text-gray-700 dark:text-gray-300">
+                          {workout.duration_seconds && (
+                            <div className="flex items-center gap-1">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span>{Math.round(workout.duration_seconds / 60)}m</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <span>{totalSets} sets</span>
+                          </div>
+                        </div>
+
+                        {/* Arrow */}
+                        <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           ) : (
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <p className="text-gray-600 dark:text-gray-400">
-                No completed workouts yet. Complete your first workout to see it here!
-              </p>
+              <div className="flex flex-col items-center">
+                <span className="text-5xl mb-4" role="img" aria-label="Flexed bicep">💪</span>
+                <p className="text-gray-600 dark:text-gray-400">
+                  No completed workouts yet. Complete your first workout to see it here!
+                </p>
+              </div>
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );
