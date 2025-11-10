@@ -3,10 +3,13 @@
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
+import { Button } from '@/components/ui/button'
+import { Sparkles } from 'lucide-react'
 
 interface TimelineDayCardProps {
   dayData: TimelineDayData
   isCurrentDay: boolean
+  onGenerateWorkout?: () => void
 }
 
 // Status styling configuration
@@ -70,7 +73,7 @@ function VarianceIndicator({ variance }: { variance: VolumeComparison }) {
   )
 }
 
-export function TimelineDayCard({ dayData, isCurrentDay }: TimelineDayCardProps) {
+export function TimelineDayCard({ dayData, isCurrentDay, onGenerateWorkout }: TimelineDayCardProps) {
   const { day, status, session, completedWorkout } = dayData
   const styles = STATUS_STYLES[status]
 
@@ -117,15 +120,18 @@ export function TimelineDayCard({ dayData, isCurrentDay }: TimelineDayCardProps)
   return (
     <div
       className={cn(
-        'flex-shrink-0 w-[280px] rounded-lg border-2 p-4 transition-all',
+        'flex-shrink-0 rounded-lg border-2 p-4 transition-all duration-300',
+        isCurrentDay ? 'w-[320px] shadow-2xl ring-4 ring-purple-400 dark:ring-purple-600 scale-105' : 'w-[280px]',
         styles.border,
-        styles.bg,
-        isCurrentDay && 'shadow-lg ring-2 ring-purple-400 dark:ring-purple-600'
+        styles.bg
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <span className={cn(
+          'text-sm font-medium',
+          isCurrentDay ? 'text-purple-700 dark:text-purple-300 font-bold' : 'text-gray-500 dark:text-gray-400'
+        )}>
           Day {day}
         </span>
         <div className="flex items-center gap-2">
@@ -137,9 +143,10 @@ export function TimelineDayCard({ dayData, isCurrentDay }: TimelineDayCardProps)
           <span className={cn(
             'px-2 py-1 rounded-full text-xs font-bold',
             styles.badgeBg,
-            styles.badgeText
+            styles.badgeText,
+            isCurrentDay && 'px-3 py-1.5 text-sm'
           )}>
-            {status === 'current' ? 'Current' : status === 'completed' ? 'Done' : 'Upcoming'} {styles.icon}
+            {status === 'current' ? 'TODAY' : status === 'completed' ? 'Done' : 'Upcoming'} {styles.icon}
           </span>
         </div>
       </div>
@@ -183,6 +190,19 @@ export function TimelineDayCard({ dayData, isCurrentDay }: TimelineDayCardProps)
           )}
         </div>
       </div>
+
+      {/* Generate Workout Button (only for current day) */}
+      {isCurrentDay && onGenerateWorkout && status === 'current' && (
+        <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
+          <Button
+            onClick={onGenerateWorkout}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate Today&apos;s Workout
+          </Button>
+        </div>
+      )}
 
       {/* Actual Performance (only for completed workouts) */}
       {completedWorkout && completedWorkout.variance && (

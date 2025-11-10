@@ -7,9 +7,10 @@ import { TimelineDayCard } from './timeline-day-card'
 
 interface SplitCycleTimelineProps {
   userId: string
+  onGenerateWorkout?: () => void
 }
 
-export function SplitCycleTimeline({ userId }: SplitCycleTimelineProps) {
+export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTimelineProps) {
   const [data, setData] = useState<SplitTimelineData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +51,7 @@ export function SplitCycleTimeline({ userId }: SplitCycleTimelineProps) {
 
       // Find current day card
       const currentDayIndex = data.currentCycleDay - 1 // 0-indexed
-      const cardWidth = 280 // Fixed card width
+      const cardWidth = 320 // Current day card width (320px when expanded)
       const gap = 12 // Gap between cards
       const padding = 16 // Container padding
 
@@ -145,6 +146,7 @@ export function SplitCycleTimeline({ userId }: SplitCycleTimelineProps) {
                 <TimelineDayCard
                   dayData={dayData}
                   isCurrentDay={dayData.day === currentCycleDay}
+                  onGenerateWorkout={onGenerateWorkout}
                 />
               </div>
             ))}

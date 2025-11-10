@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { HelpCircle, ChevronDown, Target, Clock, SkipForward } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
+import { ExerciseSubstitution } from './exercise-substitution'
 import { Button } from '@/components/ui/button'
 
 // Mental readiness emoji mapping
@@ -43,6 +44,7 @@ export function ExerciseCard({
   const [progressionExplanation, setProgressionExplanation] = useState('')
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
   const [showTechnicalCues, setShowTechnicalCues] = useState(false)
+  const [showSubstitution, setShowSubstitution] = useState(false)
 
   // Rest timer state
   const [isResting, setIsResting] = useState(false)
@@ -440,6 +442,20 @@ export function ExerciseCard({
         </>
       )}
 
+      {/* Change Exercise Button */}
+      {!isLastSet && !isResting && (
+        <div className="mt-4 mb-2">
+          <Button
+            onClick={() => setShowSubstitution(true)}
+            variant="outline"
+            className="w-full border-gray-700 text-gray-300 hover:border-purple-600 hover:text-purple-400 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Change Exercise
+          </Button>
+        </div>
+      )}
+
       {/* Navigation */}
       <div className="mt-6 flex gap-3">
         {exerciseIndex > 0 && (
@@ -452,6 +468,16 @@ export function ExerciseCard({
           </Button>
         )}
       </div>
+
+      {/* Exercise Substitution Modal */}
+      {showSubstitution && (
+        <ExerciseSubstitution
+          currentExercise={exercise}
+          exerciseIndex={exerciseIndex}
+          userId={userId}
+          onClose={() => setShowSubstitution(false)}
+        />
+      )}
     </div>
   )
 }

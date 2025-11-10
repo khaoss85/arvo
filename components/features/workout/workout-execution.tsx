@@ -8,6 +8,7 @@ import { ExerciseCard } from './exercise-card'
 import { WorkoutProgress } from './workout-progress'
 import { WorkoutSummary } from './workout-summary'
 import { ReorderExercisesModal } from './reorder-exercises-modal'
+import { WorkoutRationale } from './workout-rationale'
 import { Button } from '@/components/ui/button'
 
 interface WorkoutExecutionProps {
@@ -98,6 +99,15 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
         currentIndex={currentExerciseIndex}
         exercises={exercises}
       />
+
+      {/* Workout Rationale */}
+      <div className="mt-4">
+        <WorkoutRationale
+          workoutType={workout.workout_type || 'general'}
+          exercises={exercises}
+          userId={userId}
+        />
+      </div>
 
       {/* Reorder Button */}
       <div className="mt-4">

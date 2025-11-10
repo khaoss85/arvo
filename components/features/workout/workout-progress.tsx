@@ -1,13 +1,15 @@
 'use client'
 
+import { RefreshCw } from 'lucide-react'
 import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
 
 interface WorkoutProgressProps {
   currentIndex: number
   exercises: ExerciseExecution[]
+  onSwapExercise?: (index: number) => void
 }
 
-export function WorkoutProgress({ currentIndex, exercises }: WorkoutProgressProps) {
+export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: WorkoutProgressProps) {
   const progress = ((currentIndex + 1) / exercises.length) * 100
 
   return (
@@ -43,12 +45,30 @@ export function WorkoutProgress({ currentIndex, exercises }: WorkoutProgressProp
                   : 'bg-gray-800/50'
               }`}
             >
-              <span className={`text-sm ${isCurrent ? 'text-white font-medium' : 'text-gray-400'}`}>
-                {ex.exerciseName}
-              </span>
-              <span className="text-xs text-gray-500">
-                {ex.completedSets.length}/{ex.targetSets} sets
-              </span>
+              <div className="flex items-center gap-2 flex-1">
+                <span className={`text-sm ${isCurrent ? 'text-white font-medium' : 'text-gray-400'}`}>
+                  {ex.exerciseName}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">
+                  {ex.completedSets.length}/{ex.targetSets} sets
+                </span>
+                {/* Swap button - only show if not completed and callback provided */}
+                {!isCompleted && onSwapExercise && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onSwapExercise(idx)
+                    }}
+                    className="p-1 hover:bg-purple-600/20 rounded transition-colors group"
+                    aria-label={`Change ${ex.exerciseName}`}
+                    title="Change exercise"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-gray-500 group-hover:text-purple-400 transition-colors" />
+                  </button>
+                )}
+              </div>
             </div>
           )
         })}
