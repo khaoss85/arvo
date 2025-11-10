@@ -33,7 +33,7 @@ export class WorkoutGeneratorService {
     const exerciseSelector = new ExerciseSelector()
 
     // Get user profile
-    const profile = await UserProfileService.getByUserId(userId)
+    const profile = await UserProfileService.getByUserIdServer(userId)
     if (!profile) {
       throw new Error('User profile not found. Please create a profile first.')
     }
@@ -211,7 +211,7 @@ export class WorkoutGeneratorService {
     targetCycleDay: number
   ): Promise<Workout> {
     // Verify that target cycle day is in the future
-    const profile = await UserProfileService.getByUserId(userId)
+    const profile = await UserProfileService.getByUserIdServer(userId)
     if (!profile) {
       throw new Error('User profile not found')
     }
