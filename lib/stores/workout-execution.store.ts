@@ -108,18 +108,40 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
       // Start a new workout
       startWorkout: (workout: Workout) => {
-        const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex) => ({
-          exerciseId: ex.id || null,
-          exerciseName: ex.name,
-          targetSets: ex.sets || 2,
-          targetReps: ex.repRange || [6, 10],
-          targetWeight: ex.targetWeight || 0,
-          completedSets: [],
-          currentAISuggestion: null,
-          technicalCues: ex.technicalCues || [],
-          warmupSets: ex.warmupSets || [],
-          setGuidance: ex.setGuidance || []
-        }))
+        console.log('[Store] startWorkout called with:', {
+          workoutId: workout.id,
+          hasExercises: Array.isArray(workout.exercises),
+          exerciseCount: Array.isArray(workout.exercises) ? workout.exercises.length : 0,
+          firstExercise: Array.isArray(workout.exercises) && workout.exercises.length > 0
+            ? {
+                name: (workout.exercises[0] as any).name,
+                keys: Object.keys(workout.exercises[0])
+              }
+            : null
+        })
+
+        const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex, idx) => {
+          const mapped = {
+            exerciseId: ex.id || null,
+            exerciseName: ex.name,
+            targetSets: ex.sets || 2,
+            targetReps: ex.repRange || [6, 10],
+            targetWeight: ex.targetWeight || 0,
+            completedSets: [],
+            currentAISuggestion: null,
+            technicalCues: ex.technicalCues || [],
+            warmupSets: ex.warmupSets || [],
+            setGuidance: ex.setGuidance || []
+          }
+
+          if (idx === 0) {
+            console.log('[Store] First exercise mapped to:', mapped)
+          }
+
+          return mapped
+        })
+
+        console.log('[Store] Total exercises mapped:', exercises.length)
 
         set({
           workoutId: workout.id,

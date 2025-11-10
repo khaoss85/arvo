@@ -9,6 +9,7 @@ import { WorkoutProgress } from './workout-progress'
 import { WorkoutSummary } from './workout-summary'
 import { ReorderExercisesModal } from './reorder-exercises-modal'
 import { WorkoutRationale } from './workout-rationale'
+import { ExerciseSubstitution } from './exercise-substitution'
 import { Button } from '@/components/ui/button'
 
 interface WorkoutExecutionProps {
@@ -27,6 +28,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
     endWorkout
   } = useWorkoutExecutionStore()
   const [showReorderModal, setShowReorderModal] = useState(false)
+  const [swapExerciseIndex, setSwapExerciseIndex] = useState<number | null>(null)
   const hasInitialized = useRef(false)
 
   // Initialize or resume workout on mount
@@ -38,11 +40,27 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       try {
         // If workout is marked as active but has no exercises (page refresh case)
         if (isActive && exercises.length === 0 && workoutId) {
+          console.log('[WorkoutExecution] Resuming workout (page refresh):', workoutId)
           await resumeWorkout(workoutId)
         }
         // If workout is not active, start it fresh
         else if (!isActive) {
+          console.log('[WorkoutExecution] Starting new workout:', {
+            id: workout.id,
+            exerciseCount: Array.isArray(workout.exercises) ? workout.exercises.length : 0,
+            hasExercises: Array.isArray(workout.exercises) && workout.exercises.length > 0
+          })
           startWorkout(workout)
+
+          // FALLBACK: If exercises are still empty after startWorkout, force resumeWorkout
+          // This handles cases where the workout object from generation doesn't have complete exercise data
+          setTimeout(async () => {
+            const currentExercises = useWorkoutExecutionStore.getState().exercises
+            if (currentExercises.length === 0 && workout.id) {
+              console.log('[WorkoutExecution] Exercises empty after startWorkout, forcing resumeWorkout')
+              await resumeWorkout(workout.id)
+            }
+          }, 100)
         }
 
         hasInitialized.current = true
@@ -98,6 +116,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       <WorkoutProgress
         currentIndex={currentExerciseIndex}
         exercises={exercises}
+        onSwapExercise={(index) => setSwapExerciseIndex(index)}
       />
 
       {/* Workout Rationale */}
@@ -138,6 +157,16 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           workoutType={workout.workout_type || 'general'}
           approachId={workout.approach_id || ''}
           onClose={() => setShowReorderModal(false)}
+        />
+      )}
+
+      {/* Exercise Substitution Modal */}
+      {swapExerciseIndex !== null && (
+        <ExerciseSubstitution
+          currentExercise={exercises[swapExerciseIndex]}
+          exerciseIndex={swapExerciseIndex}
+          userId={userId}
+          onClose={() => setSwapExerciseIndex(null)}
         />
       )}
     </div>
