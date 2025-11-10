@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Metadata } from "next";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
@@ -10,6 +11,11 @@ import {
   getWorkoutTypeIcon,
   type WorkoutType
 } from "@/lib/services/muscle-groups.service";
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  description: 'View your workout progress, upcoming training sessions, and track your fitness journey.',
+};
 
 // Constants for dashboard display
 const MAX_RECENT_WORKOUTS = 6;

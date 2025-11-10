@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
+import { Metadata } from "next"
 import { getUser } from "@/lib/utils/auth.server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { SplitSelector } from "@/components/features/settings/split-selector"
@@ -9,6 +10,11 @@ import { ResetDataSection } from "@/components/features/settings/reset-data-sect
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { MethodDetails } from "@/components/features/settings/method-details"
 import { Card } from "@/components/ui/card"
+
+export const metadata: Metadata = {
+  title: 'Settings',
+  description: 'Customize your training preferences, manage your profile, and configure your workout experience.',
+};
 
 export default async function SettingsPage() {
   const user = await getUser()
