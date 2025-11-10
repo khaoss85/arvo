@@ -29,6 +29,11 @@ export interface SubstitutionInput {
   substitutionReason?: string
 }
 
+export interface CustomSubstitutionInput extends SubstitutionInput {
+  customExerciseName: string // User's proposed exercise name or natural language description
+  userIntent?: string // Optional: additional context about why they want this specific exercise
+}
+
 export interface SubstitutionSuggestion {
   exercise: {
     name: string
@@ -199,5 +204,156 @@ Return JSON format:
 }`
 
     return await this.complete<SubstitutionOutput>(prompt)
+  }
+
+  async validateCustomSubstitution(input: CustomSubstitutionInput): Promise<SubstitutionSuggestion> {
+    // Load user's training approach for context
+    const approach = await this.knowledge.loadApproach(input.approachId)
+    const approachContext = this.knowledge.formatContextForAI(approach, 'exercise_selection')
+
+    // Build user demographics context
+    const demographicContext = input.experienceYears || input.userAge || input.userGender
+      ? `User Demographics:
+${input.experienceYears ? `- Training Experience: ${input.experienceYears} years` : ''}
+${input.userAge ? `- Age: ${input.userAge} years old` : ''}
+${input.userGender ? `- Gender: ${input.userGender}` : ''}`
+      : ''
+
+    // Build equipment context
+    const equipmentContext = input.availableEquipment.length > 0
+      ? `Available Equipment: ${input.availableEquipment.join(', ')}`
+      : 'All equipment available'
+
+    // Build weak points context
+    const weakPointsContext = input.weakPoints.length > 0
+      ? `Weak Points to Address: ${input.weakPoints.join(', ')}`
+      : 'No specific weak points identified'
+
+    // Build periodization context
+    const periodizationContext = input.mesocyclePhase
+      ? `Current Phase: ${input.mesocyclePhase} (Week ${input.mesocycleWeek || 'N/A'})`
+      : ''
+
+    // Build user intent context
+    const intentContext = input.userIntent
+      ? `User's Reason: ${input.userIntent}`
+      : ''
+
+    const prompt = `Validate a user's custom exercise substitution proposal:
+
+CURRENT EXERCISE:
+- Name: ${input.currentExercise.name}
+- Equipment: ${input.currentExercise.equipmentVariant}
+- Sets × Reps: ${input.currentExercise.sets} × ${input.currentExercise.repRange[0]}-${input.currentExercise.repRange[1]}
+${input.currentExercise.targetWeight ? `- Target Weight: ${input.currentExercise.targetWeight}kg` : ''}
+${input.currentExercise.primaryMuscles ? `- Primary Muscles: ${input.currentExercise.primaryMuscles.join(', ')}` : ''}
+${input.currentExercise.secondaryMuscles ? `- Secondary Muscles: ${input.currentExercise.secondaryMuscles.join(', ')}` : ''}
+${input.currentExercise.movementPattern ? `- Movement Pattern: ${input.currentExercise.movementPattern}` : ''}
+${input.currentExercise.romEmphasis ? `- ROM Emphasis: ${input.currentExercise.romEmphasis}` : ''}
+
+USER'S PROPOSED EXERCISE:
+"${input.customExerciseName}"
+${intentContext}
+
+USER CONTEXT:
+${equipmentContext}
+${weakPointsContext}
+${demographicContext}
+${periodizationContext}
+
+TRAINING APPROACH:
+${approachContext}
+
+YOUR TASK:
+1. Interpret user's input (could be exact exercise name OR natural language description)
+   - If natural language (e.g., "something easier on my elbows"), infer the specific exercise they likely want
+   - If gibberish or unclear, return "not_recommended" with helpful guidance
+
+2. Validate if it's a good substitute:
+   - "approved": Excellent choice, maintains or improves workout quality
+   - "caution": Works but has trade-offs (explain clearly)
+   - "not_recommended": Poor choice (explain why: wrong muscle group, unsafe, equipment missing, etc.)
+
+3. Calculate adjusted weight (considering equipment biomechanics):
+   - Barbell → Dumbbells: ~40-45% per hand
+   - Barbell → Machine: ~80%
+   - Barbell → Cables: ~70-75%
+   - Bilateral → Unilateral: ~45% per limb
+   - If user's proposed exercise is invalid/gibberish, set weight to 0
+
+4. Provide concise, gym-friendly feedback:
+   - Rationale: MAX 10 words, explain why this works or doesn't
+   - Swap Impact: MAX 15 words, what changes compared to original
+   - Similarity Score: 0-100 (how close to original exercise)
+   - Workout Integration: MAX 40 words, how it fits into the workout flow
+
+5. Handle edge cases:
+   - Gibberish → "Invalid exercise name, can't identify movement"
+   - Wrong muscle group → "Wrong muscle group, breaks workout plan"
+   - Dangerous exercise → "Higher injury risk, consider safer alternative"
+   - Equipment unavailable → "Requires X equipment not available, try Y instead"
+   - Natural language → Interpret intent and suggest specific exercise
+
+EXAMPLES:
+
+Input: "Incline Dumbbell Press" (for Barbell Bench Press)
+Output: {
+  "validation": "approved",
+  "exercise": { "name": "Incline Dumbbell Press", "equipmentVariant": "Dumbbell", "targetWeight": 35 },
+  "rationale": "Better ROM for upper chest development",
+  "swapImpact": "Increased stability demand but improved stretch",
+  "similarityScore": 85,
+  "rationalePreview": { "workoutIntegration": "Maintains pressing volume while emphasizing upper chest weak point with deeper ROM" }
+}
+
+Input: "something easier on my shoulders" (for Overhead Press)
+Output: {
+  "validation": "approved",
+  "exercise": { "name": "Cable Shoulder Press", "equipmentVariant": "Cable", "targetWeight": 55 },
+  "rationale": "Constant tension, reduced shoulder stress",
+  "swapImpact": "Smoother resistance curve, easier on joints",
+  "similarityScore": 75,
+  "rationalePreview": { "workoutIntegration": "Cable variation provides smooth pressing motion with less joint stress while maintaining shoulder development" }
+}
+
+Input: "asdf" (gibberish)
+Output: {
+  "validation": "not_recommended",
+  "exercise": { "name": "Invalid Input", "equipmentVariant": "Unknown", "targetWeight": 0 },
+  "rationale": "Invalid exercise name, can't identify",
+  "swapImpact": "Can't validate unknown exercise",
+  "similarityScore": 0,
+  "rationalePreview": { "workoutIntegration": "Try typing a specific exercise name like 'Dumbbell Press' or select from AI suggestions below" }
+}
+
+Input: "Leg Press" (for Bench Press - wrong muscle group)
+Output: {
+  "validation": "not_recommended",
+  "exercise": { "name": "Leg Press", "equipmentVariant": "Machine", "targetWeight": 0 },
+  "rationale": "Wrong muscle group for chest workout",
+  "swapImpact": "Completely breaks workout plan, targets legs",
+  "similarityScore": 0,
+  "rationalePreview": { "workoutIntegration": "This would skip chest work entirely. Consider pressing movements instead." }
+}
+
+Return JSON format (SINGLE suggestion, not array):
+{
+  "exercise": {
+    "name": "Exercise Name (cleaned/standardized)",
+    "equipmentVariant": "Equipment Type",
+    "sets": number (keep same as original),
+    "repRange": [min, max] (keep same as original),
+    "targetWeight": number (adjusted for equipment)
+  },
+  "validation": "approved" | "caution" | "not_recommended",
+  "rationale": "10 words max",
+  "swapImpact": "15 words max",
+  "similarityScore": number,
+  "rationalePreview": {
+    "workoutIntegration": "1-2 sentences (MAX 40 words)"
+  }
+}`
+
+    return await this.complete<SubstitutionSuggestion>(prompt)
   }
 }

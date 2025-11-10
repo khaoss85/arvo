@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
-import { suggestExerciseSubstitutionAction } from '@/app/actions/ai-actions'
-import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
+import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
+import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles } from 'lucide-react'
 
@@ -29,6 +29,12 @@ export function ExerciseSubstitution({
   const [error, setError] = useState<string | null>(null)
   const [selectedSuggestion, setSelectedSuggestion] = useState<SubstitutionSuggestion | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
+
+  // Custom input state
+  const [customInput, setCustomInput] = useState<string>('')
+  const [customValidating, setCustomValidating] = useState(false)
+  const [customResult, setCustomResult] = useState<SubstitutionSuggestion | null>(null)
+  const [customError, setCustomError] = useState<string | null>(null)
 
   useEffect(() => {
     loadSuggestions()
@@ -98,6 +104,54 @@ export function ExerciseSubstitution({
     onClose()
   }
 
+  const handleValidateCustom = async () => {
+    if (!customInput.trim() || customInput.length < 3) return
+
+    try {
+      setCustomValidating(true)
+      setCustomError(null)
+
+      const input: CustomSubstitutionInput = {
+        currentExercise: {
+          name: currentExercise.exerciseName,
+          equipmentVariant: 'Barbell',
+          sets: currentExercise.targetSets,
+          repRange: currentExercise.targetReps,
+          targetWeight: currentExercise.targetWeight,
+        },
+        customExerciseName: customInput.trim(),
+        userId,
+        approachId: '',
+        weakPoints: [],
+        availableEquipment: [],
+      }
+
+      const result = await validateCustomSubstitutionAction(userId, input)
+
+      if (result.success && result.data) {
+        setCustomResult(result.data)
+      } else {
+        setCustomError(result.error || 'Failed to validate custom exercise')
+      }
+    } catch (err) {
+      console.error('Failed to validate custom substitution:', err)
+      setCustomError('An unexpected error occurred')
+    } finally {
+      setCustomValidating(false)
+    }
+  }
+
+  const handleEditCustom = () => {
+    setCustomResult(null)
+    setCustomError(null)
+  }
+
+  const handleSelectCustom = () => {
+    if (customResult) {
+      handleSelectSuggestion(customResult)
+    }
+  }
+
   const getValidationIcon = (validation: string) => {
     switch (validation) {
       case 'approved':
@@ -150,6 +204,119 @@ export function ExerciseSubstitution({
               {currentExercise.targetSets} sets × {currentExercise.targetReps[0]}-{currentExercise.targetReps[1]} reps @ {currentExercise.targetWeight}kg
             </p>
           </div>
+
+          {/* Custom Input Section - only show when not in confirmation */}
+          {!showConfirmation && (
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-lg">🎯</span>
+                <h3 className="text-sm font-semibold text-gray-300">Suggest Your Own</h3>
+              </div>
+
+              {/* Input or Result */}
+              {!customResult ? (
+                <>
+                  <input
+                    type="text"
+                    value={customInput}
+                    onChange={(e) => setCustomInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !customValidating && customInput.trim().length >= 3) {
+                        handleValidateCustom()
+                      }
+                    }}
+                    placeholder="Type exercise name or describe what you want..."
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
+                    disabled={customValidating}
+                    autoComplete="off"
+                  />
+
+                  {customError && (
+                    <div className="text-sm text-red-400 mb-3">{customError}</div>
+                  )}
+
+                  <Button
+                    onClick={handleValidateCustom}
+                    disabled={customValidating || customInput.trim().length < 3}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                  >
+                    {customValidating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Validating with AI...
+                      </>
+                    ) : (
+                      'Validate with AI →'
+                    )}
+                  </Button>
+                </>
+              ) : (
+                /* Custom Result Card */
+                <div className={`border-2 rounded-lg p-4 ${
+                  customResult.validation === 'approved'
+                    ? 'border-green-500 bg-green-950/20'
+                    : customResult.validation === 'caution'
+                    ? 'border-yellow-500 bg-yellow-950/20'
+                    : 'border-red-500 bg-red-950/20'
+                }`}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2 flex-1">
+                      {getValidationIcon(customResult.validation)}
+                      <h4 className="font-semibold text-white text-base leading-tight">
+                        {customResult.exercise.name}
+                      </h4>
+                    </div>
+                    <span className={`text-xs px-2 py-1 rounded border flex-shrink-0 ml-2 ${getValidationBadgeColor(customResult.validation)}`}>
+                      {customResult.validation === 'approved' && '✓ Good'}
+                      {customResult.validation === 'caution' && '⚠ Caution'}
+                      {customResult.validation === 'not_recommended' && '✗ Not recommended'}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-gray-300 mb-2 leading-relaxed">
+                    {customResult.rationale}
+                  </p>
+
+                  <div className="flex items-center justify-between text-xs mb-3">
+                    <span className="text-blue-400 font-medium">
+                      → {customResult.exercise.targetWeight}kg
+                    </span>
+                    <span className="text-gray-500">
+                      {customResult.swapImpact}
+                    </span>
+                  </div>
+
+                  {customResult.rationalePreview && (
+                    <div className="bg-purple-900/30 border border-purple-700 rounded p-2 mb-3">
+                      <div className="flex items-start gap-2">
+                        <Sparkles className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-purple-200 leading-snug">
+                          {customResult.rationalePreview.workoutIntegration}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleEditCustom}
+                      variant="outline"
+                      className="flex-1 border-gray-600 text-gray-300 min-h-[44px]"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={handleSelectCustom}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700 text-white min-h-[44px]"
+                      disabled={customResult.validation === 'not_recommended'}
+                    >
+                      Select →
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Loading State */}
           {loading && (

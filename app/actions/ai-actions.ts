@@ -22,7 +22,7 @@ import type { Workout, InsertWorkout } from '@/lib/types/schemas'
 import type { ExplanationType, ExplanationContext } from '@/lib/services/explanation.service'
 import type { ReorderValidationInput } from '@/lib/agents/reorder-validator.agent'
 import type { WorkoutSummaryInput } from '@/lib/agents/workout-summary.agent'
-import type { SubstitutionInput, SubstitutionOutput } from '@/lib/agents/exercise-substitution.agent'
+import type { SubstitutionInput, SubstitutionOutput, CustomSubstitutionInput, SubstitutionSuggestion } from '@/lib/agents/exercise-substitution.agent'
 import type { WorkoutRationaleInput, WorkoutRationaleOutput } from '@/lib/agents/workout-rationale.agent'
 
 /**
@@ -748,6 +748,59 @@ export async function generateWorkoutRationaleAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to generate workout rationale'
+    }
+  }
+}
+
+/**
+ * Server action to validate user's custom exercise substitution
+ * Allows users to propose their own exercise and get AI validation
+ * Returns same format as AI suggestions for consistent UX
+ */
+export async function validateCustomSubstitutionAction(
+  userId: string,
+  input: CustomSubstitutionInput
+): Promise<{ success: true; data: SubstitutionSuggestion } | { success: false; error: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Load user profile for context (approach, weak points, equipment, etc.)
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError || !profile) {
+      throw new Error('Failed to load user profile')
+    }
+
+    // Enrich input with user profile data
+    const enrichedInput: CustomSubstitutionInput = {
+      ...input,
+      approachId: profile.approach_id || '',
+      weakPoints: profile.weak_points || [],
+      availableEquipment: [], // Equipment will be loaded from equipment_preferences
+      experienceYears: profile.experience_years || undefined,
+      mesocycleWeek: profile.current_mesocycle_week || undefined,
+      mesocyclePhase: (profile.mesocycle_phase as 'transition' | 'accumulation' | 'intensification' | 'deload' | undefined) || undefined
+    }
+
+    // Create agent instance with server Supabase client
+    const agent = new ExerciseSubstitutionAgent(supabase)
+
+    // Validate user's custom exercise
+    const result = await agent.validateCustomSubstitution(enrichedInput)
+
+    return {
+      success: true,
+      data: result
+    }
+  } catch (error) {
+    console.error('Server action - Custom substitution validation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate custom substitution'
     }
   }
 }
