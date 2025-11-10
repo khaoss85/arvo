@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, X, ChevronDown, ChevronUp, GripVertical, List } from 'lucide-react'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction } from '@/app/actions/ai-actions'
 import type { Workout } from '@/lib/types/schemas'
+import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
 
 interface Exercise {
   name: string
@@ -29,18 +31,23 @@ interface RefineWorkoutModalProps {
   open: boolean
   onClose: () => void
   onWorkoutUpdated: () => void
+  userId: string
 }
 
 export function RefineWorkoutModal({
   workout,
   open,
   onClose,
-  onWorkoutUpdated
+  onWorkoutUpdated,
+  userId
 }: RefineWorkoutModalProps) {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set())
   const [isMarkingReady, setIsMarkingReady] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null)
+  const [isReorderMode, setIsReorderMode] = useState(false)
+  const [customInputs, setCustomInputs] = useState<Map<number, string>>(new Map())
+  const rationaleRef = useRef<WorkoutRationaleHandle>(null)
 
   // Initialize exercises when workout changes
   React.useEffect(() => {
@@ -76,6 +83,9 @@ export function RefineWorkoutModal({
 
     setExercises(newExercises)
 
+    // Invalidate workout rationale since exercises changed
+    rationaleRef.current?.invalidate()
+
     // Save changes to workout
     try {
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
@@ -85,6 +95,39 @@ export function RefineWorkoutModal({
       }
     } catch (error) {
       console.error('Error saving exercise swap:', error)
+      alert('Failed to save changes. Please try again.')
+    }
+  }
+
+  const handleCustomSwap = async (exerciseIndex: number) => {
+    const customName = customInputs.get(exerciseIndex)
+    if (!customName || !customName.trim() || !workout) return
+
+    const exercise = exercises[exerciseIndex]
+
+    // Replace exercise with custom input
+    const newExercises = [...exercises]
+    newExercises[exerciseIndex] = {
+      ...exercise,
+      name: customName.trim(),
+      rationale: 'Custom exercise selected by user'
+    }
+
+    setExercises(newExercises)
+    setCustomInputs(new Map(customInputs).set(exerciseIndex, ''))
+
+    // Invalidate workout rationale since exercises changed
+    rationaleRef.current?.invalidate()
+
+    // Save changes to workout
+    try {
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to save custom exercise:', result.error)
+        alert('Failed to save changes. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error saving custom exercise:', error)
       alert('Failed to save changes. Please try again.')
     }
   }
@@ -107,6 +150,29 @@ export function RefineWorkoutModal({
       alert('Failed to regenerate exercise. Please try again.')
     } finally {
       setIsRegenerating(null)
+    }
+  }
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !workout) return
+
+    const items = Array.from(exercises)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setExercises(items)
+    rationaleRef.current?.invalidate()
+
+    // Save reordered exercises
+    try {
+      const result = await updateWorkoutExercisesAction(workout.id, items)
+      if (!result.success) {
+        console.error('Failed to save reorder:', result.error)
+        alert('Failed to save changes. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error saving reorder:', error)
+      alert('Failed to save changes. Please try again.')
     }
   }
 
@@ -147,30 +213,88 @@ export function RefineWorkoutModal({
           </p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {exercises.map((exercise, index) => (
-            <Card key={index} className="p-4">
-              <div className="space-y-3">
-                {/* Exercise Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{exercise.name}</h3>
-                    {exercise.equipmentVariant && (
-                      <p className="text-sm text-muted-foreground">{exercise.equipmentVariant}</p>
-                    )}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleExerciseExpanded(index)}
+        {/* Reorder Mode Toggle */}
+        {exercises.length > 1 && (
+          <div className="flex justify-end px-6 pt-4">
+            <Button
+              variant={isReorderMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsReorderMode(!isReorderMode)}
+            >
+              <List className="w-4 h-4 mr-2" />
+              {isReorderMode ? 'Done Reordering' : 'Reorder Exercises'}
+            </Button>
+          </div>
+        )}
+
+        {/* Workout Rationale - Overall plan understanding */}
+        {exercises.length > 0 && (
+          <div className="mt-4">
+            <WorkoutRationale
+              ref={rationaleRef}
+              workoutType={workout.workout_type || 'general'}
+              exercises={exercises.map(ex => ({
+                exerciseName: ex.name,
+                targetSets: ex.sets,
+                targetReps: ex.repRange,
+                targetWeight: ex.targetWeight
+              }))}
+              userId={userId}
+            />
+          </div>
+        )}
+
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="exercises" isDropDisabled={!isReorderMode}>
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="space-y-4 py-4"
+              >
+                {exercises.map((exercise, index) => (
+                  <Draggable
+                    key={`exercise-${index}`}
+                    draggableId={`exercise-${index}`}
+                    index={index}
+                    isDragDisabled={!isReorderMode}
                   >
-                    {expandedExercises.has(index) ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
+                    {(provided, snapshot) => (
+                      <Card
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`p-4 ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-purple-500' : ''}`}
+                      >
+                        <div className="space-y-3">
+                          {/* Exercise Header */}
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-2 flex-1">
+                              {isReorderMode && (
+                                <div {...provided.dragHandleProps} className="pt-1 cursor-grab active:cursor-grabbing">
+                                  <GripVertical className="w-5 h-5 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">{exercise.name}</h3>
+                                {exercise.equipmentVariant && (
+                                  <p className="text-sm text-muted-foreground">{exercise.equipmentVariant}</p>
+                                )}
+                              </div>
+                            </div>
+                            {!isReorderMode && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleExerciseExpanded(index)}
+                              >
+                                {expandedExercises.has(index) ? (
+                                  <ChevronUp className="w-4 h-4" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
 
                 {/* Exercise Details */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -203,7 +327,7 @@ export function RefineWorkoutModal({
                 {/* Alternatives (Expanded) */}
                 {expandedExercises.has(index) && exercise.alternatives && exercise.alternatives.length > 0 && (
                   <div className="pt-2 border-t space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">Alternative exercises:</p>
+                    <p className="text-sm text-muted-foreground font-medium">AI-suggested alternatives:</p>
                     {exercise.alternatives.map((alt, altIndex) => (
                       <div
                         key={altIndex}
@@ -225,25 +349,67 @@ export function RefineWorkoutModal({
                         </Button>
                       </div>
                     ))}
+
+                    {/* Custom Exercise Input */}
+                    <div className="pt-2 space-y-2">
+                      <p className="text-sm text-muted-foreground font-medium">Or enter your own:</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Type exercise name..."
+                          value={customInputs.get(index) || ''}
+                          onChange={(e) => {
+                            const newInputs = new Map(customInputs)
+                            newInputs.set(index, e.target.value)
+                            setCustomInputs(newInputs)
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleCustomSwap(index)
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleCustomSwap(index)}
+                          disabled={!customInputs.get(index)?.trim()}
+                        >
+                          Use This
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Enter any exercise name. The AI will validate it fits the workout.
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRegenerateExercise(index)}
-                    disabled={isRegenerating === index}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
-                    {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
-                  </Button>
-                </div>
+                {!isReorderMode && (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRegenerateExercise(index)}
+                      disabled={isRegenerating === index}
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
+                      {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
-          ))}
-        </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
 
         <DialogFooter className="flex justify-between items-center">
           <Button variant="outline" onClick={onClose} disabled={isMarkingReady}>

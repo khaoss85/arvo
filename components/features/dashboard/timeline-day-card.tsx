@@ -369,6 +369,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         open={isRefineModalOpen}
         onClose={() => setIsRefineModalOpen(false)}
         onWorkoutUpdated={handleWorkoutUpdated}
+        userId={userId}
       />
 
       {/* Workout Generation Progress */}
