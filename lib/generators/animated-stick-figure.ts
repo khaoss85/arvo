@@ -77,7 +77,7 @@ function createShapeLayer(
       p: { a: 0, k: [0, 0] },
       a: { a: 0, k: [0, 0] },
       s: { a: 0, k: [100, 100] },
-      r: { a: 0, k: 0 },
+      r: { a: 0, k: [0] },
       o: { a: 0, k: 100 },
     },
     shapes,
