@@ -661,7 +661,18 @@ export async function suggestExerciseSubstitutionAction(
       throw new Error('Failed to load user profile')
     }
 
-    // Enrich input with user profile data
+    // Load active insights and memories
+    const { data: insights } = await (supabase as any).rpc('get_active_insights', {
+      p_user_id: userId,
+      p_min_relevance: 0.3
+    })
+
+    const { data: memories } = await (supabase as any).rpc('get_active_memories', {
+      p_user_id: userId,
+      p_min_confidence: 0.5
+    })
+
+    // Enrich input with user profile data + insights + memories
     const enrichedInput: SubstitutionInput = {
       ...input,
       approachId: profile.approach_id || '',
@@ -669,7 +680,21 @@ export async function suggestExerciseSubstitutionAction(
       availableEquipment: (profile as any).available_equipment || [],
       experienceYears: profile.experience_years ?? undefined,
       mesocycleWeek: profile.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
+      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
+      activeInsights: (insights || []).map((i: any) => ({
+        id: i.id,
+        exerciseName: i.exercise_name,
+        type: i.insight_type,
+        severity: i.severity,
+        userNote: i.user_note
+      })),
+      activeMemories: (memories || []).map((m: any) => ({
+        id: m.id,
+        category: m.memory_category,
+        title: m.title,
+        confidenceScore: m.confidence_score,
+        relatedExercises: m.related_exercises || []
+      }))
     }
 
     // Create agent instance with server Supabase client
@@ -766,7 +791,18 @@ export async function validateCustomSubstitutionAction(
       throw new Error('Failed to load user profile')
     }
 
-    // Enrich input with user profile data
+    // Load active insights and memories
+    const { data: insights } = await (supabase as any).rpc('get_active_insights', {
+      p_user_id: userId,
+      p_min_relevance: 0.3
+    })
+
+    const { data: memories } = await (supabase as any).rpc('get_active_memories', {
+      p_user_id: userId,
+      p_min_confidence: 0.5
+    })
+
+    // Enrich input with user profile data + insights + memories
     const enrichedInput: CustomSubstitutionInput = {
       ...input,
       approachId: profile.approach_id || '',
@@ -774,7 +810,21 @@ export async function validateCustomSubstitutionAction(
       availableEquipment: (profile as any).available_equipment || [],
       experienceYears: profile.experience_years ?? undefined,
       mesocycleWeek: profile.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
+      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
+      activeInsights: (insights || []).map((i: any) => ({
+        id: i.id,
+        exerciseName: i.exercise_name,
+        type: i.insight_type,
+        severity: i.severity,
+        userNote: i.user_note
+      })),
+      activeMemories: (memories || []).map((m: any) => ({
+        id: m.id,
+        category: m.memory_category,
+        title: m.title,
+        confidenceScore: m.confidence_score,
+        relatedExercises: m.related_exercises || []
+      }))
     }
 
     // Create agent instance with server Supabase client

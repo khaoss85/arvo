@@ -28,6 +28,21 @@ export interface SubstitutionInput {
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
   // Optional: reason for substitution (for future conversational expansion)
   substitutionReason?: string
+  // Active insights and memories (NEW)
+  activeInsights?: Array<{
+    id: string
+    exerciseName?: string
+    type: string
+    severity: string
+    userNote: string
+  }>
+  activeMemories?: Array<{
+    id: string
+    category: string
+    title: string
+    confidenceScore: number
+    relatedExercises: string[]
+  }>
 }
 
 export interface CustomSubstitutionInput extends SubstitutionInput {
@@ -121,6 +136,35 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
       ? `Reason for Substitution: ${input.substitutionReason}`
       : ''
 
+    // Build insights context - filter out exercises with issues
+    const insightsContext = input.activeInsights && input.activeInsights.length > 0
+      ? `
+=== ⚠️ ACTIVE USER INSIGHTS (FILTER SUGGESTIONS) ===
+
+The user has reported the following issues. DO NOT suggest exercises with similar problems:
+
+${input.activeInsights.map(insight => `
+- ${insight.exerciseName || 'General'} (${insight.severity}): "${insight.userNote}"
+  ${insight.severity === 'critical' || insight.severity === 'warning' ? '🚨 AVOID similar exercises completely' : '⚠️ Be cautious with similar movements'}
+`).join('\n')}
+`
+      : '';
+
+    // Build memories context - prioritize preferences
+    const memoriesContext = input.activeMemories && input.activeMemories.length > 0
+      ? `
+=== 🧠 LEARNED USER PREFERENCES ===
+
+The user has shown these equipment/exercise preferences (PRIORITIZE IN SUGGESTIONS):
+
+${input.activeMemories.filter(m => m.confidenceScore >= 0.6).map(mem => `
+- ${mem.title} (${(mem.confidenceScore * 100).toFixed(0)}% confidence)
+  ${mem.relatedExercises.length > 0 ? `Related: ${mem.relatedExercises.join(', ')}` : ''}
+  ${mem.confidenceScore >= 0.8 ? '🔥 STRONG preference - prioritize highly' : '💪 Moderate preference'}
+`).join('\n')}
+`
+      : '';
+
     const prompt = `Generate 3-5 alternative exercises for the following substitution request:
 
 CURRENT EXERCISE:
@@ -139,6 +183,8 @@ ${weakPointsContext}
 ${demographicContext}
 ${periodizationContext}
 ${reasonContext}
+${insightsContext}
+${memoriesContext}
 
 TRAINING APPROACH:
 ${approachContext}

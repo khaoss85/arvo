@@ -24,19 +24,30 @@ export function ExerciseAnimation({ animationUrl, exerciseName, className = '' }
       setError(null)
 
       try {
+        console.log('[ExerciseAnimation] Loading:', animationUrl)
         const response = await fetch(animationUrl)
 
+        console.log('[ExerciseAnimation] Response status:', response.status)
         if (!response.ok) {
           throw new Error(`Failed to load animation: ${response.statusText}`)
         }
 
         const data = await response.json()
+        console.log('[ExerciseAnimation] Data loaded:', {
+          hasVersion: !!data.v,
+          hasLayers: !!data.layers,
+          layerCount: data.layers?.length,
+          width: data.w,
+          height: data.h,
+          frames: data.op
+        })
 
         if (isMounted) {
           setAnimationData(data)
+          console.log('[ExerciseAnimation] Animation data set successfully')
         }
       } catch (err) {
-        console.error('Error loading exercise animation:', err)
+        console.error('[ExerciseAnimation] Error loading animation:', err)
         if (isMounted) {
           setError(err instanceof Error ? err.message : 'Failed to load animation')
         }
@@ -100,6 +111,10 @@ export function ExerciseAnimation({ animationUrl, exerciseName, className = '' }
               loop={true}
               className="w-full h-full"
               style={{ maxHeight: '400px' }}
+              onDataReady={() => console.log('[ExerciseAnimation] Lottie data ready')}
+              onComplete={() => console.log('[ExerciseAnimation] Lottie complete (should loop)')}
+              onLoopComplete={() => console.log('[ExerciseAnimation] Lottie loop complete')}
+              onError={(error) => console.error('[ExerciseAnimation] Lottie error:', error)}
             />
           </motion.div>
         )}

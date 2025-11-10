@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "info" | "warning";
+  actionLabel?: string;
+  onAction?: () => void;
+}
+
 interface UIState {
   // Toast notifications
-  toasts: Array<{
-    id: string;
-    message: string;
-    type: "success" | "error" | "info" | "warning";
-  }>;
+  toasts: Toast[];
 
   // Mobile navigation
   isMobileMenuOpen: boolean;
@@ -15,7 +19,8 @@ interface UIState {
   // Actions
   addToast: (
     message: string,
-    type?: "success" | "error" | "info" | "warning"
+    type?: "success" | "error" | "info" | "warning",
+    options?: { actionLabel?: string; onAction?: () => void }
   ) => void;
   removeToast: (id: string) => void;
   toggleMobileMenu: () => void;
@@ -28,7 +33,7 @@ export const useUIStore = create<UIState>()(
       toasts: [],
       isMobileMenuOpen: false,
 
-      addToast: (message, type = "info") =>
+      addToast: (message, type = "info", options) =>
         set((state) => ({
           toasts: [
             ...state.toasts,
@@ -36,6 +41,8 @@ export const useUIStore = create<UIState>()(
               id: Math.random().toString(36).substring(7),
               message,
               type,
+              actionLabel: options?.actionLabel,
+              onAction: options?.onAction,
             },
           ],
         })),

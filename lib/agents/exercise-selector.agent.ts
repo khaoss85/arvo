@@ -24,6 +24,24 @@ export interface ExerciseSelectionInput {
   // Periodization context
   mesocycleWeek?: number | null
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Insights and Memories (NEW)
+  activeInsights?: Array<{
+    id: string
+    type: string
+    severity: string
+    exerciseName?: string
+    userNote: string
+    metadata?: any
+  }>
+  activeMemories?: Array<{
+    id: string
+    category: string
+    title: string
+    description?: string
+    confidenceScore: number
+    relatedExercises: string[]
+    relatedMuscles: string[]
+  }>
 }
 
 export interface WarmupSet {
@@ -66,10 +84,21 @@ export interface SelectedExercise {
   hasAnimation?: boolean
 }
 
+export interface InsightInfluencedChange {
+  source: 'insight' | 'memory'
+  sourceId: string
+  sourceTitle: string
+  action: 'avoided' | 'substituted' | 'preferred' | 'adjusted'
+  originalExercise?: string
+  selectedExercise?: string
+  reason: string
+}
+
 export interface ExerciseSelectionOutput {
   exercises: SelectedExercise[]
   workoutRationale: string
   weakPointAddress: string
+  insightInfluencedChanges?: InsightInfluencedChange[] // NEW: Track changes made due to insights/memories
 }
 
 export class ExerciseSelector extends BaseAgent {
@@ -84,7 +113,47 @@ export class ExerciseSelector extends BaseAgent {
     return `You are a bodybuilding coach creating workout plans.
 Select exercises based on the training approach, user preferences, and weak points.
 Prioritize exercise order based on approach philosophy.
-Consider equipment preferences and provide alternatives.`
+Consider equipment preferences and provide alternatives.
+
+**IMPORTANT: You must also consider user insights and learned memories:**
+
+When you encounter INSIGHTS (pain, injuries, issues):
+- severity: critical → MUST avoid exercise completely
+- severity: warning → Strongly avoid, substitute if possible
+- severity: caution → Prefer alternative, but can include if necessary with modifications
+- severity: info → Informational only, no action needed
+
+When you encounter MEMORIES (learned preferences and patterns):
+- confidence ≥ 0.8 → Strong preference, prioritize heavily
+- confidence 0.6-0.79 → Moderate preference, consider when appropriate
+- confidence < 0.6 → Weak signal, use as tie-breaker
+
+**OUTPUT REQUIREMENT:**
+You MUST include an "insightInfluencedChanges" array in your output documenting:
+- Every exercise you avoided due to an insight
+- Every substitution you made
+- Every preference you followed from memories
+- The specific insight/memory ID and reason
+
+Format:
+{
+  "exercises": [...],
+  "workoutRationale": "...",
+  "weakPointAddress": "...",
+  "insightInfluencedChanges": [
+    {
+      "source": "insight" | "memory",
+      "sourceId": "uuid",
+      "sourceTitle": "description of the insight/memory",
+      "action": "avoided" | "substituted" | "preferred" | "adjusted",
+      "originalExercise": "optional - if substituted",
+      "selectedExercise": "the exercise selected",
+      "reason": "why you made this change"
+    }
+  ]
+}
+
+Make user safety and preferences your top priority.`
   }
 
   async selectExercises(input: ExerciseSelectionInput): Promise<ExerciseSelectionOutput> {
@@ -264,6 +333,105 @@ For each exercise, also provide:
 
 Select 4-6 exercises following the approach philosophy.
 
+
+${input.activeInsights && input.activeInsights.length > 0 ? `
+=== ⚠️ ACTIVE USER INSIGHTS (MUST CONSIDER) ===
+
+The user has reported the following issues that you MUST take into account:
+
+${input.activeInsights.map(insight => {
+  let actionText = '';
+  if (insight.severity === 'critical') {
+    actionText = '🚫 CRITICAL - MUST AVOID COMPLETELY';
+  } else if (insight.severity === 'warning') {
+    actionText = '⚠️ WARNING - STRONGLY AVOID, FIND SUBSTITUTE';
+  } else if (insight.severity === 'caution') {
+    actionText = '⚡ CAUTION - PREFER ALTERNATIVE IF POSSIBLE';
+  } else {
+    actionText = 'ℹ️ INFO - INFORMATIONAL ONLY';
+  }
+
+  let text = `
+**Insight ID: ${insight.id}**
+Type: ${insight.type}
+Severity: ${insight.severity} - ${actionText}
+${insight.exerciseName ? `Exercise: ${insight.exerciseName}` : 'General'}
+User Note: "${insight.userNote}"`;
+
+  if (insight.metadata) {
+    const meta = insight.metadata as any;
+    if (meta.affectedMuscles && meta.affectedMuscles.length > 0) {
+      text += `\nAffected Muscles: ${meta.affectedMuscles.join(', ')}`;
+    }
+    if (meta.suggestedActions && meta.suggestedActions.length > 0) {
+      text += `\nSuggested Actions:\n${meta.suggestedActions.slice(0, 3).map((a: string) => `  - ${a}`).join('\n')}`;
+    }
+    if (meta.relatedExercises && meta.relatedExercises.length > 0) {
+      text += `\nRelated Exercises: ${meta.relatedExercises.join(', ')}`;
+    }
+  }
+
+  return text;
+}).join('\n\n')}
+
+**ACTION REQUIRED:**
+- Document EVERY change you make due to these insights in the "insightInfluencedChanges" array
+- Include the insight ID, what you changed, and why
+` : ''}
+
+${input.activeMemories && input.activeMemories.length > 0 ? `
+=== 🧠 LEARNED USER PREFERENCES & PATTERNS ===
+
+The system has learned the following about this user's preferences:
+
+${(() => {
+  // Group memories by category
+  const byCategory: Record<string, any[]> = {};
+  input.activeMemories!.forEach(mem => {
+    if (!byCategory[mem.category]) byCategory[mem.category] = [];
+    byCategory[mem.category].push(mem);
+  });
+
+  return Object.entries(byCategory).map(([category, memories]) => {
+    return `
+**${category.toUpperCase()}**
+${memories.map(mem => {
+  const conf = (mem.confidenceScore * 100).toFixed(0);
+  let confidenceLevel = '';
+  if (mem.confidenceScore >= 0.8) {
+    confidenceLevel = '🔥 STRONG';
+  } else if (mem.confidenceScore >= 0.6) {
+    confidenceLevel = '💪 MODERATE';
+  } else {
+    confidenceLevel = '🔹 WEAK';
+  }
+
+  let text = `- Memory ID: ${mem.id}
+  ${confidenceLevel} (${conf}% confidence)
+  "${mem.title}"`;
+
+  if (mem.description) {
+    text += `\n  Details: ${mem.description}`;
+  }
+  if (mem.relatedExercises.length > 0) {
+    text += `\n  Related Exercises: ${mem.relatedExercises.join(', ')}`;
+  }
+  if (mem.relatedMuscles.length > 0) {
+    text += `\n  Related Muscles: ${mem.relatedMuscles.join(', ')}`;
+  }
+
+  return text;
+}).join('\n\n')}`;
+  }).join('\n');
+})()}
+
+**ACTION REQUIRED:**
+- When memories have high confidence (≥80%), PRIORITIZE those preferences strongly
+- When memories have moderate confidence (60-79%), CONSIDER them as secondary factors
+- Document your memory-influenced choices in "insightInfluencedChanges" array
+- Include the memory ID, what you chose, and why
+` : ''}
+
 Required JSON structure:
 {
   "exercises": [
@@ -320,11 +488,29 @@ Required JSON structure:
     }
   ],
   "workoutRationale": "string",
-  "weakPointAddress": "string"
+  "weakPointAddress": "string",
+  "insightInfluencedChanges": [
+    {
+      "source": "insight" | "memory",
+      "sourceId": "uuid",
+      "sourceTitle": "description",
+      "action": "avoided" | "substituted" | "preferred" | "adjusted",
+      "originalExercise": "optional - if substituted",
+      "selectedExercise": "the exercise you selected",
+      "reason": "why you made this change"
+    }
+  ]
 }
+
+**REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
     `
 
     const result = await this.complete<ExerciseSelectionOutput>(prompt)
+
+    // Ensure insightInfluencedChanges field exists (even if AI didn't include it)
+    if (!result.insightInfluencedChanges) {
+      result.insightInfluencedChanges = [];
+    }
 
     // Populate animation URLs for each exercise using AnimationService
     result.exercises = result.exercises.map(exercise => {

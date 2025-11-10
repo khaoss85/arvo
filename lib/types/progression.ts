@@ -14,6 +14,16 @@ export interface ProgressionInput {
   // Periodization context
   mesocycleWeek?: number | null
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Exercise context for insight filtering
+  exerciseName?: string
+  // Active insights (NEW - for pain/injury awareness)
+  activeInsights?: Array<{
+    id: string
+    exerciseName?: string
+    type: string
+    severity: string
+    userNote: string
+  }>
 }
 
 export interface ProgressionOutput {
@@ -36,4 +46,10 @@ export interface ProgressionOutput {
   }
   tempoReminder?: string  // Reminder about tempo requirement (e.g., "Maintain 3-1-1-1 tempo")
   restReminder?: string  // Reminder about rest period (e.g., "Rest 150-180s before next set")
+  // Insight warnings (NEW - safety alerts)
+  insightWarnings?: Array<{
+    insightId: string
+    warning: string
+    suggestion: string
+  }>
 }

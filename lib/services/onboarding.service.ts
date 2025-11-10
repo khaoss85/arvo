@@ -29,9 +29,9 @@ export class OnboardingService {
       })
 
       // Generate first AI-powered workout using the collected preferences
-      const workout = await WorkoutGeneratorService.generateWorkout(userId)
+      const result = await WorkoutGeneratorService.generateWorkout(userId)
 
-      return { success: true, workoutId: workout.id }
+      return { success: true, workoutId: result.workout.id }
     } catch (error) {
       console.error('Onboarding completion error:', error)
       throw error

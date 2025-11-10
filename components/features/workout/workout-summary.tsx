@@ -39,6 +39,8 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const [aiSummary, setAiSummary] = useState<WorkoutSummaryOutput | null>(null)
   const [loadingAiSummary, setLoadingAiSummary] = useState(false)
   const [mentalReadinessSelected, setMentalReadinessSelected] = useState<number | null>(overallMentalReadiness)
+  const [workoutNotes, setWorkoutNotes] = useState<string>('')
+  const [savingNotes, setSavingNotes] = useState(false)
 
   // User demographics for personalized feedback
   const [userAge, setUserAge] = useState<number | null>(null)
@@ -246,7 +248,47 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
     }
   }
 
-  const handleGenerateNext = () => {
+  const handleSaveNotes = async () => {
+    if (!workoutNotes.trim()) {
+      return // Nothing to save
+    }
+
+    setSavingNotes(true)
+    try {
+      // Save notes to workout
+      await WorkoutService.updateWorkoutNotes(workoutId, workoutNotes)
+
+      // Trigger insight parsing (background job)
+      // This will be handled by a server action
+      const response = await fetch('/api/insights/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          workoutId,
+          notes: workoutNotes
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to parse insights')
+      }
+
+      console.log('[WorkoutSummary] Notes saved and insights parsed successfully')
+    } catch (error) {
+      console.error('[WorkoutSummary] Failed to save notes:', error)
+      alert('Failed to save notes. Please try again.')
+    } finally {
+      setSavingNotes(false)
+    }
+  }
+
+  const handleGenerateNext = async () => {
+    // Save notes before generating next workout
+    if (workoutNotes.trim()) {
+      await handleSaveNotes()
+    }
+
     generateWorkout(userId, {
       onSuccess: () => {
         reset()
@@ -255,7 +297,12 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
     })
   }
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    // Save notes before finishing
+    if (workoutNotes.trim()) {
+      await handleSaveNotes()
+    }
+
     reset()
     router.push('/dashboard')
   }
@@ -412,6 +459,36 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
                   <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Workout Notes - Only show after AI summary */}
+        {aiSummary && (
+          <div className="mb-8 text-left">
+            <h3 className="text-lg font-medium text-white mb-2">Note di Allenamento (Opzionale)</h3>
+            <p className="text-sm text-gray-400 mb-3">
+              Hai avuto dolori? Problemi di tecnica? Preferenze su esercizi o recupero?
+              Condividi qui le tue osservazioni per migliorare i prossimi allenamenti.
+            </p>
+            <textarea
+              value={workoutNotes}
+              onChange={(e) => setWorkoutNotes(e.target.value)}
+              placeholder="Es: Ho sentito un leggero dolore alla spalla sinistra durante il Military Press. Preferisco usare i manubri per le Chest Press..."
+              className="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              maxLength={1000}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">{workoutNotes.length}/1000 caratteri</span>
+              {workoutNotes.trim() && (
+                <button
+                  onClick={handleSaveNotes}
+                  disabled={savingNotes}
+                  className="text-xs text-purple-400 hover:text-purple-300 font-medium disabled:opacity-50"
+                >
+                  {savingNotes ? 'Salvataggio...' : 'Salva Note'}
+                </button>
+              )}
             </div>
           </div>
         )}

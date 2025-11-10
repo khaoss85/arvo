@@ -101,15 +101,54 @@ Progression Strategy:
 `
       : ''
 
+    // Check for active insights related to this exercise
+    const relevantInsights = input.activeInsights?.filter(
+      insight => insight.exerciseName === input.exerciseName &&
+                 (insight.type === 'pain' || insight.type === 'technique')
+    ) || [];
+
+    const insightsContext = relevantInsights.length > 0
+      ? `
+=== ⚠️ ACTIVE SAFETY ALERTS FOR THIS EXERCISE ===
+
+The user has reported the following issues with ${input.exerciseName || 'this exercise'}:
+
+${relevantInsights.map(insight => `
+**Insight ID: ${insight.id}**
+Type: ${insight.type}
+Severity: ${insight.severity}
+User Note: "${insight.userNote}"
+${insight.severity === 'critical' || insight.severity === 'warning' ? `
+🚨 IMPORTANT: Be VERY CONSERVATIVE with progression. User safety is the priority.
+Suggested actions:
+- Maintain or REDUCE weight if discomfort persists
+- Increase RIR target (stay further from failure)
+- Focus on form and control over load
+- Consider suggesting to stop if pain worsens
+` : insight.severity === 'caution' ? `
+⚠️ CAUTION: Be conservative with progression.
+- Smaller weight increments than normal
+- Keep RIR higher (2-3 minimum)
+- Prioritize technique over load
+` : ''}
+`).join('\n')}
+
+**MANDATORY OUTPUT:**
+Include an "insightWarnings" array in your response with warnings and suggestions for each insight.
+`
+      : '';
+
     const prompt = `
 Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}
 ${mentalReadinessContext}
 This is set number: ${input.setNumber}
 Exercise type: ${input.exerciseType}
+${input.exerciseName ? `Exercise name: ${input.exerciseName}` : ''}
 ${demographicContext}
 Training approach context:
 ${context}
 ${periodizationContext}
+${insightsContext}
 
 ${approach.variables?.tempo ? `
 TEMPO REQUIREMENT: ${approach.variables.tempo}
@@ -151,18 +190,36 @@ Required JSON structure:
     "protocol": "string (brief how-to execute)"
   },
   "tempoReminder": "${approach.variables?.tempo ? `Maintain ${approach.variables.tempo} tempo` : null}",  // Include if tempo is specified
-  "restReminder": "string reminder about rest period"  // Include if rest periods specified
+  "restReminder": "string reminder about rest period",  // Include if rest periods specified
+  "insightWarnings": [  // OPTIONAL - only if there are active insights for this exercise
+    {
+      "insightId": "uuid",
+      "warning": "Brief warning message for user",
+      "suggestion": "Specific suggestion (e.g., 'Reduce weight by 10%', 'Stop if pain increases')"
+    }
+  ]
 }
+
+${relevantInsights.length > 0 ? `
+**REMINDER:** You MUST include the "insightWarnings" array since there are ${relevantInsights.length} active insight(s) for this exercise.
+` : ''}
     `
 
     console.log('[ProgressionCalculator] Sending prompt to AI', {
       promptLength: prompt.length,
       hasMesocycleContext: !!periodizationContext,
       hasDemographicContext: !!demographicContext,
-      mentalReadiness: input.lastSet.mentalReadiness
+      mentalReadiness: input.lastSet.mentalReadiness,
+      hasActiveInsights: relevantInsights.length > 0,
+      insightsCount: relevantInsights.length
     })
 
     const result = await this.complete<ProgressionOutput>(prompt)
+
+    // Ensure insightWarnings field exists if there were relevant insights
+    if (relevantInsights.length > 0 && !result.insightWarnings) {
+      result.insightWarnings = [];
+    }
 
     console.log('[ProgressionCalculator] AI response received', {
       suggestion: result.suggestion,

@@ -1,6 +1,13 @@
 import { BaseAgent } from './base.agent'
 import { AnalyticsService } from '@/lib/services/analytics.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
+import { insightService } from '@/lib/services/insight.service'
+import { memoryService } from '@/lib/services/memory.service'
+import { MemoryConsolidatorAgent } from './memory-consolidator.agent'
+import type { Database } from '@/lib/types/database.types'
+
+type WorkoutInsight = Database['public']['Tables']['workout_insights']['Row']
+type UserMemoryEntry = Database['public']['Tables']['user_memory_entries']['Row']
 
 export interface InsightsOutput {
   summary: string
@@ -8,6 +15,13 @@ export interface InsightsOutput {
   improvements: string[]
   recommendations: string[]
   nextFocus: string
+  // NEW: Insights and Memories data for UI
+  activeInsights?: WorkoutInsight[]
+  consolidatedMemories?: UserMemoryEntry[]
+  proposedResolutions?: Array<{
+    insightId: string
+    reason: string
+  }>
 }
 
 /**
@@ -58,6 +72,10 @@ Format your response as JSON with these keys:
         throw new Error('User profile not found')
       }
 
+      // Load active insights and memories
+      const activeInsights = await insightService.getActiveInsights(userId)
+      const activeMemories = await memoryService.getActiveMemories(userId)
+
       // Load training approach for context
       const approach = await this.knowledge.loadApproach(profile.approach_id || '')
 
@@ -90,6 +108,63 @@ Format your response as JSON with these keys:
             ratio: (pr.e1rm / profile.weight!).toFixed(2)
           }))
         : null
+
+      // Run memory consolidation to detect patterns
+      let consolidationResult: any = null
+      try {
+        // Fetch recent workout history for pattern detection
+        const { data: recentWorkouts } = await this.supabase
+          .from('workouts')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('completed', true)
+          .gte('completed_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+          .order('completed_at', { ascending: false })
+          .limit(50)
+
+        if (recentWorkouts && recentWorkouts.length > 0) {
+          const consolidator = new MemoryConsolidatorAgent(this.supabase)
+
+          // Transform data to match MemoryConsolidatorInput interface
+          const timeWindow: '30d' | '90d' | 'all' = days <= 30 ? '30d' : days <= 90 ? '90d' : 'all'
+
+          consolidationResult = await consolidator.consolidateMemories({
+            userId,
+            timeWindow,
+            workoutHistory: recentWorkouts.map((w: any) => ({
+              id: w.id,
+              completedAt: w.completed_at,
+              mentalReadiness: w.mental_readiness_overall || undefined,
+              duration: w.duration || 0,
+              exercises: [] // TODO: Parse exercises from workout data
+            })),
+            existingInsights: activeInsights.map((i: WorkoutInsight) => ({
+              id: i.id,
+              type: i.insight_type || 'general',
+              severity: i.severity || 'info',
+              userNote: i.user_note || '',
+              exerciseName: i.exercise_name || undefined,
+              status: i.status || 'active'
+            })),
+            existingMemories: activeMemories.map((m: UserMemoryEntry) => ({
+              id: m.id,
+              category: m.memory_category,
+              title: m.title,
+              confidence: m.confidence_score,
+              relatedExercises: m.related_exercises || []
+            })),
+            userProfile: {
+              experienceYears: profile.experience_years || undefined,
+              weakPoints: profile.weak_points || undefined,
+              availableEquipment: profile.available_equipment || undefined,
+              mesocyclePhase: profile.mesocycle_phase || undefined
+            }
+          })
+        }
+      } catch (error) {
+        console.error('[InsightsGenerator] Failed to run memory consolidation:', error)
+        // Continue without consolidation
+      }
 
       // Build context for AI
       const context = {
@@ -200,7 +275,13 @@ Provide insights in JSON format with keys: summary, strengths (array of 3), impr
 
       const response = await this.complete<InsightsOutput>(prompt)
 
-      return response
+      // Add insights and memories data to output
+      return {
+        ...response,
+        activeInsights,
+        consolidatedMemories: activeMemories,
+        proposedResolutions: consolidationResult?.insightsToResolve || []
+      }
     } catch (error) {
       console.error('Failed to generate insights:', error)
       // Return fallback insights

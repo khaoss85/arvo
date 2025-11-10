@@ -1,0 +1,64 @@
+# Supabase Configuration
+# https://supabase.com/docs/guides/cli/config
+
+[project]
+# Project settings will be inherited from Supabase dashboard
+
+[api]
+# API settings
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+max_rows = 1000
+
+[db]
+# Database settings
+port = 54322
+major_version = 15
+
+[studio]
+# Studio settings
+enabled = true
+port = 54323
+
+# Edge Functions Configuration
+[functions]
+# Base configuration for all Edge Functions
+
+[functions.update-relevance-scores]
+# Time-Decay Function - Updates insight relevance scores daily
+verify_jwt = false
+
+[functions.consolidate-memories]
+# Memory Consolidation Function - Detects patterns weekly
+verify_jwt = false
+
+# IMPORTANT: After deploying these functions to Supabase, configure cron jobs via:
+# Supabase Dashboard > Database > Cron Jobs
+#
+# Or via SQL:
+#
+# -- Daily time-decay (runs at midnight UTC)
+# SELECT cron.schedule(
+#   'daily-time-decay',
+#   '0 0 * * *',
+#   $$
+#   SELECT net.http_post(
+#     url:='https://YOUR_PROJECT_REF.supabase.co/functions/v1/update-relevance-scores',
+#     headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb
+#   ) AS request_id;
+#   $$
+# );
+#
+# -- Weekly memory consolidation (runs Sunday at midnight UTC)
+# SELECT cron.schedule(
+#   'weekly-memory-consolidation',
+#   '0 0 * * 0',
+#   $$
+#   SELECT net.http_post(
+#     url:='https://YOUR_PROJECT_REF.supabase.co/functions/v1/consolidate-memories',
+#     headers:='{"Content-Type": "application/json", "Authorization": "Bearer YOUR_ANON_KEY"}'::jsonb
+#   ) AS request_id;
+#   $$
+# );

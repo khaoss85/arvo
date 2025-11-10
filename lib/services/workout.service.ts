@@ -463,4 +463,23 @@ export class WorkoutService {
     console.log('[WorkoutService] markAsCompletedWithStats completed successfully');
     return data as unknown as Workout;
   }
+
+  /**
+   * Update workout notes (user's free-form feedback)
+   */
+  static async updateWorkoutNotes(workoutId: string, notes: string): Promise<void> {
+    const supabase = getSupabaseBrowserClient();
+
+    const { error } = await supabase
+      .from('workouts')
+      .update({ user_notes: notes })
+      .eq('id', workoutId);
+
+    if (error) {
+      console.error('[WorkoutService] Failed to update workout notes:', error);
+      throw new Error(`Failed to update workout notes: ${error.message}`);
+    }
+
+    console.log('[WorkoutService] Workout notes updated successfully');
+  }
 }

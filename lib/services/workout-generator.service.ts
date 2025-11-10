@@ -29,7 +29,18 @@ export class WorkoutGeneratorService {
       targetCycleDay?: number
       status?: WorkoutStatus
     }
-  ): Promise<Workout> {
+  ): Promise<{
+    workout: Workout
+    insightInfluencedChanges?: Array<{
+      source: 'insight' | 'memory'
+      sourceId: string
+      sourceTitle: string
+      action: 'avoided' | 'substituted' | 'preferred' | 'adjusted'
+      originalExercise?: string
+      selectedExercise?: string
+      reason: string
+    }>
+  }> {
     // Get server Supabase client for server-side operations
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
     const supabase = await getSupabaseServerClient()
@@ -209,7 +220,12 @@ export class WorkoutGeneratorService {
       status: options?.status || 'ready'
     }
 
-    return await WorkoutService.createServer(workoutData)
+    const workout = await WorkoutService.createServer(workoutData)
+
+    return {
+      workout,
+      insightInfluencedChanges: selection.insightInfluencedChanges
+    }
   }
 
   /**
@@ -222,7 +238,18 @@ export class WorkoutGeneratorService {
   static async generateDraftWorkout(
     userId: string,
     targetCycleDay: number
-  ): Promise<Workout> {
+  ): Promise<{
+    workout: Workout
+    insightInfluencedChanges?: Array<{
+      source: 'insight' | 'memory'
+      sourceId: string
+      sourceTitle: string
+      action: 'avoided' | 'substituted' | 'preferred' | 'adjusted'
+      originalExercise?: string
+      selectedExercise?: string
+      reason: string
+    }>
+  }> {
     // Verify that target cycle day is in the future
     const profile = await UserProfileService.getByUserIdServer(userId)
     if (!profile) {

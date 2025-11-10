@@ -94,10 +94,10 @@ export class AnimationService {
 
   /**
    * Normalize exercise name to slug format
-   * Handles multi-language, special characters, etc.
+   * Handles multi-language, special characters, and strips common position/angle prefixes/suffixes
    */
   private static normalizeToSlug(name: string): string {
-    return name
+    let normalized = name
       .toLowerCase()
       .trim()
       // Replace spaces with hyphens
@@ -108,6 +108,57 @@ export class AnimationService {
       .replace(/-+/g, '-')
       // Remove leading/trailing hyphens
       .replace(/^-+|-+$/g, '')
+
+    // Strip technical suffixes (tempo, pauses, etc) that are often AI-generated
+    // This allows "Barbell Bench Press - Paused 1s at Bottom" to match "barbell-bench-press.json"
+    const suffixPatternsToStrip = [
+      /-paused-\d+s?-at-(top|bottom|chest|start|end)/,
+      /-\d+\d+-tempo/,
+      /-\d+-\d+-\d+-\d+/, // tempo notation like 3-1-1-0
+      /-with-pause/,
+      /-explosive/,
+      /-controlled/,
+      /-slow-eccentric/,
+      /-fast-concentric/,
+    ]
+
+    for (const pattern of suffixPatternsToStrip) {
+      normalized = normalized.replace(pattern, '')
+    }
+
+    // Strip common position/angle prefixes for better animation matching
+    // This allows "Flat Barbell Bench Press" to match "barbell-bench-press.json"
+    const prefixesToStrip = [
+      'flat-',
+      'incline-',
+      'decline-',
+      'seated-',
+      'standing-',
+      'lying-',
+      'prone-',
+      'supine-',
+      'single-arm-',
+      'single-leg-',
+      'two-arm-',
+      'two-leg-',
+      'unilateral-',
+      'bilateral-',
+      'high-',
+      'low-',
+      'close-grip-',
+      'wide-grip-',
+      'narrow-',
+      'wide-'
+    ]
+
+    for (const prefix of prefixesToStrip) {
+      if (normalized.startsWith(prefix)) {
+        normalized = normalized.substring(prefix.length)
+        break // Only strip one prefix to avoid over-normalization
+      }
+    }
+
+    return normalized
   }
 
   /**

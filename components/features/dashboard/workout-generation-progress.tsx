@@ -13,10 +13,20 @@ const PHASES = [
   { id: 'finalize', label: 'Finalizing', emoji: '✨' }
 ]
 
+interface InsightInfluencedChange {
+  source: 'insight' | 'memory'
+  sourceId: string
+  sourceTitle: string
+  action: 'avoided' | 'substituted' | 'preferred' | 'adjusted'
+  originalExercise?: string
+  selectedExercise?: string
+  reason: string
+}
+
 interface Props {
   userId: string
   targetCycleDay: number
-  onComplete: (workout: any) => void
+  onComplete: (workout: any, changes?: InsightInfluencedChange[]) => void
   onError: (error: string) => void
   onCancel: () => void
 }
@@ -68,7 +78,7 @@ export function WorkoutGenerationProgress({
               const data = JSON.parse(line.slice(6))
 
               if (data.phase === 'complete') {
-                onComplete(data.workout)
+                onComplete(data.workout, data.insightInfluencedChanges)
                 break
               } else if (data.phase === 'error') {
                 onError(data.error)

@@ -10,6 +10,8 @@ import { Sparkles, Play, Eye } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { RefineWorkoutModal } from '@/components/features/workout/refine-workout-modal'
 import { WorkoutGenerationProgress } from '@/components/features/dashboard/workout-generation-progress'
+import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
+import { useUIStore } from '@/lib/stores/ui.store'
 import type { Workout } from '@/lib/types/schemas'
 
 interface TimelineDayCardProps {
@@ -96,16 +98,32 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false)
   const [workoutToRefine, setWorkoutToRefine] = useState<Workout | null>(null)
   const [showProgress, setShowProgress] = useState(false)
+  const [insightChanges, setInsightChanges] = useState<InsightInfluencedChange[]>([])
+  const [showChangesModal, setShowChangesModal] = useState(false)
+  const { addToast } = useUIStore()
 
   const handlePreGenerate = () => {
     setIsGenerating(true)
     setShowProgress(true)
   }
 
-  const handleGenerationComplete = (workout: any) => {
+  const handleGenerationComplete = (workout: any, changes?: InsightInfluencedChange[]) => {
     setIsGenerating(false)
     setShowProgress(false)
     onRefreshTimeline?.()
+
+    // Show toast and modal if there are insight-influenced changes
+    if (changes && changes.length > 0) {
+      setInsightChanges(changes)
+      addToast(
+        '🔔 Ho adattato il workout in base a ciò che ho imparato su di te',
+        'info',
+        {
+          actionLabel: 'Vedi dettagli',
+          onAction: () => setShowChangesModal(true)
+        }
+      )
+    }
   }
 
   const handleGenerationError = (error: string) => {
@@ -382,6 +400,13 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           onCancel={handleGenerationCancel}
         />
       )}
+
+      {/* Insight Changes Modal */}
+      <InsightChangesModal
+        isOpen={showChangesModal}
+        onClose={() => setShowChangesModal(false)}
+        changes={insightChanges}
+      />
     </div>
   )
 }

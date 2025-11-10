@@ -39,14 +39,27 @@ export function Toaster() {
               }
             )}
           >
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm font-medium">{toast.message}</p>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className="text-current opacity-70 hover:opacity-100"
-              >
-                ×
-              </button>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium">{toast.message}</p>
+                <button
+                  onClick={() => removeToast(toast.id)}
+                  className="text-current opacity-70 hover:opacity-100"
+                >
+                  ×
+                </button>
+              </div>
+              {toast.actionLabel && toast.onAction && (
+                <button
+                  onClick={() => {
+                    toast.onAction?.()
+                    removeToast(toast.id)
+                  }}
+                  className="text-xs font-semibold underline text-current hover:no-underline text-left"
+                >
+                  {toast.actionLabel}
+                </button>
+              )}
             </div>
           </div>
         ))}

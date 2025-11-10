@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
           sendProgress('ai', 65, 'Optimizing exercise selection')
 
           // Generate workout (this is where the actual work happens)
-          const workout = await WorkoutGeneratorService.generateDraftWorkout(
+          const result = await WorkoutGeneratorService.generateDraftWorkout(
             userId,
             targetCycleDay
           )
@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
           sendProgress('complete', 100, 'Workout ready!')
           const completeData = JSON.stringify({
             phase: 'complete',
-            workout
+            workout: result.workout,
+            insightInfluencedChanges: result.insightInfluencedChanges
           })
           controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
 

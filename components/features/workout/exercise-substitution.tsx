@@ -8,6 +8,7 @@ import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, Cu
 import { Button } from '@/components/ui/button'
 import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle } from 'lucide-react'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
+import { memoryService } from '@/lib/services/memory.service'
 
 /**
  * Extract equipment variant from exercise name
@@ -112,7 +113,7 @@ export function ExerciseSubstitution({
     setShowConfirmation(true)
   }
 
-  const handleConfirmSwap = () => {
+  const handleConfirmSwap = async () => {
     if (!selectedSuggestion) return
 
     // Create new exercise execution with substitution
@@ -124,6 +125,48 @@ export function ExerciseSubstitution({
       targetWeight: selectedSuggestion.exercise.targetWeight,
       completedSets: currentExercise.completedSets, // Preserve completed sets
       currentAISuggestion: null
+    }
+
+    // Create/update memory for substitution pattern
+    try {
+      const originalExerciseName = currentExercise.exerciseName
+      const replacementExerciseName = selectedSuggestion.exercise.name
+
+      // Check if similar memory already exists
+      const similarMemories = await memoryService.findSimilarMemories(
+        userId,
+        `Prefers ${replacementExerciseName} over ${originalExerciseName}`,
+        'equipment',
+        [originalExerciseName, replacementExerciseName]
+      )
+
+      if (similarMemories.length === 0) {
+        // First substitution - create new memory with low confidence
+        await memoryService.createMemory({
+          userId,
+          category: 'equipment',
+          source: 'substitution_history',
+          title: `Prefers ${replacementExerciseName} for this movement`,
+          description: `User substituted ${originalExerciseName} with ${replacementExerciseName}`,
+          confidenceScore: 0.5,
+          relatedExercises: [originalExerciseName, replacementExerciseName],
+          relatedMuscles: [],
+          metadata: {
+            substitutionCount: 1,
+            originalExercise: originalExerciseName,
+            preferredExercise: replacementExerciseName
+          }
+        })
+        console.log('[ExerciseSubstitution] Created new memory for substitution pattern')
+      } else {
+        // Existing pattern - boost confidence
+        const existingMemory = similarMemories[0]
+        await memoryService.boostConfidence(existingMemory.id, 0.15)
+        console.log('[ExerciseSubstitution] Boosted confidence for existing substitution pattern')
+      }
+    } catch (error) {
+      console.error('[ExerciseSubstitution] Failed to create/update memory:', error)
+      // Don't block the substitution if memory creation fails
     }
 
     substituteExercise(exerciseIndex, newExercise)
