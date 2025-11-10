@@ -856,3 +856,38 @@ export async function updateWorkoutStatusAction(
     }
   }
 }
+
+/**
+ * Server action to update workout exercises
+ * Used when refining pre-generated workouts
+ */
+export async function updateWorkoutExercisesAction(
+  workoutId: string,
+  exercises: any[]
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('workouts')
+      .update({ exercises: exercises as any })
+      .eq('id', workoutId)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to update workout exercises: ${error.message}`)
+    }
+
+    return {
+      success: true,
+      workout: data
+    }
+  } catch (error) {
+    console.error('Server action - Update workout exercises error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update workout exercises'
+    }
+  }
+}

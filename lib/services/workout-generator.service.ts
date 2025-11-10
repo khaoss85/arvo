@@ -133,10 +133,13 @@ export class WorkoutGeneratorService {
         let targetReps = exercise.repRange[0]
 
         if (history.length > 0) {
-          // Use last performance
-          const last = history[0]
-          targetWeight = last.weight_actual || last.weight_target || 0
-          targetReps = last.reps_actual || last.reps_target || exercise.repRange[0]
+          // Calculate progressive overload based on actual performance
+          const progressiveTarget = this.calculateProgressiveTarget(
+            history,
+            exercise.repRange
+          )
+          targetWeight = progressiveTarget.weight
+          targetReps = progressiveTarget.reps
         } else {
           // Initial conservative estimate based on exercise type and demographics
           targetWeight = this.estimateInitialWeight(
@@ -242,6 +245,51 @@ export class WorkoutGeneratorService {
       targetCycleDay,
       status: 'draft'
     })
+  }
+
+  /**
+   * Calculate progressive overload target based on recent performance
+   * Uses actual sets data to determine appropriate progression
+   */
+  private static calculateProgressiveTarget(
+    history: any[],
+    repRange: [number, number]
+  ): { weight: number; reps: number } {
+    if (history.length === 0) {
+      return { weight: 0, reps: repRange[0] }
+    }
+
+    // Get most recent completed set
+    const lastSet = history[0]
+    const lastWeight = lastSet.weight_actual || lastSet.weight_target || 0
+    const lastReps = lastSet.reps_actual || lastSet.reps_target || repRange[0]
+    const lastRir = lastSet.rir_actual || 3 // Default to 3 RIR if not recorded
+
+    // Progressive overload logic based on RIR and reps
+    // If RIR < 2: very close to failure, increase weight
+    // If RIR >= 3: add reps first, then weight
+    // If reps at top of range: increase weight
+
+    let targetWeight = lastWeight
+    let targetReps = lastReps
+
+    if (lastRir < 2 || lastReps >= repRange[1]) {
+      // Close to failure or at top of rep range -> increase weight
+      // Typical progression: 2.5-5% increase
+      const increment = lastWeight >= 40 ? 2.5 : 1.25 // Smaller jumps for lighter weights
+      targetWeight = Math.round((lastWeight + increment) * 4) / 4 // Round to nearest 0.25
+      targetReps = repRange[0] // Reset to bottom of range
+    } else if (lastReps < repRange[1]) {
+      // Room to add reps -> add 1-2 reps
+      targetReps = Math.min(lastReps + 1, repRange[1])
+      targetWeight = lastWeight // Keep weight same
+    } else {
+      // At top of range with good RIR -> small weight increase
+      targetWeight = Math.round((lastWeight + 1.25) * 4) / 4
+      targetReps = repRange[0]
+    }
+
+    return { weight: targetWeight, reps: targetReps }
   }
 
   /**

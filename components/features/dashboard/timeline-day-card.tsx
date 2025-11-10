@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Play, Eye } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
+import { RefineWorkoutModal } from '@/components/features/workout/refine-workout-modal'
+import type { Workout } from '@/lib/types/schemas'
 
 interface TimelineDayCardProps {
   dayData: TimelineDayData
@@ -90,6 +92,8 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const styles = STATUS_STYLES[status]
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isRefineModalOpen, setIsRefineModalOpen] = useState(false)
+  const [workoutToRefine, setWorkoutToRefine] = useState<Workout | null>(null)
 
   const handlePreGenerate = async () => {
     setIsGenerating(true)
@@ -109,9 +113,23 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     }
   }
 
-  const handleViewWorkout = () => {
-    if (preGeneratedWorkout) {
-      router.push(`/workout/${preGeneratedWorkout.id}/refine`)
+  const handleViewWorkout = async () => {
+    if (!preGeneratedWorkout) return
+
+    // Fetch full workout data
+    try {
+      const response = await fetch(`/api/workouts/${preGeneratedWorkout.id}`)
+      if (response.ok) {
+        const workout = await response.json()
+        setWorkoutToRefine(workout)
+        setIsRefineModalOpen(true)
+      } else {
+        console.error('Failed to fetch workout')
+        alert('Failed to load workout details')
+      }
+    } catch (error) {
+      console.error('Error fetching workout:', error)
+      alert('Failed to load workout details')
     }
   }
 
@@ -119,6 +137,10 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     if (preGeneratedWorkout) {
       router.push(`/workout/${preGeneratedWorkout.id}`)
     }
+  }
+
+  const handleWorkoutUpdated = () => {
+    onRefreshTimeline?.()
   }
 
   // Rest day layout
@@ -334,6 +356,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           </div>
         </div>
       )}
+
+      {/* Refine Workout Modal */}
+      <RefineWorkoutModal
+        workout={workoutToRefine}
+        open={isRefineModalOpen}
+        onClose={() => setIsRefineModalOpen(false)}
+        onWorkoutUpdated={handleWorkoutUpdated}
+      />
     </div>
   )
 }
