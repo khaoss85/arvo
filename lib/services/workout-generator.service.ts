@@ -229,7 +229,8 @@ export class WorkoutGeneratorService {
     }
 
     // Check if a workout already exists for this cycle day
-    const supabase = getSupabaseBrowserClient()
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
     const { data: existingWorkout } = await supabase
       .from('workouts')
       .select('id, status')
