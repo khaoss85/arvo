@@ -85,7 +85,9 @@ function classifySingleLift(
       squat: 'squat',
       deadlift: 'deadlift',
       overhead: 'overheadPress',
-    }[liftType] as 'benchPress' | 'squat' | 'deadlift' | 'overheadPress'
+      pull: 'pull',
+      legPress: 'legPress',
+    }[liftType] as 'benchPress' | 'squat' | 'deadlift' | 'overheadPress' | 'pull' | 'legPress'
 
     // Find the highest level this lift qualifies for
     for (let i = standards.length - 1; i >= 0; i--) {
@@ -102,7 +104,9 @@ function classifySingleLift(
       squat: 'squat',
       deadlift: 'deadlift',
       overhead: 'overheadPress',
-    }[liftType] as 'benchPress' | 'squat' | 'deadlift' | 'overheadPress'
+      pull: 'pull',
+      legPress: 'legPress',
+    }[liftType] as 'benchPress' | 'squat' | 'deadlift' | 'overheadPress' | 'pull' | 'legPress'
 
     // Find the highest level this lift qualifies for
     const levels: ExperienceLevel[] = ['elite', 'advanced', 'intermediate', 'novice', 'beginner']
