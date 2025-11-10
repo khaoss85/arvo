@@ -117,6 +117,10 @@ export const insertExerciseSchema = exerciseSchema.omit({ id: true }).extend({
 
 export const updateExerciseSchema = insertExerciseSchema.partial();
 
+// Workout Status Enum
+export const workoutStatusSchema = z.enum(['draft', 'ready', 'in_progress', 'completed']);
+export type WorkoutStatus = z.infer<typeof workoutStatusSchema>;
+
 // Workouts Schema
 export const workoutSchema = z.object({
   id: z.string().uuid(),
@@ -140,6 +144,8 @@ export const workoutSchema = z.object({
   split_plan_id: z.string().uuid().nullable(),
   cycle_day: z.number().int().min(1).nullable(), // Which day of the cycle (1 to cycle_days)
   variation: z.enum(['A', 'B']).nullable(), // A/B variation
+  // Workout status field
+  status: workoutStatusSchema.nullable(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({

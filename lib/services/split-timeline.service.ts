@@ -4,6 +4,7 @@ import type {
   DayStatus,
   VolumeComparison,
   CompletedWorkoutData,
+  PreGeneratedWorkoutData,
   TimelineDayData,
   SplitTimelineData,
 } from "@/lib/services/split-timeline.types";
@@ -13,6 +14,7 @@ export type {
   DayStatus,
   VolumeComparison,
   CompletedWorkoutData,
+  PreGeneratedWorkoutData,
   TimelineDayData,
   SplitTimelineData,
 };
@@ -129,6 +131,45 @@ export class SplitTimelineService {
   }
 
   /**
+   * Get pre-generated workouts for current cycle (server-side)
+   */
+  static async getPreGeneratedWorkoutsForCycleServer(
+    userId: string,
+    splitPlanId: string
+  ): Promise<Map<number, Workout>> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    const { data: workouts, error } = await supabase
+      .from('workouts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('split_plan_id', splitPlanId)
+      .in('status', ['draft', 'ready'])
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch pre-generated workouts:', error);
+      return new Map();
+    }
+
+    // Map workouts by cycle day
+    const workoutMap = new Map<number, Workout>();
+
+    if (workouts) {
+      for (const workout of workouts) {
+        const cycleDay = workout.cycle_day;
+        if (cycleDay && !workoutMap.has(cycleDay)) {
+          // Keep most recent workout for each cycle day
+          workoutMap.set(cycleDay, workout as unknown as Workout);
+        }
+      }
+    }
+
+    return workoutMap;
+  }
+
+  /**
    * Get completed workouts for current cycle (server-side)
    */
   static async getCompletedWorkoutsForCycleServer(
@@ -143,8 +184,8 @@ export class SplitTimelineService {
       .select('*')
       .eq('user_id', userId)
       .eq('split_plan_id', splitPlanId)
-      .eq('completed', true)
-      .order('completed_at', { ascending: false });
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false});
 
     if (error) {
       console.error('Failed to fetch completed workouts:', error);
@@ -159,7 +200,46 @@ export class SplitTimelineService {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
-          workoutMap.set(cycleDay, workout as Workout);
+          workoutMap.set(cycleDay, workout as unknown as Workout);
+        }
+      }
+    }
+
+    return workoutMap;
+  }
+
+  /**
+   * Get pre-generated workouts for current cycle (client-side)
+   */
+  static async getPreGeneratedWorkoutsForCycle(
+    userId: string,
+    splitPlanId: string
+  ): Promise<Map<number, Workout>> {
+    const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
+    const supabase = getSupabaseBrowserClient();
+
+    const { data: workouts, error } = await supabase
+      .from('workouts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('split_plan_id', splitPlanId)
+      .in('status', ['draft', 'ready'])
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch pre-generated workouts:', error);
+      return new Map();
+    }
+
+    // Map workouts by cycle day
+    const workoutMap = new Map<number, Workout>();
+
+    if (workouts) {
+      for (const workout of workouts) {
+        const cycleDay = workout.cycle_day;
+        if (cycleDay && !workoutMap.has(cycleDay)) {
+          // Keep most recent workout for each cycle day
+          workoutMap.set(cycleDay, workout as unknown as Workout);
         }
       }
     }
@@ -182,7 +262,7 @@ export class SplitTimelineService {
       .select('*')
       .eq('user_id', userId)
       .eq('split_plan_id', splitPlanId)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .order('completed_at', { ascending: false });
 
     if (error) {
@@ -198,7 +278,7 @@ export class SplitTimelineService {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
-          workoutMap.set(cycleDay, workout as Workout);
+          workoutMap.set(cycleDay, workout as unknown as Workout);
         }
       }
     }
@@ -213,6 +293,7 @@ export class SplitTimelineService {
     day: number,
     currentCycleDay: number,
     hasCompletedWorkout: boolean,
+    hasPreGeneratedWorkout: boolean,
     isRestDay: boolean
   ): DayStatus {
     if (day === currentCycleDay) {
@@ -225,6 +306,10 @@ export class SplitTimelineService {
 
     if (isRestDay) {
       return 'rest';
+    }
+
+    if (hasPreGeneratedWorkout) {
+      return 'pre_generated';
     }
 
     return 'upcoming';
@@ -257,11 +342,11 @@ export class SplitTimelineService {
     const currentCycleDay = profile.current_cycle_day || 1;
     const sessions = splitPlan.sessions as unknown as SessionDefinition[];
 
-    // Get completed workouts for this cycle
-    const completedWorkoutsMap = await this.getCompletedWorkoutsForCycleServer(
-      userId,
-      splitPlan.id
-    );
+    // Get completed and pre-generated workouts for this cycle
+    const [completedWorkoutsMap, preGeneratedWorkoutsMap] = await Promise.all([
+      this.getCompletedWorkoutsForCycleServer(userId, splitPlan.id),
+      this.getPreGeneratedWorkoutsForCycleServer(userId, splitPlan.id)
+    ]);
 
     // Build timeline data for each day in the cycle
     const days: TimelineDayData[] = [];
@@ -275,11 +360,16 @@ export class SplitTimelineService {
       const completedWorkout = completedWorkoutsMap.get(day);
       const hasCompletedWorkout = !!completedWorkout;
 
+      // Check if this day has a pre-generated workout
+      const preGeneratedWorkout = preGeneratedWorkoutsMap.get(day);
+      const hasPreGeneratedWorkout = !!preGeneratedWorkout;
+
       // Determine status
       const status = this.getDayStatus(
         day,
         currentCycleDay,
         hasCompletedWorkout,
+        hasPreGeneratedWorkout,
         isRestDay
       );
 
@@ -300,6 +390,16 @@ export class SplitTimelineService {
           completedAt: completedWorkout.completed_at || '',
           actualVolume,
           variance,
+        };
+      }
+
+      // Add pre-generated workout data if exists
+      if (preGeneratedWorkout) {
+        dayData.preGeneratedWorkout = {
+          id: preGeneratedWorkout.id,
+          status: preGeneratedWorkout.status as 'draft' | 'ready',
+          exercises: preGeneratedWorkout.exercises as any[] || [],
+          workoutName: preGeneratedWorkout.workout_name || 'Workout'
         };
       }
 
@@ -340,11 +440,11 @@ export class SplitTimelineService {
     const currentCycleDay = profile.current_cycle_day || 1;
     const sessions = splitPlan.sessions as unknown as SessionDefinition[];
 
-    // Get completed workouts for this cycle
-    const completedWorkoutsMap = await this.getCompletedWorkoutsForCycle(
-      userId,
-      splitPlan.id
-    );
+    // Get completed and pre-generated workouts for this cycle
+    const [completedWorkoutsMap, preGeneratedWorkoutsMap] = await Promise.all([
+      this.getCompletedWorkoutsForCycle(userId, splitPlan.id),
+      this.getPreGeneratedWorkoutsForCycle(userId, splitPlan.id)
+    ]);
 
     // Build timeline data for each day in the cycle
     const days: TimelineDayData[] = [];
@@ -358,11 +458,16 @@ export class SplitTimelineService {
       const completedWorkout = completedWorkoutsMap.get(day);
       const hasCompletedWorkout = !!completedWorkout;
 
+      // Check if this day has a pre-generated workout
+      const preGeneratedWorkout = preGeneratedWorkoutsMap.get(day);
+      const hasPreGeneratedWorkout = !!preGeneratedWorkout;
+
       // Determine status
       const status = this.getDayStatus(
         day,
         currentCycleDay,
         hasCompletedWorkout,
+        hasPreGeneratedWorkout,
         isRestDay
       );
 
@@ -383,6 +488,16 @@ export class SplitTimelineService {
           completedAt: completedWorkout.completed_at || '',
           actualVolume,
           variance,
+        };
+      }
+
+      // Add pre-generated workout data if exists
+      if (preGeneratedWorkout) {
+        dayData.preGeneratedWorkout = {
+          id: preGeneratedWorkout.id,
+          status: preGeneratedWorkout.status as 'draft' | 'ready',
+          exercises: preGeneratedWorkout.exercises as any[] || [],
+          workoutName: preGeneratedWorkout.workout_name || 'Workout'
         };
       }
 

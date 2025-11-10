@@ -146,7 +146,9 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
                 <TimelineDayCard
                   dayData={dayData}
                   isCurrentDay={dayData.day === currentCycleDay}
+                  userId={userId}
                   onGenerateWorkout={onGenerateWorkout}
+                  onRefreshTimeline={loadTimelineData}
                 />
               </div>
             ))}
@@ -170,11 +172,15 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-          <span>Rest</span>
+          <span>Pre-Generated</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-gray-400"></span>
           <span>Upcoming</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-full bg-blue-400"></span>
+          <span>Rest</span>
         </div>
       </div>
     </div>

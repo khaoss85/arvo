@@ -4,7 +4,7 @@ import type { SessionDefinition } from "@/lib/services/split-plan.service";
 /**
  * Status of a day in the split cycle timeline
  */
-export type DayStatus = 'completed' | 'current' | 'upcoming' | 'rest';
+export type DayStatus = 'completed' | 'current' | 'upcoming' | 'rest' | 'pre_generated';
 
 /**
  * Volume comparison data for a muscle group
@@ -27,6 +27,16 @@ export interface CompletedWorkoutData {
 }
 
 /**
+ * Data for a pre-generated (draft/ready) workout in the timeline
+ */
+export interface PreGeneratedWorkoutData {
+  id: string;
+  status: 'draft' | 'ready';
+  exercises: any[]; // Exercise data from workout
+  workoutName: string;
+}
+
+/**
  * Data for a single day in the timeline
  */
 export interface TimelineDayData {
@@ -34,6 +44,7 @@ export interface TimelineDayData {
   status: DayStatus;
   session: SessionDefinition | null; // null for rest days
   completedWorkout?: CompletedWorkoutData;
+  preGeneratedWorkout?: PreGeneratedWorkoutData;
 }
 
 /**

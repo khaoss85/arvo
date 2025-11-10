@@ -1,15 +1,20 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Play, Eye } from 'lucide-react'
+import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 
 interface TimelineDayCardProps {
   dayData: TimelineDayData
   isCurrentDay: boolean
+  userId: string
   onGenerateWorkout?: () => void
+  onRefreshTimeline?: () => void
 }
 
 // Status styling configuration
@@ -34,6 +39,13 @@ const STATUS_STYLES = {
     badgeBg: 'bg-gray-400',
     badgeText: 'text-white',
     icon: '○'
+  },
+  pre_generated: {
+    border: 'border-blue-300 dark:border-blue-700',
+    bg: 'bg-blue-50 dark:bg-blue-950/50',
+    badgeBg: 'bg-blue-500',
+    badgeText: 'text-white',
+    icon: '✨'
   },
   rest: {
     border: 'border-blue-200 dark:border-blue-800',
@@ -73,9 +85,41 @@ function VarianceIndicator({ variance }: { variance: VolumeComparison }) {
   )
 }
 
-export function TimelineDayCard({ dayData, isCurrentDay, onGenerateWorkout }: TimelineDayCardProps) {
-  const { day, status, session, completedWorkout } = dayData
+export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorkout, onRefreshTimeline }: TimelineDayCardProps) {
+  const { day, status, session, completedWorkout, preGeneratedWorkout } = dayData
   const styles = STATUS_STYLES[status]
+  const router = useRouter()
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const handlePreGenerate = async () => {
+    setIsGenerating(true)
+    try {
+      const result = await generateDraftWorkoutAction(userId, day)
+      if (result.success) {
+        // Refresh timeline to show the new draft workout
+        onRefreshTimeline?.()
+      } else {
+        alert(`Failed to generate workout: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error generating draft workout:', error)
+      alert('Failed to generate workout')
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleViewWorkout = () => {
+    if (preGeneratedWorkout) {
+      router.push(`/workout/${preGeneratedWorkout.id}/refine`)
+    }
+  }
+
+  const handleStartWorkout = () => {
+    if (preGeneratedWorkout) {
+      router.push(`/workout/${preGeneratedWorkout.id}`)
+    }
+  }
 
   // Rest day layout
   if (!session) {
@@ -146,7 +190,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, onGenerateWorkout }: Ti
             styles.badgeText,
             isCurrentDay && 'px-3 py-1.5 text-sm'
           )}>
-            {status === 'current' ? 'TODAY' : status === 'completed' ? 'Done' : 'Upcoming'} {styles.icon}
+            {status === 'current'
+              ? 'TODAY'
+              : status === 'completed'
+              ? 'Done'
+              : status === 'pre_generated'
+              ? (preGeneratedWorkout?.status === 'ready' ? 'Ready' : 'Draft')
+              : 'Upcoming'
+            } {styles.icon}
           </span>
         </div>
       </div>
@@ -201,6 +252,59 @@ export function TimelineDayCard({ dayData, isCurrentDay, onGenerateWorkout }: Ti
             <Sparkles className="w-4 h-4 mr-2" />
             Generate Today&apos;s Workout
           </Button>
+        </div>
+      )}
+
+      {/* Pre-Generate Button (for upcoming days without workout) */}
+      {status === 'upcoming' && !isCurrentDay && (
+        <div className="mb-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <Button
+            onClick={handlePreGenerate}
+            disabled={isGenerating}
+            variant="outline"
+            className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isGenerating ? 'Generating...' : 'Pre-Generate Workout'}
+          </Button>
+        </div>
+      )}
+
+      {/* Pre-Generated Workout Actions */}
+      {status === 'pre_generated' && preGeneratedWorkout && (
+        <div className="mb-3 pt-3 border-t border-blue-200 dark:border-blue-700 space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+              {preGeneratedWorkout.exercises.length} Exercises Pre-Generated
+            </span>
+            <span className={cn(
+              'px-2 py-0.5 rounded text-xs font-bold',
+              preGeneratedWorkout.status === 'ready'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+            )}>
+              {preGeneratedWorkout.status === 'ready' ? 'Reviewed' : 'Draft'}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleViewWorkout}
+              variant="outline"
+              className="flex-1 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Review
+            </Button>
+            {isCurrentDay && (
+              <Button
+                onClick={handleStartWorkout}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Start
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

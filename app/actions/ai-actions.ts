@@ -238,7 +238,8 @@ async function generateWorkoutWithServerClient(
     split_plan_id: null,
     cycle_day: null,
     variation: null,
-    mental_readiness_overall: null
+    mental_readiness_overall: null,
+    status: 'ready'
   }
 
   const { data: workout, error: workoutError } = await supabase
@@ -251,7 +252,7 @@ async function generateWorkoutWithServerClient(
     throw new Error(`Failed to create workout: ${workoutError.message}`)
   }
 
-  return workout as Workout
+  return workout as unknown as Workout
 }
 
 /**
@@ -791,6 +792,67 @@ export async function validateCustomSubstitutionAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to validate custom substitution'
+    }
+  }
+}
+
+/**
+ * Server action to generate a draft workout for a future cycle day
+ * This allows pre-generation of workouts that can be reviewed/refined before execution
+ */
+export async function generateDraftWorkoutAction(
+  userId: string,
+  targetCycleDay: number
+) {
+  try {
+    const { WorkoutGeneratorService } = await import('@/lib/services/workout-generator.service')
+
+    const workout = await WorkoutGeneratorService.generateDraftWorkout(userId, targetCycleDay)
+
+    return {
+      success: true,
+      workout
+    }
+  } catch (error) {
+    console.error('Server action - Draft workout generation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate draft workout'
+    }
+  }
+}
+
+/**
+ * Server action to update workout status
+ * Used to transition workouts between draft/ready/in_progress/completed states
+ */
+export async function updateWorkoutStatusAction(
+  workoutId: string,
+  status: 'draft' | 'ready' | 'in_progress' | 'completed'
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('workouts')
+      .update({ status } as any)
+      .eq('id', workoutId)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to update workout status: ${error.message}`)
+    }
+
+    return {
+      success: true,
+      workout: data
+    }
+  } catch (error) {
+    console.error('Server action - Update workout status error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update workout status'
     }
   }
 }

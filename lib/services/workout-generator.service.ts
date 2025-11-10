@@ -11,14 +11,25 @@ import {
   type WorkoutType,
   type SplitType
 } from './muscle-groups.service'
-import type { Workout, InsertWorkout } from '@/lib/types/schemas'
+import type { Workout, InsertWorkout, WorkoutStatus } from '@/lib/types/schemas'
 
 export class WorkoutGeneratorService {
   /**
    * Generate AI-powered workout for user
    * Supports both split-based and rotation-based generation
+   *
+   * @param userId - User ID
+   * @param options - Optional configuration
+   * @param options.targetCycleDay - Generate for specific cycle day (for pre-generation)
+   * @param options.status - Workout status (default: 'ready')
    */
-  static async generateWorkout(userId: string): Promise<Workout> {
+  static async generateWorkout(
+    userId: string,
+    options?: {
+      targetCycleDay?: number
+      status?: WorkoutStatus
+    }
+  ): Promise<Workout> {
     const exerciseSelector = new ExerciseSelector()
 
     // Get user profile
@@ -47,19 +58,43 @@ export class WorkoutGeneratorService {
       sessionPrinciples?: string[]
     } = {}
 
+    // Use target cycle day if provided (for pre-generation), otherwise use next workout from profile
+    const targetDay = options?.targetCycleDay
+
     if (nextWorkoutData) {
       // SPLIT-BASED GENERATION
       const { session, splitPlan } = nextWorkoutData
-      workoutType = session.workoutType as WorkoutType
-      splitPlanId = splitPlan.id
-      cycleDay = nextWorkoutData.cycleDay
-      variation = session.variation
 
-      // Pass session context to exercise selector
-      sessionContext = {
-        sessionFocus: session.focus,
-        targetVolume: session.targetVolume,
-        sessionPrinciples: session.principles
+      // If target day is specified, get session for that day instead of current day
+      if (targetDay !== undefined) {
+        const targetSession = splitPlan.sessions.find((s: any) => s.cycleDay === targetDay)
+        if (!targetSession) {
+          throw new Error(`No session found for cycle day ${targetDay}`)
+        }
+
+        workoutType = targetSession.workoutType as WorkoutType
+        splitPlanId = splitPlan.id
+        cycleDay = targetDay
+        variation = targetSession.variation as 'A' | 'B' | null
+
+        sessionContext = {
+          sessionFocus: targetSession.focus as string[] | undefined,
+          targetVolume: targetSession.targetVolume as Record<string, number> | undefined,
+          sessionPrinciples: targetSession.principles as string[] | undefined
+        }
+      } else {
+        // Use current day's session
+        workoutType = session.workoutType as WorkoutType
+        splitPlanId = splitPlan.id
+        cycleDay = nextWorkoutData.cycleDay
+        variation = session.variation
+
+        // Pass session context to exercise selector
+        sessionContext = {
+          sessionFocus: session.focus,
+          targetVolume: session.targetVolume,
+          sessionPrinciples: session.principles
+        }
       }
     } else {
       // ROTATION-BASED GENERATION (fallback for users without split plan)
@@ -153,10 +188,60 @@ export class WorkoutGeneratorService {
       split_plan_id: splitPlanId,
       cycle_day: cycleDay,
       variation: variation,
-      mental_readiness_overall: null
+      mental_readiness_overall: null,
+      // Workout status
+      status: options?.status || 'ready'
     }
 
     return await WorkoutService.create(workoutData)
+  }
+
+  /**
+   * Generate draft workout for a future cycle day
+   * This allows pre-generation of workouts that can be reviewed/refined before execution
+   *
+   * @param userId - User ID
+   * @param targetCycleDay - The cycle day to generate for (must be > current cycle day)
+   */
+  static async generateDraftWorkout(
+    userId: string,
+    targetCycleDay: number
+  ): Promise<Workout> {
+    // Verify that target cycle day is in the future
+    const profile = await UserProfileService.getByUserId(userId)
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    const currentCycleDay = profile.current_cycle_day || 1
+    if (targetCycleDay <= currentCycleDay) {
+      throw new Error(`Cannot pre-generate workout for past or current cycle day. Current: ${currentCycleDay}, Target: ${targetCycleDay}`)
+    }
+
+    if (!profile.active_split_plan_id) {
+      throw new Error('No active split plan found. Cannot pre-generate workouts without a split plan.')
+    }
+
+    // Check if a workout already exists for this cycle day
+    const supabase = getSupabaseBrowserClient()
+    const { data: existingWorkout } = await supabase
+      .from('workouts')
+      .select('id, status')
+      .eq('user_id', userId)
+      .eq('split_plan_id', profile.active_split_plan_id)
+      .eq('cycle_day', targetCycleDay)
+      .in('status', ['draft', 'ready', 'in_progress'])
+      .maybeSingle()
+
+    if (existingWorkout) {
+      throw new Error(`A workout already exists for cycle day ${targetCycleDay} (status: ${(existingWorkout as any).status})`)
+    }
+
+    // Generate workout with draft status
+    return this.generateWorkout(userId, {
+      targetCycleDay,
+      status: 'draft'
+    })
   }
 
   /**

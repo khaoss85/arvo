@@ -16,8 +16,10 @@ export type Database = {
     Tables: {
       exercise_generations: {
         Row: {
+          animation_url: string | null
           created_at: string | null
           generated_by_ai: boolean | null
+          has_animation: boolean | null
           id: string
           last_used_at: string | null
           metadata: Json | null
@@ -26,8 +28,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          animation_url?: string | null
           created_at?: string | null
           generated_by_ai?: boolean | null
+          has_animation?: boolean | null
           id?: string
           last_used_at?: string | null
           metadata?: Json | null
@@ -36,8 +40,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          animation_url?: string | null
           created_at?: string | null
           generated_by_ai?: boolean | null
+          has_animation?: boolean | null
           id?: string
           last_used_at?: string | null
           metadata?: Json | null
@@ -338,6 +344,7 @@ export type Database = {
           split_plan_id: string | null
           split_type: string | null
           started_at: string | null
+          status: Database["public"]["Enums"]["workout_status"] | null
           target_muscle_groups: string[] | null
           total_sets: number | null
           total_volume: number | null
@@ -362,6 +369,7 @@ export type Database = {
           split_plan_id?: string | null
           split_type?: string | null
           started_at?: string | null
+          status?: Database["public"]["Enums"]["workout_status"] | null
           target_muscle_groups?: string[] | null
           total_sets?: number | null
           total_volume?: number | null
@@ -386,6 +394,7 @@ export type Database = {
           split_plan_id?: string | null
           split_type?: string | null
           started_at?: string | null
+          status?: Database["public"]["Enums"]["workout_status"] | null
           target_muscle_groups?: string[] | null
           total_sets?: number | null
           total_volume?: number | null
@@ -431,6 +440,7 @@ export type Database = {
     }
     Enums: {
       split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"
+      workout_status: "draft" | "ready" | "in_progress" | "completed"
       workout_type: "push" | "pull" | "legs" | "upper" | "lower" | "full_body"
       workout_variation: "A" | "B"
     }
@@ -561,6 +571,7 @@ export const Constants = {
   public: {
     Enums: {
       split_type: ["push_pull_legs", "upper_lower", "full_body", "custom"],
+      workout_status: ["draft", "ready", "in_progress", "completed"],
       workout_type: ["push", "pull", "legs", "upper", "lower", "full_body"],
       workout_variation: ["A", "B"],
     },

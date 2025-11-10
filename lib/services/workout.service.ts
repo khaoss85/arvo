@@ -25,7 +25,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch workouts: ${error.message}`);
     }
 
-    return data as Workout[];
+    return data as unknown as Workout[];
   }
 
   /**
@@ -47,7 +47,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch workout: ${error.message}`);
     }
 
-    return data as Workout;
+    return data as unknown as Workout;
   }
 
   /**
@@ -70,7 +70,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch upcoming workouts: ${error.message}`);
     }
 
-    return data as Workout[];
+    return data as unknown as Workout[];
   }
 
   /**
@@ -91,7 +91,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch completed workouts: ${error.message}`);
     }
 
-    return data as Workout[];
+    return data as unknown as Workout[];
   }
 
   /**
@@ -112,7 +112,7 @@ export class WorkoutService {
       throw new Error(`Failed to create workout: ${error.message}`);
     }
 
-    return data as Workout;
+    return data as unknown as Workout;
   }
 
   /**
@@ -134,7 +134,7 @@ export class WorkoutService {
       throw new Error(`Failed to update workout: ${error.message}`);
     }
 
-    return data as Workout;
+    return data as unknown as Workout;
   }
 
   /**
@@ -174,7 +174,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch workouts: ${error.message}`);
     }
 
-    return data as Workout[];
+    return data as unknown as Workout[];
   }
 
   /**
@@ -197,7 +197,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch workout: ${error.message}`);
     }
 
-    return data as Workout;
+    return data as unknown as Workout;
   }
 
   /**
@@ -220,7 +220,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch in-progress workout: ${error.message}`);
     }
 
-    return data as Workout | null;
+    return data as unknown as Workout | null;
   }
 
   /**
@@ -244,7 +244,7 @@ export class WorkoutService {
       throw new Error(`Failed to fetch in-progress workout: ${error.message}`);
     }
 
-    return data as Workout | null;
+    return data as unknown as Workout | null;
   }
 
   /**
@@ -295,7 +295,7 @@ export class WorkoutService {
       throw new Error(`Failed to mark workout as started: ${error.message}`);
     }
 
-    return data as Workout;
+    return data as unknown as Workout;
   }
 
   /**
@@ -439,6 +439,6 @@ export class WorkoutService {
     }
 
     console.log('[WorkoutService] markAsCompletedWithStats completed successfully');
-    return data as Workout;
+    return data as unknown as Workout;
   }
 }
