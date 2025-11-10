@@ -4,6 +4,7 @@ import type { Workout } from '@/lib/types/schemas'
 import type { ProgressionOutput } from '@/lib/agents/progression-calculator.agent'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
+import { AnimationService } from '@/lib/services/animation.service'
 
 export interface WarmupSet {
   setNumber: number
@@ -22,7 +23,7 @@ export interface SetGuidance {
 }
 
 export interface ExerciseExecution {
-  exerciseId: string
+  exerciseId: string | null
   exerciseName: string
   targetSets: number
   targetReps: [number, number]
@@ -41,6 +42,8 @@ export interface ExerciseExecution {
   setGuidance?: SetGuidance[] // Per-set technical and mental focus for working sets
   tempo?: string // Tempo prescription from approach (e.g., "3-1-1-1" for Kuba Method)
   restSeconds?: number // Rest period from approach (seconds between sets)
+  animationUrl?: string // URL path to Lottie JSON animation (e.g., "/animations/exercises/barbell-squat.json")
+  hasAnimation?: boolean // Whether a Lottie animation is available for this exercise
 }
 
 interface WorkoutExecutionState {
@@ -121,6 +124,13 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         })
 
         const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex, idx) => {
+          // Get animation URL using AnimationService with fallback logic
+          const animationUrl = ex.animationUrl || AnimationService.getAnimationUrl({
+            name: ex.name,
+            canonicalPattern: ex.canonicalPattern,
+            equipmentVariant: ex.equipment
+          })
+
           const mapped = {
             exerciseId: ex.id || null,
             exerciseName: ex.name,
@@ -131,7 +141,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             currentAISuggestion: null,
             technicalCues: ex.technicalCues || [],
             warmupSets: ex.warmupSets || [],
-            setGuidance: ex.setGuidance || []
+            setGuidance: ex.setGuidance || [],
+            animationUrl,
+            hasAnimation: !!animationUrl
           }
 
           if (idx === 0) {
@@ -173,6 +185,13 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex) => {
           const exerciseSets = sets.filter(s => s.exercise_id === ex.id)
 
+          // Get animation URL using AnimationService with fallback logic
+          const animationUrl = ex.animationUrl || AnimationService.getAnimationUrl({
+            name: ex.name,
+            canonicalPattern: ex.canonicalPattern,
+            equipmentVariant: ex.equipment
+          })
+
           return {
             exerciseId: ex.id || '',
             exerciseName: ex.name,
@@ -190,7 +209,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             currentAISuggestion: null,
             technicalCues: ex.technicalCues || [],
             warmupSets: ex.warmupSets || [],
-            setGuidance: ex.setGuidance || []
+            setGuidance: ex.setGuidance || [],
+            animationUrl,
+            hasAnimation: !!animationUrl
           }
         })
 

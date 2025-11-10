@@ -381,8 +381,8 @@ export async function calculateProgressionAction(userId: string, input: Progress
 
     const enrichedInput = {
       ...input,
-      mesocycleWeek: profile?.current_mesocycle_week || null,
-      mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+      mesocycleWeek: profile?.current_mesocycle_week ?? undefined,
+      mesocyclePhase: (profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
     console.log('[calculateProgressionAction] Calling ProgressionCalculator.suggestNextSet with enriched input')

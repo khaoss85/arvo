@@ -155,10 +155,12 @@ export function ExerciseSubstitution({
 
       const result = await validateCustomSubstitutionAction(userId, input)
 
-      if (result.success) {
+      if (result.success && result.data) {
         setCustomResult(result.data)
+      } else if (!result.success) {
+        setCustomError(result.error || 'Failed to validate custom exercise')
       } else {
-        setCustomError(result.error)
+        setCustomError('Failed to validate custom exercise')
       }
     } catch (err) {
       console.error('Failed to validate custom substitution:', err)

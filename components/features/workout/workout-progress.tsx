@@ -1,7 +1,9 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import { useState } from 'react'
+import { RefreshCw, PlayCircle } from 'lucide-react'
 import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
+import { ExerciseAnimationModal } from './exercise-animation-modal'
 
 interface WorkoutProgressProps {
   currentIndex: number
@@ -10,6 +12,7 @@ interface WorkoutProgressProps {
 }
 
 export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: WorkoutProgressProps) {
+  const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const progress = ((currentIndex + 1) / exercises.length) * 100
 
   return (
@@ -46,6 +49,20 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: Wor
               }`}
             >
               <div className="flex items-center gap-2 flex-1">
+                {/* Play icon - show if animation is available */}
+                {ex.hasAnimation && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setAnimationModalOpen(idx)
+                    }}
+                    className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                    aria-label={`View ${ex.exerciseName} animation`}
+                    title="Visualizza esercizio"
+                  >
+                    <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                  </button>
+                )}
                 <span className={`text-sm ${isCurrent ? 'text-white font-medium' : 'text-gray-400'}`}>
                   {ex.exerciseName}
                 </span>
@@ -73,6 +90,16 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: Wor
           )
         })}
       </div>
+
+      {/* Animation Modal */}
+      {animationModalOpen !== null && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => setAnimationModalOpen(null)}
+          exerciseName={exercises[animationModalOpen].exerciseName}
+          animationUrl={exercises[animationModalOpen].animationUrl || null}
+        />
+      )}
     </div>
   )
 }
