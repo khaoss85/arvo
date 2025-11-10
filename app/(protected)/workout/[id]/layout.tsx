@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ExitWorkoutModal } from '@/components/features/workout/exit-workout-modal'
 
 export default function WorkoutLayout({
   children
@@ -10,6 +11,7 @@ export default function WorkoutLayout({
 }) {
   const router = useRouter()
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [showExitModal, setShowExitModal] = useState(false)
 
   // Navigation guard - prevent accidental leaving
   useEffect(() => {
@@ -80,11 +82,7 @@ export default function WorkoutLayout({
       {/* Top bar with controls */}
       <div className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3 flex items-center justify-between">
         <button
-          onClick={() => {
-            if (confirm('Are you sure you want to leave this workout? Progress will be saved.')) {
-              router.push('/dashboard')
-            }
-          }}
+          onClick={() => setShowExitModal(true)}
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
         >
           <svg
@@ -123,6 +121,13 @@ export default function WorkoutLayout({
       <div className="pb-safe">
         {children}
       </div>
+
+      {/* Exit Workout Confirmation Modal */}
+      <ExitWorkoutModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        onConfirm={() => router.push('/dashboard')}
+      />
     </div>
   )
 }
