@@ -116,6 +116,28 @@ export class WorkoutService {
   }
 
   /**
+   * Create workout (server-side)
+   */
+  static async createServer(workout: InsertWorkout): Promise<Workout> {
+    const validated = insertWorkoutSchema.parse(workout);
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    const { data, error} = await supabase
+      .from("workouts")
+      // @ts-ignore
+      .insert(validated)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create workout: ${error.message}`);
+    }
+
+    return data as unknown as Workout;
+  }
+
+  /**
    * Update workout (client-side)
    */
   static async update(id: string, workout: UpdateWorkout): Promise<Workout> {

@@ -199,7 +199,7 @@ export class WorkoutGeneratorService {
       status: options?.status || 'ready'
     }
 
-    return await WorkoutService.create(workoutData)
+    return await WorkoutService.createServer(workoutData)
   }
 
   /**
