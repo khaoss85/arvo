@@ -2,8 +2,8 @@
 
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
-import { SplitPlanService, type SessionDefinition } from '@/lib/services/split-plan.service'
-import type { SplitPlan } from '@/lib/types/schemas'
+import { SplitPlanService } from '@/lib/services/split-plan.service'
+import { SplitTimelineService } from '@/lib/services/split-timeline.service'
 
 /**
  * Generate a new split plan using AI
@@ -205,6 +205,26 @@ export async function activateSplitPlanAction(
     return {
       success: false,
       error: error?.message || 'Failed to activate split plan'
+    }
+  }
+}
+
+/**
+ * Get complete timeline data for split cycle
+ */
+export async function getSplitTimelineDataAction(userId: string) {
+  try {
+    const timelineData = await SplitTimelineService.getTimelineDataServer(userId)
+
+    return {
+      success: true,
+      data: timelineData
+    }
+  } catch (error: any) {
+    console.error('Error getting split timeline data:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get split timeline data'
     }
   }
 }
