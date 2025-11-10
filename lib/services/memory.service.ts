@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Tables, TablesInsert, TablesUpdate } from '@/lib/types/database.types';
 
 export type UserMemoryEntry = Tables<'user_memory_entries'>;
@@ -53,7 +53,7 @@ export interface MemoryDashboard {
 }
 
 export class MemoryService {
-  private supabase = createClient();
+  private supabase = getSupabaseBrowserClient();
 
   /**
    * Create a new memory entry

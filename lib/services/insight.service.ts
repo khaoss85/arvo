@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Tables, TablesInsert, TablesUpdate } from '@/lib/types/database.types';
 
 export type WorkoutInsight = Tables<'workout_insights'>;
@@ -38,7 +38,7 @@ export interface GetInsightsFilters {
 }
 
 export class InsightService {
-  private supabase = createClient();
+  private supabase = getSupabaseBrowserClient();
 
   /**
    * Create a new workout insight
