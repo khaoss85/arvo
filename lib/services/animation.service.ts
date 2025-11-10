@@ -58,6 +58,12 @@ export class AnimationService {
    */
   private static tryExact(exerciseName: string): string | null {
     const slug = this.normalizeToSlug(exerciseName)
+
+    // If slug is empty, return null (no animation available)
+    if (!slug) {
+      return null
+    }
+
     const path = `${this.ANIMATIONS_BASE_PATH}/${slug}.json`
 
     // In production, this would check file existence
@@ -97,6 +103,11 @@ export class AnimationService {
    * Handles multi-language, special characters, and strips common position/angle prefixes/suffixes
    */
   private static normalizeToSlug(name: string): string {
+    // Guard against undefined/null/empty values
+    if (!name || typeof name !== 'string') {
+      return ''
+    }
+
     let normalized = name
       .toLowerCase()
       .trim()
