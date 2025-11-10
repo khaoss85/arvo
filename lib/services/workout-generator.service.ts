@@ -48,9 +48,6 @@ export class WorkoutGeneratorService {
     // Get recent workouts
     const recentWorkouts = await WorkoutService.getCompleted(userId, 3)
 
-    // Check if user has an active split plan
-    const nextWorkoutData = await SplitPlanService.getNextWorkout(userId)
-
     let workoutType: WorkoutType
     let splitPlanId: string | null = null
     let cycleDay: number | null = null
@@ -61,32 +58,45 @@ export class WorkoutGeneratorService {
       sessionPrinciples?: string[]
     } = {}
 
-    // Use target cycle day if provided (for pre-generation), otherwise use next workout from profile
+    // Use target cycle day if provided (for pre-generation)
     const targetDay = options?.targetCycleDay
 
-    if (nextWorkoutData) {
-      // SPLIT-BASED GENERATION
-      const { session, splitPlan } = nextWorkoutData
+    // If target day is specified, load split plan directly (more robust than getNextWorkout)
+    if (targetDay !== undefined && profile.active_split_plan_id) {
+      // DIRECT SPLIT PLAN LOADING FOR PRE-GENERATION
+      const { data: splitPlan, error: planError } = await supabase
+        .from('split_plans')
+        .select('*')
+        .eq('id', profile.active_split_plan_id)
+        .single()
 
-      // If target day is specified, get session for that day instead of current day
-      if (targetDay !== undefined) {
-        const targetSession = splitPlan.sessions.find((s: any) => s.day === targetDay)
-        if (!targetSession) {
-          throw new Error(`No session found for cycle day ${targetDay}`)
-        }
+      if (planError) {
+        throw new Error(`Failed to load split plan: ${planError.message}`)
+      }
 
-        workoutType = targetSession.workoutType as WorkoutType
-        splitPlanId = splitPlan.id
-        cycleDay = targetDay
-        variation = targetSession.variation as 'A' | 'B' | null
+      const targetSession = (splitPlan.sessions as any[]).find((s: any) => s.day === targetDay)
+      if (!targetSession) {
+        throw new Error(`No session found for cycle day ${targetDay}`)
+      }
 
-        sessionContext = {
-          sessionFocus: targetSession.focus as string[] | undefined,
-          targetVolume: targetSession.targetVolume as Record<string, number> | undefined,
-          sessionPrinciples: targetSession.principles as string[] | undefined
-        }
-      } else {
-        // Use current day's session
+      workoutType = targetSession.workoutType as WorkoutType
+      splitPlanId = splitPlan.id
+      cycleDay = targetDay
+      variation = targetSession.variation as 'A' | 'B' | null
+
+      sessionContext = {
+        sessionFocus: targetSession.focus as string[] | undefined,
+        targetVolume: targetSession.targetVolume as Record<string, number> | undefined,
+        sessionPrinciples: targetSession.principles as string[] | undefined
+      }
+    } else {
+      // Check if user has an active split plan (for regular generation)
+      const nextWorkoutData = await SplitPlanService.getNextWorkoutServer(userId)
+
+      if (nextWorkoutData) {
+        // SPLIT-BASED GENERATION
+        const { session, splitPlan } = nextWorkoutData
+
         workoutType = session.workoutType as WorkoutType
         splitPlanId = splitPlan.id
         cycleDay = nextWorkoutData.cycleDay
@@ -98,19 +108,19 @@ export class WorkoutGeneratorService {
           targetVolume: session.targetVolume,
           sessionPrinciples: session.principles
         }
-      }
-    } else {
-      // ROTATION-BASED GENERATION (fallback for users without split plan)
-      const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
+      } else {
+        // ROTATION-BASED GENERATION (fallback for users without split plan)
+        const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
 
-      let lastWorkoutType: WorkoutType | null = null
-      if (recentWorkouts && recentWorkouts.length > 0) {
-        const lastWorkout = recentWorkouts[0]
-        lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
-                         inferWorkoutType(lastWorkout.exercises as any[] || [])
-      }
+        let lastWorkoutType: WorkoutType | null = null
+        if (recentWorkouts && recentWorkouts.length > 0) {
+          const lastWorkout = recentWorkouts[0]
+          lastWorkoutType = lastWorkout.workout_type as WorkoutType ||
+                           inferWorkoutType(lastWorkout.exercises as any[] || [])
+        }
 
-      workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
+        workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
+      }
     }
 
     // Select exercises using AI

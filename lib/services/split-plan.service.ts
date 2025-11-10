@@ -96,6 +96,53 @@ export class SplitPlanService {
   }
 
   /**
+   * Get next workout for user based on current cycle day (server-safe version)
+   */
+  static async getNextWorkoutServer(userId: string): Promise<{
+    session: SessionDefinition;
+    splitPlan: SplitPlan;
+    cycleDay: number;
+  } | null> {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
+
+    // Get user profile with current cycle day
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("current_cycle_day, active_split_plan_id")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileError || !profile?.active_split_plan_id) {
+      return null;
+    }
+
+    // Get active split plan
+    const { data: splitPlan, error: planError } = await supabase
+      .from("split_plans")
+      .select("*")
+      .eq("id", profile.active_split_plan_id)
+      .single();
+
+    if (planError || !splitPlan) {
+      return null;
+    }
+
+    const cycleDay = profile.current_cycle_day || 1;
+    const session = this.getSessionForDay(splitPlan as SplitPlan, cycleDay);
+
+    if (!session) {
+      return null;
+    }
+
+    return {
+      session,
+      splitPlan: splitPlan as SplitPlan,
+      cycleDay,
+    };
+  }
+
+  /**
    * Get next workout for user based on current cycle day
    */
   static async getNextWorkout(userId: string): Promise<{
