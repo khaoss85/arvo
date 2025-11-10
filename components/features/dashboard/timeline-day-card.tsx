@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Sparkles, Play, Eye } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { RefineWorkoutModal } from '@/components/features/workout/refine-workout-modal'
+import { WorkoutGenerationProgress } from '@/components/features/dashboard/workout-generation-progress'
 import type { Workout } from '@/lib/types/schemas'
 
 interface TimelineDayCardProps {
@@ -94,23 +95,24 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [isGenerating, setIsGenerating] = useState(false)
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false)
   const [workoutToRefine, setWorkoutToRefine] = useState<Workout | null>(null)
+  const [showProgress, setShowProgress] = useState(false)
 
-  const handlePreGenerate = async () => {
-    setIsGenerating(true)
-    try {
-      const result = await generateDraftWorkoutAction(userId, day)
-      if (result.success) {
-        // Refresh timeline to show the new draft workout
-        onRefreshTimeline?.()
-      } else {
-        alert(`Failed to generate workout: ${result.error}`)
-      }
-    } catch (error) {
-      console.error('Error generating draft workout:', error)
-      alert('Failed to generate workout')
-    } finally {
-      setIsGenerating(false)
-    }
+  const handlePreGenerate = () => {
+    setShowProgress(true)
+  }
+
+  const handleGenerationComplete = (workout: any) => {
+    setShowProgress(false)
+    onRefreshTimeline?.()
+  }
+
+  const handleGenerationError = (error: string) => {
+    setShowProgress(false)
+    alert(`Failed to generate workout: ${error}`)
+  }
+
+  const handleGenerationCancel = () => {
+    setShowProgress(false)
   }
 
   const handleViewWorkout = async () => {
@@ -364,6 +366,17 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         onClose={() => setIsRefineModalOpen(false)}
         onWorkoutUpdated={handleWorkoutUpdated}
       />
+
+      {/* Workout Generation Progress */}
+      {showProgress && (
+        <WorkoutGenerationProgress
+          userId={userId}
+          targetCycleDay={day}
+          onComplete={handleGenerationComplete}
+          onError={handleGenerationError}
+          onCancel={handleGenerationCancel}
+        />
+      )}
     </div>
   )
 }

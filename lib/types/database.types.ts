@@ -219,6 +219,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_memory_entries: {
+        Row: {
+          confidence_score: number
+          created_at: string
+          description: string | null
+          first_observed_at: string
+          id: string
+          last_confirmed_at: string
+          memory_category: string
+          memory_source: string
+          metadata: Json | null
+          related_exercises: string[] | null
+          related_muscles: string[] | null
+          source_id: string | null
+          status: string
+          times_confirmed: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number
+          created_at?: string
+          description?: string | null
+          first_observed_at?: string
+          id?: string
+          last_confirmed_at?: string
+          memory_category: string
+          memory_source: string
+          metadata?: Json | null
+          related_exercises?: string[] | null
+          related_muscles?: string[] | null
+          source_id?: string | null
+          status?: string
+          times_confirmed?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number
+          created_at?: string
+          description?: string | null
+          first_observed_at?: string
+          id?: string
+          last_confirmed_at?: string
+          memory_category?: string
+          memory_source?: string
+          metadata?: Json | null
+          related_exercises?: string[] | null
+          related_muscles?: string[] | null
+          source_id?: string | null
+          status?: string
+          times_confirmed?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           active_split_plan_id: string | null
@@ -328,6 +388,74 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_insights: {
+        Row: {
+          created_at: string
+          exercise_name: string | null
+          id: string
+          insight_type: string | null
+          last_mentioned_at: string | null
+          metadata: Json | null
+          relevance_score: number
+          resolution_proposed_at: string | null
+          resolution_proposed_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_note: string
+          workout_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_name?: string | null
+          id?: string
+          insight_type?: string | null
+          last_mentioned_at?: string | null
+          metadata?: Json | null
+          relevance_score?: number
+          resolution_proposed_at?: string | null
+          resolution_proposed_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_note: string
+          workout_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_name?: string | null
+          id?: string
+          insight_type?: string | null
+          last_mentioned_at?: string | null
+          metadata?: Json | null
+          relevance_score?: number
+          resolution_proposed_at?: string | null
+          resolution_proposed_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_note?: string
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_insights_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workouts: {
         Row: {
           approach_id: string | null
@@ -350,6 +478,7 @@ export type Database = {
           total_volume: number | null
           updated_at: string | null
           user_id: string | null
+          user_notes: string | null
           variation: Database["public"]["Enums"]["workout_variation"] | null
           workout_name: string | null
           workout_type: Database["public"]["Enums"]["workout_type"] | null
@@ -375,6 +504,7 @@ export type Database = {
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          user_notes?: string | null
           variation?: Database["public"]["Enums"]["workout_variation"] | null
           workout_name?: string | null
           workout_type?: Database["public"]["Enums"]["workout_type"] | null
@@ -400,6 +530,7 @@ export type Database = {
           total_volume?: number | null
           updated_at?: string | null
           user_id?: string | null
+          user_notes?: string | null
           variation?: Database["public"]["Enums"]["workout_variation"] | null
           workout_name?: string | null
           workout_type?: Database["public"]["Enums"]["workout_type"] | null
@@ -433,10 +564,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      boost_memory_confidence: {
+        Args: { p_boost_amount?: number; p_memory_id: string }
+        Returns: undefined
+      }
       calculate_mesocycle_week: {
         Args: { check_date?: string; start_date: string }
         Returns: number
       }
+      get_active_insights: {
+        Args: { p_min_relevance?: number; p_user_id: string }
+        Returns: {
+          created_at: string
+          exercise_name: string
+          id: string
+          insight_type: string
+          metadata: Json
+          relevance_score: number
+          severity: string
+          user_note: string
+          workout_id: string
+        }[]
+      }
+      get_active_memories: {
+        Args: { p_min_confidence?: number; p_user_id: string }
+        Returns: {
+          confidence_score: number
+          description: string
+          id: string
+          memory_category: string
+          metadata: Json
+          related_exercises: string[]
+          related_muscles: string[]
+          times_confirmed: number
+          title: string
+        }[]
+      }
+      update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {
       split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"
