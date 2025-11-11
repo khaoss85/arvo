@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
-import { SplitCycleTimelineWithGenerator } from "@/components/features/dashboard/split-cycle-timeline-with-generator";
+import { SplitCycleTimeline } from "@/components/features/dashboard/split-cycle-timeline";
 import { Button } from "@/components/ui/button";
 import {
   inferWorkoutType,
@@ -75,7 +75,7 @@ export default async function DashboardPage() {
 
         {/* Split Cycle Timeline - Shows complete split programming */}
         <div className="mb-8">
-          <SplitCycleTimelineWithGenerator userId={user.id} />
+          <SplitCycleTimeline userId={user.id} />
         </div>
 
         {/* Recent Completed Workouts */}

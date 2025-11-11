@@ -107,11 +107,29 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [showProgress, setShowProgress] = useState(false)
   const [insightChanges, setInsightChanges] = useState<InsightInfluencedChange[]>([])
   const [showChangesModal, setShowChangesModal] = useState(false)
+  const [targetDayForGeneration, setTargetDayForGeneration] = useState<number | null>(null)
   const { addToast } = useUIStore()
 
-  const handlePreGenerate = () => {
+  // Handle generation for both current day and pre-generation
+  const handleGenerate = (targetDay?: number) => {
     setIsGenerating(true)
     setShowProgress(true)
+    setTargetDayForGeneration(targetDay || null)
+  }
+
+  // For backwards compatibility with onGenerateWorkout prop
+  const handleCurrentDayGenerate = () => {
+    if (onGenerateWorkout) {
+      // Use old flow if prop is provided (wrapper component)
+      onGenerateWorkout()
+    } else {
+      // Use new unified flow with progress modal
+      handleGenerate()
+    }
+  }
+
+  const handlePreGenerate = () => {
+    handleGenerate(day)
   }
 
   const handleGenerationComplete = (workout: any, changes?: InsightInfluencedChange[]) => {
@@ -298,14 +316,15 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       </div>
 
       {/* Generate Workout Button (only for current day without workout) */}
-      {isCurrentDay && onGenerateWorkout && status === 'current' && (
+      {isCurrentDay && status === 'current' && (
         <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
           <Button
-            onClick={onGenerateWorkout}
+            onClick={handleCurrentDayGenerate}
+            disabled={isGenerating || showProgress}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Generate Today&apos;s Workout
+            {isGenerating ? 'Generating...' : 'Generate Today\'s Workout'}
           </Button>
         </div>
       )}
@@ -416,7 +435,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       {showProgress && (
         <WorkoutGenerationProgress
           userId={userId}
-          targetCycleDay={day}
+          targetCycleDay={targetDayForGeneration || day}
           onComplete={handleGenerationComplete}
           onError={handleGenerationError}
           onCancel={handleGenerationCancel}

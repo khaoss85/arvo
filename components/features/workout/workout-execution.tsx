@@ -49,24 +49,11 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           console.log('[WorkoutExecution] Resuming workout (page refresh):', workoutId)
           await resumeWorkout(workoutId)
         }
-        // If workout is not active, start it fresh
-        else if (!isActive) {
-          console.log('[WorkoutExecution] Starting new workout:', {
-            id: workout.id,
-            exerciseCount: Array.isArray(workout.exercises) ? workout.exercises.length : 0,
-            hasExercises: Array.isArray(workout.exercises) && workout.exercises.length > 0
-          })
-          startWorkout(workout)
-
-          // FALLBACK: If exercises are still empty after startWorkout, force resumeWorkout
-          // This handles cases where the workout object from generation doesn't have complete exercise data
-          setTimeout(async () => {
-            const currentExercises = useWorkoutExecutionStore.getState().exercises
-            if (currentExercises.length === 0 && workout.id) {
-              console.log('[WorkoutExecution] Exercises empty after startWorkout, forcing resumeWorkout')
-              await resumeWorkout(workout.id)
-            }
-          }, 100)
+        // If workout is not active, always use resumeWorkout for existing workouts
+        // This ensures we load complete data from DB instead of relying on passed workout object
+        else if (!isActive && workout.id) {
+          console.log('[WorkoutExecution] Loading workout from DB:', workout.id)
+          await resumeWorkout(workout.id)
         }
 
         hasInitialized.current = true

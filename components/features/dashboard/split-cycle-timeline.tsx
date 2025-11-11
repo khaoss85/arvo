@@ -40,6 +40,18 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
     loadTimelineData()
   }, [loadTimelineData])
 
+  // Refresh timeline when page becomes visible (user returns from workout)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadTimelineData()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [loadTimelineData])
+
   // Auto-scroll to current day
   useEffect(() => {
     if (!data || !scrollContainerRef.current) return

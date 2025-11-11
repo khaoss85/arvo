@@ -304,7 +304,9 @@ export function RefineWorkoutModal({
                   </div>
                   <div>
                     <span className="text-muted-foreground">Reps:</span>
-                    <span className="ml-2 font-medium">{exercise.repRange[0]}-{exercise.repRange[1]}</span>
+                    <span className="ml-2 font-medium">
+                      {exercise.repRange ? `${exercise.repRange[0]}-${exercise.repRange[1]}` : 'N/A'}
+                    </span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Weight:</span>
