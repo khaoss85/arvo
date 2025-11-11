@@ -257,8 +257,8 @@ export class WorkoutService {
       .from("workouts")
       .select("*")
       .eq("user_id", userId)
-      .eq("completed", false)
-      .order("planned_at", { ascending: false })
+      .eq("status", "in_progress")
+      .order("started_at", { ascending: false })
       .limit(1)
       .single();
 
@@ -308,6 +308,7 @@ export class WorkoutService {
       .update({
         started_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        status: 'in_progress',
       })
       .eq("id", id)
       .select()
@@ -383,6 +384,7 @@ export class WorkoutService {
       completed: true,
       completed_at: stats.completedAt ? stats.completedAt.toISOString() : new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      status: 'completed',
     };
 
     // Add optional stats if provided

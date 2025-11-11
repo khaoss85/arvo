@@ -38,6 +38,13 @@ const STATUS_STYLES = {
     badgeText: 'text-white',
     icon: '▶'
   },
+  in_progress: {
+    border: 'border-orange-400 dark:border-orange-600',
+    bg: 'bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/50 dark:to-yellow-950/50',
+    badgeBg: 'bg-orange-600 animate-pulse',
+    badgeText: 'text-white',
+    icon: '⏵'
+  },
   upcoming: {
     border: 'border-gray-200 dark:border-gray-700',
     bg: 'bg-white dark:bg-gray-900/50',
@@ -238,6 +245,8 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           )}>
             {status === 'current'
               ? 'TODAY'
+              : status === 'in_progress'
+              ? 'In Progress'
               : status === 'completed'
               ? 'Done'
               : status === 'pre_generated'
@@ -288,7 +297,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         </div>
       </div>
 
-      {/* Generate Workout Button (only for current day) */}
+      {/* Generate Workout Button (only for current day without workout) */}
       {isCurrentDay && onGenerateWorkout && status === 'current' && (
         <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
           <Button
@@ -297,6 +306,19 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Generate Today&apos;s Workout
+          </Button>
+        </div>
+      )}
+
+      {/* Continue Workout Button (for in-progress workout) */}
+      {status === 'in_progress' && preGeneratedWorkout && (
+        <div className="mb-3 pt-3 border-t border-orange-200 dark:border-orange-800">
+          <Button
+            onClick={handleStartWorkout}
+            className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Continue Workout
           </Button>
         </div>
       )}

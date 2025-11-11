@@ -36,7 +36,6 @@ export default async function DashboardPage() {
 
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
-  const inProgressWorkout = await WorkoutService.getInProgressWorkoutServer(user.id);
   const completedWorkouts = workouts.filter(w => w.completed).slice(0, MAX_RECENT_WORKOUTS);
 
   return (
@@ -78,25 +77,6 @@ export default async function DashboardPage() {
         <div className="mb-8">
           <SplitCycleTimelineWithGenerator userId={user.id} />
         </div>
-
-        {/* In-Progress Workout Banner */}
-        {inProgressWorkout && (
-          <div className="mb-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold mb-2">Workout In Progress</h3>
-                <p className="text-sm text-white/90">
-                  {(inProgressWorkout.exercises as any[])?.length || 0} exercises • Started recently
-                </p>
-              </div>
-              <Link href={`/workout/${inProgressWorkout.id}`}>
-                <Button className="bg-white text-orange-600 hover:bg-gray-100 font-medium">
-                  Resume Workout
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
 
         {/* Recent Completed Workouts */}
         <section aria-labelledby="recent-activity-heading">

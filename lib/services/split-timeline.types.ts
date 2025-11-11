@@ -4,7 +4,7 @@ import type { SessionDefinition } from "@/lib/services/split-plan.service";
 /**
  * Status of a day in the split cycle timeline
  */
-export type DayStatus = 'completed' | 'current' | 'upcoming' | 'rest' | 'pre_generated';
+export type DayStatus = 'completed' | 'current' | 'upcoming' | 'rest' | 'pre_generated' | 'in_progress';
 
 /**
  * Volume comparison data for a muscle group
