@@ -195,7 +195,7 @@ export class MemoryService {
    * Boost memory confidence (when pattern repeats)
    */
   async boostConfidence(memoryId: string, boostAmount = 0.1): Promise<void> {
-    const { error } = await this.supabase.rpc('boost_memory_confidence', {
+    const { error } = await (this.supabase as any).rpc('boost_memory_confidence', {
       p_memory_id: memoryId,
       p_boost_amount: boostAmount,
     });

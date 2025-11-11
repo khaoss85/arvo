@@ -56,7 +56,7 @@ export class InsightService {
       relevance_score: 1.0,
     };
 
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase as any)
       .from('workout_insights')
       .insert(insertData)
       .select()
@@ -70,7 +70,7 @@ export class InsightService {
    * Get active insights for a user using the database function
    */
   async getActiveInsights(userId: string, minRelevance = 0.3): Promise<WorkoutInsight[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase as any)
       .rpc('get_active_insights', {
         p_user_id: userId,
         p_min_relevance: minRelevance,

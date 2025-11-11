@@ -25,14 +25,15 @@ function createTransform() {
 }
 
 /**
- * Create a stroke (cyan, 5px)
+ * Create a stroke (cyan with alpha, 5px)
  * Cyan color provides excellent contrast on dark backgrounds
+ * RGBA format ensures proper rendering across all Lottie players
  */
 function createStroke() {
   return {
     ty: 'st',
     nm: 'Stroke',
-    c: { a: 0, k: [0.2, 0.8, 1] }, // cyan - highly visible on dark backgrounds
+    c: { a: 0, k: [0.2, 0.8, 1, 1] }, // cyan RGBA - alpha channel ensures visibility
     o: { a: 0, k: 100 },
     w: { a: 0, k: 5 }, // increased from 3 to 5 for better visibility
     lc: 2,
@@ -43,6 +44,7 @@ function createStroke() {
 
 /**
  * Generate simple test animation - single circle
+ * Centered layer with shape at relative [0,0] position
  */
 function generateSimpleTest() {
   return {
@@ -63,7 +65,7 @@ function generateSimpleTest() {
         op: 90,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer in 400x400 canvas
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -71,18 +73,18 @@ function generateSimpleTest() {
         },
         shapes: [
           {
-            ty: 'gr',  // ← GROUP (this was missing!)
+            ty: 'gr',
             nm: 'Circle Group',
             it: [
               {
                 ty: 'el',
                 nm: 'Circle',
-                p: { a: 0, k: [200, 200] },
+                p: { a: 0, k: [0, 0] }, // Position relative to layer center
                 s: { a: 0, k: [80, 80] },
-                d: 1,  // ← direction flag
+                d: 1,
               },
               createStroke(),
-              createTransform(),  // ← transform at end of group
+              createTransform(),
             ],
           },
         ],
@@ -124,7 +126,7 @@ function generateBarbellBenchPress() {
         op: TOTAL_FRAMES,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer in canvas
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -138,7 +140,7 @@ function generateBarbellBenchPress() {
               {
                 ty: 'el',
                 nm: 'Head Circle',
-                p: { a: 0, k: [200, 180] },
+                p: { a: 0, k: [0, -20] }, // Position relative to layer (20px above center)
                 s: { a: 0, k: [40, 40] },
                 d: 1,
               },
@@ -157,7 +159,7 @@ function generateBarbellBenchPress() {
         op: TOTAL_FRAMES,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -175,7 +177,7 @@ function generateBarbellBenchPress() {
                   a: 0,
                   k: {
                     c: false,
-                    v: [[200, 200], [200, 280]],
+                    v: [[0, 0], [0, 80]], // Relative coords: from center down 80px
                     i: [[0, 0], [0, 0]],
                     o: [[0, 0], [0, 0]],
                   },
@@ -187,7 +189,7 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Right arm (animato)
+      // Right arm (animated)
       {
         ty: 4,
         nm: 'Right Arm',
@@ -196,7 +198,7 @@ function generateBarbellBenchPress() {
         op: TOTAL_FRAMES,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -217,7 +219,7 @@ function generateBarbellBenchPress() {
                       t: frames.start,
                       s: [{
                         c: false,
-                        v: [[240, 210], [270, 120]],  // Extended
+                        v: [[40, 10], [70, -80]],  // Extended (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -228,7 +230,7 @@ function generateBarbellBenchPress() {
                       t: frames.down,
                       s: [{
                         c: false,
-                        v: [[240, 210], [270, 210]],  // At chest
+                        v: [[40, 10], [70, 10]],  // At chest (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -239,7 +241,7 @@ function generateBarbellBenchPress() {
                       t: frames.up,
                       s: [{
                         c: false,
-                        v: [[240, 210], [270, 120]],  // Extended
+                        v: [[40, 10], [70, -80]],  // Extended (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -253,7 +255,7 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Left arm (simmetrico)
+      // Left arm (symmetric)
       {
         ty: 4,
         nm: 'Left Arm',
@@ -262,7 +264,7 @@ function generateBarbellBenchPress() {
         op: TOTAL_FRAMES,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -283,7 +285,7 @@ function generateBarbellBenchPress() {
                       t: frames.start,
                       s: [{
                         c: false,
-                        v: [[160, 210], [130, 120]],  // Extended
+                        v: [[-40, 10], [-70, -80]],  // Extended (relative, mirrored)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -294,7 +296,7 @@ function generateBarbellBenchPress() {
                       t: frames.down,
                       s: [{
                         c: false,
-                        v: [[160, 210], [130, 210]],  // At chest
+                        v: [[-40, 10], [-70, 10]],  // At chest (relative, mirrored)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -305,7 +307,7 @@ function generateBarbellBenchPress() {
                       t: frames.up,
                       s: [{
                         c: false,
-                        v: [[160, 210], [130, 120]],  // Extended
+                        v: [[-40, 10], [-70, -80]],  // Extended (relative, mirrored)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -319,7 +321,7 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Barbell (animato)
+      // Barbell (animated)
       {
         ty: 4,
         nm: 'Barbell',
@@ -328,7 +330,7 @@ function generateBarbellBenchPress() {
         op: TOTAL_FRAMES,
         sr: 1,
         ks: {
-          p: { a: 0, k: [0, 0] },
+          p: { a: 0, k: [200, 200] }, // Center layer
           a: { a: 0, k: [0, 0] },
           s: { a: 0, k: [100, 100] },
           r: { a: 0, k: 0 },
@@ -349,7 +351,7 @@ function generateBarbellBenchPress() {
                       t: frames.start,
                       s: [{
                         c: false,
-                        v: [[120, 120], [280, 120]],  // Up
+                        v: [[-80, -80], [80, -80]],  // Up (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -360,7 +362,7 @@ function generateBarbellBenchPress() {
                       t: frames.down,
                       s: [{
                         c: false,
-                        v: [[120, 210], [280, 210]],  // Down at chest
+                        v: [[-80, 10], [80, 10]],  // Down at chest (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -371,7 +373,7 @@ function generateBarbellBenchPress() {
                       t: frames.up,
                       s: [{
                         c: false,
-                        v: [[120, 120], [280, 120]],  // Up
+                        v: [[-80, -80], [80, -80]],  // Up (relative coords)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
