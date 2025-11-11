@@ -512,20 +512,22 @@ Required JSON structure:
       result.insightInfluencedChanges = [];
     }
 
-    // Populate animation URLs for each exercise using AnimationService
-    result.exercises = result.exercises.map(exercise => {
-      const animationUrl = AnimationService.getAnimationUrl({
-        name: exercise.name,
-        canonicalPattern: exercise.movementPattern,
-        equipmentVariant: exercise.equipmentVariant
-      })
+    // Populate animation URLs for each exercise using AnimationService (async)
+    result.exercises = await Promise.all(
+      result.exercises.map(async (exercise) => {
+        const animationUrl = await AnimationService.getAnimationUrl({
+          name: exercise.name,
+          canonicalPattern: exercise.movementPattern,
+          equipmentVariant: exercise.equipmentVariant,
+        })
 
-      return {
-        ...exercise,
-        animationUrl,
-        hasAnimation: !!animationUrl
-      }
-    })
+        return {
+          ...exercise,
+          animationUrl,
+          hasAnimation: !!animationUrl,
+        }
+      })
+    )
 
     // Save generated exercises to database for consistency tracking
     // Skip during onboarding for performance (skipSaving flag)

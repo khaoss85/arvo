@@ -1,196 +1,159 @@
 # Exercise Animations
 
-This directory contains Lottie JSON animations for exercise demonstrations.
+This directory is reserved for future local animation caching (optional).
 
-## 🎯 Purpose
+## 🎯 Current System: ExerciseDB API
 
-Visual animations help users quickly identify which exercise to perform without having to read and mentally visualize the movement. This improves workout flow and reduces cognitive load during training.
+The app now uses the **ExerciseDB API** to fetch professional exercise GIF animations automatically.
 
-## 📁 Structure
+### Benefits
+- ✅ **1,300+ exercises** with animations (vs 39 manually sourced)
+- ✅ **Zero maintenance** - no manual downloads or file management
+- ✅ **Professional quality** - real demonstrations from ExerciseDB
+- ✅ **Automatic updates** - new exercises added to API automatically
+- ✅ **Simple codebase** - no custom Lottie generation
 
-```
-/public/animations/exercises/
-├── README.md                    # This file
-├── SOURCING_GUIDE.md           # Guide for finding/downloading animations
-├── .gitkeep                     # Ensures directory is tracked by git
-├── barbell-bench-press.json    # Barbell bench press animation
-├── barbell-squat.json          # Barbell squat animation
-└── ...                          # More animations
-```
+## 🔧 How It Works
 
-## 🔗 How It Works
+### 1. ExerciseDB Service
+Located at `lib/services/exercisedb.service.ts`:
+- Fetches all exercises from ExerciseDB API on first use
+- Caches exercise data for 24 hours (in-memory)
+- Provides fuzzy matching for exercise names
+- Returns GIF URLs directly from ExerciseDB CDN
 
-### 1. Animation Mapping
-The `AnimationService` (`lib/services/animation.service.ts`) maps exercise names to animation files using a 4-level fallback strategy:
-
-1. **Exact match** - Tries exact slug of exercise name
-   - Example: "Barbell Bench Press" → `/animations/exercises/barbell-bench-press.json`
-
-2. **Canonical pattern + equipment** - Tries pattern with equipment variant
-   - Example: `bench-press` + `barbell` → `/animations/exercises/barbell-bench-press.json`
-
-3. **Base canonical pattern** - Falls back to base pattern (no equipment)
-   - Example: `bench-press` → `/animations/exercises/bench-press.json`
-
-4. **Graceful null** - Returns `null` if no animation found
-   - No PlayCircle icon shown, or "Animation not available" message
-
-### 2. Slug Normalization
-Exercise names are converted to URL-safe slugs:
-- Lowercase
-- Spaces → hyphens
-- Remove special characters
-- Remove consecutive hyphens
-
-Examples:
-- "Barbell Bench Press" → `barbell-bench-press`
-- "DB Lateral Raise" → `db-lateral-raise`
-- "Cable Rope Tricep Pushdown" → `cable-rope-tricep-pushdown`
+### 2. Animation Service
+Located at `lib/services/animation.service.ts`:
+- Maps exercise names to GIF URLs via ExerciseDB API
+- Tries multiple fallback strategies:
+  1. Exact exercise name
+  2. Canonical pattern + equipment variant
+  3. Base canonical pattern
+  4. Graceful null (no animation available)
 
 ### 3. UI Integration
-PlayCircle icons appear next to exercises when animations are available:
-- **Workout Progress** list (`components/features/workout/workout-progress.tsx`)
-- **Exercise Substitution** modal (`components/features/workout/exercise-substitution.tsx`)
+- **Component**: `components/features/workout/exercise-animation.tsx`
+- Simple `<img>` tag loads GIF from CDN
+- Lazy loading for performance
+- Loading/error states handled gracefully
 
-Clicking the icon opens a bottom-drawer modal with the Lottie animation.
+## 📡 API Configuration
 
-## 📝 Naming Convention
+### Option 1: Self-Hosted (Recommended)
+Deploy your own ExerciseDB instance to Vercel:
+1. Go to https://github.com/ExerciseDB/exercisedb-api
+2. Click "Deploy to Vercel"
+3. Copy your deployment URL
+4. Add to `.env.local`:
+   ```bash
+   NEXT_PUBLIC_EXERCISEDB_API_URL=https://your-exercisedb.vercel.app
+   ```
 
-**Format**: `{equipment}-{movement-pattern}.json`
+**Benefits**:
+- Free & unlimited
+- No API keys needed
+- Fast (global CDN)
+- No rate limits
 
-**Examples**:
-- `barbell-bench-press.json` ✅
-- `dumbbell-lateral-raise.json` ✅
-- `cable-face-pull.json` ✅
-- `machine-leg-press.json` ✅
-- `bodyweight-pull-up.json` ✅
+### Option 2: RapidAPI (Paid)
+If you need more exercises (5,000+ in V2):
+1. Sign up at https://rapidapi.com
+2. Subscribe to ExerciseDB
+3. Add to `.env.local`:
+   ```bash
+   NEXT_PUBLIC_EXERCISEDB_API_URL=https://exercisedb.p.rapidapi.com
+   NEXT_PUBLIC_EXERCISEDB_API_KEY=your-rapidapi-key
+   ```
 
-**Important**:
-- All lowercase
-- Use hyphens (not underscores or spaces)
-- Start with equipment type
-- End with movement pattern
-- Match AnimationService slug normalization
+## 🧪 Testing Animations
 
-## ➕ Adding New Animations
-
-### Option A: Manual Download
-1. Find animation on [LottieFiles.com](https://lottiefiles.com)
-2. Check license (must be free for commercial use)
-3. Download as "Lottie JSON"
-4. Rename following naming convention
-5. Save to this directory
-6. Test in app
-
-### Option B: Optimize Existing Animation
-If file is too large (> 150KB):
-1. Visit [LottieFiles Optimizer](https://lottiefiles.com/tools/lottie-optimizer)
-2. Upload file
-3. Apply optimizations (reduce precision, remove metadata)
-4. Download optimized version
-5. Replace original file
-
-## 🎨 Style Guidelines
-
-For visual consistency, prefer animations with:
-- ✅ Simple stick figures or minimal characters
-- ✅ Clear movement patterns
-- ✅ Neutral colors (or monochrome)
-- ✅ Loop-friendly timing
-- ✅ 50-150KB file size
-- ❌ Avoid overly detailed or branded animations
-
-## 📊 File Size Guidelines
-
-**Target**: 50-150KB per file
-**Maximum**: 200KB (use optimizer if exceeding)
-
-Why it matters:
-- Faster load times
-- Better mobile experience
-- Lower bandwidth usage
-- More animations fit in browser cache
-
-## 🔍 Finding Missing Animations
-
-If an exercise doesn't have an animation:
-1. PlayCircle icon won't appear (or will show "not available" when clicked)
-2. Check dev console for AnimationService debug logs
-3. Exercise name is logged when animation not found
-4. Prioritize most-requested exercises for next batch
-
-## 🧪 Testing New Animations
-
-After adding a new animation:
-1. Restart dev server: `npm run dev`
-2. Generate a workout with that exercise
-3. Verify PlayCircle icon appears
-4. Click icon → modal should open
-5. Check animation loads and loops correctly
-6. Verify no console errors
-
-## 📈 Coverage Tracking
-
-See `SOURCING_GUIDE.md` for priority tiers:
-- **Tier 1**: 10 compound movements (MUST HAVE)
-- **Tier 2**: 20 common isolation exercises (SHOULD HAVE)
-- **Tier 3**: 10-15 equipment variants (NICE TO HAVE)
-
-Target: 40-50 animations for 80%+ coverage
+After setting up the API:
+1. Start dev server: `npm run dev`
+2. Generate a new workout
+3. Check that PlayCircle icons appear next to exercises
+4. Click icon to open animation modal
+5. GIF should load and loop automatically
+6. Check console for ExerciseDB logs
 
 ## 🐛 Troubleshooting
 
-### Animation not showing?
-1. Check file name matches slug convention
-2. Verify file is valid JSON
-3. Check file is in `/public/animations/exercises/`
-4. Confirm AnimationService mapping logic
-5. Look for console errors
+### Animation not loading?
+1. Check `NEXT_PUBLIC_EXERCISEDB_API_URL` is set in `.env.local`
+2. Verify API is accessible (test with curl)
+3. Check browser console for ExerciseDB errors
+4. Confirm exercise name matches ExerciseDB format
 
-### Animation loads but doesn't play?
-1. Check Lottie JSON is valid
-2. Try opening in [LottieFiles preview](https://lottiefiles.com)
-3. Verify `loop: true` in component
-4. Check for browser console errors
+### API errors?
+1. **404 Not Found**: API URL incorrect or server down
+2. **401 Unauthorized**: API key invalid (RapidAPI only)
+3. **429 Rate Limited**: Exceeded free tier (use self-hosted)
+4. **Network errors**: Check internet connection
 
-### Animation too slow/fast?
-Adjust speed in `ExerciseAnimation` component:
-```tsx
-<Lottie
-  animationData={animationData}
-  loop={true}
-  speed={1.5} // Adjust this (default: 1)
-/>
-```
+### No animations showing?
+1. Run `ExerciseDBService.clearCache()` in console
+2. Reload page to re-fetch from API
+3. Check ExerciseDB service logs in console
+4. Verify fuzzy matching is working
+
+## 📊 Coverage
+
+ExerciseDB provides animations for:
+- **Barbell exercises**: Bench press, squat, deadlift, row, etc.
+- **Dumbbell exercises**: Curls, raises, presses, flies, etc.
+- **Cable exercises**: Pulldowns, rows, flies, extensions, etc.
+- **Machine exercises**: Leg press, chest press, lat pulldown, etc.
+- **Bodyweight exercises**: Pull-ups, push-ups, dips, planks, etc.
+- **Band exercises**: Various resistance band movements
+
+**Coverage**: ~95% of common gym exercises
+
+## 🔍 Finding Exercise Names
+
+To see what animations are available:
+1. Open browser console
+2. Run: `await ExerciseDBService.initializeCache()`
+3. Check console logs for exercise count
+4. Inspect `ExerciseDBService.cache.exercises` to see all names
+
+## 📈 Performance
+
+- **First load**: ~500ms (fetches all exercises from API)
+- **Cached loads**: <10ms (in-memory cache)
+- **Cache duration**: 24 hours
+- **GIF sizes**: 200KB-2MB (lazy loaded)
+- **CDN**: Global delivery via ExerciseDB/Vercel
+
+## 🚀 Future Improvements
+
+Potential enhancements:
+- [ ] Service Worker caching for offline support
+- [ ] Progressive GIF loading (low-res → high-res)
+- [ ] Animation prefetching when workout loads
+- [ ] Local caching of popular exercises
+- [ ] Custom animation overlays (form cues, rep counters)
+- [ ] Animation speed controls
+- [ ] Mirror/flip mode for left/right exercises
 
 ## 📚 Related Files
 
-- **Service**: `lib/services/animation.service.ts`
+- **ExerciseDB Service**: `lib/services/exercisedb.service.ts`
+- **Animation Service**: `lib/services/animation.service.ts`
 - **Player Component**: `components/features/workout/exercise-animation.tsx`
 - **Modal Component**: `components/features/workout/exercise-animation-modal.tsx`
-- **Workout Progress**: `components/features/workout/workout-progress.tsx`
-- **Exercise Substitution**: `components/features/workout/exercise-substitution.tsx`
-- **Store**: `lib/stores/workout-execution.store.ts` (animationUrl, hasAnimation fields)
-
-## 🎯 Future Improvements
-
-Potential enhancements:
-- [ ] Animation preloading for upcoming exercises
-- [ ] In-memory caching of loaded animations
-- [ ] Analytics on most-viewed animations
-- [ ] Custom animations commissioned for brand consistency
-- [ ] Animation speed controls
-- [ ] Mirror/flip mode for symmetry visualization
-- [ ] Form cue annotations overlaid on animations
+- **Exercise Selector Agent**: `lib/agents/exercise-selector.agent.ts`
 
 ## 📄 License
 
-Animations sourced from LottieFiles must comply with their respective licenses. Ensure all animations used are free for commercial use or properly licensed.
+ExerciseDB animations are sourced from:
+- **V1 (Open Source)**: Free for commercial use
+- **V2 (Paid)**: Subject to ExerciseDB terms of service
+
+When using RapidAPI, comply with their terms and your subscription plan.
 
 ## ❓ Questions?
 
-If you need to add animations or encounter issues:
-1. Check `SOURCING_GUIDE.md` for detailed instructions
-2. Review `AnimationService` code for mapping logic
-3. Test in browser dev tools
-4. Check console for AnimationService debug logs
+For issues or questions:
+1. Check ExerciseDB documentation: https://github.com/ExerciseDB/exercisedb-api
+2. Review ExerciseDB service logs in browser console
+3. Test API directly with curl or Postman
+4. Verify environment variables are set correctly
