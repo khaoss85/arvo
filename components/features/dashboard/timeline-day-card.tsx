@@ -137,7 +137,17 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     setShowProgress(false)
     onRefreshTimeline?.()
 
+    // Auto-navigate to workout if generating for current day
+    if (isCurrentDay && workout?.id) {
+      // Small delay to ensure timeline refresh completes before navigation
+      setTimeout(() => {
+        router.push(`/workout/${workout.id}`)
+      }, 500)
+      return // Don't show toast if navigating away
+    }
+
     // Show toast and modal if there are insight-influenced changes
+    // (Only for pre-generation of future days)
     if (changes && changes.length > 0) {
       setInsightChanges(changes)
       addToast(
