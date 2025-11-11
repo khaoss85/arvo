@@ -102,6 +102,18 @@ export class ExerciseDBService {
       this.cache.lastFetch = now
 
       console.log(`[ExerciseDB] Cached ${allExercises.length} exercises`)
+
+      // Debug: Log sample exercises to verify content
+      const sampleExercises = Array.from(this.cache.exercises.keys()).slice(0, 10)
+      console.log(`[ExerciseDB] Sample exercises:`, sampleExercises)
+
+      // Debug: Check for specific exercises
+      const hasChestFly = this.debugSearchSync('chest fly')
+      const hasPecFly = this.debugSearchSync('pec fly')
+      const hasTricepsPushdown = this.debugSearchSync('triceps pushdown')
+      console.log(`[ExerciseDB] Contains chest fly: ${hasChestFly.length > 0} (${hasChestFly.length} matches)`)
+      console.log(`[ExerciseDB] Contains pec fly: ${hasPecFly.length > 0} (${hasPecFly.length} matches)`)
+      console.log(`[ExerciseDB] Contains triceps pushdown: ${hasTricepsPushdown.length > 0} (${hasTricepsPushdown.length} matches)`)
     } catch (error) {
       console.error('[ExerciseDB] Failed to initialize cache:', error)
       // Don't throw - gracefully degrade to no animations
@@ -153,6 +165,8 @@ export class ExerciseDBService {
         .trim()
         // Remove parenthetical content (e.g., "(Supinated)", "(Torso-Supported)")
         .replace(/\s*\([^)]*\)/g, '')
+        // Remove descriptive prefixes with em dash or regular dash
+        .replace(/^(optional\s+)?(finisher|warm-?up|cool-?down|bonus|activation)\s*[—\-]\s*/i, '')
         // Remove common prefixes - CONSERVATIVE: only flat and standing
         // Keep important prefixes like "incline", "decline", "seated" that affect exercise selection
         .replace(/^(flat|standing)\s+/i, '')
@@ -161,6 +175,8 @@ export class ExerciseDBService {
         // Remove paused/tempo patterns
         .replace(/\s+paused\s+\d+s?\s+(at|on)\s+\w+/i, '')
         .replace(/\s+\d+-\d+-\d+-\d+/i, '')
+        // Normalize em dash to space
+        .replace(/—/g, ' ')
         // Normalize whitespace
         .replace(/\s+/g, ' ')
         .trim()
@@ -187,6 +203,19 @@ export class ExerciseDBService {
       // Row variations
       'bent over row': 'barbell bent over row',
       'bent-over row': 'barbell bent over row',
+
+      // Chest fly variations
+      'cable pec fly': 'cable chest fly',
+      'pec fly': 'chest fly',
+      'pec deck': 'pec deck fly',
+      'cable fly': 'cable chest fly',
+
+      // Triceps pushdown variations
+      'rope triceps pushdown': 'cable triceps pushdown',
+      'rope pushdown': 'cable triceps pushdown',
+      'triceps rope pushdown': 'cable triceps pushdown',
+      'pushdown': 'cable triceps pushdown',
+      'tricep pushdown': 'cable triceps pushdown',
 
       // Add more mappings as needed based on ExerciseDB content
     }
@@ -278,6 +307,34 @@ export class ExerciseDBService {
 
     const normalizedName = this.normalizeName(exerciseName)
     return this.cache.exercises.get(normalizedName) || this.fuzzyMatch(normalizedName)
+  }
+
+  /**
+   * Debug: Search cache synchronously for exercises matching a keyword
+   * Used during initialization to verify database content
+   */
+  private static debugSearchSync(searchTerm: string): string[] {
+    const matches: string[] = []
+    const lowerSearch = searchTerm.toLowerCase()
+
+    for (const [key, exercise] of this.cache.exercises.entries()) {
+      if (
+        key.includes(lowerSearch) ||
+        exercise.name.toLowerCase().includes(lowerSearch)
+      ) {
+        matches.push(exercise.name)
+      }
+    }
+
+    return matches
+  }
+
+  /**
+   * Debug: Search cache for exercises (async version for external use)
+   */
+  static async debugSearch(searchTerm: string): Promise<string[]> {
+    await this.initializeCache()
+    return this.debugSearchSync(searchTerm)
   }
 
   /**

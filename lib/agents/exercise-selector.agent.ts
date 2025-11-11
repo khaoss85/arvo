@@ -542,17 +542,29 @@ Required JSON structure:
    * Extract core exercise name from full exercise name
    * Removes parenthetical content and extracts the main movement
    * Example: "Single-Arm Dumbbell Row (Torso-Supported)" → "Dumbbell Row"
+   * Example: "Optional Finisher — Rope Triceps Pushdown" → "Triceps Pushdown"
    */
   private extractCoreExerciseName(exerciseName: string): string {
     if (!exerciseName) return ''
 
-    // Remove parenthetical content
+    // Remove parenthetical content first
     let coreName = exerciseName.replace(/\s*\([^)]*\)/g, '').trim()
+
+    // Remove descriptive prefixes with em dash (—) or regular dash (-)
+    // Examples: "Optional Finisher —", "Warm-up —", "Bonus -"
+    coreName = coreName
+      .replace(/^(optional\s+)?finisher\s*[—\-]\s*/i, '')
+      .replace(/^(warm-?up|cool-?down|bonus|activation)\s*[—\-]\s*/i, '')
+
+    // Remove equipment that's embedded in the name (it should be in equipmentVariant instead)
+    // Examples: "Rope Triceps Pushdown" → "Triceps Pushdown"
+    coreName = coreName
+      .replace(/^(rope|band|chain)\s+/i, '')
 
     // Remove common modifiers that are too specific for animation matching
     coreName = coreName
       .replace(/^(single-arm|one-arm|two-arm|alternating)\s+/i, '')
-      .replace(/\s+(single|double|alternating)$/i, '')
+      .replace(/\s+(single|double|alternating|emphasis)$/i, '')
       .trim()
 
     return coreName
