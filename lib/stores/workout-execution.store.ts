@@ -193,7 +193,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         // Reconstruct exercise execution state
         const exercises: ExerciseExecution[] = await Promise.all(
           (workout.exercises as any[] || []).map(async (ex) => {
-            const exerciseSets = sets.filter((s) => s.exercise_id === ex.id)
+            const exerciseSets = sets.filter((s) => {
+              const exId = ex.id || null
+              return s.exercise_id === exId || (s.exercise_name === ex.name)
+            })
 
             // Get animation URL using AnimationService with fallback logic (async)
             const animationUrl =
@@ -205,7 +208,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               }))
 
             return {
-              exerciseId: ex.id || '',
+              exerciseId: ex.id || null,
               exerciseName: ex.name,
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
