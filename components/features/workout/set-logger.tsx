@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,23 +37,33 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const currentGuidance = !isWarmup && exercise.setGuidance?.find(g => g.setNumber === workingSetNumber)
 
   // Initialize state based on warmup vs working set
-  const getInitialWeight = () => {
-    if (currentWarmup) return currentWarmup.weight
+  const getInitialWeight = useCallback(() => {
+    if (currentWarmup) {
+      // Use pre-calculated weight if available
+      if (currentWarmup.weight !== undefined) {
+        return currentWarmup.weight
+      }
+      // Calculate from percentage if targetWeight is available
+      if (currentWarmup.weightPercentage !== undefined && exercise.targetWeight) {
+        // Round to nearest 0.5kg (standard barbell increment)
+        return Math.round((exercise.targetWeight * currentWarmup.weightPercentage / 100) * 2) / 2
+      }
+    }
     if (suggestion) return suggestion.weight
-    return exercise.targetWeight
-  }
+    return exercise.targetWeight || 0
+  }, [currentWarmup, suggestion, exercise.targetWeight])
 
-  const getInitialReps = () => {
-    if (currentWarmup) return currentWarmup.reps
+  const getInitialReps = useCallback(() => {
+    if (currentWarmup) return currentWarmup.reps ?? 8
     if (suggestion) return suggestion.reps
-    return 8
-  }
+    return exercise.targetReps?.[0] ?? 8
+  }, [currentWarmup, suggestion, exercise.targetReps])
 
-  const getInitialRir = () => {
-    if (currentWarmup) return currentWarmup.rir
+  const getInitialRir = useCallback(() => {
+    if (currentWarmup) return currentWarmup.rir ?? 3
     if (suggestion) return suggestion.rirTarget
     return 1
-  }
+  }, [currentWarmup, suggestion])
 
   const [weight, setWeight] = useState(getInitialWeight())
   const [reps, setReps] = useState(getInitialReps())
@@ -67,7 +77,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     setWeight(getInitialWeight())
     setReps(getInitialReps())
     setRir(getInitialRir())
-  }, [setNumber, suggestion, exercise.targetWeight])
+  }, [getInitialWeight, getInitialReps, getInitialRir])
 
   const handleLogSet = async () => {
     setIsLogging(true)
