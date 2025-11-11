@@ -110,7 +110,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       isActive: false,
 
       // Start a new workout
-      startWorkout: (workout: Workout) => {
+      startWorkout: async (workout: Workout) => {
         console.log('[Store] startWorkout called with:', {
           workoutId: workout.id,
           hasExercises: Array.isArray(workout.exercises),

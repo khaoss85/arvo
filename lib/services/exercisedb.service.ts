@@ -147,7 +147,7 @@ export class ExerciseDBService {
       }
 
       // Check for partial match
-      for (const [key, exercise] of this.cache.exercises) {
+      for (const [key, exercise] of Array.from(this.cache.exercises.entries())) {
         // Match if variation is contained in key or vice versa
         if (
           (key.length > 5 && variation.includes(key)) ||
