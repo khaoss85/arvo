@@ -111,6 +111,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
       // Start a new workout
       startWorkout: async (workout: Workout) => {
+        // Clear any stale persisted state from previous sessions
+        localStorage.removeItem(STORAGE_KEY)
+
         console.log('[Store] startWorkout called with:', {
           workoutId: workout.id,
           hasExercises: Array.isArray(workout.exercises),
@@ -252,11 +255,15 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           animationUrl: ex.animationUrl
         })))
 
+        // Preserve startedAt from persisted state, or use DB value, or set to now
+        const persistedStartedAt = get().startedAt
+
         set({
           workoutId: workout.id,
           workout,
           exercises,
           currentExerciseIndex: firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0,
+          startedAt: persistedStartedAt || (workout.started_at ? new Date(workout.started_at) : new Date()),
           lastActivityAt: new Date(),
           isActive: true
         })
@@ -476,7 +483,28 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         startedAt: state.startedAt,
         lastActivityAt: state.lastActivityAt,
         isActive: state.isActive
-      })
+      }),
+      storage: {
+        getItem: (name) => {
+          const str = localStorage.getItem(name)
+          if (!str) return null
+          const { state } = JSON.parse(str)
+          // Convert date strings back to Date objects after deserialization
+          return {
+            state: {
+              ...state,
+              startedAt: state.startedAt ? new Date(state.startedAt) : null,
+              lastActivityAt: state.lastActivityAt ? new Date(state.lastActivityAt) : null
+            }
+          }
+        },
+        setItem: (name, value) => {
+          localStorage.setItem(name, JSON.stringify(value))
+        },
+        removeItem: (name) => {
+          localStorage.removeItem(name)
+        }
+      }
     }
   )
 )

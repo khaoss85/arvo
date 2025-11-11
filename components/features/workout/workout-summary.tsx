@@ -72,7 +72,10 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const loadStats = async () => {
     try {
       const volume = await SetLogService.calculateWorkoutVolume(workoutId)
-      const duration = startedAt ? Math.floor((Date.now() - startedAt.getTime()) / 1000) : 0
+      // Handle both Date objects and date strings from localStorage
+      const duration = startedAt
+        ? Math.floor((Date.now() - (startedAt instanceof Date ? startedAt.getTime() : new Date(startedAt).getTime())) / 1000)
+        : 0
       const totalSets = exercises.reduce((sum, ex) => sum + ex.completedSets.length, 0)
 
       setStats({ duration, totalVolume: volume, totalSets })
