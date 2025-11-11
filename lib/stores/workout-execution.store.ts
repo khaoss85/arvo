@@ -158,6 +158,11 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         )
 
         console.log('[Store] Total exercises mapped:', exercises.length)
+        console.log('[Store] Animation status:', exercises.map(ex => ({
+          name: ex.exerciseName,
+          hasAnimation: ex.hasAnimation,
+          animationUrl: ex.animationUrl
+        })))
 
         set({
           workoutId: workout.id,
@@ -227,6 +232,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const firstIncompleteIndex = exercises.findIndex(
           ex => ex.completedSets.length < ex.targetSets
         )
+
+        console.log('[Store] Resume - Animation status:', exercises.map(ex => ({
+          name: ex.exerciseName,
+          hasAnimation: ex.hasAnimation,
+          animationUrl: ex.animationUrl
+        })))
 
         set({
           workoutId: workout.id,

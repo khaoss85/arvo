@@ -7,6 +7,7 @@ import { getQueryClient } from "@/lib/utils/query-client";
 import { useEffect } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
+import { ExerciseDBService } from "@/lib/services/exercisedb.service";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
@@ -29,6 +30,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, [setUser, setLoading]);
+
+  // Pre-initialize ExerciseDB cache on app load
+  useEffect(() => {
+    ExerciseDBService.initializeCache().catch((err) => {
+      console.error('[App] Failed to initialize ExerciseDB cache:', err);
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
