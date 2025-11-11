@@ -516,7 +516,7 @@ Required JSON structure:
     result.exercises = await Promise.all(
       result.exercises.map(async (exercise) => {
         const animationUrl = await AnimationService.getAnimationUrl({
-          exerciseName: exercise.name,
+          name: exercise.name,
           canonicalPattern: this.extractCoreExerciseName(exercise.name),
           equipmentVariant: exercise.equipmentVariant,
         })

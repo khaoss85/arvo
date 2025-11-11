@@ -147,7 +147,7 @@ export class ExerciseDBService {
       return ''
     }
 
-    return (
+    let normalized = (
       name
         .toLowerCase()
         .trim()
@@ -165,6 +165,34 @@ export class ExerciseDBService {
         .replace(/\s+/g, ' ')
         .trim()
     )
+
+    // Apply common exercise name variation mappings
+    // Maps AI-generated names to ExerciseDB canonical names
+    const nameVariations: Record<string, string> = {
+      // Squat variations
+      'back squat': 'barbell squat',
+      'barbell back squat': 'barbell squat',
+      'high bar squat': 'barbell squat',
+      'low bar squat': 'barbell squat',
+      'high-bar squat': 'barbell squat',
+      'low-bar squat': 'barbell squat',
+
+      // Bench press variations
+      'flat bench press': 'barbell bench press',
+      'bench press': 'barbell bench press',
+
+      // Deadlift variations
+      'conventional deadlift': 'barbell deadlift',
+
+      // Row variations
+      'bent over row': 'barbell bent over row',
+      'bent-over row': 'barbell bent over row',
+
+      // Add more mappings as needed based on ExerciseDB content
+    }
+
+    // Apply mapping if exists
+    return nameVariations[normalized] || normalized
   }
 
   /**

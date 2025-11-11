@@ -52,11 +52,11 @@ export async function POST(request: NextRequest) {
 
           const { error: profileError } = await supabase
             .from('user_profiles')
-            .insert({
+            .upsert({
               user_id: data.userId,
               approach_id: data.approachId,
               weak_points: data.weakPoints || [],
-              equipment_available: data.availableEquipment || [],
+              available_equipment: data.availableEquipment || [],
               strength_baseline: data.strengthBaseline || {},
               first_name: data.firstName || null,
               gender: data.gender || null,
@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
               preferred_split: data.splitType || null,
               active_split_plan_id: null,
               current_cycle_day: null
+            }, {
+              onConflict: 'user_id'
             })
 
           if (profileError) {

@@ -72,11 +72,16 @@ export class AnimationService {
   /**
    * Build canonical exercise name from pattern and equipment
    * Example: ("bench-press", "barbell") -> "barbell bench press"
+   * Example: ("back squat", "Barbell, Squat Rack") -> "barbell back squat"
    */
   private static buildCanonicalName(pattern: string, equipment: string): string {
     // Clean up pattern and equipment
     const cleanPattern = pattern.replace(/-/g, ' ').trim()
-    const cleanEquipment = equipment.replace(/-/g, ' ').trim()
+
+    // Split equipment by comma and take only first item (primary equipment)
+    // "Barbell, Squat Rack" -> "Barbell"
+    const primaryEquipment = equipment.split(',')[0].trim()
+    const cleanEquipment = primaryEquipment.replace(/-/g, ' ').trim().toLowerCase()
 
     // Build name: equipment + pattern
     return `${cleanEquipment} ${cleanPattern}`.trim()
