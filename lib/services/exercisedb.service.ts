@@ -151,8 +151,11 @@ export class ExerciseDBService {
       name
         .toLowerCase()
         .trim()
-        // Remove common prefixes
-        .replace(/^(flat|incline|decline|seated|standing|lying|prone|supine)\s+/i, '')
+        // Remove parenthetical content (e.g., "(Supinated)", "(Torso-Supported)")
+        .replace(/\s*\([^)]*\)/g, '')
+        // Remove common prefixes - CONSERVATIVE: only flat and standing
+        // Keep important prefixes like "incline", "decline", "seated" that affect exercise selection
+        .replace(/^(flat|standing)\s+/i, '')
         // Remove tempo/pause suffixes
         .replace(/\s+-\s+.*$/, '')
         // Remove paused/tempo patterns

@@ -516,8 +516,8 @@ Required JSON structure:
     result.exercises = await Promise.all(
       result.exercises.map(async (exercise) => {
         const animationUrl = await AnimationService.getAnimationUrl({
-          name: exercise.name,
-          canonicalPattern: exercise.movementPattern,
+          exerciseName: exercise.name,
+          canonicalPattern: this.extractCoreExerciseName(exercise.name),
           equipmentVariant: exercise.equipmentVariant,
         })
 
@@ -536,6 +536,26 @@ Required JSON structure:
     }
 
     return result
+  }
+
+  /**
+   * Extract core exercise name from full exercise name
+   * Removes parenthetical content and extracts the main movement
+   * Example: "Single-Arm Dumbbell Row (Torso-Supported)" → "Dumbbell Row"
+   */
+  private extractCoreExerciseName(exerciseName: string): string {
+    if (!exerciseName) return ''
+
+    // Remove parenthetical content
+    let coreName = exerciseName.replace(/\s*\([^)]*\)/g, '').trim()
+
+    // Remove common modifiers that are too specific for animation matching
+    coreName = coreName
+      .replace(/^(single-arm|one-arm|two-arm|alternating)\s+/i, '')
+      .replace(/\s+(single|double|alternating)$/i, '')
+      .trim()
+
+    return coreName
   }
 
   /**
