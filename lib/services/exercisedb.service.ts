@@ -147,7 +147,7 @@ export class ExerciseDBService {
       return ''
     }
 
-    let normalized = (
+    const normalized = (
       name
         .toLowerCase()
         .trim()
