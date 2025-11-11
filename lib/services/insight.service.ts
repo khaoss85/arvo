@@ -1,9 +1,10 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import type { Tables, TablesInsert, TablesUpdate } from '@/lib/types/database.types';
+import type { Tables, TablesInsert, TablesUpdate, Database } from '@/lib/types/database.types';
 
 export type WorkoutInsight = Tables<'workout_insights'>;
 export type WorkoutInsightInsert = TablesInsert<'workout_insights'>;
 export type WorkoutInsightUpdate = TablesUpdate<'workout_insights'>;
+export type ActiveInsight = Database['public']['Functions']['get_active_insights']['Returns'][number];
 
 export type InsightType = 'pain' | 'technique' | 'energy' | 'recovery' | 'equipment' | 'general';
 export type InsightSeverity = 'info' | 'caution' | 'warning' | 'critical';
@@ -56,7 +57,7 @@ export class InsightService {
       relevance_score: 1.0,
     };
 
-    const { data, error } = await (this.supabase as any)
+    const { data, error } = await this.supabase
       .from('workout_insights')
       .insert(insertData)
       .select()
@@ -69,8 +70,11 @@ export class InsightService {
   /**
    * Get active insights for a user using the database function
    */
-  async getActiveInsights(userId: string, minRelevance = 0.3): Promise<WorkoutInsight[]> {
-    const { data, error } = await (this.supabase as any)
+  async getActiveInsights(
+    userId: string,
+    minRelevance = 0.3
+  ): Promise<Database['public']['Functions']['get_active_insights']['Returns']> {
+    const { data, error } = await this.supabase
       .rpc('get_active_insights', {
         p_user_id: userId,
         p_min_relevance: minRelevance,

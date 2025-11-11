@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { memoryService } from '@/lib/services/memory.service'
-import { insightService } from '@/lib/services/insight.service'
+import { memoryService, type ActiveMemory } from '@/lib/services/memory.service'
+import { insightService, type ActiveInsight } from '@/lib/services/insight.service'
 import type { Database } from '@/lib/types/database.types'
 import {
   Brain,
@@ -21,7 +21,6 @@ import {
 import { Button } from '@/components/ui/button'
 
 type UserMemoryEntry = Database['public']['Tables']['user_memory_entries']['Row']
-type WorkoutInsight = Database['public']['Tables']['workout_insights']['Row']
 
 type TabType = 'overview' | 'preference' | 'limitation' | 'pattern' | 'strength' | 'equipment'
 
@@ -47,8 +46,8 @@ interface MemoryDashboardClientProps {
 
 export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
-  const [memories, setMemories] = useState<UserMemoryEntry[]>([])
-  const [insights, setInsights] = useState<WorkoutInsight[]>([])
+  const [memories, setMemories] = useState<ActiveMemory[]>([])
+  const [insights, setInsights] = useState<ActiveInsight[]>([])
   const [loading, setLoading] = useState(true)
   const [consolidating, setConsolidating] = useState(false)
 
@@ -324,8 +323,6 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                       {/* Footer */}
                       <div className="flex items-center gap-3 text-xs text-gray-500">
                         <span>Confermata {memory.times_confirmed}x</span>
-                        <span>•</span>
-                        <span>{new Date(memory.created_at).toLocaleDateString('it-IT')}</span>
                       </div>
                     </div>
                   </div>

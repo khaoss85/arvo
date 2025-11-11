@@ -5,7 +5,7 @@
  * for workout categorization and muscle group identification.
  */
 
-import type { Database } from '@/lib/types/database'
+import type { Database } from '@/lib/types/database.types'
 
 export type WorkoutType = Database['public']['Enums']['workout_type']
 export type SplitType = Database['public']['Enums']['split_type']

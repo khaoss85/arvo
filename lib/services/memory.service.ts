@@ -1,9 +1,10 @@
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import type { Tables, TablesInsert, TablesUpdate } from '@/lib/types/database.types';
+import type { Tables, TablesInsert, TablesUpdate, Database } from '@/lib/types/database.types';
 
 export type UserMemoryEntry = Tables<'user_memory_entries'>;
 export type UserMemoryEntryInsert = TablesInsert<'user_memory_entries'>;
 export type UserMemoryEntryUpdate = TablesUpdate<'user_memory_entries'>;
+export type ActiveMemory = Database['public']['Functions']['get_active_memories']['Returns'][number];
 
 export type MemoryCategory = 'preference' | 'pattern' | 'limitation' | 'strength' | 'equipment' | 'learned_behavior';
 export type MemorySource = 'user_note' | 'ai_observation' | 'workout_pattern' | 'substitution_history' | 'profile_input';
@@ -86,7 +87,10 @@ export class MemoryService {
   /**
    * Get active memories using database function
    */
-  async getActiveMemories(userId: string, minConfidence = 0.5): Promise<UserMemoryEntry[]> {
+  async getActiveMemories(
+    userId: string,
+    minConfidence = 0.5
+  ): Promise<Database['public']['Functions']['get_active_memories']['Returns']> {
     const { data, error } = await this.supabase
       .rpc('get_active_memories', {
         p_user_id: userId,
@@ -195,7 +199,7 @@ export class MemoryService {
    * Boost memory confidence (when pattern repeats)
    */
   async boostConfidence(memoryId: string, boostAmount = 0.1): Promise<void> {
-    const { error } = await (this.supabase as any).rpc('boost_memory_confidence', {
+    const { error } = await this.supabase.rpc('boost_memory_confidence', {
       p_memory_id: memoryId,
       p_boost_amount: boostAmount,
     });

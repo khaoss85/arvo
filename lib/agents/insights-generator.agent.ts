@@ -1,8 +1,8 @@
 import { BaseAgent } from './base.agent'
 import { AnalyticsService } from '@/lib/services/analytics.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
-import { insightService } from '@/lib/services/insight.service'
-import { memoryService } from '@/lib/services/memory.service'
+import { insightService, type ActiveInsight } from '@/lib/services/insight.service'
+import { memoryService, type ActiveMemory } from '@/lib/services/memory.service'
 import { MemoryConsolidatorAgent } from './memory-consolidator.agent'
 import type { Database } from '@/lib/types/database.types'
 
@@ -16,8 +16,8 @@ export interface InsightsOutput {
   recommendations: string[]
   nextFocus: string
   // NEW: Insights and Memories data for UI
-  activeInsights?: WorkoutInsight[]
-  consolidatedMemories?: UserMemoryEntry[]
+  activeInsights?: ActiveInsight[]
+  consolidatedMemories?: ActiveMemory[]
   proposedResolutions?: Array<{
     insightId: string
     reason: string
@@ -138,15 +138,15 @@ Format your response as JSON with these keys:
               duration: w.duration || 0,
               exercises: [] // TODO: Parse exercises from workout data
             })),
-            existingInsights: activeInsights.map((i: WorkoutInsight) => ({
+            existingInsights: activeInsights.map((i: ActiveInsight) => ({
               id: i.id,
               type: i.insight_type || 'general',
               severity: i.severity || 'info',
               userNote: i.user_note || '',
               exerciseName: i.exercise_name || undefined,
-              status: i.status || 'active'
+              status: 'active' // All activeInsights are by definition active
             })),
-            existingMemories: activeMemories.map((m: UserMemoryEntry) => ({
+            existingMemories: activeMemories.map((m: ActiveMemory) => ({
               id: m.id,
               category: m.memory_category,
               title: m.title,

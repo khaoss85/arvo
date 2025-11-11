@@ -4,7 +4,7 @@
 // To enable server-only, we would need to split services into separate client/server files
 // import "server-only";
 import { createServerClient } from "@supabase/ssr";
-import type { Database } from "@/lib/types/database";
+import type { Database } from "@/lib/types/database.types";
 
 /**
  * Create Supabase client for Server Components and Server Actions
