@@ -558,7 +558,7 @@ Required JSON structure:
             equipmentUsed: exercise.equipmentVariant ? [exercise.equipmentVariant] : [],
           }
 
-          await ExerciseGenerationService.findOrCreate(
+          await ExerciseGenerationService.findOrCreateServer(
             exercise.name,
             metadata,
             userId
