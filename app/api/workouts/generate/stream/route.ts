@@ -1,19 +1,26 @@
 import { NextRequest } from 'next/server'
 import { WorkoutGeneratorService } from '@/lib/services/workout-generator.service'
+import { UserProfileService } from '@/lib/services/user-profile.service'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, targetCycleDay } = await request.json()
+    // Get userId from authenticated session (not from request body for security)
+    const supabase = await getSupabaseServerClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!userId) {
+    if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'userId is required' }),
-        { status: 400 }
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401 }
       )
     }
+
+    const userId = user.id
+    const { targetCycleDay } = await request.json()
 
     // Create a stream for progress updates
     const encoder = new TextEncoder()
@@ -44,11 +51,34 @@ export async function POST(request: NextRequest) {
           await new Promise(resolve => setTimeout(resolve, 500))
           sendProgress('ai', 65, 'Optimizing exercise selection')
 
-          // Generate workout (this is where the actual work happens)
-          const result = await WorkoutGeneratorService.generateDraftWorkout(
-            userId,
-            targetCycleDay
-          )
+          // Determine if we're generating for current day or future day
+          let result
+          if (targetCycleDay) {
+            // Get user's current cycle day to determine which method to use
+            const profile = await UserProfileService.getByUserIdServer(userId)
+            const currentCycleDay = profile?.current_cycle_day || 1
+
+            if (targetCycleDay === currentCycleDay) {
+              // Current day: use generateWorkout with status='ready'
+              result = await WorkoutGeneratorService.generateWorkout(userId, {
+                targetCycleDay,
+                status: 'ready'
+              })
+            } else if (targetCycleDay > currentCycleDay) {
+              // Future day: use generateDraftWorkout
+              result = await WorkoutGeneratorService.generateDraftWorkout(
+                userId,
+                targetCycleDay
+              )
+            } else {
+              throw new Error(`Cannot generate workout for past cycle day. Current: ${currentCycleDay}, Target: ${targetCycleDay}`)
+            }
+          } else {
+            // No targetCycleDay specified: generate for current day
+            result = await WorkoutGeneratorService.generateWorkout(userId, {
+              status: 'ready'
+            })
+          }
 
           // Phase 5: Analyzing history
           sendProgress('history', 80, 'Analyzing your performance history')

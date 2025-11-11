@@ -48,10 +48,11 @@ export function WorkoutGenerationProgress({
     const connectSSE = async () => {
       try {
         // First, make POST request to start generation
+        // userId is extracted from authenticated session server-side for security
         const response = await fetch('/api/workouts/generate/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, targetCycleDay })
+          body: JSON.stringify({ targetCycleDay })
         })
 
         if (!response.ok) {
