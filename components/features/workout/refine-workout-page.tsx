@@ -522,19 +522,17 @@ export function RefineWorkoutPage({
               )}
 
               {/* Action Buttons */}
-              {!isReorderMode && (
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRegenerateExercise(index)}
-                    disabled={isRegenerating === index}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
-                    {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
-                  </Button>
-                </div>
-              )}
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRegenerateExercise(index)}
+                  disabled={isRegenerating === index}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
+                  {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
+                </Button>
+              </div>
                     </div>
                   </Card>
                 ))}
