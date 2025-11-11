@@ -123,35 +123,39 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             : null
         })
 
-        const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex, idx) => {
-          // Get animation URL using AnimationService with fallback logic
-          const animationUrl = ex.animationUrl || AnimationService.getAnimationUrl({
-            name: ex.name,
-            canonicalPattern: ex.canonicalPattern,
-            equipmentVariant: ex.equipment
+        const exercises: ExerciseExecution[] = await Promise.all(
+          (workout.exercises as any[] || []).map(async (ex, idx) => {
+            // Get animation URL using AnimationService with fallback logic (async)
+            const animationUrl =
+              ex.animationUrl ||
+              (await AnimationService.getAnimationUrl({
+                name: ex.name,
+                canonicalPattern: ex.canonicalPattern,
+                equipmentVariant: ex.equipment,
+              }))
+
+            const mapped = {
+              exerciseId: ex.id || null,
+              exerciseName: ex.name,
+              targetSets: ex.sets || 2,
+              targetReps: ex.repRange || [6, 10],
+              targetWeight: ex.targetWeight || 0,
+              completedSets: [],
+              currentAISuggestion: null,
+              technicalCues: ex.technicalCues || [],
+              warmupSets: ex.warmupSets || [],
+              setGuidance: ex.setGuidance || [],
+              animationUrl,
+              hasAnimation: !!animationUrl,
+            }
+
+            if (idx === 0) {
+              console.log('[Store] First exercise mapped to:', mapped)
+            }
+
+            return mapped
           })
-
-          const mapped = {
-            exerciseId: ex.id || null,
-            exerciseName: ex.name,
-            targetSets: ex.sets || 2,
-            targetReps: ex.repRange || [6, 10],
-            targetWeight: ex.targetWeight || 0,
-            completedSets: [],
-            currentAISuggestion: null,
-            technicalCues: ex.technicalCues || [],
-            warmupSets: ex.warmupSets || [],
-            setGuidance: ex.setGuidance || [],
-            animationUrl,
-            hasAnimation: !!animationUrl
-          }
-
-          if (idx === 0) {
-            console.log('[Store] First exercise mapped to:', mapped)
-          }
-
-          return mapped
-        })
+        )
 
         console.log('[Store] Total exercises mapped:', exercises.length)
 
@@ -182,38 +186,42 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const sets = await SetLogService.getByWorkoutId(workoutId)
 
         // Reconstruct exercise execution state
-        const exercises: ExerciseExecution[] = (workout.exercises as any[] || []).map((ex) => {
-          const exerciseSets = sets.filter(s => s.exercise_id === ex.id)
+        const exercises: ExerciseExecution[] = await Promise.all(
+          (workout.exercises as any[] || []).map(async (ex) => {
+            const exerciseSets = sets.filter((s) => s.exercise_id === ex.id)
 
-          // Get animation URL using AnimationService with fallback logic
-          const animationUrl = ex.animationUrl || AnimationService.getAnimationUrl({
-            name: ex.name,
-            canonicalPattern: ex.canonicalPattern,
-            equipmentVariant: ex.equipment
+            // Get animation URL using AnimationService with fallback logic (async)
+            const animationUrl =
+              ex.animationUrl ||
+              (await AnimationService.getAnimationUrl({
+                name: ex.name,
+                canonicalPattern: ex.canonicalPattern,
+                equipmentVariant: ex.equipment,
+              }))
+
+            return {
+              exerciseId: ex.id || '',
+              exerciseName: ex.name,
+              targetSets: ex.sets || 2,
+              targetReps: ex.repRange || [6, 10],
+              targetWeight: ex.targetWeight || 0,
+              completedSets: exerciseSets.map((s) => ({
+                weight: s.weight_actual || 0,
+                reps: s.reps_actual || 0,
+                rir: s.rir_actual || 0,
+                mentalReadiness: s.mental_readiness || undefined,
+                loggedAt: s.created_at ? new Date(s.created_at) : new Date(),
+                // Note: isWarmup info is lost on resume - we rely on set_number and warmupSets length
+              })),
+              currentAISuggestion: null,
+              technicalCues: ex.technicalCues || [],
+              warmupSets: ex.warmupSets || [],
+              setGuidance: ex.setGuidance || [],
+              animationUrl,
+              hasAnimation: !!animationUrl,
+            }
           })
-
-          return {
-            exerciseId: ex.id || '',
-            exerciseName: ex.name,
-            targetSets: ex.sets || 2,
-            targetReps: ex.repRange || [6, 10],
-            targetWeight: ex.targetWeight || 0,
-            completedSets: exerciseSets.map(s => ({
-              weight: s.weight_actual || 0,
-              reps: s.reps_actual || 0,
-              rir: s.rir_actual || 0,
-              mentalReadiness: s.mental_readiness || undefined,
-              loggedAt: s.created_at ? new Date(s.created_at) : new Date()
-              // Note: isWarmup info is lost on resume - we rely on set_number and warmupSets length
-            })),
-            currentAISuggestion: null,
-            technicalCues: ex.technicalCues || [],
-            warmupSets: ex.warmupSets || [],
-            setGuidance: ex.setGuidance || [],
-            animationUrl,
-            hasAnimation: !!animationUrl
-          }
-        })
+        )
 
         // Find first incomplete exercise
         const firstIncompleteIndex = exercises.findIndex(
