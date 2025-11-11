@@ -45,7 +45,13 @@ export class ExerciseDBService {
 
     try {
       console.log('[ExerciseDB] Fetching exercises from API...')
-      const response = await fetch(`${this.API_BASE}/exercises`, {
+
+      // Determine correct endpoint based on API version
+      const endpoint = this.API_BASE.includes('vercel.app')
+        ? `${this.API_BASE}/api/v1/exercises?limit=1500`  // Self-hosted V1 API
+        : `${this.API_BASE}/exercises`  // RapidAPI format
+
+      const response = await fetch(endpoint, {
         headers: this.getHeaders(),
       })
 
@@ -53,7 +59,10 @@ export class ExerciseDBService {
         throw new Error(`ExerciseDB API error: ${response.status} ${response.statusText}`)
       }
 
-      const exercises: ExerciseDBExercise[] = await response.json()
+      const responseData = await response.json()
+      const exercises: ExerciseDBExercise[] = this.API_BASE.includes('vercel.app')
+        ? responseData.data  // Self-hosted format: {success, data, metadata}
+        : responseData       // RapidAPI format: direct array
 
       // Build cache map
       this.cache.exercises.clear()
