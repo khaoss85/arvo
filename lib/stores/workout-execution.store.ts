@@ -99,7 +99,7 @@ interface WorkoutExecutionState {
   reorderExercises: (newOrder: ExerciseExecution[]) => void
 
   // Add extra sets
-  addSetToExercise: (exerciseIndex: number) => void
+  addSetToExercise: (exerciseIndex: number) => { success: boolean; error?: string; message?: string; warning?: string }
 
   // Persistence
   saveProgress: () => Promise<void>
@@ -468,7 +468,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         if (!exercise) {
           console.error('Exercise not found at index:', exerciseIndex)
-          return
+          return { success: false, error: 'not_found', message: 'Exercise not found' }
         }
 
         // Save original AI recommendation on first modification
@@ -476,18 +476,37 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           exercise.aiRecommendedSets = exercise.targetSets
         }
 
+        const currentAddedSets = exercise.userAddedSets || 0
+        const newAddedSets = currentAddedSets + 1
+
+        // HARD LIMIT: Maximum 5 extra sets
+        if (newAddedSets > 5) {
+          console.warn('Hard limit reached: Cannot add more than 5 extra sets')
+          return {
+            success: false,
+            error: 'hard_limit',
+            message: 'Maximum 5 extra sets allowed. You\'ve reached your limit to prevent overtraining.'
+          }
+        }
+
+        // SOFT WARNING: At 3+ extra sets
+        const warnings: string[] = []
+        if (newAddedSets >= 3) {
+          warnings.push('You\'re adding significant volume beyond the AI recommendation. Monitor recovery closely.')
+        }
+
         // Increment target sets
         exercise.targetSets += 1
 
         // Track user-added sets
-        exercise.userAddedSets = (exercise.userAddedSets || 0) + 1
+        exercise.userAddedSets = newAddedSets
 
         // Update user modifications metadata
         exercise.userModifications = {
-          addedSets: exercise.userAddedSets,
+          addedSets: newAddedSets,
           reason: undefined, // Can be set later by user input
-          aiWarnings: [], // Will be populated in Phase 2
-          userOverride: false, // No AI check in Phase 1
+          aiWarnings: warnings, // Now populated with actual warnings
+          userOverride: newAddedSets >= 3, // Track if user proceeded with warning
           modifiedAt: new Date().toISOString()
         }
 
@@ -498,6 +517,11 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         // Save to database
         get().saveProgress()
+
+        return {
+          success: true,
+          warning: newAddedSets >= 3 ? warnings[0] : undefined
+        }
       },
 
       // Save progress to database

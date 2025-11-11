@@ -456,12 +456,36 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
           <div className="mb-8 text-left">
             <h3 className="text-lg font-medium text-white mb-4">Exercises Completed</h3>
             <div className="space-y-2">
-              {exercises.map((ex, idx) => (
-                <div key={idx} className="bg-gray-800 rounded p-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-300">{ex.exerciseName}</span>
-                  <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
-                </div>
-              ))}
+              {exercises.map((ex, idx) => {
+                const hasModifications = ex.userAddedSets && ex.userAddedSets > 0
+                return (
+                  <div key={idx} className="bg-gray-800 rounded p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-300">{ex.exerciseName}</span>
+                      <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
+                    </div>
+
+                    {/* User Modification Metadata */}
+                    {hasModifications && ex.aiRecommendedSets && (
+                      <div className="mt-2 pt-2 border-t border-gray-700">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-500">
+                            AI recommended: {ex.aiRecommendedSets} sets
+                          </span>
+                          <span className="text-blue-400 font-medium">
+                            You added: +{ex.userAddedSets} {ex.userAddedSets === 1 ? 'set' : 'sets'}
+                          </span>
+                        </div>
+                        {ex.userModifications?.aiWarnings && ex.userModifications.aiWarnings.length > 0 && (
+                          <p className="text-xs text-yellow-400 mt-1 italic">
+                            ⚠️ {ex.userModifications.aiWarnings[0]}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

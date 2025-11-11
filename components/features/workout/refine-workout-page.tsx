@@ -13,6 +13,7 @@ import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { AnimationService } from '@/lib/services/animation.service'
 import { ReorderExercisesReviewModal } from './reorder-exercises-review-modal'
 import { AddSetButton } from './add-set-button'
+import { UserModificationBadge } from './user-modification-badge'
 
 interface Exercise {
   name: string
@@ -30,6 +31,17 @@ interface Exercise {
   }>
   animationUrl?: string
   hasAnimation?: boolean
+
+  // User modification tracking (matches ExerciseExecution)
+  aiRecommendedSets?: number
+  userAddedSets?: number
+  userModifications?: {
+    addedSets: number
+    reason?: string
+    aiWarnings?: string[]
+    userOverride: boolean
+    modifiedAt: string
+  }
 }
 
 interface RefineWorkoutPageProps {
@@ -245,14 +257,43 @@ export function RefineWorkoutPage({
 
   const handleAddSet = async (exerciseIndex: number) => {
     const exercise = exercises[exerciseIndex]
-    if (!exercise || !workout) return
+    if (!exercise || !workout) return { success: false }
 
     try {
+      // Calculate new added sets count
+      const currentAddedSets = exercise.userAddedSets || 0
+      const newAddedSets = currentAddedSets + 1
+
+      // HARD LIMIT: Maximum 5 extra sets
+      if (newAddedSets > 5) {
+        alert('Maximum 5 extra sets allowed. You\'ve reached your limit to prevent overtraining.')
+        return { success: false, error: 'hard_limit' }
+      }
+
+      // SOFT WARNING: At 3+ extra sets
+      if (newAddedSets >= 3) {
+        const proceed = confirm(
+          `You're adding set #${newAddedSets} beyond AI recommendation.\n\n` +
+          'This increases fatigue and recovery needs. Continue?'
+        )
+        if (!proceed) return { success: false, error: 'user_cancelled' }
+      }
+
       // Update local state
       const newExercises = [...exercises]
+      const warnings: string[] = newAddedSets >= 3 ? ['High volume - monitor recovery'] : []
+
       newExercises[exerciseIndex] = {
         ...exercise,
-        sets: exercise.sets + 1
+        sets: exercise.sets + 1,
+        aiRecommendedSets: exercise.aiRecommendedSets || exercise.sets,
+        userAddedSets: newAddedSets,
+        userModifications: {
+          addedSets: newAddedSets,
+          aiWarnings: warnings,
+          userOverride: newAddedSets >= 3,
+          modifiedAt: new Date().toISOString()
+        }
       }
 
       setExercises(newExercises)
@@ -267,12 +308,19 @@ export function RefineWorkoutPage({
         alert('Failed to add set. Please try again.')
         // Revert on failure
         setExercises([...exercises])
+        return { success: false }
+      }
+
+      return {
+        success: true,
+        warning: newAddedSets >= 3 ? warnings[0] : undefined
       }
     } catch (error) {
       console.error('Error adding set:', error)
       alert('Failed to add set. Please try again.')
       // Revert on failure
       setExercises([...exercises])
+      return { success: false }
     }
   }
 
@@ -380,6 +428,13 @@ export function RefineWorkoutPage({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-lg">{exercise.name}</h3>
+                      {exercise.userAddedSets && exercise.userAddedSets > 0 && (
+                        <UserModificationBadge
+                          addedSets={exercise.userAddedSets}
+                          aiRecommendedSets={exercise.aiRecommendedSets || exercise.sets}
+                          variant="compact"
+                        />
+                      )}
                       {exercise.hasAnimation && (
                         <button
                           onClick={(e) => {
@@ -440,8 +495,22 @@ export function RefineWorkoutPage({
                   currentSets={exercise.sets}
                   onAddSet={() => handleAddSet(index)}
                   variant="inline"
+                  userAddedSets={exercise.userAddedSets}
                 />
               </div>
+
+              {/* User Modification Details */}
+              {exercise.userAddedSets && exercise.userAddedSets > 0 && (
+                <div className="pt-2 text-xs text-gray-400 flex items-center justify-between">
+                  <span>
+                    AI recommended: {exercise.aiRecommendedSets || exercise.sets} sets •
+                    You added: +{exercise.userAddedSets}
+                  </span>
+                  {exercise.userModifications?.aiWarnings && exercise.userModifications.aiWarnings.length > 0 && (
+                    <span className="text-yellow-400">⚠️ Volume warning</span>
+                  )}
+                </div>
+              )}
 
               {/* Rationale (Expanded) */}
               {expandedExercises.has(index) && exercise.rationale && (

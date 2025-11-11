@@ -9,6 +9,7 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AddSetButton } from './add-set-button'
+import { UserModificationBadge } from './user-modification-badge'
 import { Button } from '@/components/ui/button'
 
 // Mental readiness emoji mapping
@@ -257,8 +258,15 @@ export function ExerciseCard({
               <span>•</span>
             </>
           )}
-          <span>
+          <span className="flex items-center gap-2">
             Serie: {completedWorkingSets}/{exercise.targetSets}
+            {exercise.userAddedSets && exercise.userAddedSets > 0 && (
+              <UserModificationBadge
+                addedSets={exercise.userAddedSets}
+                aiRecommendedSets={exercise.aiRecommendedSets || exercise.targetSets}
+                variant="compact"
+              />
+            )}
           </span>
           <span>•</span>
           <span>{exercise.targetReps[0]}-{exercise.targetReps[1]} reps</span>

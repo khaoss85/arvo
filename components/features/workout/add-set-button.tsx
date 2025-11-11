@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 
 interface AddSetButtonProps {
   currentSets: number
-  onAddSet: () => Promise<void> | void
+  onAddSet: () => Promise<{ success: boolean; error?: string; message?: string; warning?: string }> | { success: boolean; error?: string; message?: string; warning?: string }
   variant?: 'inline' | 'full'
   className?: string
+  userAddedSets?: number
 }
 
 export function AddSetButton({
@@ -22,7 +23,23 @@ export function AddSetButton({
   const handleClick = async () => {
     setIsAdding(true)
     try {
-      await onAddSet()
+      const result = await onAddSet()
+
+      // Handle validation errors
+      if (result && !result.success) {
+        if (result.error === 'hard_limit') {
+          alert(result.message || 'Cannot add more sets')
+        } else {
+          alert('Failed to add set. Please try again.')
+        }
+        return
+      }
+
+      // Show warning toast (soft warning at 3+ sets)
+      if (result?.warning) {
+        // Log warning for now - can be replaced with toast notification
+        console.warn('SET_ADDITION_WARNING:', result.warning)
+      }
     } catch (error) {
       console.error('Failed to add set:', error)
       alert('Failed to add set. Please try again.')
