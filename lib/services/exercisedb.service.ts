@@ -46,27 +46,54 @@ export class ExerciseDBService {
     try {
       console.log('[ExerciseDB] Fetching exercises from API...')
 
-      // Determine correct endpoint based on API version
-      const endpoint = this.API_BASE.includes('vercel.app')
-        ? `${this.API_BASE}/api/v1/exercises?limit=1500`  // Self-hosted V1 API
-        : `${this.API_BASE}/exercises`  // RapidAPI format
+      let allExercises: ExerciseDBExercise[] = []
 
-      const response = await fetch(endpoint, {
-        headers: this.getHeaders(),
-      })
+      // Self-hosted API requires pagination (max 100 per page)
+      if (this.API_BASE.includes('vercel.app')) {
+        const pageSize = 100
+        let offset = 0
+        let hasMore = true
 
-      if (!response.ok) {
-        throw new Error(`ExerciseDB API error: ${response.status} ${response.statusText}`)
+        while (hasMore) {
+          const endpoint = `${this.API_BASE}/api/v1/exercises?limit=${pageSize}&offset=${offset}`
+          const response = await fetch(endpoint, {
+            headers: this.getHeaders(),
+          })
+
+          if (!response.ok) {
+            throw new Error(`ExerciseDB API error: ${response.status} ${response.statusText}`)
+          }
+
+          const responseData = await response.json()
+          const exercises = responseData.data || []
+          allExercises.push(...exercises)
+
+          // Check if there are more pages
+          const totalExercises = responseData.metadata?.totalExercises || 0
+          hasMore = allExercises.length < totalExercises
+
+          if (hasMore) {
+            offset += pageSize
+            console.log(`[ExerciseDB] Fetched ${allExercises.length}/${totalExercises} exercises...`)
+          }
+        }
+      } else {
+        // RapidAPI format: single request for all exercises
+        const endpoint = `${this.API_BASE}/exercises`
+        const response = await fetch(endpoint, {
+          headers: this.getHeaders(),
+        })
+
+        if (!response.ok) {
+          throw new Error(`ExerciseDB API error: ${response.status} ${response.statusText}`)
+        }
+
+        allExercises = await response.json()
       }
-
-      const responseData = await response.json()
-      const exercises: ExerciseDBExercise[] = this.API_BASE.includes('vercel.app')
-        ? responseData.data  // Self-hosted format: {success, data, metadata}
-        : responseData       // RapidAPI format: direct array
 
       // Build cache map
       this.cache.exercises.clear()
-      exercises.forEach((exercise) => {
+      allExercises.forEach((exercise) => {
         // Store by normalized name for easy lookup
         const normalizedName = this.normalizeName(exercise.name)
         this.cache.exercises.set(normalizedName, exercise)
@@ -74,7 +101,7 @@ export class ExerciseDBService {
 
       this.cache.lastFetch = now
 
-      console.log(`[ExerciseDB] Cached ${exercises.length} exercises`)
+      console.log(`[ExerciseDB] Cached ${allExercises.length} exercises`)
     } catch (error) {
       console.error('[ExerciseDB] Failed to initialize cache:', error)
       // Don't throw - gracefully degrade to no animations
