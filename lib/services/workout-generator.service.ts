@@ -177,13 +177,28 @@ export class WorkoutGeneratorService {
         return {
           name: exercise.name,
           equipmentVariant: exercise.equipmentVariant,
+          equipment: exercise.equipmentVariant, // Duplicate for AnimationService compatibility
           sets: exercise.sets,
           repRange: exercise.repRange,
           restSeconds: exercise.restSeconds,
+          tempo: exercise.tempo,
           targetWeight,
           targetReps,
           rationale: exercise.rationaleForSelection,
-          alternatives: exercise.alternatives
+          alternatives: exercise.alternatives,
+          // Exercise metadata for animations and tracking
+          primaryMuscles: exercise.primaryMuscles || [],
+          secondaryMuscles: exercise.secondaryMuscles || [],
+          canonicalPattern: exercise.movementPattern, // Map movementPattern to canonicalPattern for AnimationService
+          romEmphasis: exercise.romEmphasis,
+          unilateral: exercise.unilateral,
+          // Technical guidance
+          technicalCues: exercise.technicalCues || [],
+          warmupSets: exercise.warmupSets || [],
+          setGuidance: exercise.setGuidance || [],
+          // Animation data (pre-fetched by ExerciseSelector)
+          animationUrl: exercise.animationUrl,
+          hasAnimation: exercise.hasAnimation
         }
       })
     )
