@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ExitWorkoutModal } from '@/components/features/workout/exit-workout-modal'
 
 export default function WorkoutLayout({
@@ -10,6 +10,7 @@ export default function WorkoutLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
 
@@ -75,6 +76,11 @@ export default function WorkoutLayout({
     } catch (err) {
       console.warn('Fullscreen request failed:', err)
     }
+  }
+
+  // Skip workout layout for review pages
+  if (pathname?.includes('/review')) {
+    return <>{children}</>
   }
 
   return (

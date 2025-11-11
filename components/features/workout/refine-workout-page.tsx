@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
-import { updateWorkoutStatusAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
+import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import type { Workout } from '@/lib/types/schemas'
 import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
@@ -60,21 +60,27 @@ export function RefineWorkoutPage({
 
   // Initialize exercises when workout changes
   React.useEffect(() => {
-    if (workout?.exercises) {
-      const exercisesWithAnimations = (workout.exercises as unknown as Exercise[]).map(ex => {
-        const animationUrl = AnimationService.getAnimationUrl({
-          exerciseName: ex.name,
-          canonicalPattern: ex.name,
-          equipmentVariant: ex.equipmentVariant
-        })
-        return {
-          ...ex,
-          animationUrl: animationUrl || undefined,
-          hasAnimation: !!animationUrl
-        }
-      })
-      setExercises(exercisesWithAnimations)
+    const loadExercisesWithAnimations = async () => {
+      if (workout?.exercises) {
+        const exercisesWithAnimations = await Promise.all(
+          (workout.exercises as unknown as Exercise[]).map(async (ex) => {
+            const animationUrl = await AnimationService.getAnimationUrl({
+              exerciseName: ex.name,
+              canonicalPattern: ex.name,
+              equipmentVariant: ex.equipmentVariant
+            })
+            return {
+              ...ex,
+              animationUrl: animationUrl || undefined,
+              hasAnimation: !!animationUrl
+            }
+          })
+        )
+        setExercises(exercisesWithAnimations)
+      }
     }
+
+    loadExercisesWithAnimations()
   }, [workout])
 
   const toggleExerciseExpanded = (index: number) => {
