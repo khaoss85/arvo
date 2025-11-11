@@ -317,14 +317,14 @@ export class ExerciseDBService {
     const matches: string[] = []
     const lowerSearch = searchTerm.toLowerCase()
 
-    for (const [key, exercise] of this.cache.exercises.entries()) {
+    this.cache.exercises.forEach((exercise, key) => {
       if (
         key.includes(lowerSearch) ||
         exercise.name.toLowerCase().includes(lowerSearch)
       ) {
         matches.push(exercise.name)
       }
-    }
+    })
 
     return matches
   }

@@ -144,7 +144,7 @@ export function RefineWorkoutPage({
       const input: CustomSubstitutionInput = {
         currentExercise: {
           name: exercise.name,
-          equipmentVariant: exercise.equipmentVariant,
+          equipmentVariant: exercise.equipmentVariant || '',
           sets: exercise.sets,
           repRange: exercise.repRange,
           targetWeight: exercise.targetWeight,
@@ -179,8 +179,8 @@ export function RefineWorkoutPage({
     const newExercises = [...exercises]
     newExercises[exerciseIndex] = {
       ...exercise,
-      name: alternative.name,
-      equipmentVariant: alternative.equipmentVariant || exercise.equipmentVariant,
+      name: alternative.exercise.name,
+      equipmentVariant: alternative.exercise.equipmentVariant || exercise.equipmentVariant,
       rationale: alternative.rationale
     }
 
