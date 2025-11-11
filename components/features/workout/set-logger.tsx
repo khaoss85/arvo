@@ -62,12 +62,12 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [showMentalSelector, setShowMentalSelector] = useState(false)
   const [isLogging, setIsLogging] = useState(false)
 
-  // Update values when warmup/suggestion changes
+  // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
     setWeight(getInitialWeight())
     setReps(getInitialReps())
     setRir(getInitialRir())
-  }, [setNumber, suggestion])
+  }, [setNumber, suggestion, exercise.targetWeight])
 
   const handleLogSet = async () => {
     setIsLogging(true)
