@@ -558,8 +558,10 @@ Required JSON structure:
 
     // Remove equipment that's embedded in the name (it should be in equipmentVariant instead)
     // Examples: "Rope Triceps Pushdown" → "Triceps Pushdown"
+    // Examples: "Dumbbell Bulgarian Split Squat" → "Bulgarian Split Squat"
     coreName = coreName
       .replace(/^(rope|band|chain)\s+/i, '')
+      .replace(/^(barbell|dumbbell|cable|machine|smith|bodyweight|kettlebell)\s+/i, '')
 
     // Remove common modifiers that are too specific for animation matching
     coreName = coreName

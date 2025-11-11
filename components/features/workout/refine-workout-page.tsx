@@ -65,7 +65,7 @@ export function RefineWorkoutPage({
         const exercisesWithAnimations = await Promise.all(
           (workout.exercises as unknown as Exercise[]).map(async (ex) => {
             const animationUrl = await AnimationService.getAnimationUrl({
-              exerciseName: ex.name,
+              name: ex.name,
               canonicalPattern: ex.name,
               equipmentVariant: ex.equipmentVariant
             })
@@ -108,7 +108,7 @@ export function RefineWorkoutPage({
       const input: SubstitutionInput = {
         currentExercise: {
           name: exercise.name,
-          equipmentVariant: exercise.equipmentVariant,
+          equipmentVariant: exercise.equipmentVariant || '',
           sets: exercise.sets,
           repRange: exercise.repRange,
           targetWeight: exercise.targetWeight,

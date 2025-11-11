@@ -57,19 +57,24 @@ export function RefineWorkoutModal({
   // Initialize exercises when workout changes
   React.useEffect(() => {
     if (workout?.exercises) {
-      const exercisesWithAnimations = (workout.exercises as unknown as Exercise[]).map(ex => {
-        const animationUrl = AnimationService.getAnimationUrl({
-          exerciseName: ex.name,
-          canonicalPattern: ex.name,
-          equipmentVariant: ex.equipmentVariant
-        })
-        return {
-          ...ex,
-          animationUrl: animationUrl || undefined,
-          hasAnimation: !!animationUrl
-        }
-      })
-      setExercises(exercisesWithAnimations)
+      const loadAnimations = async () => {
+        const exercisesWithAnimations = await Promise.all(
+          (workout.exercises as unknown as Exercise[]).map(async ex => {
+            const animationUrl = await AnimationService.getAnimationUrl({
+              name: ex.name,
+              canonicalPattern: ex.name,
+              equipmentVariant: ex.equipmentVariant
+            })
+            return {
+              ...ex,
+              animationUrl: animationUrl || undefined,
+              hasAnimation: !!animationUrl
+            }
+          })
+        )
+        setExercises(exercisesWithAnimations)
+      }
+      loadAnimations()
     }
   }, [workout])
 
