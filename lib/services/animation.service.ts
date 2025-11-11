@@ -74,6 +74,7 @@ export class AnimationService {
    * Example: ("bench-press", "barbell") -> "barbell bench press"
    * Example: ("back squat", "Barbell, Squat Rack") -> "barbell back squat"
    * Example: ("Cable Pec Fly", "Cable") -> "cable pec fly" (no duplication)
+   * Example: ("T-Bar Row", "landmine t bar with plate load") -> "landmine t bar row"
    */
   private static buildCanonicalName(pattern: string, equipment: string): string {
     // Clean up pattern and equipment
@@ -81,7 +82,17 @@ export class AnimationService {
 
     // Split equipment by comma and take only first item (primary equipment)
     // "Barbell, Squat Rack" -> "Barbell"
-    const primaryEquipment = equipment.split(',')[0].trim()
+    let primaryEquipment = equipment.split(',')[0].trim()
+
+    // Clean up overly descriptive equipment
+    // "landmine t bar with plate load" -> "landmine t bar"
+    // "cable machine" -> "cable"
+    // "incline bench" -> "bench"
+    primaryEquipment = primaryEquipment
+      .replace(/\s+(with|using|on|at).*/i, '') // Remove "with plate load", "on bench", etc.
+      .replace(/\s+machine$/i, '') // Remove trailing "machine"
+      .replace(/^(incline|decline|flat|adjustable)\s+/i, '') // Remove bench angle modifiers
+
     const cleanEquipment = primaryEquipment.replace(/-/g, ' ').trim().toLowerCase()
 
     // Check if equipment is already at the start of the pattern

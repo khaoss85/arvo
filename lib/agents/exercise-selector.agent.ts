@@ -556,6 +556,11 @@ Required JSON structure:
       .replace(/^(optional\s+)?finisher\s*[—\-]\s*/i, '')
       .replace(/^(warm-?up|cool-?down|bonus|activation)\s*[—\-]\s*/i, '')
 
+    // Remove common modifiers BEFORE equipment (order matters!)
+    // Examples: "Single-Arm Dumbbell Row" → "Dumbbell Row"
+    coreName = coreName
+      .replace(/^(single-arm|one-arm|two-arm|alternating)\s+/i, '')
+
     // Remove equipment that's embedded in the name (it should be in equipmentVariant instead)
     // Examples: "Rope Triceps Pushdown" → "Triceps Pushdown"
     // Examples: "Dumbbell Bulgarian Split Squat" → "Bulgarian Split Squat"
@@ -563,9 +568,11 @@ Required JSON structure:
       .replace(/^(rope|band|chain)\s+/i, '')
       .replace(/^(barbell|dumbbell|cable|machine|smith|bodyweight|kettlebell)\s+/i, '')
 
-    // Remove common modifiers that are too specific for animation matching
+    // Remove supported/emphasis modifiers at the end
+    // Examples: "Row (Knee-Supported)" → "Row", "Curl (deep stretch)" → "Curl"
     coreName = coreName
-      .replace(/^(single-arm|one-arm|two-arm|alternating)\s+/i, '')
+      .replace(/\s+(knee-?supported|chest-?supported|torso-?supported|bench-?supported)/i, '')
+      .replace(/\s+(deep\s+stretch|moderate|slow\s+eccentric|controlled)/i, '')
       .replace(/\s+(single|double|alternating|emphasis)$/i, '')
       .trim()
 

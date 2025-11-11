@@ -203,12 +203,27 @@ export class ExerciseDBService {
       // Row variations
       'bent over row': 'barbell bent over row',
       'bent-over row': 'barbell bent over row',
+      'barbell row': 'barbell bent over row',
+      't bar row': 'leverage t bar row',
+      'landmine t bar row': 'leverage t bar row',
+      'chest supported t bar row': 'leverage t bar row',
+      'dumbbell row': 'dumbbell one arm row',
+      'cable row': 'cable seated row',
+      'seated cable row': 'cable seated row',
 
       // Chest fly variations
       'cable pec fly': 'cable chest fly',
       'pec fly': 'chest fly',
       'pec deck': 'pec deck fly',
       'cable fly': 'cable chest fly',
+
+      // Curl variations
+      'incline dumbbell curl': 'dumbbell incline curl',
+      'dumbbell curl': 'dumbbell biceps curl',
+
+      // Face pull variations
+      'cable face pull': 'cable rear delt fly',
+      'face pull': 'cable rear delt fly',
 
       // Triceps pushdown variations
       'rope triceps pushdown': 'cable triceps pushdown',
