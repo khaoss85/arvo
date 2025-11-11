@@ -53,7 +53,7 @@ export function ExerciseAnimationModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/80 z-[60] backdrop-blur-sm"
           />
 
           {/* Drawer */}
@@ -62,7 +62,7 @@ export function ExerciseAnimationModal({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 z-50 bg-gray-900 border-t border-gray-800 rounded-t-2xl shadow-2xl"
+            className="fixed inset-x-0 bottom-0 z-[60] bg-gray-900 border-t border-gray-800 rounded-t-2xl shadow-2xl"
             style={{ maxHeight: '85vh' }}
           >
             {/* Header */}

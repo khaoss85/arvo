@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
-import { completeOnboardingAction } from '@/app/actions/ai-actions'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
@@ -56,7 +56,7 @@ export default function ReviewPage() {
     }
   }
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     if (!user) {
       setError('User not found. Please log in again.')
       return
@@ -69,41 +69,21 @@ export default function ReviewPage() {
 
     setLoading(true)
     setError(null)
+  }
 
-    try {
-      // Complete onboarding via server action - this creates profile and generates first AI workout
-      const result = await completeOnboardingAction(user.id, {
-        approachId: data.approachId,
-        weakPoints: data.weakPoints || [],
-        availableEquipment: data.availableEquipment || [],
-        equipmentPreferences: data.equipmentPreferences || {}, // Keep for backward compatibility
-        strengthBaseline: data.strengthBaseline || {},
-        firstName: data.firstName || null,
-        gender: data.gender || null,
-        age: data.age || null,
-        weight: data.weight || null,
-        height: data.height || null,
-        confirmedExperience: data.confirmedExperience || null,
-        splitType: data.splitType,
-        weeklyFrequency: data.weeklyFrequency
-      })
+  const handleGenerationComplete = () => {
+    // Clear onboarding state and redirect
+    reset()
+    router.push('/dashboard')
+  }
 
-      if (!result.success) {
-        setError(result.error || 'Failed to complete onboarding. Please try again.')
-        return
-      }
+  const handleGenerationError = (errorMessage: string) => {
+    setError(errorMessage)
+    setLoading(false)
+  }
 
-      // Clear onboarding state
-      reset()
-
-      // Redirect to dashboard
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Onboarding completion error:', error)
-      setError('Failed to complete onboarding. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  const handleGenerationCancel = () => {
+    setLoading(false)
   }
 
   const handleEdit = (step: number, path: string) => {
@@ -486,21 +466,41 @@ export default function ReviewPage() {
         </p>
       </div>
 
-      <div className="mt-8 flex justify-center">
-        <Button
-          onClick={handleComplete}
-          disabled={loading}
-          className="px-8 py-3 text-lg"
-        >
-          {loading ? (
-            <>
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-              Generating your first workout...
-            </>
-          ) : (
-            'Complete Onboarding'
-          )}
-        </Button>
+      <div className="mt-8 flex flex-col items-center gap-4">
+        {loading ? (
+          <ProgressFeedback
+            variant="inline"
+            endpoint="/api/onboarding/complete/stream"
+            requestBody={{
+              userId: user?.id,
+              approachId: data.approachId,
+              weakPoints: data.weakPoints || [],
+              availableEquipment: data.availableEquipment || [],
+              equipmentPreferences: data.equipmentPreferences || {},
+              strengthBaseline: data.strengthBaseline || {},
+              firstName: data.firstName || null,
+              gender: data.gender || null,
+              age: data.age || null,
+              weight: data.weight || null,
+              height: data.height || null,
+              confirmedExperience: data.confirmedExperience || null,
+              splitType: data.splitType,
+              weeklyFrequency: data.weeklyFrequency
+            }}
+            cancellable={false}
+            onComplete={handleGenerationComplete}
+            onError={handleGenerationError}
+            onCancel={handleGenerationCancel}
+          />
+        ) : (
+          <Button
+            onClick={handleComplete}
+            disabled={loading}
+            className="px-8 py-3 text-lg"
+          >
+            Complete Onboarding
+          </Button>
+        )}
       </div>
     </div>
   )

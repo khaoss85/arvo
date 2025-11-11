@@ -8,11 +8,9 @@ import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Play, Eye } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
-import { RefineWorkoutModal } from '@/components/features/workout/refine-workout-modal'
-import { WorkoutGenerationProgress } from '@/components/features/dashboard/workout-generation-progress'
+import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
 import { useUIStore } from '@/lib/stores/ui.store'
-import type { Workout } from '@/lib/types/schemas'
 
 interface TimelineDayCardProps {
   dayData: TimelineDayData
@@ -102,8 +100,6 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const styles = STATUS_STYLES[status]
   const router = useRouter()
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isRefineModalOpen, setIsRefineModalOpen] = useState(false)
-  const [workoutToRefine, setWorkoutToRefine] = useState<Workout | null>(null)
   const [showProgress, setShowProgress] = useState(false)
   const [insightChanges, setInsightChanges] = useState<InsightInfluencedChange[]>([])
   const [showChangesModal, setShowChangesModal] = useState(false)
@@ -133,21 +129,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   }
 
   const handleGenerationComplete = (workout: any, changes?: InsightInfluencedChange[]) => {
+    // Always reset loading state first
     setIsGenerating(false)
     setShowProgress(false)
+
+    // Always refresh timeline to show the newly generated workout
     onRefreshTimeline?.()
 
-    // Auto-navigate to workout if generating for current day
-    if (isCurrentDay && workout?.id) {
-      // Small delay to ensure timeline refresh completes before navigation
-      setTimeout(() => {
-        router.push(`/workout/${workout.id}`)
-      }, 500)
-      return // Don't show toast if navigating away
-    }
-
     // Show toast and modal if there are insight-influenced changes
-    // (Only for pre-generation of future days)
     if (changes && changes.length > 0) {
       setInsightChanges(changes)
       addToast(
@@ -172,34 +161,15 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     setShowProgress(false)
   }
 
-  const handleViewWorkout = async () => {
+  const handleViewWorkout = () => {
     if (!preGeneratedWorkout) return
-
-    // Fetch full workout data
-    try {
-      const response = await fetch(`/api/workouts/${preGeneratedWorkout.id}`)
-      if (response.ok) {
-        const workout = await response.json()
-        setWorkoutToRefine(workout)
-        setIsRefineModalOpen(true)
-      } else {
-        console.error('Failed to fetch workout')
-        alert('Failed to load workout details')
-      }
-    } catch (error) {
-      console.error('Error fetching workout:', error)
-      alert('Failed to load workout details')
-    }
+    router.push(`/workout/${preGeneratedWorkout.id}/review`)
   }
 
   const handleStartWorkout = () => {
     if (preGeneratedWorkout) {
       router.push(`/workout/${preGeneratedWorkout.id}`)
     }
-  }
-
-  const handleWorkoutUpdated = () => {
-    onRefreshTimeline?.()
   }
 
   // Rest day layout
@@ -326,7 +296,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       </div>
 
       {/* Generate Workout Button (only for current day without workout) */}
-      {isCurrentDay && status === 'current' && (
+      {isCurrentDay && status === 'current' && !preGeneratedWorkout && (
         <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
           <Button
             onClick={handleCurrentDayGenerate}
@@ -336,6 +306,42 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             <Sparkles className="w-4 h-4 mr-2" />
             {isGenerating ? 'Generating...' : 'Generate Today\'s Workout'}
           </Button>
+        </div>
+      )}
+
+      {/* Current Day with Generated Workout */}
+      {isCurrentDay && status === 'current' && preGeneratedWorkout && (
+        <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800 space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+              {preGeneratedWorkout.exercises.length} Exercises Ready
+            </span>
+            <span className={cn(
+              'px-2 py-0.5 rounded text-xs font-bold',
+              preGeneratedWorkout.status === 'ready'
+                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+            )}>
+              {preGeneratedWorkout.status === 'ready' ? 'Reviewed' : 'Ready'}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleViewWorkout}
+              variant="outline"
+              className="flex-1 border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Review
+            </Button>
+            <Button
+              onClick={handleStartWorkout}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Start Workout
+            </Button>
+          </div>
         </div>
       )}
 
@@ -432,24 +438,24 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         </div>
       )}
 
-      {/* Refine Workout Modal */}
-      <RefineWorkoutModal
-        workout={workoutToRefine}
-        open={isRefineModalOpen}
-        onClose={() => setIsRefineModalOpen(false)}
-        onWorkoutUpdated={handleWorkoutUpdated}
-        userId={userId}
-      />
-
       {/* Workout Generation Progress */}
       {showProgress && (
-        <WorkoutGenerationProgress
-          userId={userId}
-          targetCycleDay={targetDayForGeneration || day}
-          onComplete={handleGenerationComplete}
-          onError={handleGenerationError}
-          onCancel={handleGenerationCancel}
-        />
+        <div className={cn(
+          "mb-3 pt-3 border-t",
+          isCurrentDay
+            ? "border-purple-200 dark:border-purple-800"
+            : "border-gray-200 dark:border-gray-700"
+        )}>
+          <ProgressFeedback
+            variant="inline"
+            endpoint="/api/workouts/generate/stream"
+            requestBody={{ targetCycleDay: targetDayForGeneration || day }}
+            cancellable={true}
+            onComplete={(data) => handleGenerationComplete(data.workout, data.insightInfluencedChanges)}
+            onError={handleGenerationError}
+            onCancel={handleGenerationCancel}
+          />
+        </div>
       )}
 
       {/* Insight Changes Modal */}

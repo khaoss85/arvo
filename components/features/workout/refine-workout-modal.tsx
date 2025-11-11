@@ -5,10 +5,12 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, X, ChevronDown, ChevronUp, GripVertical, List } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, X, ChevronDown, ChevronUp, GripVertical, List, PlayCircle } from 'lucide-react'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction } from '@/app/actions/ai-actions'
 import type { Workout } from '@/lib/types/schemas'
 import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
+import { ExerciseAnimationModal } from './exercise-animation-modal'
+import { AnimationService } from '@/lib/services/animation.service'
 
 interface Exercise {
   name: string
@@ -24,6 +26,8 @@ interface Exercise {
     equipmentVariant?: string
     rationale: string
   }>
+  animationUrl?: string
+  hasAnimation?: boolean
 }
 
 interface RefineWorkoutModalProps {
@@ -47,12 +51,25 @@ export function RefineWorkoutModal({
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null)
   const [isReorderMode, setIsReorderMode] = useState(false)
   const [customInputs, setCustomInputs] = useState<Map<number, string>>(new Map())
+  const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const rationaleRef = useRef<WorkoutRationaleHandle>(null)
 
   // Initialize exercises when workout changes
   React.useEffect(() => {
     if (workout?.exercises) {
-      setExercises(workout.exercises as unknown as Exercise[])
+      const exercisesWithAnimations = (workout.exercises as unknown as Exercise[]).map(ex => {
+        const animationUrl = AnimationService.getAnimationUrl({
+          exerciseName: ex.name,
+          canonicalPattern: ex.name,
+          equipmentVariant: ex.equipmentVariant
+        })
+        return {
+          ...ex,
+          animationUrl: animationUrl || undefined,
+          hasAnimation: !!animationUrl
+        }
+      })
+      setExercises(exercisesWithAnimations)
     }
   }, [workout])
 
@@ -275,7 +292,22 @@ export function RefineWorkoutModal({
                                 </div>
                               )}
                               <div className="flex-1">
-                                <h3 className="font-semibold text-lg">{exercise.name}</h3>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold text-lg">{exercise.name}</h3>
+                                  {exercise.hasAnimation && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setAnimationModalOpen(index)
+                                      }}
+                                      className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                                      aria-label={`View ${exercise.name} animation`}
+                                      title="Visualizza esercizio"
+                                    >
+                                      <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                                    </button>
+                                  )}
+                                </div>
                                 {exercise.equipmentVariant && (
                                   <p className="text-sm text-muted-foreground">{exercise.equipmentVariant}</p>
                                 )}
@@ -424,6 +456,16 @@ export function RefineWorkoutModal({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Exercise Animation Modal */}
+      {animationModalOpen !== null && exercises[animationModalOpen] && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => setAnimationModalOpen(null)}
+          exerciseName={exercises[animationModalOpen].name}
+          animationUrl={exercises[animationModalOpen].animationUrl || null}
+        />
+      )}
     </Dialog>
   )
 }

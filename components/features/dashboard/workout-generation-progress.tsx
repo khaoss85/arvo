@@ -76,18 +76,22 @@ export function WorkoutGenerationProgress({
 
           for (const line of lines) {
             if (line.startsWith('data: ')) {
-              const data = JSON.parse(line.slice(6))
+              try {
+                const data = JSON.parse(line.slice(6))
 
-              if (data.phase === 'complete') {
-                onComplete(data.workout, data.insightInfluencedChanges)
-                break
-              } else if (data.phase === 'error') {
-                onError(data.error)
-                break
-              } else {
-                setPhase(data.phase)
-                setProgress(data.progress)
-                setMessage(data.message)
+                if (data.phase === 'complete') {
+                  onComplete(data.workout, data.insightInfluencedChanges)
+                  break
+                } else if (data.phase === 'error') {
+                  onError(data.error)
+                  break
+                } else {
+                  setPhase(data.phase)
+                  setProgress(data.progress)
+                  setMessage(data.message)
+                }
+              } catch (parseError) {
+                console.error('Failed to parse SSE data:', parseError, 'Line:', line)
               }
             }
           }
