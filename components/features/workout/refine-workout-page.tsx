@@ -12,6 +12,7 @@ import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { AnimationService } from '@/lib/services/animation.service'
 import { ReorderExercisesReviewModal } from './reorder-exercises-review-modal'
+import { AddSetButton } from './add-set-button'
 
 interface Exercise {
   name: string
@@ -242,6 +243,39 @@ export function RefineWorkoutPage({
     }
   }
 
+  const handleAddSet = async (exerciseIndex: number) => {
+    const exercise = exercises[exerciseIndex]
+    if (!exercise || !workout) return
+
+    try {
+      // Update local state
+      const newExercises = [...exercises]
+      newExercises[exerciseIndex] = {
+        ...exercise,
+        sets: exercise.sets + 1
+      }
+
+      setExercises(newExercises)
+
+      // Invalidate workout rationale since exercises changed
+      rationaleRef.current?.invalidate()
+
+      // Save changes to workout
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to add set:', result.error)
+        alert('Failed to add set. Please try again.')
+        // Revert on failure
+        setExercises([...exercises])
+      }
+    } catch (error) {
+      console.error('Error adding set:', error)
+      alert('Failed to add set. Please try again.')
+      // Revert on failure
+      setExercises([...exercises])
+    }
+  }
+
   const handleRegenerateExercise = async (exerciseIndex: number) => {
     setIsRegenerating(exerciseIndex)
 
@@ -398,6 +432,15 @@ export function RefineWorkoutPage({
                   <span className="text-muted-foreground">Rest:</span>
                   <span className="ml-2 font-medium">{exercise.restSeconds}s</span>
                 </div>
+              </div>
+
+              {/* Add Set Button */}
+              <div className="flex justify-end pt-1">
+                <AddSetButton
+                  currentSets={exercise.sets}
+                  onAddSet={() => handleAddSet(index)}
+                  variant="inline"
+                />
               </div>
 
               {/* Rationale (Expanded) */}

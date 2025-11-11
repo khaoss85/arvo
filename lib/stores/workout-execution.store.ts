@@ -44,6 +44,17 @@ export interface ExerciseExecution {
   restSeconds?: number // Rest period from approach (seconds between sets)
   animationUrl?: string // URL path to Lottie JSON animation (e.g., "/animations/exercises/barbell-squat.json")
   hasAnimation?: boolean // Whether a Lottie animation is available for this exercise
+
+  // User modification tracking
+  aiRecommendedSets?: number // Original AI recommendation (before user modifications)
+  userAddedSets?: number // Number of sets added by user beyond AI recommendation
+  userModifications?: {
+    addedSets: number
+    reason?: string // Optional: "felt good", "pump zone", etc.
+    aiWarnings?: string[] // AI warnings shown to user
+    userOverride: boolean // User proceeded despite warnings
+    modifiedAt: string // ISO timestamp
+  }
 }
 
 interface WorkoutExecutionState {
@@ -86,6 +97,9 @@ interface WorkoutExecutionState {
 
   // Exercise reordering
   reorderExercises: (newOrder: ExerciseExecution[]) => void
+
+  // Add extra sets
+  addSetToExercise: (exerciseIndex: number) => void
 
   // Persistence
   saveProgress: () => Promise<void>
@@ -444,6 +458,46 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           currentExerciseIndex: newCurrentIndex >= 0 ? newCurrentIndex : currentExerciseIndex,
           lastActivityAt: new Date()
         })
+      },
+
+      // Add extra set to exercise
+      addSetToExercise: (exerciseIndex: number) => {
+        const { exercises } = get()
+        const updatedExercises = [...exercises]
+        const exercise = updatedExercises[exerciseIndex]
+
+        if (!exercise) {
+          console.error('Exercise not found at index:', exerciseIndex)
+          return
+        }
+
+        // Save original AI recommendation on first modification
+        if (!exercise.aiRecommendedSets) {
+          exercise.aiRecommendedSets = exercise.targetSets
+        }
+
+        // Increment target sets
+        exercise.targetSets += 1
+
+        // Track user-added sets
+        exercise.userAddedSets = (exercise.userAddedSets || 0) + 1
+
+        // Update user modifications metadata
+        exercise.userModifications = {
+          addedSets: exercise.userAddedSets,
+          reason: undefined, // Can be set later by user input
+          aiWarnings: [], // Will be populated in Phase 2
+          userOverride: false, // No AI check in Phase 1
+          modifiedAt: new Date().toISOString()
+        }
+
+        set({
+          exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+
+        // Save to database
+        get().saveProgress()
       },
 
       // Save progress to database

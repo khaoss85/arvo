@@ -8,6 +8,7 @@ import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { ExerciseSubstitution } from './exercise-substitution'
+import { AddSetButton } from './add-set-button'
 import { Button } from '@/components/ui/button'
 
 // Mental readiness emoji mapping
@@ -34,7 +35,7 @@ export function ExerciseCard({
   userId,
   approachId
 }: ExerciseCardProps) {
-  const { nextExercise, previousExercise, setAISuggestion } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
   const [showSuggestion, setShowSuggestion] = useState(false)
   const [showExerciseExplanation, setShowExerciseExplanation] = useState(false)
@@ -414,6 +415,23 @@ export function ExerciseCard({
           </div>
           <h3 className="text-xl font-bold text-white mb-2">Exercise Complete!</h3>
           <p className="text-gray-400 mb-6">Great work on {exercise.exerciseName}</p>
+
+          {/* Add Extra Set Option */}
+          <div className="mb-4">
+            <AddSetButton
+              currentSets={exercise.targetSets}
+              onAddSet={() => addSetToExercise(exerciseIndex)}
+              variant="full"
+            />
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 my-6">
+            <div className="flex-1 border-t border-gray-700"></div>
+            <span className="text-sm text-gray-500">or</span>
+            <div className="flex-1 border-t border-gray-700"></div>
+          </div>
+
           <Button
             onClick={handleMoveToNext}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
