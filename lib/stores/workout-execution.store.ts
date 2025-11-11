@@ -195,7 +195,17 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           (workout.exercises as any[] || []).map(async (ex) => {
             const exerciseSets = sets.filter((s) => {
               const exId = ex.id || null
-              return s.exercise_id === exId || (s.exercise_name === ex.name)
+              // Match by ID (if available) OR by name (case-insensitive, trimmed)
+              const nameMatch = s.exercise_name?.toLowerCase().trim() === ex.name?.toLowerCase().trim()
+              return s.exercise_id === exId || nameMatch
+            })
+
+            // Debug logging for completed sets loading
+            console.log('[Store] Exercise sets loaded:', {
+              exerciseName: ex.name,
+              exerciseId: ex.id,
+              setsFound: exerciseSets.length,
+              totalSetsInDB: sets.length
             })
 
             // Get animation URL using AnimationService with fallback logic (async)

@@ -25,7 +25,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
     resumeWorkout,
     currentExerciseIndex,
     exercises,
-    endWorkout
+    endWorkout: _endWorkout
   } = useWorkoutExecutionStore()
   const [showReorderModal, setShowReorderModal] = useState(false)
   const [swapExerciseIndex, setSwapExerciseIndex] = useState<number | null>(null)
@@ -84,9 +84,24 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
   const currentExercise = exercises[currentExerciseIndex]
 
   // Check if workout is complete - only if we have exercises loaded
-  const isWorkoutComplete = exercises.length > 0 && exercises.every(
-    ex => ex.completedSets.length >= ex.targetSets
-  )
+  // Must account for warmup sets + working sets (same logic as store's logSet)
+  const isWorkoutComplete = exercises.length > 0 && exercises.every(ex => {
+    const warmupSetsCount = ex.warmupSets?.length || 0
+    const totalRequiredSets = warmupSetsCount + ex.targetSets
+    return ex.completedSets.length >= totalRequiredSets
+  })
+
+  // Debug logging for completion check
+  if (exercises.length > 0) {
+    console.log('[WorkoutExecution] Completion check:', exercises.map(ex => ({
+      name: ex.exerciseName,
+      completedSets: ex.completedSets.length,
+      warmupSets: ex.warmupSets?.length || 0,
+      targetSets: ex.targetSets,
+      totalRequired: (ex.warmupSets?.length || 0) + ex.targetSets,
+      isComplete: ex.completedSets.length >= ((ex.warmupSets?.length || 0) + ex.targetSets)
+    })))
+  }
 
   if (isWorkoutComplete) {
     return <WorkoutSummary workoutId={workout.id} userId={userId} />
