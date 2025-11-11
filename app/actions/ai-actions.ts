@@ -7,6 +7,7 @@ import { ReorderValidator } from '@/lib/agents/reorder-validator.agent'
 import { WorkoutSummaryAgent } from '@/lib/agents/workout-summary.agent'
 import { ExerciseSubstitutionAgent } from '@/lib/agents/exercise-substitution.agent'
 import { WorkoutRationaleAgent } from '@/lib/agents/workout-rationale.agent'
+import { WorkoutModificationValidator } from '@/lib/agents/workout-modification-validator.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
 import {
   getNextWorkoutType,
@@ -24,6 +25,7 @@ import type { ReorderValidationInput } from '@/lib/agents/reorder-validator.agen
 import type { WorkoutSummaryInput } from '@/lib/agents/workout-summary.agent'
 import type { SubstitutionInput, SubstitutionOutput, CustomSubstitutionInput, SubstitutionSuggestion } from '@/lib/agents/exercise-substitution.agent'
 import type { WorkoutRationaleInput, WorkoutRationaleOutput } from '@/lib/agents/workout-rationale.agent'
+import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 
 /**
  * Server action to complete onboarding
@@ -938,6 +940,68 @@ export async function updateWorkoutExercisesAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update workout exercises'
+    }
+  }
+}
+
+/**
+ * Server action to validate workout modifications (adding extra sets)
+ * Uses WorkoutModificationValidator agent with GPT-5-mini
+ * Analyzes if modification aligns with training approach and periodization phase
+ */
+export async function validateWorkoutModificationAction(
+  userId: string,
+  input: ModificationValidationInput
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Enrich with user profile data
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    // Enrich input with profile data
+    const enrichedInput: ModificationValidationInput = {
+      ...input,
+      userContext: {
+        ...input.userContext,
+        approachId: profile.approach_id || input.userContext.approachId,
+        experienceYears: profile.experience_years ?? undefined,
+        userAge: profile.age ?? undefined,
+        weakPoints: profile.weak_points || []
+      },
+      workoutContext: {
+        ...input.workoutContext,
+        mesocycleWeek: profile.current_mesocycle_week ?? input.workoutContext.mesocycleWeek,
+        mesocyclePhase: (profile.mesocycle_phase as any) ?? input.workoutContext.mesocyclePhase
+      }
+    }
+
+    // Create validator agent and validate modification
+    const validator = new WorkoutModificationValidator(supabase)
+    const result = await validator.validateModification(enrichedInput)
+
+    console.log('[validateWorkoutModificationAction] Validation result:', {
+      validation: result.validation,
+      exerciseName: input.exerciseInfo.name,
+      currentSets: input.exerciseInfo.currentSets,
+      proposedSets: input.exerciseInfo.proposedSets,
+      warningsCount: result.warnings.length
+    })
+
+    return { success: true, validation: result }
+  } catch (error) {
+    console.error('Server action - Modification validation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate modification'
     }
   }
 }
