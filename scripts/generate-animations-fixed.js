@@ -95,6 +95,7 @@ function generateSimpleTest() {
 
 /**
  * Generate barbell bench press with correct structure
+ * Figure is horizontal (lying on bench) for proper bench press representation
  */
 function generateBarbellBenchPress() {
   const FPS = 30;
@@ -117,7 +118,7 @@ function generateBarbellBenchPress() {
     h: 400,
     ddd: 0,
     layers: [
-      // Head - static circle
+      // Head - static circle (left side, lying down)
       {
         ty: 4,
         nm: 'Head',
@@ -140,7 +141,7 @@ function generateBarbellBenchPress() {
               {
                 ty: 'el',
                 nm: 'Head Circle',
-                p: { a: 0, k: [0, -20] }, // Position relative to layer (20px above center)
+                p: { a: 0, k: [-100, 0] }, // Left side (horizontal position)
                 s: { a: 0, k: [40, 40] },
                 d: 1,
               },
@@ -150,7 +151,7 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Torso - static line
+      // Torso - horizontal line (neck to hips)
       {
         ty: 4,
         nm: 'Torso',
@@ -177,7 +178,7 @@ function generateBarbellBenchPress() {
                   a: 0,
                   k: {
                     c: false,
-                    v: [[0, 0], [0, 80]], // Relative coords: from center down 80px
+                    v: [[-80, 0], [80, 0]], // Horizontal: from neck (left) to hips (right)
                     i: [[0, 0], [0, 0]],
                     o: [[0, 0], [0, 0]],
                   },
@@ -189,10 +190,10 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Right arm (animated)
+      // Arms (both together - animated vertically)
       {
         ty: 4,
-        nm: 'Right Arm',
+        nm: 'Arms',
         ind: 3,
         ip: 0,
         op: TOTAL_FRAMES,
@@ -205,13 +206,14 @@ function generateBarbellBenchPress() {
           o: { a: 0, k: 100 },
         },
         shapes: [
+          // Left arm (closer to viewer)
           {
             ty: 'gr',
-            nm: 'Arm Group',
+            nm: 'Left Arm Group',
             it: [
               {
                 ty: 'sh',
-                nm: 'Arm Path',
+                nm: 'Left Arm',
                 ks: {
                   a: 1,
                   k: [
@@ -219,7 +221,7 @@ function generateBarbellBenchPress() {
                       t: frames.start,
                       s: [{
                         c: false,
-                        v: [[40, 10], [70, -80]],  // Extended (relative coords)
+                        v: [[-20, 0], [-20, -100]],  // Extended up (vertical)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -230,7 +232,7 @@ function generateBarbellBenchPress() {
                       t: frames.down,
                       s: [{
                         c: false,
-                        v: [[40, 10], [70, 10]],  // At chest (relative coords)
+                        v: [[-20, 0], [-20, 5]],  // At chest (barbell touches)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -241,7 +243,56 @@ function generateBarbellBenchPress() {
                       t: frames.up,
                       s: [{
                         c: false,
-                        v: [[40, 10], [70, -80]],  // Extended (relative coords)
+                        v: [[-20, 0], [-20, -100]],  // Extended up
+                        i: [[0, 0], [0, 0]],
+                        o: [[0, 0], [0, 0]],
+                      }],
+                    },
+                  ],
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+          // Right arm (farther from viewer, slightly offset)
+          {
+            ty: 'gr',
+            nm: 'Right Arm Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Right Arm',
+                ks: {
+                  a: 1,
+                  k: [
+                    {
+                      t: frames.start,
+                      s: [{
+                        c: false,
+                        v: [[20, 0], [20, -100]],  // Extended up (vertical)
+                        i: [[0, 0], [0, 0]],
+                        o: [[0, 0], [0, 0]],
+                      }],
+                      i: { x: [0.42], y: [0] },
+                      o: { x: [0.58], y: [1] },
+                    },
+                    {
+                      t: frames.down,
+                      s: [{
+                        c: false,
+                        v: [[20, 0], [20, 5]],  // At chest
+                        i: [[0, 0], [0, 0]],
+                        o: [[0, 0], [0, 0]],
+                      }],
+                      i: { x: [0.42], y: [0] },
+                      o: { x: [0.58], y: [1] },
+                    },
+                    {
+                      t: frames.up,
+                      s: [{
+                        c: false,
+                        v: [[20, 0], [20, -100]],  // Extended up
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -255,77 +306,11 @@ function generateBarbellBenchPress() {
           },
         ],
       },
-      // Left arm (symmetric)
-      {
-        ty: 4,
-        nm: 'Left Arm',
-        ind: 4,
-        ip: 0,
-        op: TOTAL_FRAMES,
-        sr: 1,
-        ks: {
-          p: { a: 0, k: [200, 200] }, // Center layer
-          a: { a: 0, k: [0, 0] },
-          s: { a: 0, k: [100, 100] },
-          r: { a: 0, k: 0 },
-          o: { a: 0, k: 100 },
-        },
-        shapes: [
-          {
-            ty: 'gr',
-            nm: 'Arm Group',
-            it: [
-              {
-                ty: 'sh',
-                nm: 'Arm Path',
-                ks: {
-                  a: 1,
-                  k: [
-                    {
-                      t: frames.start,
-                      s: [{
-                        c: false,
-                        v: [[-40, 10], [-70, -80]],  // Extended (relative, mirrored)
-                        i: [[0, 0], [0, 0]],
-                        o: [[0, 0], [0, 0]],
-                      }],
-                      i: { x: [0.42], y: [0] },
-                      o: { x: [0.58], y: [1] },
-                    },
-                    {
-                      t: frames.down,
-                      s: [{
-                        c: false,
-                        v: [[-40, 10], [-70, 10]],  // At chest (relative, mirrored)
-                        i: [[0, 0], [0, 0]],
-                        o: [[0, 0], [0, 0]],
-                      }],
-                      i: { x: [0.42], y: [0] },
-                      o: { x: [0.58], y: [1] },
-                    },
-                    {
-                      t: frames.up,
-                      s: [{
-                        c: false,
-                        v: [[-40, 10], [-70, -80]],  // Extended (relative, mirrored)
-                        i: [[0, 0], [0, 0]],
-                        o: [[0, 0], [0, 0]],
-                      }],
-                    },
-                  ],
-                },
-              },
-              createStroke(),
-              createTransform(),
-            ],
-          },
-        ],
-      },
-      // Barbell (animated)
+      // Barbell (animated vertically)
       {
         ty: 4,
         nm: 'Barbell',
-        ind: 5,
+        ind: 4,
         ip: 0,
         op: TOTAL_FRAMES,
         sr: 1,
@@ -351,7 +336,7 @@ function generateBarbellBenchPress() {
                       t: frames.start,
                       s: [{
                         c: false,
-                        v: [[-80, -80], [80, -80]],  // Up (relative coords)
+                        v: [[-60, -100], [60, -100]],  // Extended up (horizontal bar)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -362,7 +347,7 @@ function generateBarbellBenchPress() {
                       t: frames.down,
                       s: [{
                         c: false,
-                        v: [[-80, 10], [80, 10]],  // Down at chest (relative coords)
+                        v: [[-60, 5], [60, 5]],  // At chest (horizontal bar)
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
@@ -373,12 +358,155 @@ function generateBarbellBenchPress() {
                       t: frames.up,
                       s: [{
                         c: false,
-                        v: [[-80, -80], [80, -80]],  // Up (relative coords)
+                        v: [[-60, -100], [60, -100]],  // Extended up
                         i: [[0, 0], [0, 0]],
                         o: [[0, 0], [0, 0]],
                       }],
                     },
                   ],
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+        ],
+      },
+      // Bench (static - beneath body)
+      {
+        ty: 4,
+        nm: 'Bench',
+        ind: 5,
+        ip: 0,
+        op: TOTAL_FRAMES,
+        sr: 1,
+        ks: {
+          p: { a: 0, k: [200, 200] }, // Center layer
+          a: { a: 0, k: [0, 0] },
+          s: { a: 0, k: [100, 100] },
+          r: { a: 0, k: 0 },
+          o: { a: 0, k: 100 },
+        },
+        shapes: [
+          {
+            ty: 'gr',
+            nm: 'Bench Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Bench Top',
+                ks: {
+                  a: 0,
+                  k: {
+                    c: false,
+                    v: [[-90, 20], [90, 20]],  // Horizontal line beneath body
+                    i: [[0, 0], [0, 0]],
+                    o: [[0, 0], [0, 0]],
+                  },
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+        ],
+      },
+      // Legs (bent - feet on floor)
+      {
+        ty: 4,
+        nm: 'Legs',
+        ind: 6,
+        ip: 0,
+        op: TOTAL_FRAMES,
+        sr: 1,
+        ks: {
+          p: { a: 0, k: [200, 200] }, // Center layer
+          a: { a: 0, k: [0, 0] },
+          s: { a: 0, k: [100, 100] },
+          r: { a: 0, k: 0 },
+          o: { a: 0, k: 100 },
+        },
+        shapes: [
+          // Left leg (closer to viewer)
+          {
+            ty: 'gr',
+            nm: 'Left Leg Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Left Thigh',
+                ks: {
+                  a: 0,
+                  k: {
+                    c: false,
+                    v: [[60, 0], [60, 60]],  // From hips down
+                    i: [[0, 0], [0, 0]],
+                    o: [[0, 0], [0, 0]],
+                  },
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+          {
+            ty: 'gr',
+            nm: 'Left Calf Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Left Calf',
+                ks: {
+                  a: 0,
+                  k: {
+                    c: false,
+                    v: [[60, 60], [60, 100]],  // Knee to floor
+                    i: [[0, 0], [0, 0]],
+                    o: [[0, 0], [0, 0]],
+                  },
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+          // Right leg (farther from viewer, offset)
+          {
+            ty: 'gr',
+            nm: 'Right Leg Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Right Thigh',
+                ks: {
+                  a: 0,
+                  k: {
+                    c: false,
+                    v: [[70, 0], [70, 60]],  // From hips down (offset)
+                    i: [[0, 0], [0, 0]],
+                    o: [[0, 0], [0, 0]],
+                  },
+                },
+              },
+              createStroke(),
+              createTransform(),
+            ],
+          },
+          {
+            ty: 'gr',
+            nm: 'Right Calf Group',
+            it: [
+              {
+                ty: 'sh',
+                nm: 'Right Calf',
+                ks: {
+                  a: 0,
+                  k: {
+                    c: false,
+                    v: [[70, 60], [70, 100]],  // Knee to floor (offset)
+                    i: [[0, 0], [0, 0]],
+                    o: [[0, 0], [0, 0]],
+                  },
                 },
               },
               createStroke(),
