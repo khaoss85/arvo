@@ -56,6 +56,7 @@ export type Database = {
       caloric_phase_history: {
         Row: {
           avg_weight_change: number | null
+          caloric_intake_kcal: number | null
           created_at: string | null
           duration_weeks: number | null
           ended_at: string | null
@@ -69,6 +70,7 @@ export type Database = {
         }
         Insert: {
           avg_weight_change?: number | null
+          caloric_intake_kcal?: number | null
           created_at?: string | null
           ended_at?: string | null
           id?: string
@@ -81,6 +83,7 @@ export type Database = {
         }
         Update: {
           avg_weight_change?: number | null
+          caloric_intake_kcal?: number | null
           created_at?: string | null
           ended_at?: string | null
           id?: string
@@ -396,6 +399,7 @@ export type Database = {
           age: number | null
           approach_id: string | null
           available_equipment: string[] | null
+          caloric_intake_kcal: number | null
           caloric_phase: string | null
           caloric_phase_start_date: string | null
           created_at: string | null
@@ -422,6 +426,7 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
+          caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
           created_at?: string | null
@@ -448,6 +453,7 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
+          caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
           created_at?: string | null

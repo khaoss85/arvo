@@ -55,7 +55,7 @@ Guidelines:
 - Reference the training approach principles`
   }
 
-  async summarizeWorkout(input: WorkoutSummaryInput): Promise<WorkoutSummaryOutput> {
+  async summarizeWorkout(input: WorkoutSummaryInput, targetLanguage?: 'en' | 'it'): Promise<WorkoutSummaryOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'progression')
 
@@ -145,6 +145,6 @@ Required JSON structure:
 }
 `
 
-    return await this.complete<WorkoutSummaryOutput>(prompt)
+    return await this.complete<WorkoutSummaryOutput>(prompt, targetLanguage)
   }
 }

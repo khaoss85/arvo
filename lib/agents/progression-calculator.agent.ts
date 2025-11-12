@@ -21,7 +21,7 @@ ALWAYS provide:
 Output valid JSON with the exact structure requested.`
   }
 
-  async suggestNextSet(input: ProgressionInput): Promise<ProgressionOutput> {
+  async suggestNextSet(input: ProgressionInput, targetLanguage?: 'en' | 'it'): Promise<ProgressionOutput> {
     console.log('[ProgressionCalculator] Starting suggestNextSet', {
       input: {
         lastSet: input.lastSet,
@@ -214,7 +214,7 @@ ${relevantInsights.length > 0 ? `
       insightsCount: relevantInsights.length
     })
 
-    const result = await this.complete<ProgressionOutput>(prompt)
+    const result = await this.complete<ProgressionOutput>(prompt, targetLanguage)
 
     // Ensure insightWarnings field exists if there were relevant insights
     if (relevantInsights.length > 0 && !result.insightWarnings) {

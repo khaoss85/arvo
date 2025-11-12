@@ -27,6 +27,7 @@ export interface SubstitutionInput {
   mesocycleWeek?: number
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
   caloricPhase?: 'bulk' | 'cut' | 'maintenance'
+  caloricIntakeKcal?: number | null  // Daily caloric surplus (+) or deficit (-)
   // Optional: reason for substitution (for future conversational expansion)
   substitutionReason?: string
   // Active insights and memories (NEW)
@@ -104,7 +105,7 @@ Validation Levels:
 Always provide 3-5 alternatives with varying equipment and difficulty.`
   }
 
-  async suggestSubstitutions(input: SubstitutionInput): Promise<SubstitutionOutput> {
+  async suggestSubstitutions(input: SubstitutionInput, targetLanguage?: 'en' | 'it'): Promise<SubstitutionOutput> {
     // Load user's training approach for context
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'exercise_selection')
@@ -134,7 +135,7 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
 
     // Build caloric phase context
     const caloricPhaseContext = input.caloricPhase
-      ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}`
+      ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}${input.caloricIntakeKcal ? ` (${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal/day)` : ''}`
       : ''
 
     // Build substitution reason context
@@ -196,6 +197,16 @@ ${memoriesContext}
 TRAINING APPROACH:
 ${approachContext}
 
+**HIERARCHY OF CONSTRAINTS:**
+1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable)
+2. 🎯 Periodization phase (if applicable)
+3. 🍽️ Caloric phase (modulate within approach's framework)
+4. 🎨 User insights and preferences (filter bad options, boost good ones)
+
+⚠️ CONFLICT RESOLUTION:
+When suggesting substitutions, if caloric phase or other context conflicts with approach philosophy, THE APPROACH WINS.
+Example: Heavy Duty approach + CUT → Don't suggest 3-4 sets when approach says 1-2 max
+
 REQUIREMENTS:
 1. Provide 3-5 alternatives that vary in:
    - Equipment type (barbell, dumbbell, cable, machine, bodyweight)
@@ -222,17 +233,24 @@ ${input.mesocyclePhase === 'deload' ? '   - Deload: Prefer easier alternatives, 
 ${input.mesocyclePhase === 'intensification' ? '   - Intensification: Maintain intensity, prefer similar stimuli' : ''}
 ${input.mesocyclePhase === 'accumulation' ? '   - Accumulation: Volume focus, variety acceptable' : ''}
 
-5. Consider caloric phase:
-${input.caloricPhase === 'cut' ? '   - CUT: Prioritize high stimulus-to-fatigue alternatives (machines > free weights, cables > barbells). Example: Suggest Leg Press over Squat, Machine Chest Press over Barbell Bench.' : ''}
-${input.caloricPhase === 'bulk' ? '   - BULK: Favor compound movements and free weights when possible. Example: Suggest Barbell variations over machines when appropriate.' : ''}
-${input.caloricPhase === 'maintenance' ? '   - MAINTENANCE: Balanced mix, no special bias needed' : ''}
+5. Consider caloric phase (APPROACH-AWARE MODULATION):
+${input.caloricPhase === 'cut' ? `   - CUT: Within approach constraints, prioritize high stimulus-to-fatigue alternatives:
+     * IF approach allows equipment flexibility: Prefer machines > free weights, cables > barbells
+     * IF approach mandates specific equipment: Stay within approach's equipment philosophy, adjust intensity
+     * Example (flexible approach): Suggest Leg Press over Squat, Machine Press over Barbell Bench
+     * Example (barbell-focused approach): Keep barbell variations, suggest reduced volume or lighter intensity` : ''}
+${input.caloricPhase === 'bulk' ? `   - BULK: Within approach constraints, favor intensity and progressive overload:
+     * IF approach allows equipment variety: Suggest compound free weights when appropriate
+     * IF approach has fixed equipment rules: Respect those rules, suggest intensity increases
+     * DO NOT suggest adding sets/exercises if approach has fixed volume constraints` : ''}
+${input.caloricPhase === 'maintenance' ? '   - MAINTENANCE: Balanced suggestions within approach framework, no special bias' : ''}
 
-6. Apply approach philosophy:
+6. Apply approach philosophy (PRIMARY CONSTRAINT):
    - Respect exercise selection principles from approach
    - Prioritize weak point development if relevant
    - Match ROM emphasis when possible
 
-6. Overall reasoning (2-3 sentences): Why these alternatives fit the workout plan
+7. Overall reasoning (2-3 sentences): Why these alternatives fit the workout plan
 
 Example rationalePreview for substitution:
 {
@@ -262,10 +280,10 @@ Return JSON format:
   "reasoning": "2-3 sentences"
 }`
 
-    return await this.complete<SubstitutionOutput>(prompt)
+    return await this.complete<SubstitutionOutput>(prompt, targetLanguage)
   }
 
-  async validateCustomSubstitution(input: CustomSubstitutionInput): Promise<SubstitutionSuggestion> {
+  async validateCustomSubstitution(input: CustomSubstitutionInput, targetLanguage?: 'en' | 'it'): Promise<SubstitutionSuggestion> {
     // First, check if a similar exercise already exists in the database
     // This ensures naming consistency and prevents duplicates
     const similarExercises = await ExerciseGenerationService.searchByNameServer(
@@ -327,6 +345,11 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
       ? `Current Phase: ${input.mesocyclePhase} (Week ${input.mesocycleWeek || 'N/A'})`
       : ''
 
+    // Build caloric phase context
+    const caloricPhaseContext = input.caloricPhase
+      ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}${input.caloricIntakeKcal ? ` (${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal/day)` : ''}`
+      : ''
+
     // Build user intent context
     const intentContext = input.userIntent
       ? `User's Reason: ${input.userIntent}`
@@ -353,6 +376,7 @@ ${equipmentContext}
 ${weakPointsContext}
 ${demographicContext}
 ${periodizationContext}
+${caloricPhaseContext}
 
 TRAINING APPROACH:
 ${approachContext}
@@ -458,6 +482,6 @@ Return JSON format (SINGLE suggestion, not array):
   }
 }`
 
-    return await this.complete<SubstitutionSuggestion>(prompt)
+    return await this.complete<SubstitutionSuggestion>(prompt, targetLanguage)
   }
 }

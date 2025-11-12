@@ -27,7 +27,9 @@ export class OnboardingService {
         mesocycle_phase: null, // No phase yet
         mesocycle_start_date: null, // No start date yet
         caloric_phase: null, // No caloric phase yet
-        caloric_phase_start_date: null // No caloric phase start date yet
+        caloric_phase_start_date: null, // No caloric phase start date yet
+        caloric_intake_kcal: null, // No caloric intake specified yet
+        preferred_language: 'en' // Default to English, will be auto-detected on first app load
       })
 
       // Generate first AI-powered workout using the collected preferences

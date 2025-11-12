@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sparkles, TrendingUp, Target, Heart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import { useGenerateWorkout } from '@/lib/hooks/useAI'
 import { WorkoutService } from '@/lib/services/workout.service'
@@ -29,6 +30,7 @@ const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string; de
 
 export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const router = useRouter()
+  const t = useTranslations('workout.summary')
   const { reset, startedAt, exercises, workout, setOverallMentalReadiness, overallMentalReadiness } = useWorkoutExecutionStore()
   const { mutate: generateWorkout, isPending } = useGenerateWorkout()
   const [stats, setStats] = useState<{
@@ -320,14 +322,14 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
           </svg>
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-2">Workout Complete!</h1>
-        <p className="text-gray-400 mb-8">Great work! Here's your summary:</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t('workoutComplete')}</h1>
+        <p className="text-gray-400 mb-8">{t('greatWork')}</p>
 
         {/* Mental Readiness Selector - Required before completion */}
         {!aiSummary && (
           <div className="mb-8">
-            <h3 className="text-lg font-medium text-white mb-3 text-center">How did you feel mentally during this workout?</h3>
-            <p className="text-sm text-gray-400 mb-4 text-center">This helps us understand your overall mental state and optimize future workouts</p>
+            <h3 className="text-lg font-medium text-white mb-3 text-center">{t('mentalReadinessTitle')}</h3>
+            <p className="text-sm text-gray-400 mb-4 text-center">{t('mentalReadinessDescription')}</p>
 
             <div className="grid grid-cols-5 gap-3">
               {[1, 2, 3, 4, 5].map((value) => (
@@ -359,7 +361,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
               disabled={!mentalReadinessSelected || !stats}
               className="w-full h-12 mt-6 bg-green-600 hover:bg-green-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {mentalReadinessSelected ? 'Complete Workout & Generate AI Summary' : 'Select Mental State to Continue'}
+              {mentalReadinessSelected ? t('completeWorkoutButton') : t('selectMentalState')}
             </Button>
           </div>
         )}
@@ -369,19 +371,19 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
           <div className="grid grid-cols-3 gap-4 mb-8">
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-2xl font-bold text-white mb-1">{stats.totalSets}</div>
-              <div className="text-sm text-gray-400">Sets</div>
+              <div className="text-sm text-gray-400">{t('sets')}</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-2xl font-bold text-white mb-1">
                 {Math.round(stats.totalVolume)}kg
               </div>
-              <div className="text-sm text-gray-400">Volume</div>
+              <div className="text-sm text-gray-400">{t('volume')}</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
               <div className="text-2xl font-bold text-white mb-1">
                 {formatDuration(stats.duration)}
               </div>
-              <div className="text-sm text-gray-400">Duration</div>
+              <div className="text-sm text-gray-400">{t('duration')}</div>
             </div>
           </div>
         )}
@@ -390,7 +392,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {loadingAiSummary && (
           <div className="mb-8 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/50 rounded-lg p-6 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
-            <p className="text-sm text-blue-300">Generating AI feedback...</p>
+            <p className="text-sm text-blue-300">{t('generatingAiFeedback')}</p>
           </div>
         )}
 
@@ -405,7 +407,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
                 aiSummary.overallPerformance === 'fair' ? 'text-yellow-400' :
                 'text-orange-400'
               }`}>
-                {aiSummary.overallPerformance.charAt(0).toUpperCase() + aiSummary.overallPerformance.slice(1)} Performance
+                {aiSummary.overallPerformance.charAt(0).toUpperCase() + aiSummary.overallPerformance.slice(1)} {t('performance')}
               </span>
             </div>
 
@@ -413,7 +415,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
             <div className="bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-800/50 rounded-lg p-4">
               <div className="flex items-start gap-2 mb-2">
                 <TrendingUp className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                <h3 className="text-sm font-semibold text-green-300">Today's Highlights</h3>
+                <h3 className="text-sm font-semibold text-green-300">{t('todaysHighlights')}</h3>
               </div>
               <ul className="space-y-1.5 ml-6">
                 {aiSummary.keyHighlights.map((highlight, idx) => (
@@ -426,7 +428,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
             <div className="bg-gradient-to-br from-blue-900/20 to-indigo-900/20 border border-blue-800/50 rounded-lg p-4">
               <div className="flex items-start gap-2 mb-2">
                 <Target className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                <h3 className="text-sm font-semibold text-blue-300">Quick Observations</h3>
+                <h3 className="text-sm font-semibold text-blue-300">{t('quickObservations')}</h3>
               </div>
               <ul className="space-y-1.5 ml-6">
                 {aiSummary.immediateInsights.map((insight, idx) => (
@@ -439,7 +441,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
             <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-800/50 rounded-lg p-4">
               <div className="flex items-start gap-2 mb-2">
                 <Heart className="w-4 h-4 text-purple-400 mt-0.5 flex-shrink-0" />
-                <h3 className="text-sm font-semibold text-purple-300">Recovery Advice</h3>
+                <h3 className="text-sm font-semibold text-purple-300">{t('recoveryAdvice')}</h3>
               </div>
               <p className="text-sm text-purple-100 ml-6">{aiSummary.recoveryRecommendation}</p>
             </div>
@@ -454,7 +456,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {/* Exercise Breakdown - Only show after AI summary */}
         {aiSummary && (
           <div className="mb-8 text-left">
-            <h3 className="text-lg font-medium text-white mb-4">Exercises Completed</h3>
+            <h3 className="text-lg font-medium text-white mb-4">{t('exercisesCompleted')}</h3>
             <div className="space-y-2">
               {exercises.map((ex, idx) => {
                 const hasModifications = ex.userAddedSets && ex.userAddedSets > 0
@@ -462,7 +464,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
                   <div key={idx} className="bg-gray-800 rounded p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-300">{ex.exerciseName}</span>
-                      <span className="text-sm text-gray-400">{ex.completedSets.length} sets</span>
+                      <span className="text-sm text-gray-400">{t('setsCount', { count: ex.completedSets.length })}</span>
                     </div>
 
                     {/* User Modification Metadata */}
@@ -470,10 +472,10 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
                       <div className="mt-2 pt-2 border-t border-gray-700">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-500">
-                            AI recommended: {ex.aiRecommendedSets} sets
+                            {t('aiRecommended', { count: ex.aiRecommendedSets })}
                           </span>
                           <span className="text-blue-400 font-medium">
-                            You added: +{ex.userAddedSets} {ex.userAddedSets === 1 ? 'set' : 'sets'}
+                            {t('youAdded', { count: ex.userAddedSets || 0 })}
                           </span>
                         </div>
                         {ex.userModifications?.aiWarnings && ex.userModifications.aiWarnings.length > 0 && (
@@ -493,27 +495,26 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {/* Workout Notes - Only show after AI summary */}
         {aiSummary && (
           <div className="mb-8 text-left">
-            <h3 className="text-lg font-medium text-white mb-2">Note di Allenamento (Opzionale)</h3>
+            <h3 className="text-lg font-medium text-white mb-2">{t('notesTitle')}</h3>
             <p className="text-sm text-gray-400 mb-3">
-              Hai avuto dolori? Problemi di tecnica? Preferenze su esercizi o recupero?
-              Condividi qui le tue osservazioni per migliorare i prossimi allenamenti.
+              {t('notesDescription')}
             </p>
             <textarea
               value={workoutNotes}
               onChange={(e) => setWorkoutNotes(e.target.value)}
-              placeholder="Es: Ho sentito un leggero dolore alla spalla sinistra durante il Military Press. Preferisco usare i manubri per le Chest Press..."
+              placeholder={t('notesPlaceholder')}
               className="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
               maxLength={1000}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-gray-500">{workoutNotes.length}/1000 caratteri</span>
+              <span className="text-xs text-gray-500">{t('charactersCount', { count: workoutNotes.length })}</span>
               {workoutNotes.trim() && (
                 <button
                   onClick={handleSaveNotes}
                   disabled={savingNotes}
                   className="text-xs text-purple-400 hover:text-purple-300 font-medium disabled:opacity-50"
                 >
-                  {savingNotes ? 'Salvataggio...' : 'Salva Note'}
+                  {savingNotes ? t('savingNotes') : t('saveNotes')}
                 </button>
               )}
             </div>
@@ -528,14 +529,14 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
               disabled={isPending}
               className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isPending ? 'Generating...' : 'Generate Next Workout'}
+              {isPending ? t('generating') : t('generateNextWorkout')}
             </Button>
             <Button
               onClick={handleFinish}
               variant="outline"
               className="w-full h-12 border-gray-700 text-gray-300"
             >
-              Back to Dashboard
+              {t('backToDashboard')}
             </Button>
           </div>
         )}

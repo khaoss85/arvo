@@ -1,6 +1,7 @@
 import 'server-only'
 import { getOpenAIClient } from '@/lib/ai/client'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
+import type { Locale } from '@/i18n'
 
 export type ExplanationType =
   | 'exercise_order'
@@ -38,12 +39,14 @@ export class ExplanationService {
    * @param type - Type of decision to explain
    * @param context - Context data for the explanation
    * @param approachId - Training approach ID
+   * @param targetLanguage - Target language for explanation (en or it)
    * @returns Concise explanation (1-2 sentences)
    */
   static async explainDecision(
     type: ExplanationType,
     context: ExplanationContext,
-    approachId: string
+    approachId: string,
+    targetLanguage: Locale = 'en'
   ): Promise<string> {
     const maxRetries = 3
     let lastError: any
@@ -51,11 +54,19 @@ export class ExplanationService {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const approach = await this.knowledge.loadApproach(approachId)
-        const prompt = this.buildExplanationPrompt(type, context, approach)
+        const basePrompt = this.buildExplanationPrompt(type, context, approach)
+
+        // Add language instruction
+        const languageInstruction = targetLanguage === 'it'
+          ? '\n\n🇮🇹 LANGUAGE: Respond in Italian (italiano). Keep it natural and concise for gym use.'
+          : '\n\n🇬🇧 LANGUAGE: Respond in English.'
+
+        const prompt = basePrompt + languageInstruction
 
         console.log(`[ExplanationService] Generating ${type} explanation (attempt ${attempt}/${maxRetries})`, {
           exerciseName: context.exerciseName,
           approachId,
+          targetLanguage,
           contextKeys: Object.keys(context)
         })
 
@@ -249,12 +260,14 @@ Your answer (1 sentence):`
     exerciseName: string,
     weakPoints: string[],
     rationale: string,
-    approachId: string
+    approachId: string,
+    targetLanguage: Locale = 'en'
   ): Promise<string> {
     return this.explainDecision(
       'exercise_selection',
       { exerciseName, weakPoints, rationale },
-      approachId
+      approachId,
+      targetLanguage
     )
   }
 
@@ -265,12 +278,14 @@ Your answer (1 sentence):`
     exerciseName: string,
     position: number,
     exerciseType: 'compound' | 'isolation',
-    approachId: string
+    approachId: string,
+    targetLanguage: Locale = 'en'
   ): Promise<string> {
     return this.explainDecision(
       'exercise_order',
       { exerciseName, position, exerciseType },
-      approachId
+      approachId,
+      targetLanguage
     )
   }
 
@@ -280,7 +295,8 @@ Your answer (1 sentence):`
   static async explainProgression(
     currentSet: { weight: number; reps: number; rir: number },
     suggestionRationale: string,
-    approachId: string
+    approachId: string,
+    targetLanguage: Locale = 'en'
   ): Promise<string> {
     return this.explainDecision(
       'set_progression',
@@ -290,7 +306,8 @@ Your answer (1 sentence):`
         rir: currentSet.rir,
         rationale: suggestionRationale
       },
-      approachId
+      approachId,
+      targetLanguage
     )
   }
 }

@@ -75,7 +75,7 @@ Output Structure:
 Tone: Direct, knowledgeable, supportive (like a good coach)`
   }
 
-  async generateRationale(input: WorkoutRationaleInput): Promise<WorkoutRationaleOutput> {
+  async generateRationale(input: WorkoutRationaleInput, targetLanguage?: 'en' | 'it'): Promise<WorkoutRationaleOutput> {
     // Load user's training approach for context
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'workout_planning')
@@ -164,6 +164,6 @@ Return JSON format:
   ]
 }`
 
-    return await this.complete<WorkoutRationaleOutput>(prompt)
+    return await this.complete<WorkoutRationaleOutput>(prompt, targetLanguage)
   }
 }

@@ -141,6 +141,7 @@ export function ExerciseCard({
 
     setLoadingExerciseExplanation(true)
     const result = await explainExerciseSelectionAction(
+      userId,
       exercise.exerciseName,
       [], // Weak points would come from user profile
       'Selected by AI based on training approach',
@@ -165,6 +166,7 @@ export function ExerciseCard({
 
     setLoadingProgressionExplanation(true)
     const result = await explainProgressionAction(
+      userId,
       {
         weight: lastCompletedSet.weight,
         reps: lastCompletedSet.reps,

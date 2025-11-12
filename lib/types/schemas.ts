@@ -52,13 +52,14 @@ export const userProfileSchema = z.object({
   // Caloric phase tracking fields
   caloric_phase: z.enum(['bulk', 'cut', 'maintenance']).nullable(),
   caloric_phase_start_date: z.string().datetime().nullable(),
+  caloric_intake_kcal: z.number().int().min(-1500).max(1500).nullable(),
   // Demographic fields for personalized AI training
   gender: z.enum(['male', 'female', 'other']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
   weight: z.number().min(0).max(500).nullable(), // kg
   height: z.number().min(0).max(300).nullable(), // cm
   // Language preference for UI and AI-generated content
-  preferred_language: z.enum(['en', 'it']).default('en').optional(),
+  preferred_language: z.enum(['en', 'it']).default('en'),
 });
 
 export const insertUserProfileSchema = userProfileSchema;
@@ -118,6 +119,7 @@ export const caloricPhaseHistorySchema = z.object({
   is_active: z.boolean(),
   duration_weeks: z.number().nullable(), // Computed field
   avg_weight_change: z.number().nullable(), // kg gained/lost
+  caloric_intake_kcal: z.number().int().min(-1500).max(1500).nullable(), // Daily caloric surplus/deficit
   notes: z.string().nullable(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
