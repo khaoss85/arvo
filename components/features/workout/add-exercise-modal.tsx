@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Search, Dumbbell, Target, Sparkles, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
+import { X, Search, Dumbbell, Target, Sparkles, CheckCircle, AlertCircle, XCircle, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { suggestExerciseAdditionAction, validateExerciseAdditionAction } from '@/app/actions/ai-actions'
 import type { ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
 import type { ExerciseAdditionInput, ExerciseAdditionOutput } from '@/lib/agents/exercise-addition-validator.agent'
 import { ExerciseValidationModal } from './exercise-validation-modal'
+import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { useUIStore } from '@/lib/stores/ui.store'
 
 interface Exercise {
@@ -80,6 +81,10 @@ export function AddExerciseModal({
   const [showValidationModal, setShowValidationModal] = useState(false)
   const [validationResult, setValidationResult] = useState<ExerciseAdditionOutput | null>(null)
   const [pendingExercise, setPendingExercise] = useState<Exercise | null>(null)
+
+  // Animation modal state
+  const [animationModalOpen, setAnimationModalOpen] = useState<string | null>(null)
+  const [selectedExerciseForAnimation, setSelectedExerciseForAnimation] = useState<Exercise | null>(null)
 
   // Toast notifications
   const { addToast } = useUIStore()
@@ -442,7 +447,23 @@ export function AddExerciseModal({
                   className="flex items-start gap-3 p-4 bg-gray-800 hover:bg-gray-750 rounded-lg border border-gray-700 hover:border-blue-500 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex-1">
-                    <h3 className="text-white font-medium">{exercise.name}</h3>
+                    <div className="flex items-center gap-2">
+                      {exercise.hasAnimation && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setAnimationModalOpen(exercise.id)
+                            setSelectedExerciseForAnimation(exercise)
+                          }}
+                          className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                          aria-label={`View ${exercise.name} animation`}
+                          title="Visualizza esercizio"
+                        >
+                          <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                        </button>
+                      )}
+                      <h3 className="text-white font-medium">{exercise.name}</h3>
+                    </div>
                     <div className="flex gap-2 mt-1 text-xs text-gray-400">
                       <span className="px-2 py-0.5 bg-gray-700 rounded">
                         {exercise.bodyPart || 'General'}
@@ -457,12 +478,6 @@ export function AddExerciseModal({
                       )}
                     </div>
                   </div>
-                  {exercise.hasAnimation && (
-                    <div className="text-xs text-green-400 flex items-center gap-1">
-                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      Animation
-                    </div>
-                  )}
                 </button>
               ))}
             </div>
@@ -489,6 +504,19 @@ export function AddExerciseModal({
           onProceed={handleProceedWithExercise}
           validation={validationResult}
           exerciseName={pendingExercise.name}
+        />
+      )}
+
+      {/* Exercise Animation Modal */}
+      {animationModalOpen !== null && selectedExerciseForAnimation && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => {
+            setAnimationModalOpen(null)
+            setSelectedExerciseForAnimation(null)
+          }}
+          exerciseName={selectedExerciseForAnimation.name}
+          animationUrl={selectedExerciseForAnimation.animationUrl || null}
         />
       )}
     </div>
