@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
-import { resolve } from 'path'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import type { TrainingApproach } from '@/lib/knowledge/types'
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Load environment variables from .env.local
 dotenv.config({ path: resolve(__dirname, '../.env.local') })
@@ -56,10 +61,24 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         description: 'Long rest periods (3-5 minutes) to ensure full recovery for maximum intensity',
         rationale: 'ATP replenishment and nervous system recovery for true maximum effort'
       },
+      tempo: {
+        eccentric: 4,
+        pauseBottom: 0,
+        concentric: 2,
+        pauseTop: 0,
+        description: 'Slow controlled eccentric (4 seconds) and explosive concentric (2 seconds) to maximize time under tension and fiber recruitment',
+        rationale: 'Slow negatives eliminate momentum and increase mechanical stress; explosive positives maximize motor unit recruitment'
+      },
       rir: {
         typical: -1, // BEYOND failure
         description: 'Train to momentary muscular failure and beyond using intensity techniques',
         context: 'Failure is the starting point, not the endpoint'
+      },
+      sessionDuration: {
+        typical: [30, 45],
+        description: 'Heavy Duty workouts are brief but brutally intense - 30 to 45 minutes maximum',
+        totalSets: [6, 8],
+        rationale: 'After 6-8 all-out sets to failure, nervous system is exhausted. More work becomes counterproductive.'
       }
     },
 
@@ -137,33 +156,97 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
       shortened: 20,
       fullRange: 50,
       principles: [
-        'Emphasize controlled eccentric (negative) phase - 3-4 seconds',
-        'Pause briefly at stretched position for maximum fiber recruitment',
-        'Explosive concentric (positive) phase while maintaining control',
-        'Full ROM on all exercises unless injury prevents it'
+        'Emphasize controlled eccentric (negative) phase - exactly 4 seconds',
+        'Brief pause at stretched position for maximum fiber recruitment',
+        'Explosive concentric (positive) phase - approximately 2 seconds while maintaining control',
+        'Full ROM on all exercises unless injury prevents it',
+        'Eliminate momentum completely - every rep must be strict and controlled'
       ]
     },
 
     // Exercise Selection Principles
     exerciseSelectionPrinciples: {
-      movementPatterns: [
-        'horizontal_push',
-        'horizontal_pull',
-        'vertical_pull',
-        'squat',
-        'hinge',
-        'vertical_push'
-      ],
+      movementPatterns: {
+        horizontalPush: [
+          'barbell bench press',
+          'incline barbell bench press',
+          'hammer strength chest press',
+          'machine chest press',
+          'decline barbell bench press',
+          'chest press machine (plate-loaded)'
+        ],
+        verticalPush: [
+          'barbell overhead press',
+          'dumbbell shoulder press',
+          'hammer strength shoulder press',
+          'machine shoulder press',
+          'smith machine overhead press'
+        ],
+        horizontalPull: [
+          'barbell row',
+          'hammer strength row',
+          'chest-supported row machine',
+          'seated cable row',
+          'machine row',
+          'pendlay row',
+          't-bar row'
+        ],
+        verticalPull: [
+          'weighted chin-ups',
+          'weighted pull-ups',
+          'lat pulldown',
+          'machine pulldown',
+          'hammer strength pulldown',
+          'close-grip pulldown'
+        ],
+        squatPattern: [
+          'leg press',
+          'hack squat machine',
+          'smith machine squat',
+          'leg press (45-degree)',
+          'vertical leg press',
+          'barbell squat (occasionally)'
+        ],
+        hingePattern: [
+          'leg curl machine',
+          'lying leg curls',
+          'seated leg curls',
+          'back extension',
+          'reverse hyperextension',
+          'romanian deadlift (sparingly)',
+          'stiff-leg deadlift (machine)'
+        ],
+        lungePattern: [], // Not emphasized in Heavy Duty
+        isolation: {
+          chest: ['pec deck', 'cable crossovers', 'dumbbell flyes'],
+          shoulders: ['lateral raise machine', 'rear delt machine', 'cable lateral raises'],
+          back: ['straight-arm pulldown', 'pullover machine'],
+          biceps: ['barbell curl', 'cable curl', 'preacher curl machine', 'hammer curl'],
+          triceps: ['cable pushdown', 'overhead extension', 'dip machine', 'close-grip bench'],
+          quads: ['leg extension'],
+          hamstrings: ['leg curl variations'],
+          calves: ['calf raise machine', 'seated calf raise', 'leg press calf raise']
+        }
+      },
       unilateralRequirements: {
         minPerWorkout: 0,
         targetMuscles: [],
-        rationale: 'Bilateral exercises allow maximum loading and intensity. Unilateral work is inefficient for Heavy Duty.'
+        rationale: 'Bilateral exercises allow maximum loading and intensity. Unilateral work is inefficient for Heavy Duty - it divides effort and extends workout duration unnecessarily.'
       },
       compoundToIsolationRatio: {
         compound: 90,
         isolation: 10,
-        rationale: 'Compound movements provide maximum muscle fiber recruitment and growth stimulus per unit of recovery cost.'
-      }
+        rationale: 'Compound movements provide maximum muscle fiber recruitment and growth stimulus per unit of recovery cost. Isolation used only for pre-exhaust or specific weak points.'
+      },
+      equipmentVariations: [
+        'Machines are STRONGLY PREFERRED in Heavy Duty - they allow pure muscular failure without stabilization fatigue',
+        'Free weights (barbells) are acceptable for primary compounds: bench press, overhead press, row',
+        'Cables excellent for isolation exercises as they provide constant tension throughout ROM',
+        'Dumbbells can be used but require spotter for maximum safety when training beyond failure',
+        'Smith machines acceptable for pressing movements - reduce stabilizer fatigue',
+        'AVOID: Unstable surfaces, balance-based exercises, TRX, bosu balls - they limit maximum intensity',
+        'Machine selection priority: Hammer Strength > Nautilus > Cybex > generic plate-loaded > cable'
+      ]
     },
 
     // Stimulus-to-Fatigue - Critical concept in Heavy Duty
@@ -172,45 +255,165 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         'Select exercises with highest muscle stimulus relative to systemic fatigue',
         'Avoid exercises that exhaust the nervous system before muscles reach failure',
         'Pre-exhaust technique: isolation before compound to ensure muscle failure, not systemic failure',
-        'Machine exercises often superior to free weights for targeting muscles without systemic fatigue'
+        'Machine exercises often superior to free weights for targeting muscles without systemic fatigue',
+        'The goal: muscles fail before CNS fails - this maximizes hypertrophy while minimizing recovery debt'
       ],
-      applicationGuidelines: 'If an exercise leaves you exhausted but muscles not fully fatigued, replace it with a more direct movement'
+      highStimulusLowFatigue: [
+        'leg press (all variations)',
+        'leg curl machine',
+        'leg extension',
+        'calf press machine',
+        'lat pulldown machine',
+        'machine row (all types)',
+        'hammer strength chest press',
+        'machine chest press',
+        'pec deck / chest fly machine',
+        'machine shoulder press',
+        'lateral raise machine',
+        'rear delt machine',
+        'cable curls',
+        'cable pushdowns',
+        'preacher curl machine',
+        'tricep extension machine',
+        'back extension machine',
+        'pullover machine'
+      ],
+      moderateStimulusFatigue: [
+        'barbell bench press',
+        'incline barbell bench press',
+        'barbell overhead press',
+        'barbell row',
+        't-bar row',
+        'weighted chin-ups',
+        'weighted dips',
+        'dumbbell bench press',
+        'dumbbell shoulder press',
+        'dumbbell rows',
+        'hack squat machine',
+        'smith machine squat',
+        'barbell curl',
+        'close-grip bench press'
+      ],
+      lowStimulusHighFatigue: [
+        'heavy conventional deadlift (avoid unless specific goal)',
+        'heavy low-bar squat (prefer leg press)',
+        'standing barbell row with maximum weight (prefer machine)',
+        'olympic lifts (clean, snatch - NOT recommended for Heavy Duty)',
+        'heavy farmer carries',
+        'yoke walks',
+        'any exercise requiring significant balance/stabilization under maximal load'
+      ],
+      applicationGuidelines: 'Prioritize high S:F exercises (machines) to allow training to true muscular failure without systemic fatigue limiting you. Use moderate S:F exercises for primary compounds if machine not available. AVOID low S:F exercises - they exhaust CNS before muscles fully fail, defeating the purpose of Heavy Duty.'
     },
 
     // Advanced Techniques - Mentzer's intensity techniques
     advancedTechniques: {
       forcedReps: {
-        when: 'After reaching concentric failure',
-        how: 'Training partner assists just enough to complete 1-2 additional reps',
-        protocol: 'Use on final set of compound movements only'
+        when: 'After reaching concentric failure on the working set',
+        how: 'Training partner assists just enough to complete 1-2 additional reps beyond failure',
+        protocol: 'Use on final set of compound movements only. Partner provides minimal assistance - just enough to keep bar moving.',
+        frequency: 'Not every workout - use when feeling strong and well-recovered',
+        suitableExercises: ['barbell bench press', 'machine chest press', 'leg press', 'shoulder press', 'lat pulldown'],
+        cautions: 'Requires reliable training partner. Do not use on exercises where failure is dangerous (squat without safety).'
       },
       negatives: {
-        when: 'After forced reps are no longer possible',
-        how: 'Partner lifts weight, you lower it over 8-10 seconds',
-        protocol: '1-2 negative reps maximum to prevent overtraining'
+        when: 'After forced reps are no longer possible, or as standalone technique',
+        how: 'Partner lifts weight to top position, you control the eccentric (lowering) phase over 8-10 seconds',
+        protocol: '3-4 negative reps maximum after concentric failure. Use 105-110% of your 1RM if doing negatives only.',
+        frequency: 'Once every 2-3 workouts for a given muscle group',
+        suitableExercises: ['lat pulldown', 'machine chest press', 'leg curl', 'leg press', 'cable movements'],
+        cautions: 'Extremely demanding on recovery. Causes significant muscle damage. Reduce frequency if experiencing excessive soreness.'
       },
       staticHolds: {
-        when: 'When negatives are no longer controllable',
-        how: 'Hold weight at mid-range position until muscles give out',
-        protocol: 'Final technique in progression - signals complete muscular failure'
+        when: 'When negatives are no longer controllable - absolute final technique',
+        how: 'Hold weight at mid-range position (strongest leverage) until muscles give out completely',
+        protocol: 'Hold for 15-30 seconds or until position cannot be maintained. Signals complete muscular exhaustion.',
+        frequency: 'Rarely - only on exercises where safe to fail (machines, exercises with safety catches)',
+        suitableExercises: ['machine exercises', 'leg press', 'smith machine movements', 'cable exercises'],
+        cautions: 'Only use on machines or with safety equipment. Do not attempt on free weight exercises where dropping weight is dangerous.'
       },
       restPause: {
-        when: 'For very advanced trainees only',
-        how: 'Reach failure, rest 10-15 seconds, perform 2-3 more reps',
-        protocol: 'Use sparingly - extremely demanding on recovery'
+        when: 'For very advanced trainees only - alternative to forced reps when training alone',
+        how: 'Reach failure, rest 15-20 seconds while staying in position, perform 2-3 more reps to failure again',
+        protocol: 'Can repeat 2-3 times maximum. Total rest-pause set should not exceed 90 seconds total time.',
+        frequency: 'Use sparingly - 1-2 exercises per workout maximum, not every session',
+        suitableExercises: ['machine exercises', 'cable movements', 'exercises where you can safely rack/set down weight'],
+        cautions: 'Extremely demanding on CNS and recovery. May require extra rest day before next workout. Not for beginners.'
       },
       preExhaust: {
-        when: 'When systemic fatigue limits muscle failure on compounds',
-        how: 'Isolation exercise immediately before compound (e.g., flyes before bench press)',
-        protocol: 'No rest between pre-exhaust and compound movement'
+        when: 'When systemic fatigue limits muscle failure on compounds (e.g., lower back gives out before lats on rows)',
+        how: 'Isolation exercise immediately before compound with NO REST between exercises',
+        protocol: 'Isolation to failure (6-10 reps), immediately perform compound to failure (6-10 reps). Counts as ONE working set for that muscle.',
+        frequency: 'Can be used every workout as primary technique for stubborn muscle groups',
+        suitableExercises: [
+          'Pec deck → Bench press (chest)',
+          'Flyes → Dips (chest)',
+          'Leg extension → Leg press (quads)',
+          'Leg curl → Leg press (hamstrings)',
+          'Lateral raises → Overhead press (shoulders)',
+          'Pullover → Lat pulldown (lats)',
+          'Leg extension → Squat (quads)'
+        ],
+        cautions: 'Expect significant strength reduction on compound (30-40% less weight). This is normal and desired - muscle fails before systemic fatigue.',
+        rationale: 'Pre-exhaust ensures the target muscle, not stabilizers or synergists, is the limiting factor. Allows true muscular failure on compounds.'
       }
     },
 
-    // Split Variations - Mentzer uses NO variations
+    // Split Variations - Mentzer's classic split options
     splitVariations: {
-      variationStrategy: 'Heavy Duty does NOT use workout variations. Repeat the EXACT same workout each cycle for progressive overload tracking.',
-      variationLabels: [],
-      rotationLogic: 'Same exercises, same order, every workout. Only weights and reps change as you progress.'
+      variationStrategy: 'Heavy Duty offers two primary split structures, but within each split there are NO workout variations (no A/B alternation). You perform the EXACT same workout each time that body part is trained.',
+      splitOptions: [
+        {
+          name: '3-Day Split (Classic Heavy Duty)',
+          description: 'Train 3 times per week with full recovery days between sessions',
+          schedule: 'Mon/Wed/Fri or Tue/Thu/Sat pattern with rest days between',
+          workouts: [
+            {
+              name: 'Workout 1: Chest & Back',
+              muscleGroups: ['chest', 'back'],
+              exercises: '2-3 exercises total (1 for chest, 1-2 for back)',
+              example: 'Incline Barbell Press (1 set), Lat Pulldown (1 set), Machine Row (1 set)'
+            },
+            {
+              name: 'Workout 2: Legs',
+              muscleGroups: ['quads', 'hamstrings', 'calves'],
+              exercises: '3-4 exercises total',
+              example: 'Leg Press (1 set), Leg Extension (1 set), Leg Curl (1 set), Calf Press (1 set)'
+            },
+            {
+              name: 'Workout 3: Shoulders & Arms',
+              muscleGroups: ['shoulders', 'biceps', 'triceps'],
+              exercises: '3-4 exercises total',
+              example: 'Machine Shoulder Press (1 set), Lateral Raise Machine (1 set), Barbell Curl (1 set), Cable Pushdown (1 set)'
+            }
+          ],
+          frequency: 'Each muscle trained once every 7 days',
+          rationale: 'Allows maximum recovery between sessions. Each muscle gets full week to grow.'
+        },
+        {
+          name: '2-Day Full-Body (Advanced Heavy Duty)',
+          description: 'Two full-body sessions per week, alternating workouts A and B',
+          schedule: 'Mon/Thu or Tue/Fri pattern with 2-3 days rest between sessions',
+          workouts: [
+            {
+              name: 'Workout A: Primary Compounds',
+              muscleGroups: ['chest', 'back', 'legs', 'abs'],
+              exercises: '4-5 exercises covering all major muscle groups',
+              example: 'Leg Press (1 set), Barbell Bench Press (1 set), Lat Pulldown (1 set), Calf Raise (1 set), Crunch (1 set)'
+            },
+            {
+              name: 'Workout B: Secondary Compounds + Arms',
+              muscleGroups: ['shoulders', 'back', 'legs', 'arms'],
+              exercises: '4-5 exercises covering all major muscle groups',
+              example: 'Leg Curl (1 set), Overhead Press (1 set), Machine Row (1 set), Barbell Curl (1 set), Tricep Extension (1 set)'
+            }
+          ],
+          frequency: 'Each muscle trained once every 7-10 days (alternating patterns)',
+          rationale: 'Distributes systemic fatigue across two shorter sessions. Still maintains low frequency per muscle.'
+        }
+      ],
+      variationLabels: [], // NO A/B variations within each split - same workout repeated each time
+      rotationLogic: 'Within each split option, you perform the EXACT same workout every time (same exercises, same order). Only weights and reps progress. The split structure determines which muscles are trained together, but there is no workout-to-workout variation.'
     },
 
     // Periodization - Linear progression with deloads
