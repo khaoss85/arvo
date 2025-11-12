@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
-import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
+import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
+import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import type { Workout } from '@/lib/types/schemas'
 import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
@@ -14,6 +15,9 @@ import { AnimationService } from '@/lib/services/animation.service'
 import { ReorderExercisesReviewModal } from './reorder-exercises-review-modal'
 import { AddSetButton } from './add-set-button'
 import { UserModificationBadge } from './user-modification-badge'
+import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
+import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
+import { validationCache } from '@/lib/utils/validation-cache'
 
 interface Exercise {
   name: string
@@ -252,6 +256,73 @@ export function RefineWorkoutPage({
     } catch (error) {
       console.error('Error saving custom exercise:', error)
       alert('Failed to save changes. Please try again.')
+    }
+  }
+
+  const handleValidateAddSet = async (exerciseIndex: number): Promise<ModificationValidationOutput | null> => {
+    const exercise = exercises[exerciseIndex]
+    if (!exercise || !workout || !userId) return null
+
+    try {
+      // Check cache first
+      const cached = validationCache.get(
+        exercise.name,
+        exercise.sets,
+        exercise.sets + 1,
+        userId
+      )
+      if (cached) {
+        return cached
+      }
+
+      // Extract muscle groups
+      const muscleGroups = extractMuscleGroupsFromExercise(
+        exercise.name,
+        exercise.equipmentVariant
+      )
+
+      // Build validation input
+      const validationInput: ModificationValidationInput = {
+        exerciseInfo: {
+          name: exercise.name,
+          equipmentVariant: exercise.equipmentVariant,
+          currentSets: exercise.sets,
+          proposedSets: exercise.sets + 1,
+          muscleGroups,
+          // TODO: Could enrich with movement pattern, ROM emphasis, stimulus-to-fatigue from exercise database
+        },
+        workoutContext: {
+          workoutType: inferWorkoutType(exercises) as any,
+          totalExercises: exercises.length,
+          // TODO: Could calculate weekly volume from user's completed workouts
+        },
+        userContext: {
+          userId,
+          approachId: workout.approach_id || '', // Will be enriched server-side
+        },
+      }
+
+      // Call validation action
+      const result = await validateWorkoutModificationAction(userId, validationInput)
+
+      if (!result.success || !result.validation) {
+        console.error('Validation failed:', result.error)
+        return null
+      }
+
+      // Cache the result
+      validationCache.set(
+        exercise.name,
+        exercise.sets,
+        exercise.sets + 1,
+        userId,
+        result.validation
+      )
+
+      return result.validation
+    } catch (error) {
+      console.error('Error validating modification:', error)
+      return null
     }
   }
 
@@ -496,6 +567,9 @@ export function RefineWorkoutPage({
                   onAddSet={() => handleAddSet(index)}
                   variant="inline"
                   userAddedSets={exercise.userAddedSets}
+                  enableAIValidation={true}
+                  onRequestValidation={() => handleValidateAddSet(index)}
+                  exerciseName={exercise.name}
                 />
               </div>
 

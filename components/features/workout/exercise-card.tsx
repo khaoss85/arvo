@@ -4,13 +4,17 @@ import { useState, useEffect, useRef } from 'react'
 import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
-import { explainExerciseSelectionAction, explainProgressionAction } from '@/app/actions/ai-actions'
+import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
+import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AddSetButton } from './add-set-button'
 import { UserModificationBadge } from './user-modification-badge'
 import { Button } from '@/components/ui/button'
+import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
+import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
+import { validationCache } from '@/lib/utils/validation-cache'
 
 // Mental readiness emoji mapping
 const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
@@ -36,7 +40,7 @@ export function ExerciseCard({
   userId,
   approachId
 }: ExerciseCardProps) {
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, exercises: allExercises, workout } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
   const [showSuggestion, setShowSuggestion] = useState(false)
   const [showExerciseExplanation, setShowExerciseExplanation] = useState(false)
@@ -209,6 +213,72 @@ export function ExerciseCard({
       )
     }
   }, [lastCompletedSet, exercise.currentAISuggestion, isLastSet, currentSetNumber])
+
+  const handleValidateAddSet = async (): Promise<ModificationValidationOutput | null> => {
+    if (!exercise || !userId || !allExercises || !workout) return null
+
+    try {
+      // Check cache first
+      const cached = validationCache.get(
+        exercise.exerciseName,
+        exercise.targetSets,
+        exercise.targetSets + 1,
+        userId
+      )
+      if (cached) {
+        return cached
+      }
+
+      // Extract muscle groups
+      const muscleGroups = extractMuscleGroupsFromExercise(
+        exercise.exerciseName,
+        exercise.equipmentVariant
+      )
+
+      // Build validation input
+      const validationInput: ModificationValidationInput = {
+        exerciseInfo: {
+          name: exercise.exerciseName,
+          equipmentVariant: exercise.equipmentVariant,
+          currentSets: exercise.targetSets,
+          proposedSets: exercise.targetSets + 1,
+          muscleGroups,
+        },
+        workoutContext: {
+          workoutType: inferWorkoutType(
+            allExercises.map(ex => ({ name: ex.exerciseName }))
+          ) as any,
+          totalExercises: allExercises.length,
+        },
+        userContext: {
+          userId,
+          approachId: workout?.approach_id || approachId,
+        },
+      }
+
+      // Call validation action
+      const result = await validateWorkoutModificationAction(userId, validationInput)
+
+      if (!result.success || !result.validation) {
+        console.error('Validation failed:', result.error)
+        return null
+      }
+
+      // Cache the result
+      validationCache.set(
+        exercise.exerciseName,
+        exercise.targetSets,
+        exercise.targetSets + 1,
+        userId,
+        result.validation
+      )
+
+      return result.validation
+    } catch (error) {
+      console.error('Error validating modification:', error)
+      return null
+    }
+  }
 
   const handleMoveToNext = () => {
     setShowSuggestion(false)
@@ -430,6 +500,10 @@ export function ExerciseCard({
               currentSets={exercise.targetSets}
               onAddSet={() => addSetToExercise(exerciseIndex)}
               variant="full"
+              userAddedSets={exercise.userAddedSets}
+              enableAIValidation={true}
+              onRequestValidation={handleValidateAddSet}
+              exerciseName={exercise.exerciseName}
             />
           </div>
 
