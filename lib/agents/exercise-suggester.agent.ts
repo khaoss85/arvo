@@ -251,7 +251,7 @@ Required JSON structure:
 
     if (patterns.length > 0) {
       context += `\nMovement Patterns Covered:\n`
-      const uniquePatterns = [...new Set(patterns)]
+      const uniquePatterns = Array.from(new Set(patterns))
       uniquePatterns.forEach(pattern => {
         context += `- ${pattern}\n`
       })
