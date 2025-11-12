@@ -711,7 +711,6 @@ export function RefineWorkoutPage({
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm">{alt.exercise.name}</p>
                             {/* Animation Preview Icon */}
                             <button
                               onClick={async (e) => {
@@ -734,6 +733,7 @@ export function RefineWorkoutPage({
                             >
                               <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                             </button>
+                            <p className="font-medium text-sm">{alt.exercise.name}</p>
                           </div>
                           {alt.exercise.equipmentVariant && (
                             <p className="text-xs text-muted-foreground">{alt.exercise.equipmentVariant}</p>
