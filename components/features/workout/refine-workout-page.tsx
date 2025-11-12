@@ -477,8 +477,9 @@ export function RefineWorkoutPage({
   }
 
   const handleOpenAddExercise = async () => {
-    // Count user-added exercises
-    const userAddedCount = exercises.filter(ex => !ex.aiRecommendedSets && ex.aiRecommendedSets !== 0).length
+    // Count user-added exercises (those without AI recommendation)
+    // User-added exercises have aiRecommendedSets === undefined
+    const userAddedCount = exercises.filter(ex => ex.aiRecommendedSets === undefined).length
 
     // Hard limit: max 3 extra exercises
     if (userAddedCount >= 3) {
