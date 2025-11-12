@@ -9,6 +9,9 @@ import { EquipmentPreferencesEditor } from "@/components/features/settings/equip
 import { ResetDataSection } from "@/components/features/settings/reset-data-section"
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { MethodDetails } from "@/components/features/settings/method-details"
+import { ApproachSwitcher } from "@/components/features/settings/approach-switcher"
+import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
+import { TrainingApproachService } from "@/lib/services/training-approach.service"
 import { Card } from "@/components/ui/card"
 
 export const metadata: Metadata = {
@@ -29,6 +32,13 @@ export default async function SettingsPage() {
   if (!profile) {
     redirect("/onboarding/approach")
   }
+
+  // Get current training approach
+  const currentApproach = profile.approach_id
+    ? await TrainingApproachService.getAllServer().then(
+        approaches => approaches.find(a => a.id === profile.approach_id)
+      )
+    : null
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -78,46 +88,22 @@ export default async function SettingsPage() {
 
           {/* Training Approach Section */}
           <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Training Approach</h3>
-                <p className="text-sm text-muted-foreground">
-                  The methodology guiding your workout programming
-                </p>
-              </div>
-
-              {profile.approach_id ? (
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-medium text-blue-900 dark:text-blue-100">
-                      Current Approach
-                    </span>
-                  </div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Your training is currently based on a specific methodology. The AI uses this approach to guide exercise selection, progression, and programming decisions.
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-500">
-                  No training approach selected
-                </p>
-              )}
-
-              <div className="pt-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Changing your training approach will affect how workouts are generated. To change your approach, please complete the onboarding flow again or contact support.
-                </p>
-              </div>
-            </div>
+            <ApproachSwitcher
+              userId={user.id}
+              currentApproachId={profile.approach_id}
+              currentApproachName={currentApproach?.name}
+            />
           </Card>
 
           {/* Method Details - Educational view of training methodology */}
           {profile.approach_id && (
             <MethodDetails approachId={profile.approach_id} />
           )}
+
+          {/* Approach History Timeline */}
+          <Card className="p-6">
+            <ApproachHistoryTimeline userId={user.id} />
+          </Card>
 
           {/* Account Info Section */}
           <Card className="p-6">
