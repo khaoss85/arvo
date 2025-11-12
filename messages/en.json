@@ -1,0 +1,148 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "back": "Back",
+      "next": "Next",
+      "skip": "Skip",
+      "close": "Close",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "edit": "Edit",
+      "submit": "Submit",
+      "loading": "Loading..."
+    },
+    "labels": {
+      "email": "Email address",
+      "password": "Password",
+      "optional": "Optional",
+      "required": "Required"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "Network error. Please check your connection.",
+      "unauthorized": "You need to be logged in to do this.",
+      "notFound": "The requested resource was not found."
+    },
+    "success": {
+      "saved": "Saved successfully!",
+      "updated": "Updated successfully!",
+      "deleted": "Deleted successfully!"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Log in to your account",
+      "emailLabel": "Email address",
+      "submitButton": "Continue with email",
+      "magicLinkSent": "Check your email for a magic link to sign in.",
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "failed": "Failed to send magic link. Please try again."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {email}!",
+    "recentActivity": "Recent Activity",
+    "noWorkouts": "No completed workouts yet",
+    "startWorkout": "Start Workout",
+    "resumeWorkout": "Resume Workout",
+    "generateWorkout": "Generate New Workout"
+  },
+  "workout": {
+    "summary": {
+      "title": "Workout Summary",
+      "notesTitle": "Workout Notes (Optional)",
+      "notesDescription": "Did you experience any pain? Technique issues? Preferences on exercises or recovery? Share your observations here to improve your future workouts.",
+      "notesPlaceholder": "E.g., I felt a slight pain in my left shoulder during the Military Press. I prefer to use dumbbells for Chest Press...",
+      "mentalReadinessRequired": "Please select your mental state before completing the workout",
+      "completeWorkout": "Complete Workout",
+      "completing": "Completing..."
+    },
+    "execution": {
+      "setLogger": "Set Logger",
+      "reps": "Reps",
+      "weight": "Weight",
+      "rir": "RIR",
+      "logSet": "Log Set",
+      "nextExercise": "Next Exercise",
+      "previousExercise": "Previous Exercise",
+      "finishWorkout": "Finish Workout"
+    },
+    "substitution": {
+      "title": "Exercise Substitution",
+      "loading": "Finding alternatives...",
+      "selectAlternative": "Select an alternative exercise",
+      "keepOriginal": "Keep original exercise"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to Arvo",
+    "subtitle": "Let's set up your personalized training program",
+    "steps": {
+      "approach": {
+        "title": "Select Your Training Approach",
+        "description": "Choose the training methodology that best fits your goals"
+      },
+      "split": {
+        "title": "Configure Your Split",
+        "description": "How many days per week do you want to train?"
+      },
+      "equipment": {
+        "title": "Available Equipment",
+        "description": "Select the equipment you have access to"
+      },
+      "weakPoints": {
+        "title": "Weak Points",
+        "description": "Which muscle groups need extra attention?"
+      },
+      "strength": {
+        "title": "Strength Baseline",
+        "description": "Help us understand your current strength levels"
+      },
+      "profile": {
+        "title": "Complete Your Profile",
+        "description": "Tell us a bit about yourself"
+      },
+      "review": {
+        "title": "Review & Confirm",
+        "description": "Review your selections before we generate your program"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "email": "Email",
+      "age": "Age",
+      "gender": "Gender",
+      "experience": "Training Experience"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "language": "Language",
+      "languageDescription": "Choose your preferred language for the interface and AI-generated content",
+      "theme": "Theme",
+      "notifications": "Notifications"
+    },
+    "account": {
+      "title": "Account",
+      "signOut": "Sign Out",
+      "deleteAccount": "Delete Account"
+    }
+  },
+  "progress": {
+    "title": "Progress",
+    "overview": "Overview",
+    "charts": "Charts",
+    "insights": "AI Insights",
+    "history": "History",
+    "noData": "No data available yet. Complete some workouts to see your progress!"
+  }
+}

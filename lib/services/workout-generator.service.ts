@@ -134,11 +134,18 @@ export class WorkoutGeneratorService {
       }
     }
 
+    // Merge standard equipment with custom equipment
+    const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
+    const customEquipmentIds = customEquipment.map(eq => eq.id)
+    const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
+
     // Select exercises using AI
     const selection = await exerciseSelector.selectExercises({
       workoutType,
       weakPoints: profile.weak_points || [],
-      equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {},
+      availableEquipment: allAvailableEquipment,
+      customEquipment: customEquipment, // Pass custom equipment metadata
+      equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for backward compatibility
       recentExercises: this.extractRecentExercises(recentWorkouts),
       approachId: profile.approach_id,
       userId,

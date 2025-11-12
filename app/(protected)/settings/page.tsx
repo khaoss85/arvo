@@ -5,7 +5,8 @@ import { getUser } from "@/lib/utils/auth.server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { SplitSelector } from "@/components/features/settings/split-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
-import { EquipmentPreferencesEditor } from "@/components/features/settings/equipment-preferences-editor"
+import { EquipmentInventoryEditor } from "@/components/features/settings/equipment-inventory-editor"
+import { CustomEquipmentManager } from "@/components/features/settings/custom-equipment-manager"
 import { ResetDataSection } from "@/components/features/settings/reset-data-section"
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { MethodDetails } from "@/components/features/settings/method-details"
@@ -78,13 +79,19 @@ export default async function SettingsPage() {
             />
           </Card>
 
-          {/* Equipment Preferences Section */}
+          {/* Equipment Inventory Section */}
           <Card className="p-6">
-            <EquipmentPreferencesEditor
+            <EquipmentInventoryEditor
               userId={user.id}
-              initialPreferences={(profile.equipment_preferences as Record<string, string>) || {}}
+              initialEquipment={profile.available_equipment || []}
             />
           </Card>
+
+          {/* Custom Equipment Section */}
+          <CustomEquipmentManager
+            userId={user.id}
+            initialCustomEquipment={(profile.custom_equipment as Array<any>) || []}
+          />
 
           {/* Training Approach Section */}
           <Card className="p-6">

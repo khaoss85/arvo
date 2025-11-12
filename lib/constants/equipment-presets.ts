@@ -86,5 +86,54 @@ export const EQUIPMENT_PRESETS: EquipmentPreset[] = [
     description: "Just the essentials",
     icon: "⚡",
     equipment: ["dumbbells", "pull_up_bar"]
+  },
+
+  {
+    id: "hotel_gym",
+    name: "Hotel Gym",
+    description: "Travel-friendly workout with limited equipment",
+    icon: "🏨",
+    equipment: [
+      "dumbbells",
+      "cable_station",
+      "chest_press_machine",
+      "lat_pulldown",
+      "leg_press_45",
+      "seated_cable_row",
+      "pull_up_bar"
+    ]
+  },
+
+  {
+    id: "planet_fitness",
+    name: "Planet Fitness Style",
+    description: "Beginner-friendly gym with machines and Smith machine",
+    icon: "💜",
+    equipment: [
+      // Free weights (limited)
+      "dumbbells", "smith_machine",
+      // Legs
+      "leg_press_45", "leg_extension", "leg_curl_lying", "leg_curl_seated",
+      "seated_calf_raise", "standing_calf_raise",
+      // Chest
+      "chest_press_machine", "pec_fly", "incline_press_machine",
+      // Back
+      "seated_row_machine", "lat_pulldown", "rear_delt_fly",
+      // Shoulders
+      "shoulder_press_machine", "lateral_raise_machine",
+      // Cables
+      "cable_station", "cable_crossover", "seated_cable_row"
+    ]
+  },
+
+  {
+    id: "crossfit_box",
+    name: "CrossFit Box",
+    description: "Functional fitness with free weights and bodyweight",
+    icon: "🎯",
+    equipment: [
+      "barbell", "dumbbells", "trap_bar", "kettlebell",
+      "pull_up_bar", "dip_station"
+    ]
   }
 ]

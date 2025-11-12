@@ -113,12 +113,18 @@ export async function POST(request: NextRequest) {
 
           sendProgress('ai', 55, 'Optimizing exercise selection')
 
+          // Merge standard equipment with custom equipment
+          const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
+          const customEquipmentIds = customEquipment.map(eq => eq.id)
+          const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
+
           // Select exercises
           const selection = await exerciseSelector.selectExercises({
             workoutType,
             approachId: data.approachId,
             weakPoints: profile.weak_points || [],
-            availableEquipment: profile.available_equipment || [],
+            availableEquipment: allAvailableEquipment,
+            customEquipment: customEquipment, // Pass custom equipment metadata
             recentExercises: [],
             userId: data.userId,
             experienceYears: profile.experience_years,

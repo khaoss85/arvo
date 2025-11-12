@@ -351,6 +351,7 @@ export type Database = {
           created_at: string | null
           current_cycle_day: number | null
           current_mesocycle_week: number | null
+          custom_equipment: Json | null
           equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
@@ -373,6 +374,7 @@ export type Database = {
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
+          custom_equipment?: Json | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
@@ -395,6 +397,7 @@ export type Database = {
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
+          custom_equipment?: Json | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null

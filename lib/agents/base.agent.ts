@@ -1,5 +1,6 @@
 import { getOpenAIClient } from '@/lib/ai/client'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
+import type { Locale } from '@/i18n'
 
 export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
@@ -20,13 +21,28 @@ export abstract class BaseAgent {
 
   abstract get systemPrompt(): string
 
+  /**
+   * Gets the language instruction to append to the system prompt
+   * @param targetLanguage - The target language for AI responses
+   */
+  protected getLanguageInstruction(targetLanguage: Locale = 'en'): string {
+    if (targetLanguage === 'it') {
+      return '\n\n🇮🇹 LANGUAGE INSTRUCTION: You MUST respond in Italian (italiano). Use natural, conversational Italian suitable for a gym/fitness environment. All text fields in your JSON response should be in Italian. Exercise names can remain in English if they are standard international terms (e.g., "Bench Press", "Squat").'
+    }
+    return '\n\n🇬🇧 LANGUAGE INSTRUCTION: Respond in English.'
+  }
+
   protected async complete<T>(
-    userPrompt: string
+    userPrompt: string,
+    targetLanguage: Locale = 'en'
   ): Promise<T> {
     try {
+      // Add language instruction to system prompt
+      const languageInstruction = this.getLanguageInstruction(targetLanguage)
+
       // Combine system and user prompts for Responses API
       // GPT-5 relies on instruction following for JSON formatting (no response_format parameter)
-      const combinedInput = `${this.systemPrompt}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
+      const combinedInput = `${this.systemPrompt}${languageInstruction}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
 
       const response = await this.openai.responses.create({
         model: 'gpt-5-mini',

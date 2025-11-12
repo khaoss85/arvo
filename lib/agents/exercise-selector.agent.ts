@@ -9,6 +9,7 @@ export interface ExerciseSelectionInput {
   weakPoints: string[]
   equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment
   availableEquipment?: string[] // New multiselect equipment array
+  customEquipment?: Array<{ id: string; name: string; exampleExercises: string[] }> // Custom user equipment
   recentExercises: string[]
   approachId: string
   userId?: string | null // For exercise tracking consistency
@@ -276,8 +277,18 @@ User weak points: ${input.weakPoints.join(', ') || 'None specified'}
 Available Equipment:
 ${input.availableEquipment && input.availableEquipment.length > 0
   ? input.availableEquipment.map((id: string) => {
+      // First try to find in taxonomy
       const equipment = findEquipmentById(id)
-      return equipment ? `- ${equipment.label} (${equipment.commonFor.join(', ')})` : `- ${id}`
+      if (equipment) {
+        return `- ${equipment.label} (${equipment.commonFor.join(', ')})`
+      }
+      // Then check if it's custom equipment
+      const customEq = input.customEquipment?.find(eq => eq.id === id)
+      if (customEq) {
+        return `- ${customEq.name} [CUSTOM] (${customEq.exampleExercises.join(', ')})`
+      }
+      // Fallback
+      return `- ${id}`
     }).join('\n')
   : input.equipmentPreferences
     ? `DEPRECATED FORMAT: ${JSON.stringify(input.equipmentPreferences)}`

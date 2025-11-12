@@ -40,6 +40,7 @@ export const userProfileSchema = z.object({
   strength_baseline: z.record(z.string(), z.unknown()).nullable(),
   equipment_preferences: z.record(z.string(), z.unknown()).nullable(),
   available_equipment: z.array(z.string()).nullable().optional(),
+  custom_equipment: z.array(z.any()).nullable().optional(), // Custom equipment added by user
   preferred_split: z.string().nullable(),
   // Split planning fields
   active_split_plan_id: z.string().uuid().nullable(),
@@ -53,6 +54,8 @@ export const userProfileSchema = z.object({
   age: z.number().int().min(13).max(120).nullable(),
   weight: z.number().min(0).max(500).nullable(), // kg
   height: z.number().min(0).max(300).nullable(), // cm
+  // Language preference for UI and AI-generated content
+  preferred_language: z.enum(['en', 'it']).default('en').optional(),
 });
 
 export const insertUserProfileSchema = userProfileSchema;

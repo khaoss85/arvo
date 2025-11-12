@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { ProgressionCalculator } from '@/lib/agents/progression-calculator.agent'
@@ -156,11 +157,17 @@ async function generateWorkoutWithServerClient(
 
   const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
+  // Merge standard equipment with custom equipment
+  const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
+  const customEquipmentIds = customEquipment.map(eq => eq.id)
+  const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
+
   // Select exercises using AI
   const selection = await exerciseSelector.selectExercises({
     workoutType,
     weakPoints: profile.weak_points || [],
-    availableEquipment: profile.available_equipment || [],
+    availableEquipment: allAvailableEquipment,
+    customEquipment: customEquipment, // Pass custom equipment metadata
     equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for old data
     recentExercises: extractRecentExercises(recentWorkouts || []),
     approachId: profile.approach_id,
@@ -638,6 +645,214 @@ export async function updateEquipmentPreferencesAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update equipment preferences'
+    }
+  }
+}
+
+/**
+ * Server action to update user's available equipment (primary system)
+ * Updates the user_profiles table with the complete equipment inventory
+ */
+export async function updateAvailableEquipmentAction(
+  userId: string,
+  availableEquipment: string[]
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ available_equipment: availableEquipment })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to update available equipment: ${error.message}`)
+    }
+
+    revalidatePath('/settings')
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Update available equipment error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update available equipment'
+    }
+  }
+}
+
+/**
+ * Server action to validate custom equipment name using AI
+ * Returns validation result without saving to database
+ */
+export async function validateCustomEquipmentAction(
+  userId: string,
+  equipmentName: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get user's current equipment
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('available_equipment, custom_equipment')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
+        throw new Error('User profile not found')
+      }
+      throw new Error(`Failed to fetch user profile: ${profileError.message}`)
+    }
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    // Initialize validator
+    const { EquipmentValidator } = await import('@/lib/agents/equipment-validator.agent')
+    const validator = new EquipmentValidator(supabase)
+
+    // Validate equipment
+    const result = await validator.validateEquipment({
+      equipmentName,
+      existingEquipment: profile.available_equipment || [],
+      customEquipment: (profile.custom_equipment as Array<{ id: string; name: string }>) || [],
+      userId
+    })
+
+    return { success: true, result }
+  } catch (error) {
+    console.error('Server action - Validate custom equipment error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate equipment'
+    }
+  }
+}
+
+/**
+ * Server action to add validated custom equipment to user's profile
+ * Should only be called after validateCustomEquipmentAction returns approved/unclear
+ */
+export async function addCustomEquipmentAction(
+  userId: string,
+  equipment: {
+    name: string
+    category: string
+    exampleExercises: string[]
+    validated: boolean
+  }
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get current custom equipment
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('custom_equipment')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
+        throw new Error('User profile not found')
+      }
+      throw new Error(`Failed to fetch user profile: ${profileError.message}`)
+    }
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    const customEquipment = (profile.custom_equipment as Array<any>) || []
+
+    // Generate unique ID
+    const equipmentId = `custom_${equipment.name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`
+
+    // Add new equipment
+    const newEquipment = {
+      id: equipmentId,
+      name: equipment.name,
+      category: equipment.category,
+      exampleExercises: equipment.exampleExercises,
+      validated: equipment.validated,
+      addedAt: new Date().toISOString()
+    }
+
+    customEquipment.push(newEquipment)
+
+    // Update database
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ custom_equipment: customEquipment })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to add custom equipment: ${error.message}`)
+    }
+
+    revalidatePath('/settings')
+    return { success: true, equipment: newEquipment }
+  } catch (error) {
+    console.error('Server action - Add custom equipment error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to add custom equipment'
+    }
+  }
+}
+
+/**
+ * Server action to remove custom equipment from user's profile
+ */
+export async function removeCustomEquipmentAction(
+  userId: string,
+  equipmentId: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get current custom equipment
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('custom_equipment')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
+        throw new Error('User profile not found')
+      }
+      throw new Error(`Failed to fetch user profile: ${profileError.message}`)
+    }
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    const customEquipment = (profile.custom_equipment as Array<any>) || []
+
+    // Remove equipment by ID
+    const updatedEquipment = customEquipment.filter((eq: any) => eq.id !== equipmentId)
+
+    // Update database
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ custom_equipment: updatedEquipment })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to remove custom equipment: ${error.message}`)
+    }
+
+    revalidatePath('/settings')
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Remove custom equipment error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to remove custom equipment'
     }
   }
 }

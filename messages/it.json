@@ -1,0 +1,148 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Salva",
+      "cancel": "Annulla",
+      "continue": "Continua",
+      "back": "Indietro",
+      "next": "Avanti",
+      "skip": "Salta",
+      "close": "Chiudi",
+      "confirm": "Conferma",
+      "delete": "Elimina",
+      "edit": "Modifica",
+      "submit": "Invia",
+      "loading": "Caricamento..."
+    },
+    "labels": {
+      "email": "Indirizzo email",
+      "password": "Password",
+      "optional": "Opzionale",
+      "required": "Obbligatorio"
+    },
+    "errors": {
+      "generic": "Qualcosa è andato storto. Riprova.",
+      "network": "Errore di rete. Controlla la tua connessione.",
+      "unauthorized": "Devi effettuare l'accesso per farlo.",
+      "notFound": "La risorsa richiesta non è stata trovata."
+    },
+    "success": {
+      "saved": "Salvato con successo!",
+      "updated": "Aggiornato con successo!",
+      "deleted": "Eliminato con successo!"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi al tuo account",
+      "emailLabel": "Indirizzo email",
+      "submitButton": "Continua con email",
+      "magicLinkSent": "Controlla la tua email per un link magico per accedere.",
+      "errors": {
+        "invalidEmail": "Inserisci un indirizzo email valido.",
+        "failed": "Invio del link magico fallito. Riprova."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bentornato, {email}!",
+    "recentActivity": "Attività Recente",
+    "noWorkouts": "Nessun allenamento completato",
+    "startWorkout": "Inizia Allenamento",
+    "resumeWorkout": "Riprendi Allenamento",
+    "generateWorkout": "Genera Nuovo Allenamento"
+  },
+  "workout": {
+    "summary": {
+      "title": "Riepilogo Allenamento",
+      "notesTitle": "Note di Allenamento (Opzionale)",
+      "notesDescription": "Hai avuto dolori? Problemi di tecnica? Preferenze su esercizi o recupero? Condividi qui le tue osservazioni per migliorare i prossimi allenamenti.",
+      "notesPlaceholder": "Es: Ho sentito un leggero dolore alla spalla sinistra durante il Military Press. Preferisco usare i manubri per le Chest Press...",
+      "mentalReadinessRequired": "Seleziona il tuo stato mentale prima di completare l'allenamento",
+      "completeWorkout": "Completa Allenamento",
+      "completing": "Completamento..."
+    },
+    "execution": {
+      "setLogger": "Registra Serie",
+      "reps": "Reps",
+      "weight": "Peso",
+      "rir": "RIR",
+      "logSet": "Registra Serie",
+      "nextExercise": "Esercizio Successivo",
+      "previousExercise": "Esercizio Precedente",
+      "finishWorkout": "Termina Allenamento"
+    },
+    "substitution": {
+      "title": "Sostituzione Esercizio",
+      "loading": "Ricerca alternative...",
+      "selectAlternative": "Seleziona un esercizio alternativo",
+      "keepOriginal": "Mantieni esercizio originale"
+    }
+  },
+  "onboarding": {
+    "welcome": "Benvenuto in Arvo",
+    "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
+    "steps": {
+      "approach": {
+        "title": "Seleziona il Tuo Approccio di Allenamento",
+        "description": "Scegli la metodologia di allenamento che meglio si adatta ai tuoi obiettivi"
+      },
+      "split": {
+        "title": "Configura la Tua Suddivisione",
+        "description": "Quanti giorni alla settimana vuoi allenarti?"
+      },
+      "equipment": {
+        "title": "Attrezzatura Disponibile",
+        "description": "Seleziona l'attrezzatura a cui hai accesso"
+      },
+      "weakPoints": {
+        "title": "Punti Deboli",
+        "description": "Quali gruppi muscolari necessitano di attenzione extra?"
+      },
+      "strength": {
+        "title": "Livello di Forza Base",
+        "description": "Aiutaci a capire i tuoi livelli di forza attuali"
+      },
+      "profile": {
+        "title": "Completa il Tuo Profilo",
+        "description": "Raccontaci un po' di te"
+      },
+      "review": {
+        "title": "Rivedi e Conferma",
+        "description": "Rivedi le tue selezioni prima che generiamo il tuo programma"
+      }
+    }
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "profile": {
+      "title": "Profilo",
+      "email": "Email",
+      "age": "Età",
+      "gender": "Genere",
+      "experience": "Esperienza di Allenamento"
+    },
+    "preferences": {
+      "title": "Preferenze",
+      "language": "Lingua",
+      "languageDescription": "Scegli la tua lingua preferita per l'interfaccia e i contenuti generati dall'AI",
+      "theme": "Tema",
+      "notifications": "Notifiche"
+    },
+    "account": {
+      "title": "Account",
+      "signOut": "Esci",
+      "deleteAccount": "Elimina Account"
+    }
+  },
+  "progress": {
+    "title": "Progressi",
+    "overview": "Panoramica",
+    "charts": "Grafici",
+    "insights": "Insight AI",
+    "history": "Cronologia",
+    "noData": "Nessun dato disponibile. Completa alcuni allenamenti per vedere i tuoi progressi!"
+  }
+}

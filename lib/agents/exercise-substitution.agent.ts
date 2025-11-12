@@ -352,7 +352,7 @@ YOUR TASK:
 
 2. Validate if it's a good substitute:
    - "approved": Excellent choice, maintains or improves workout quality
-   - "caution": Works but has trade-offs (explain clearly)
+   - "caution": Works but has trade-offs (explain WHAT changes and WHY it matters - e.g., "Less stabilizer work" or "Changes angle emphasis")
    - "not_recommended": Poor choice (explain why: wrong muscle group, unsafe, equipment missing, etc.)
 
 3. Calculate adjusted weight (considering equipment biomechanics):
@@ -364,6 +364,7 @@ YOUR TASK:
 
 4. Provide concise, gym-friendly feedback:
    - Rationale: MAX 10 words, explain why this works or doesn't
+     * For "caution": state the specific trade-off (e.g., "Less stabilizer work" or "Changes angle emphasis")
    - Swap Impact: MAX 15 words, what changes compared to original
    - Similarity Score: 0-100 (how close to original exercise)
    - Workout Integration: MAX 40 words, how it fits into the workout flow
@@ -395,6 +396,16 @@ Output: {
   "swapImpact": "Smoother resistance curve, easier on joints",
   "similarityScore": 75,
   "rationalePreview": { "workoutIntegration": "Cable variation provides smooth pressing motion with less joint stress while maintaining shoulder development" }
+}
+
+Input: "Smith Machine Bench Press" (for Barbell Bench Press)
+Output: {
+  "validation": "caution",
+  "exercise": { "name": "Smith Machine Bench Press", "equipmentVariant": "Smith Machine", "targetWeight": 75 },
+  "rationale": "Fixed bar path reduces stabilizer work",
+  "swapImpact": "Easier to control but less functional strength",
+  "similarityScore": 65,
+  "rationalePreview": { "workoutIntegration": "Smith machine allows heavier load and safer solo training but reduces core and stabilizer engagement compared to free weights" }
 }
 
 Input: "asdf" (gibberish)

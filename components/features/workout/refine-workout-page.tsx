@@ -907,8 +907,38 @@ export function RefineWorkoutPage({
                             <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1">
-                            <p className="font-medium text-sm">{customValidationResults.get(index)!.exercise.name}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{customValidationResults.get(index)!.rationale}</p>
+                            <div className="flex items-center gap-2">
+                              {/* Animation Preview Icon */}
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  // Load animation URL dynamically
+                                  const animationUrl = await AnimationService.getAnimationUrl({
+                                    name: customValidationResults.get(index)!.exercise.name,
+                                    canonicalPattern: customValidationResults.get(index)!.exercise.name,
+                                    equipmentVariant: customValidationResults.get(index)!.exercise.equipmentVariant,
+                                  })
+                                  setAlternativeAnimationModal({
+                                    name: customValidationResults.get(index)!.exercise.name,
+                                    equipmentVariant: customValidationResults.get(index)!.exercise.equipmentVariant,
+                                    animationUrl: animationUrl || null,
+                                  })
+                                }}
+                                className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                                aria-label={`View ${customValidationResults.get(index)!.exercise.name} animation`}
+                                title="Visualizza esercizio"
+                              >
+                                <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                              </button>
+                              <p className="font-medium text-sm">{customValidationResults.get(index)!.exercise.name}</p>
+                            </div>
+                            {customValidationResults.get(index)!.validation === 'caution' ? (
+                              <p className="text-xs mt-1 font-medium text-yellow-700 dark:text-yellow-400">
+                                ⚠️ Caution: {customValidationResults.get(index)!.rationale}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground mt-1">{customValidationResults.get(index)!.rationale}</p>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2 mt-3">
@@ -923,13 +953,14 @@ export function RefineWorkoutPage({
                           >
                             Edit
                           </Button>
-                          {customValidationResults.get(index)!.validation === 'approved' && (
+                          {(customValidationResults.get(index)!.validation === 'approved' ||
+                            customValidationResults.get(index)!.validation === 'caution') && (
                             <Button
                               variant="default"
                               size="sm"
                               onClick={() => handleCustomSwap(index)}
                             >
-                              Use This
+                              Swap
                             </Button>
                           )}
                         </div>
