@@ -118,6 +118,33 @@ IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in
     // Load training approach
     const approach = await this.knowledge.loadApproach(input.userContext.approachId)
 
+    // 🔒 PRE-VALIDATION: Check if adding exercise would violate approach's total sets limit
+    const vars = approach.variables as any
+    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
+
+    if (maxTotalSets && input.currentWorkout.totalSets >= maxTotalSets) {
+      // Workout is already at or exceeds max total sets - REJECT immediately
+      const exerciseCount = input.currentWorkout.existingExercises.length
+      return {
+        validation: 'rejected',
+        reasoning: `${approach.name} limits workouts to ${maxTotalSets} total sets maximum. Current workout already has ${input.currentWorkout.totalSets} sets.`,
+        warnings: [{
+          type: 'volume_overlap',
+          severity: 'high',
+          message: `Approach constraint: ${approach.name} uses ${maxTotalSets} sets max per workout`
+        }],
+        suggestions: {
+          alternative: `Consider substituting an existing exercise instead of adding a new one`,
+          educationalNote: `${approach.name} emphasizes intensity over volume - keep total sets within ${maxTotalSets}`
+        },
+        workoutBalance: {
+          muscleOverlap: `Current: ${input.currentWorkout.totalSets} sets across ${exerciseCount} exercises`,
+          fatigueEstimate: `Already at approach's maximum total sets`,
+          phaseAlignment: `Cannot add exercises without exceeding approach limits`
+        }
+      }
+    }
+
     // Build context prompt
     const approachContext = this.buildApproachContext(approach)
     const workoutContext = this.buildWorkoutContext(input)
@@ -188,8 +215,38 @@ Required JSON structure:
   }
 
   private buildApproachContext(approach: any): string {
+    const vars = approach.variables as any
     let context = `Approach: ${approach.name}\n`
 
+    // Philosophy (CRITICAL - defines the approach)
+    if (approach.philosophy) {
+      context += `\nPhilosophy:\n${approach.philosophy}\n`
+    }
+
+    // Volume Constraints (CRITICAL for validation)
+    context += `\nVolume Constraints (HARD LIMITS):\n`
+
+    // Sets per exercise
+    const setsPerExercise = vars?.setsPerExercise?.working
+      || (vars?.sets?.range ? `${vars.sets.range[0]}-${vars.sets.range[1]}` : null)
+    if (setsPerExercise) {
+      context += `- Sets per exercise: ${setsPerExercise} working sets\n`
+    }
+
+    // Total sets per workout (e.g., Heavy Duty: 6-8 max)
+    const totalSetsConstraint = vars?.sessionDuration?.totalSets
+    if (totalSetsConstraint) {
+      context += `- TOTAL sets per workout: ${totalSetsConstraint[0]}-${totalSetsConstraint[1]} sets MAXIMUM\n`
+      context += `  ⚠️ Adding exercises that exceed this limit violates the approach's core philosophy\n`
+    }
+
+    // Progression Notes (e.g., "Never add more sets")
+    const progressionNotes = vars?.sets?.progressionNotes
+    if (progressionNotes) {
+      context += `- Progression Rule: ${progressionNotes}\n`
+    }
+
+    // Volume Landmarks (if available)
     if (approach.volumeLandmarks) {
       context += `\nVolume Landmarks (sets/week per muscle):\n`
       const muscleGroups = approach.volumeLandmarks.muscleGroups || {}
@@ -198,15 +255,21 @@ Required JSON structure:
       })
     }
 
+    // Frequency Guidelines
     if (approach.frequencyGuidelines) {
       context += `\nFrequency Guidelines:\n`
       const range = approach.frequencyGuidelines.optimalRange || [2, 3]
       context += `- Optimal: ${range[0]}-${range[1]}x per week per muscle\n`
     }
 
+    // Exercise Selection Principles
     if (approach.exerciseSelectionPrinciples) {
       context += `\nExercise Selection Principles:\n`
-      context += `- ${approach.exerciseSelectionPrinciples}\n`
+      if (typeof approach.exerciseSelectionPrinciples === 'object') {
+        context += JSON.stringify(approach.exerciseSelectionPrinciples, null, 2)
+      } else {
+        context += `- ${approach.exerciseSelectionPrinciples}\n`
+      }
     }
 
     return context

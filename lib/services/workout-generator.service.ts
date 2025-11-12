@@ -139,6 +139,40 @@ export class WorkoutGeneratorService {
     const customEquipmentIds = customEquipment.map(eq => eq.id)
     const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
 
+    // Fetch active insights (includes proactive physical limitations from Settings)
+    const { data: activeInsights } = await supabase
+      .rpc('get_active_insights', {
+        p_user_id: userId,
+        p_min_relevance: 0.3
+      })
+
+    // Fetch active memories (learned user preferences and patterns)
+    const { data: activeMemories } = await supabase
+      .rpc('get_active_memories', {
+        p_user_id: userId,
+        p_min_confidence: 0.6
+      })
+
+    // Transform database results to agent-expected format (snake_case → camelCase)
+    const transformedInsights = (activeInsights || []).map((insight: any) => ({
+      id: insight.id,
+      type: insight.insight_type,
+      severity: insight.severity,
+      exerciseName: insight.exercise_name || undefined,
+      userNote: insight.user_note,
+      metadata: insight.metadata
+    }))
+
+    const transformedMemories = (activeMemories || []).map((memory: any) => ({
+      id: memory.id,
+      category: memory.memory_category,
+      title: memory.title,
+      description: memory.description || undefined,
+      confidenceScore: memory.confidence_score,
+      relatedExercises: memory.related_exercises || [],
+      relatedMuscles: memory.related_muscles || []
+    }))
+
     // Select exercises using AI
     const selection = await exerciseSelector.selectExercises({
       workoutType,
@@ -152,6 +186,15 @@ export class WorkoutGeneratorService {
       experienceYears: profile.experience_years,
       userAge: profile.age,
       userGender: profile.gender,
+      // Periodization context
+      mesocycleWeek: profile.current_mesocycle_week,
+      mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,
+      // Caloric phase context
+      caloricPhase: profile.caloric_phase as 'bulk' | 'cut' | 'maintenance' | null,
+      caloricIntakeKcal: profile.caloric_intake_kcal,
+      // Active insights and memories for AI safety and personalization
+      activeInsights: transformedInsights,
+      activeMemories: transformedMemories,
       ...sessionContext
     })
 

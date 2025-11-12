@@ -4,7 +4,9 @@ import { Metadata } from "next"
 import { getUser } from "@/lib/utils/auth.server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { SplitSelector } from "@/components/features/settings/split-selector"
+import { CaloricPhaseSelector } from "@/components/features/settings/caloric-phase-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
+import { PhysicalLimitationsManager } from "@/components/features/settings/physical-limitations-manager"
 import { EquipmentInventoryEditor } from "@/components/features/settings/equipment-inventory-editor"
 import { CustomEquipmentManager } from "@/components/features/settings/custom-equipment-manager"
 import { ResetDataSection } from "@/components/features/settings/reset-data-section"
@@ -71,6 +73,15 @@ export default async function SettingsPage() {
             />
           </Card>
 
+          {/* Caloric Phase Section */}
+          <Card className="p-6">
+            <CaloricPhaseSelector
+              userId={user.id}
+              currentPhase={profile.caloric_phase as 'bulk' | 'cut' | 'maintenance' | null}
+              currentCaloricIntake={profile.caloric_intake_kcal}
+            />
+          </Card>
+
           {/* Weak Points Section */}
           <Card className="p-6">
             <WeakPointsEditor
@@ -78,6 +89,9 @@ export default async function SettingsPage() {
               initialWeakPoints={profile.weak_points || []}
             />
           </Card>
+
+          {/* Physical Limitations Section */}
+          <PhysicalLimitationsManager userId={user.id} />
 
           {/* Equipment Inventory Section */}
           <Card className="p-6">

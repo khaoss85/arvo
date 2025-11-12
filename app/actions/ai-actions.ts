@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
 import { ProgressionCalculator } from '@/lib/agents/progression-calculator.agent'
 import { ReorderValidator } from '@/lib/agents/reorder-validator.agent'
@@ -85,7 +86,8 @@ export async function completeOnboardingAction(
         })()
       : Promise.resolve(null)
 
-    const workoutPromise = generateWorkoutWithServerClient(userId, supabase, data.approachId!, true)
+    // During onboarding, default to English (will be auto-detected on first app load via browser language)
+    const workoutPromise = generateWorkoutWithServerClient(userId, supabase, data.approachId!, true, 'en')
 
     const [splitResult, workout] = await Promise.all([splitPlanPromise, workoutPromise])
 
@@ -118,8 +120,12 @@ async function generateWorkoutWithServerClient(
   userId: string,
   supabase: any,
   approachId: string,
-  skipExerciseSaving?: boolean // Skip saving exercises to DB for onboarding performance
+  skipExerciseSaving?: boolean, // Skip saving exercises to DB for onboarding performance
+  targetLanguage?: 'en' | 'it' // User's preferred language for AI responses
 ): Promise<Workout> {
+  // Get user's language if not provided
+  const language = targetLanguage || await getUserLanguage(userId)
+
   // Pass server client to ExerciseSelector for database access
   const exerciseSelector = new ExerciseSelector(supabase)
 
@@ -162,6 +168,40 @@ async function generateWorkoutWithServerClient(
   const customEquipmentIds = customEquipment.map(eq => eq.id)
   const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
 
+  // Fetch active insights (includes proactive physical limitations from Settings)
+  const { data: activeInsights } = await supabase
+    .rpc('get_active_insights', {
+      p_user_id: userId,
+      p_min_relevance: 0.3
+    })
+
+  // Fetch active memories (learned user preferences and patterns)
+  const { data: activeMemories } = await supabase
+    .rpc('get_active_memories', {
+      p_user_id: userId,
+      p_min_confidence: 0.6
+    })
+
+  // Transform database results to agent-expected format (snake_case → camelCase)
+  const transformedInsights = (activeInsights || []).map((insight: any) => ({
+    id: insight.id,
+    type: insight.insight_type,
+    severity: insight.severity,
+    exerciseName: insight.exercise_name || undefined,
+    userNote: insight.user_note,
+    metadata: insight.metadata
+  }))
+
+  const transformedMemories = (activeMemories || []).map((memory: any) => ({
+    id: memory.id,
+    category: memory.memory_category,
+    title: memory.title,
+    description: memory.description || undefined,
+    confidenceScore: memory.confidence_score,
+    relatedExercises: memory.related_exercises || [],
+    relatedMuscles: memory.related_muscles || []
+  }))
+
   // Select exercises using AI
   const selection = await exerciseSelector.selectExercises({
     workoutType,
@@ -178,8 +218,14 @@ async function generateWorkoutWithServerClient(
     skipSaving: skipExerciseSaving, // Skip DB saves during onboarding for performance
     // Mesocycle context for periodization-aware exercise selection
     mesocycleWeek: profile.current_mesocycle_week,
-    mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
-  })
+    mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,
+    // Caloric phase context for approach-aware optimization
+    caloricPhase: profile.caloric_phase as 'bulk' | 'cut' | 'maintenance' | null,
+    caloricIntakeKcal: profile.caloric_intake_kcal,
+    // Active insights and memories for AI safety and personalization
+    activeInsights: transformedInsights,
+    activeMemories: transformedMemories
+  }, language)
 
   // Get exercise history and calculate initial targets
   const exercisesWithTargets = await Promise.all(
@@ -340,8 +386,11 @@ export async function generateWorkoutAction(userId: string) {
       throw new Error('No training approach selected. Please select a training approach in your profile.')
     }
 
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     // Generate workout using server client
-    const workout = await generateWorkoutWithServerClient(userId, supabase, profile.approach_id)
+    const workout = await generateWorkoutWithServerClient(userId, supabase, profile.approach_id, false, targetLanguage)
 
     return { success: true, workout }
   } catch (error) {
@@ -375,19 +424,23 @@ export async function calculateProgressionAction(userId: string, input: Progress
   try {
     const supabase = await getSupabaseServerClient()
 
-    // Fetch user profile for mesocycle context
+    // Fetch user profile for mesocycle context and language preference
     console.log('[calculateProgressionAction] Fetching user profile for mesocycle context')
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('current_mesocycle_week, mesocycle_phase')
+      .select('current_mesocycle_week, mesocycle_phase, preferred_language')
       .eq('user_id', userId)
       .single()
 
     console.log('[calculateProgressionAction] User profile fetched', {
       hasProfile: !!profile,
       mesocycleWeek: profile?.current_mesocycle_week,
-      mesocyclePhase: profile?.mesocycle_phase
+      mesocyclePhase: profile?.mesocycle_phase,
+      preferredLanguage: profile?.preferred_language
     })
+
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
 
     const calculator = new ProgressionCalculator(supabase)
 
@@ -398,7 +451,7 @@ export async function calculateProgressionAction(userId: string, input: Progress
     }
 
     console.log('[calculateProgressionAction] Calling ProgressionCalculator.suggestNextSet with enriched input')
-    const result = await calculator.suggestNextSet(enrichedInput)
+    const result = await calculator.suggestNextSet(enrichedInput, targetLanguage)
 
     console.log('[calculateProgressionAction] Suggestion generated successfully', {
       suggestion: result.suggestion,
@@ -427,12 +480,16 @@ export async function calculateProgressionAction(userId: string, input: Progress
  * This runs on the server and has access to OPENAI_API_KEY
  */
 export async function explainDecisionAction(
+  userId: string,
   type: ExplanationType,
   context: ExplanationContext,
   approachId: string
 ) {
   try {
-    const explanation = await ExplanationService.explainDecision(type, context, approachId)
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
+    const explanation = await ExplanationService.explainDecision(type, context, approachId, targetLanguage)
 
     return { success: true, explanation }
   } catch (error) {
@@ -449,17 +506,22 @@ export async function explainDecisionAction(
  * Convenience wrapper for exercise selection explanations
  */
 export async function explainExerciseSelectionAction(
+  userId: string,
   exerciseName: string,
   weakPoints: string[],
   rationale: string,
   approachId: string
 ) {
   try {
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     const explanation = await ExplanationService.explainExerciseSelection(
       exerciseName,
       weakPoints,
       rationale,
-      approachId
+      approachId,
+      targetLanguage
     )
 
     return { success: true, explanation }
@@ -477,15 +539,20 @@ export async function explainExerciseSelectionAction(
  * Convenience wrapper for progression explanations
  */
 export async function explainProgressionAction(
+  userId: string,
   currentSet: { weight: number; reps: number; rir: number },
   suggestionRationale: string,
   approachId: string
 ) {
   try {
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     const explanation = await ExplanationService.explainProgression(
       currentSet,
       suggestionRationale,
-      approachId
+      approachId,
+      targetLanguage
     )
 
     return { success: true, explanation }
@@ -529,12 +596,15 @@ export async function generateWorkoutSummaryAction(userId: string, input: Workou
   try {
     const supabase = await getSupabaseServerClient()
 
-    // Fetch user profile for mesocycle context
+    // Fetch user profile for mesocycle context and language preference
     const { data: profile } = await supabase
       .from('user_profiles')
-      .select('current_mesocycle_week, mesocycle_phase')
+      .select('current_mesocycle_week, mesocycle_phase, preferred_language')
       .eq('user_id', userId)
       .single()
+
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
 
     const summaryAgent = new WorkoutSummaryAgent(supabase)
 
@@ -542,7 +612,7 @@ export async function generateWorkoutSummaryAction(userId: string, input: Workou
       ...input,
       mesocycleWeek: profile?.current_mesocycle_week || null,
       mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null
-    })
+    }, targetLanguage)
 
     return { success: true, summary: result }
   } catch (error) {
@@ -615,6 +685,56 @@ export async function updateWeakPointsAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update weak points'
+    }
+  }
+}
+
+/**
+ * Server action to update user's caloric phase
+ * Updates the user_profiles table with the selected caloric phase (bulk/cut/maintenance)
+ * and optionally the caloric intake (surplus/deficit in kcal)
+ */
+export async function updateCaloricPhaseAction(
+  userId: string,
+  phase: 'bulk' | 'cut' | 'maintenance',
+  caloricIntakeKcal?: number | null
+) {
+  try {
+    // Validate caloric intake range if provided
+    if (caloricIntakeKcal !== undefined && caloricIntakeKcal !== null) {
+      if (caloricIntakeKcal < -1500 || caloricIntakeKcal > 1500) {
+        throw new Error('Caloric intake must be between -1500 and +1500 kcal')
+      }
+      // For maintenance phase, caloric intake should not be set
+      if (phase === 'maintenance' && caloricIntakeKcal !== 0) {
+        throw new Error('Maintenance phase should have neutral caloric intake')
+      }
+    }
+
+    const supabase = await getSupabaseServerClient()
+    const startDate = new Date().toISOString()
+
+    // Update user profile
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        caloric_phase: phase,
+        caloric_phase_start_date: startDate,
+        ...(caloricIntakeKcal !== undefined && { caloric_intake_kcal: caloricIntakeKcal })
+      })
+      .eq('user_id', userId)
+
+    if (error) {
+      throw new Error(`Failed to update caloric phase: ${error.message}`)
+    }
+
+    revalidatePath('/settings')
+    return { success: true }
+  } catch (error) {
+    console.error('Server action - Update caloric phase error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update caloric phase'
     }
   }
 }
@@ -916,11 +1036,14 @@ export async function suggestExerciseSubstitutionAction(
       }))
     }
 
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     // Create agent instance with server Supabase client
     const agent = new ExerciseSubstitutionAgent(supabase)
 
     // Generate substitution suggestions
-    const result = await agent.suggestSubstitutions(enrichedInput)
+    const result = await agent.suggestSubstitutions(enrichedInput, targetLanguage)
 
     return {
       success: true,
@@ -968,11 +1091,14 @@ export async function generateWorkoutRationaleAction(
       mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     // Create agent instance with server Supabase client
     const agent = new WorkoutRationaleAgent(supabase)
 
     // Generate rationale
-    const result = await agent.generateRationale(enrichedInput)
+    const result = await agent.generateRationale(enrichedInput, targetLanguage)
 
     return {
       success: true,
@@ -1046,11 +1172,14 @@ export async function validateCustomSubstitutionAction(
       }))
     }
 
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(userId)
+
     // Create agent instance with server Supabase client
     const agent = new ExerciseSubstitutionAgent(supabase)
 
     // Validate user's custom exercise
-    const result = await agent.validateCustomSubstitution(enrichedInput)
+    const result = await agent.validateCustomSubstitution(enrichedInput, targetLanguage)
 
     return {
       success: true,

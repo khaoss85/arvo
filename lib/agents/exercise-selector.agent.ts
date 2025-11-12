@@ -27,6 +27,7 @@ export interface ExerciseSelectionInput {
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
   // Caloric phase context
   caloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
+  caloricIntakeKcal?: number | null  // Daily caloric surplus (+) or deficit (-)
   // Insights and Memories (NEW)
   activeInsights?: Array<{
     id: string
@@ -159,7 +160,7 @@ Format:
 Make user safety and preferences your top priority.`
   }
 
-  async selectExercises(input: ExerciseSelectionInput): Promise<ExerciseSelectionOutput> {
+  async selectExercises(input: ExerciseSelectionInput, targetLanguage?: 'en' | 'it'): Promise<ExerciseSelectionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
 
@@ -257,89 +258,122 @@ Exercise Selection Strategy:
       ? `
 === CALORIC PHASE CONTEXT ===
 Current Nutritional Phase: ${input.caloricPhase.toUpperCase()}
+${input.caloricIntakeKcal ? `Daily Caloric ${input.caloricIntakeKcal > 0 ? 'Surplus' : 'Deficit'}: ${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal` : ''}
+
+⚠️ APPROACH-AWARE OPTIMIZATION:
+The guidance below must be applied WITHIN your training approach's constraints, not as absolute rules.
+If the approach has specific volume limits or progression rules, THOSE TAKE PRIORITY over these general guidelines.
 
 ${input.caloricPhase === 'bulk' ? `
 Phase Overview: Caloric surplus for muscle building
-Training Optimization Strategy:
-- VOLUME: Aim for +15-20% higher volume compared to maintenance baseline
-  * User has surplus energy and enhanced recovery capacity
-  * Can handle more total sets and exercises per session
-  * Typical range: 5-7 exercises per workout (vs 4-6 in maintenance)
 
-- EXERCISE SELECTION: Prioritize compound movements
-  * Squat variations, deadlifts, pressing movements are ideal
-  * These maximize muscle stimulus and strength gains
-  * Still include isolation work for weak points and detail
+VOLUME (conditional on approach):
+- IF approach allows volume modulation (e.g., flexible volume landmarks, no fixed set limits):
+  * Aim for +15-20% higher volume compared to your approach's maintenance baseline
+  * Can handle more total sets within approach's framework
+  * Example: If approach suggests 12-16 sets for quads, lean toward 15-16 sets
 
-- REP RANGES: Broader spectrum (6-15 reps)
-  * Include heavy sets (6-8 reps) for strength progression
-  * Medium sets (8-12 reps) for hypertrophy
-  * Higher rep sets (12-15 reps) for metabolic work
-  * User can recover from varied intensity
+- IF approach has FIXED VOLUME (e.g., Heavy Duty 1-2 sets, DC Training prescribed sets):
+  * DO NOT increase set count - respect the approach's set limits
+  * INSTEAD increase INTENSITY within approach's guidelines:
+    - Use heavier loads (aggressive week-to-week progression)
+    - Push closer to/beyond failure (within approach's RIR targets)
+    - Apply advanced techniques IF approach supports (rest-pause, drop sets, negatives)
+  * Example: Heavy Duty in bulk = still 6-8 total sets, but heavier weights + more aggressive intensity techniques
 
-- PROGRESSION FOCUS: Aggressive load progression
-  * This is the prime time to add weight to the bar
-  * Push for PRs on main lifts
-  * User has nutritional support for strength gains
+- IF approach is periodized:
+  * Check if current mesocycle phase supports volume increases
+  * Defer to periodization context if it conflicts
 
-IMPORTANT: Make full use of the surplus - this is muscle-building season!
+EXERCISE SELECTION (approach-dependent):
+- Compound-focused approaches → prioritize main lifts (squat, bench, deadlift variations)
+- Balanced approaches → maintain your approach's typical compound/isolation ratio
+- Follow your approach's exercise priority rules
+- Use caloric surplus as reason to push harder on approach's key exercises
+
+REP RANGES (within approach's prescribed ranges):
+- Stay within approach's prescribed rep ranges for each exercise type
+- IF approach allows range flexibility → explore lower end for strength emphasis
+- DO NOT change prescribed ranges; progress via LOAD, not by changing rep prescriptions
+- Example: If approach says 6-10 reps, use the 6-8 range more often in bulk
+
+PROGRESSION FOCUS:
+- Aggressive load progression (this is the prime time for PRs)
+- Prioritize strength gains on approach's main movements
+- Take advantage of enhanced recovery for progressive overload
+- User has nutritional support for strength gains
 ` : ''}
 ${input.caloricPhase === 'cut' ? `
 Phase Overview: Caloric deficit for fat loss while preserving muscle
-Training Optimization Strategy:
-- VOLUME: Reduce total volume by -15-20% compared to maintenance
-  * User has limited recovery capacity due to deficit
+
+VOLUME (conditional on approach):
+- IF approach allows volume modulation:
+  * Reduce total volume by -15-20% compared to your approach's maintenance baseline
   * QUALITY over QUANTITY - fewer sets, executed with precision
-  * Typical range: 4-5 exercises per workout (vs 4-6 in maintenance)
-  * This volume reduction helps prevent excessive systemic fatigue
+  * Example: If approach suggests 12-16 sets for quads, lean toward 12-13 sets
 
-- EXERCISE SELECTION: Prioritize HIGH stimulus-to-fatigue ratio
-  * FAVOR: Machines, cables, isolation movements
-    - Leg press > Back squat (less spinal/systemic fatigue)
-    - Machine chest press > Barbell bench (safer to push hard)
-    - Cable laterals > Heavy overhead press
-    - Leg curl/extension machines for quads/hams
-  * LIMIT: Heavy free-weight compounds that tax CNS heavily
-  * Rationale: Preserve muscle with targeted stimulus while minimizing recovery demands
+- IF approach has FIXED VOLUME (e.g., Heavy Duty, DC Training):
+  * Maintain the prescribed set count - DO NOT reduce sets
+  * INSTEAD manage fatigue and recovery differently:
+    - Slightly reduce load if needed to maintain perfect technique (~85-90% of bulk loads)
+    - Focus on maintaining strength rather than pushing absolute limits
+    - Prioritize quality of contraction over maximum weight
+  * Example: Heavy Duty in cut = still 6-8 total sets, slightly lighter loads with focus on form
 
-- REP RANGES: Focus on 8-12 reps (muscle preservation zone)
-  * Avoid excessive low-rep strength work (3-6 reps) - too much CNS fatigue
-  * Avoid excessive high-rep metabolic work (15+ reps) - creates unnecessary fatigue
-  * Sweet spot: 8-12 reps with controlled technique
-  * Maintain strength rather than chase PRs
+- IF approach is periodized:
+  * Check if current mesocycle phase's volume should be adjusted for deficit
+  * Defer to periodization context for volume guidance
 
-- PROGRESSION FOCUS: Maintain strength, don't push for PRs
-  * Goal is to lift approximately 85-90% of bulking loads
-  * If strength drops slightly, that's normal and acceptable
-  * Prioritize muscle retention over load progression
+EXERCISE SELECTION (within approach's exercise framework):
+- Within your approach's exercise priority rules, favor higher stimulus-to-fatigue options when possible:
+  * Machines and cables when they fit approach's philosophy
+  * Exercise variations that preserve muscle with less systemic fatigue
+  * Example: If approach allows squat variations, prefer Safety Bar Squat or Leg Press over Low Bar Back Squat
 
-CRITICAL PRINCIPLE: Minimum effective dose
-- Ask yourself: "What's the LEAST volume needed to keep this muscle?"
-- Every extra set costs recovery that you don't have
-- Strategic reduction is smart, not lazy
+- IF approach is compound-focused (e.g., Starting Strength, 5/3/1):
+  * Maintain compound focus but choose slightly less fatiguing variations
+  * Safety Squat Bar, Trap Bar Deadlift, Floor Press = same movement patterns, less CNS demand
+
+- Respect your approach's exercise distribution rules
+
+REP RANGES (within approach's prescribed ranges):
+- Stay within approach's prescribed rep ranges
+- IF approach allows flexibility → prefer middle-to-upper end (8-12 range) for preservation
+- DO NOT arbitrarily change to "hypertrophy ranges" if approach specifies different ranges
+- Focus on maintaining technique and muscle engagement over absolute load
+
+PROGRESSION FOCUS:
+- Goal: Maintain strength at ~85-90% of bulking performance
+- Expect slight strength decrease (normal and acceptable in deficit)
+- Prioritize muscle retention over load progression
+- This is NOT the time for PRs unless they happen naturally
+
+CRITICAL PRINCIPLE: Minimum effective dose WITHIN approach's framework
+- Apply your approach's minimum effective volume
+- Every extra set costs recovery you don't have
+- Strategic modulation is smart training
 ` : ''}
 ${input.caloricPhase === 'maintenance' ? `
 Phase Overview: Balanced caloric intake for sustainable training
-Training Optimization Strategy:
-- VOLUME: Standard baseline approach
-  * No special adjustments needed
-  * Typical range: 4-6 exercises per workout
 
-- EXERCISE SELECTION: Balanced mix
-  * Combine compound and isolation movements
-  * Neither bias toward heavy compounds nor machines exclusively
-  * Choose based on individual preferences and weak points
+VOLUME:
+- Apply your approach's standard baseline volume guidelines
+- No caloric-driven adjustments needed
 
-- REP RANGES: Standard hypertrophy focus (6-12 reps)
-  * Classic muscle-building ranges
-  * Some variety across exercises
+EXERCISE SELECTION:
+- Follow your approach's exercise priority rules
+- No special adjustments for caloric phase
 
-- PROGRESSION FOCUS: Steady, sustainable progress
-  * Add weight when possible without forcing it
-  * Focus on technique refinement and consistency
-  * Neither aggressive bulking progression nor conservative cutting maintenance
+REP RANGES:
+- Use your approach's prescribed rep ranges
+- No modifications needed
 
-This is your sustainable baseline - train smart and stay healthy.
+PROGRESSION:
+- Steady, sustainable progress within approach's progression rules
+- Focus on technique refinement and consistency
+- Sustainable long-term training
+
+This is your sustainable baseline - apply your approach as designed.
 ` : ''}
 `
       : ''
@@ -405,6 +439,21 @@ ${recentExercises.map(ex => `- ${ex.name}${ex.metadata?.equipment_variant ? ` ($
 
 IMPORTANT: Only create a new exercise name if the exercise is truly different from the ones listed above. Naming consistency is crucial for tracking progress over time.
 ` : ''}
+
+**HIERARCHY OF CONSTRAINTS:**
+1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable - this defines the system)
+2. 🎯 Periodization phase (if approach supports periodization)
+3. 🍽️ Caloric phase (modulate within approach's framework)
+4. 🎨 Session focus and weak points (tactical adjustments)
+
+⚠️ CONFLICT RESOLUTION RULE:
+If any guidance below conflicts with the approach philosophy or volume constraints, THE APPROACH WINS.
+
+Example: Heavy Duty + BULK scenario
+- Heavy Duty says: "1-2 sets per exercise, 6-8 total sets, NEVER add more sets"
+- BULK says: "+15-20% volume"
+- CORRECT action: Stay within 1-2 sets × 6-8 total, increase intensity (heavier weights, advanced techniques)
+- WRONG action: Increase to 10-12 total sets
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
 ${input.userAge && input.userAge > 50 ? `Consider that the user is ${input.userAge} years old - prioritize joint-friendly exercise variations when possible.` : ''}
@@ -611,7 +660,36 @@ Required JSON structure:
 **REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
     `
 
-    const result = await this.complete<ExerciseSelectionOutput>(prompt)
+    const result = await this.complete<ExerciseSelectionOutput>(prompt, targetLanguage)
+
+    // 🔒 POST-GENERATION VALIDATION: Verify AI respected approach constraints
+    // This is a critical safety check to ensure no workout violates approach philosophy
+    const totalSets = result.exercises.reduce((sum, ex) => sum + ex.sets, 0)
+    const vars = approach.variables as any
+
+    // Check total sets limit (e.g., Heavy Duty: 6-8 sets MAXIMUM)
+    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
+    if (maxTotalSets && totalSets > maxTotalSets) {
+      throw new Error(
+        `🚨 CRITICAL: AI generated ${totalSets} total sets, exceeding approach limit of ${maxTotalSets}. ` +
+        `Approach: ${approach.name}. This violates the approach's core philosophy. ` +
+        `Exercises: ${result.exercises.map(e => `${e.name} (${e.sets} sets)`).join(', ')}`
+      )
+    }
+
+    // Check per-exercise sets limit (e.g., Heavy Duty: 1-2 sets per exercise)
+    const maxSetsPerExercise = vars?.setsPerExercise?.working
+      || (vars?.sets?.range ? vars.sets.range[1] : null)
+
+    if (maxSetsPerExercise) {
+      const violations = result.exercises.filter(ex => ex.sets > maxSetsPerExercise)
+      if (violations.length > 0) {
+        throw new Error(
+          `🚨 CRITICAL: Exercises exceed per-exercise set limit of ${maxSetsPerExercise} sets. ` +
+          `Approach: ${approach.name}. Violations: ${violations.map(v => `${v.name} (${v.sets} sets)`).join(', ')}`
+        )
+      }
+    }
 
     // Ensure insightInfluencedChanges field exists (even if AI didn't include it)
     if (!result.insightInfluencedChanges) {

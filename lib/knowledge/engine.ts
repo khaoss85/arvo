@@ -56,11 +56,43 @@ Conditions: ${approach.progression?.setProgression?.conditions || 'N/A'}
         `.trim()
 
       case 'exercise_selection':
+        // Build comprehensive approach context with philosophy and constraints
+        // Support multiple variable structures (Kuba uses setsPerExercise, Heavy Duty uses sets)
+        const vars = approach.variables as any
+        const setsPerExercise = vars?.setsPerExercise?.working
+          || (vars?.sets?.range ? `${vars.sets.range[0]}-${vars.sets.range[1]}` : null)
+
+        // Check for total sets constraint (e.g., Heavy Duty: 6-8 total sets per workout)
+        const totalSetsConstraint = vars?.sessionDuration?.totalSets
+          ? `\n- TOTAL sets per workout: ${vars.sessionDuration.totalSets[0]}-${vars.sessionDuration.totalSets[1]} sets MAXIMUM`
+          : ''
+
+        // Build progression context from approach progression rules or variables
+        let progressionContext = ''
+        if (approach.progression?.rules?.whenToAddWeight) {
+          progressionContext = `\n\n⚠️ PROGRESSION RULE: ${approach.progression.rules.whenToAddWeight}`
+        } else if (vars?.sets?.progressionNotes) {
+          progressionContext = `\n\n⚠️ PROGRESSION RULE: ${vars.sets.progressionNotes}`
+        }
+
         return `
-Approach: ${approach.name}
-Exercises per workout: ${approach.exerciseSelection?.exercisesPerWorkout?.min || 4}-${approach.exerciseSelection?.exercisesPerWorkout?.max || 6}
-Priority rules: ${approach.exerciseSelection?.priorityRules?.join(', ') || 'Compounds first'}
-Distribution: ${approach.exerciseSelection?.exercisesPerWorkout?.distribution || 'Balanced'}
+=== TRAINING APPROACH (PRIMARY CONSTRAINT) ===
+Approach: ${approach.name}${approach.creator ? ` by ${approach.creator}` : ''}
+
+PHILOSOPHY (MUST RESPECT):
+${approach.philosophy || 'No specific philosophy provided'}
+
+Volume Guidelines (RESPECT THESE CONSTRAINTS):
+- Sets per exercise: ${setsPerExercise ? `${setsPerExercise} working sets` : 'Not specified'}${totalSetsConstraint}
+- Exercises per workout: ${approach.exerciseSelection?.exercisesPerWorkout?.min || 4}-${approach.exerciseSelection?.exercisesPerWorkout?.max || 6} exercises${progressionContext}
+
+Exercise Selection Philosophy:
+- Priority rules: ${approach.exerciseSelection?.priorityRules?.join(', ') || 'Compounds first'}
+- Distribution: ${approach.exerciseSelection?.exercisesPerWorkout?.distribution || 'Balanced'}
+
+⚠️ CRITICAL HIERARCHY RULE:
+All subsequent context (periodization, caloric phase, session goals) must be modulated WITHIN the constraints above.
+If any guidance conflicts with this approach's philosophy or volume guidelines, THE APPROACH WINS.
         `.trim()
 
       case 'split_planning':

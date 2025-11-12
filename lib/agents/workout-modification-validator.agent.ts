@@ -104,6 +104,32 @@ Focus on helping users make informed decisions while respecting their autonomy.`
     // Load training approach
     const approach = await this.knowledge.loadApproach(input.userContext.approachId)
 
+    // 🔒 PRE-VALIDATION: Check if proposed sets would violate approach's per-exercise limit
+    const vars = approach.variables as any
+    const maxSetsPerExercise = vars?.setsPerExercise?.working
+      || (vars?.sets?.range ? vars.sets.range[1] : null)
+
+    if (maxSetsPerExercise && input.exerciseInfo.proposedSets > maxSetsPerExercise) {
+      // Proposed sets exceed approach's per-exercise limit - REJECT immediately
+      return {
+        validation: 'not_recommended',
+        reasoning: `${approach.name} limits exercises to ${maxSetsPerExercise} sets maximum. Proposed ${input.exerciseInfo.proposedSets} sets exceeds this constraint.`,
+        warnings: [{
+          type: 'volume',
+          severity: 'high',
+          message: `Approach constraint: ${approach.name} uses ${maxSetsPerExercise} sets max per exercise`
+        }],
+        suggestions: {
+          alternative: `Instead of more sets, try: heavier weight, slower tempo, or advanced techniques (rest-pause, drop sets)`,
+          educationalNote: `${approach.name} emphasizes intensity over volume - ${maxSetsPerExercise} sets is the maximum`
+        },
+        approachGuidelines: {
+          volumeLandmarkStatus: `Current: ${input.exerciseInfo.currentSets} sets, Proposed: ${input.exerciseInfo.proposedSets} sets, Maximum: ${maxSetsPerExercise} sets`,
+          phaseAlignment: `Cannot exceed approach's per-exercise limit regardless of phase`
+        }
+      }
+    }
+
     // Build context prompt
     const approachContext = this.buildApproachContext(approach)
     const periodizationContext = this.buildPeriodizationContext(input, approach)
@@ -170,8 +196,39 @@ Required JSON structure:
   }
 
   private buildApproachContext(approach: any): string {
+    const vars = approach.variables as any
     let context = `Approach: ${approach.name}\n`
 
+    // Philosophy (CRITICAL - defines the approach)
+    if (approach.philosophy) {
+      context += `\nPhilosophy:\n${approach.philosophy}\n`
+    }
+
+    // Volume Constraints (CRITICAL for validation)
+    context += `\nVolume Constraints (HARD LIMITS):\n`
+
+    // Sets per exercise (THIS IS THE KEY CONSTRAINT FOR SET ADDITIONS)
+    const setsPerExercise = vars?.setsPerExercise?.working
+      || (vars?.sets?.range ? `${vars.sets.range[0]}-${vars.sets.range[1]}` : null)
+    if (setsPerExercise) {
+      context += `- Sets per exercise: ${setsPerExercise} working sets MAXIMUM\n`
+      context += `  ⚠️ Adding sets beyond this limit violates the approach's core philosophy\n`
+    }
+
+    // Total sets per workout (for context)
+    const totalSetsConstraint = vars?.sessionDuration?.totalSets
+    if (totalSetsConstraint) {
+      context += `- Total sets per workout: ${totalSetsConstraint[0]}-${totalSetsConstraint[1]} sets\n`
+    }
+
+    // Progression Notes (e.g., "Never add more sets - increase intensity instead")
+    const progressionNotes = vars?.sets?.progressionNotes
+    if (progressionNotes) {
+      context += `\n⚠️ PROGRESSION RULE: ${progressionNotes}\n`
+      context += `This rule explicitly defines how to progress WITHOUT adding more sets.\n`
+    }
+
+    // Volume Landmarks (if available)
     if (approach.volumeLandmarks) {
       context += `\nVolume Landmarks (sets/week):\n`
       const muscleGroups = approach.volumeLandmarks.muscleGroups || {}
@@ -180,12 +237,14 @@ Required JSON structure:
       })
     }
 
+    // Frequency Guidelines
     if (approach.frequencyGuidelines) {
       context += `\nFrequency Guidelines:\n`
       const range = approach.frequencyGuidelines.optimalRange || [2, 3]
       context += `- Optimal: ${range[0]}-${range[1]}x per week\n`
     }
 
+    // ROM Distribution
     if (approach.romEmphasis) {
       context += `\nROM Distribution:\n`
       context += `- Lengthened: ${approach.romEmphasis.lengthened || 60}%\n`
