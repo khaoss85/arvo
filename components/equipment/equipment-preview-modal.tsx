@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Loader2 } from 'lucide-react'
-import { getRepresentativeExercise } from '@/lib/constants/equipment-exercise-mapping'
+import { X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { getRepresentativeExercises, type ExerciseExample } from '@/lib/constants/equipment-exercise-mapping'
 import { ExerciseDBService } from '@/lib/services/exercisedb.service'
 import { ExerciseAnimation } from '@/components/features/workout/exercise-animation'
 
@@ -14,42 +14,61 @@ interface EquipmentPreviewModalProps {
   onClose: () => void
 }
 
+interface ExerciseWithGif extends ExerciseExample {
+  gifUrl: string | null
+}
+
 export function EquipmentPreviewModal({
   equipmentId,
   equipmentLabel,
   isOpen,
   onClose,
 }: EquipmentPreviewModalProps) {
-  const [gifUrl, setGifUrl] = useState<string | null>(null)
+  const [exercises, setExercises] = useState<ExerciseWithGif[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const exerciseMapping = getRepresentativeExercise(equipmentId)
+  const exerciseMapping = getRepresentativeExercises(equipmentId)
 
-  // Fetch exercise GIF from ExerciseDB
+  // Fetch all exercise GIFs in parallel
   useEffect(() => {
     if (!isOpen || !exerciseMapping) return
 
-    const fetchGif = async () => {
+    const fetchGifs = async () => {
       setIsLoading(true)
       setError(null)
+      setCurrentIndex(0) // Reset to first exercise
 
       try {
-        const url = await ExerciseDBService.getGifUrl(exerciseMapping.exerciseName)
-        if (url) {
-          setGifUrl(url)
+        // Fetch all GIFs in parallel
+        const gifPromises = exerciseMapping.exercises.map(async (exercise) => {
+          const gifUrl = await ExerciseDBService.getGifUrl(exercise.name)
+          return {
+            ...exercise,
+            gifUrl,
+          }
+        })
+
+        const exercisesWithGifs = await Promise.all(gifPromises)
+
+        // Check if at least one GIF was found
+        const hasAnyGif = exercisesWithGifs.some((ex) => ex.gifUrl !== null)
+
+        if (!hasAnyGif) {
+          setError('Nessuna animazione disponibile per questa attrezzatura')
         } else {
-          setError('Animazione non disponibile per questo esercizio')
+          setExercises(exercisesWithGifs)
         }
       } catch (err) {
-        console.error('[EquipmentPreviewModal] Error fetching GIF:', err)
-        setError('Errore nel caricamento dell\'animazione')
+        console.error('[EquipmentPreviewModal] Error fetching GIFs:', err)
+        setError('Errore nel caricamento delle animazioni')
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchGif()
+    fetchGifs()
   }, [isOpen, exerciseMapping])
 
   // Lock body scroll when modal is open
@@ -77,9 +96,36 @@ export function EquipmentPreviewModal({
     return () => window.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
 
+  // Handle keyboard navigation (arrow keys)
+  useEffect(() => {
+    const handleKeyboard = (e: KeyboardEvent) => {
+      if (!isOpen || exercises.length <= 1) return
+
+      if (e.key === 'ArrowLeft') {
+        goToPrevious()
+      } else if (e.key === 'ArrowRight') {
+        goToNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyboard)
+    return () => window.removeEventListener('keydown', handleKeyboard)
+  }, [isOpen, currentIndex, exercises.length])
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % exercises.length)
+  }
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev - 1 + exercises.length) % exercises.length)
+  }
+
   if (!exerciseMapping) {
     return null
   }
+
+  const currentExercise = exercises[currentIndex]
+  const hasMultipleExercises = exercises.length > 1
 
   return (
     <AnimatePresence>
@@ -110,7 +156,9 @@ export function EquipmentPreviewModal({
                   {equipmentLabel}
                 </h3>
                 <p className="text-sm text-gray-400 mt-0.5">
-                  Esempio di utilizzo
+                  {hasMultipleExercises
+                    ? `${exercises.length} esempi di utilizzo`
+                    : 'Esempio di utilizzo'}
                 </p>
               </div>
 
@@ -137,39 +185,126 @@ export function EquipmentPreviewModal({
                     <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mb-4">
                       <span className="text-2xl">🏋️</span>
                     </div>
-                    <p className="text-gray-400 mb-2">
-                      {error}
-                    </p>
+                    <p className="text-gray-400 mb-2">{error}</p>
                     <p className="text-sm text-gray-500 max-w-xs">
-                      Non siamo riusciti a caricare l'esempio per questa attrezzatura.
+                      Non siamo riusciti a caricare gli esempi per questa attrezzatura.
                     </p>
                   </div>
                 )}
 
-                {gifUrl && !isLoading && !error && (
+                {!isLoading && !error && exercises.length > 0 && currentExercise && (
                   <div className="space-y-4">
+                    {/* Exercise Info */}
                     <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                      <h4 className="text-sm font-medium text-gray-300 mb-1">
-                        Esercizio rappresentativo
-                      </h4>
-                      <p className="text-base text-white font-semibold">
-                        {exerciseMapping.exerciseName}
-                      </p>
-                      {exerciseMapping.description && (
-                        <p className="text-sm text-gray-400 mt-2">
-                          {exerciseMapping.description}
-                        </p>
-                      )}
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-sm font-medium text-gray-300">
+                          {hasMultipleExercises
+                            ? `Esercizio ${currentIndex + 1} di ${exercises.length}`
+                            : 'Esercizio rappresentativo'}
+                        </h4>
+                        {hasMultipleExercises && (
+                          <div className="flex gap-1">
+                            {exercises.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setCurrentIndex(idx)}
+                                className={`w-2 h-2 rounded-full transition-all ${
+                                  idx === currentIndex
+                                    ? 'bg-blue-500 w-6'
+                                    : 'bg-gray-600 hover:bg-gray-500'
+                                }`}
+                                aria-label={`Vai all'esercizio ${idx + 1}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-base text-white font-semibold">{currentExercise.name}</p>
+                      <p className="text-sm text-gray-400 mt-2">{currentExercise.description}</p>
                     </div>
 
-                    <ExerciseAnimation
-                      animationUrl={gifUrl}
-                      exerciseName={exerciseMapping.exerciseName}
-                      className="mx-auto"
-                    />
+                    {/* Carousel Container */}
+                    <div className="relative">
+                      {/* Navigation Buttons (Desktop) */}
+                      {hasMultipleExercises && (
+                        <>
+                          <button
+                            onClick={goToPrevious}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 rounded-full p-2 transition-colors hidden sm:flex items-center justify-center"
+                            aria-label="Esercizio precedente"
+                          >
+                            <ChevronLeft className="w-5 h-5 text-white" />
+                          </button>
+                          <button
+                            onClick={goToNext}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 rounded-full p-2 transition-colors hidden sm:flex items-center justify-center"
+                            aria-label="Esercizio successivo"
+                          >
+                            <ChevronRight className="w-5 h-5 text-white" />
+                          </button>
+                        </>
+                      )}
 
+                      {/* Carousel with Swipe Gesture */}
+                      <div className="overflow-hidden">
+                        <motion.div
+                          key={currentIndex}
+                          drag={hasMultipleExercises ? 'x' : false}
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.2}
+                          onDragEnd={(_, info) => {
+                            if (!hasMultipleExercises) return
+
+                            // Swipe threshold
+                            if (info.offset.x > 100) {
+                              goToPrevious()
+                            } else if (info.offset.x < -100) {
+                              goToNext()
+                            }
+                          }}
+                          initial={{ opacity: 0, x: 100 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          className="cursor-grab active:cursor-grabbing"
+                        >
+                          {currentExercise.gifUrl ? (
+                            <ExerciseAnimation
+                              animationUrl={currentExercise.gifUrl}
+                              exerciseName={currentExercise.name}
+                              className="mx-auto"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                              <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mb-4">
+                                <span className="text-2xl">🎬</span>
+                              </div>
+                              <p className="text-gray-400 mb-2">
+                                Animazione non disponibile
+                              </p>
+                              <p className="text-sm text-gray-500 max-w-xs">
+                                per {currentExercise.name}
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
+                      </div>
+                    </div>
+
+                    {/* Instructions */}
                     <div className="text-center text-xs text-gray-500 pt-2">
-                      Questo è un esempio di esercizio che puoi eseguire con questa attrezzatura
+                      {hasMultipleExercises ? (
+                        <>
+                          <span className="hidden sm:inline">
+                            Usa le frecce o scorri per vedere altri esercizi
+                          </span>
+                          <span className="sm:hidden">
+                            Scorri per vedere altri esercizi
+                          </span>
+                        </>
+                      ) : (
+                        'Questo è un esempio di esercizio che puoi eseguire con questa attrezzatura'
+                      )}
                     </div>
                   </div>
                 )}
