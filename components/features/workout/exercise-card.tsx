@@ -654,6 +654,31 @@ export function ExerciseCard({
         onSelectExercise={handleSelectExercise}
         currentWorkoutType={workout?.workout_type || 'general'}
         excludeExercises={allExercises.map(ex => ex.exerciseName.toLowerCase())}
+        enableAISuggestions={true}
+        enableAIValidation={true}
+        userId={userId}
+        currentWorkoutContext={{
+          existingExercises: allExercises.map(ex => {
+            const muscleGroups = extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant)
+            return {
+              name: ex.exerciseName,
+              sets: ex.targetSets + (ex.userAddedSets || 0),
+              muscleGroups: {
+                primary: muscleGroups.primary,
+                secondary: muscleGroups.secondary,
+              },
+              movementPattern: undefined, // Could be enhanced later
+              isCompound: ex.exerciseName.toLowerCase().includes('press') ||
+                         ex.exerciseName.toLowerCase().includes('squat') ||
+                         ex.exerciseName.toLowerCase().includes('deadlift') ||
+                         ex.exerciseName.toLowerCase().includes('row') ||
+                         ex.exerciseName.toLowerCase().includes('pull-up') ||
+                         ex.exerciseName.toLowerCase().includes('chin-up'),
+            }
+          }),
+          totalExercises: allExercises.length,
+          totalSets: allExercises.reduce((sum, ex) => sum + ex.targetSets + (ex.userAddedSets || 0), 0),
+        }}
       />
     </div>
   )

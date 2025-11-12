@@ -880,6 +880,31 @@ export function RefineWorkoutPage({
         onSelectExercise={handleSelectExercise}
         currentWorkoutType={workout.workout_type || 'general'}
         excludeExercises={exercises.map(ex => ex.name.toLowerCase())}
+        enableAISuggestions={true}
+        enableAIValidation={true}
+        userId={userId}
+        currentWorkoutContext={{
+          existingExercises: exercises.map(ex => {
+            const muscleGroups = extractMuscleGroupsFromExercise(ex.name, ex.equipmentVariant)
+            return {
+              name: ex.name,
+              sets: ex.sets,
+              muscleGroups: {
+                primary: muscleGroups.primary,
+                secondary: muscleGroups.secondary,
+              },
+              movementPattern: undefined, // Could be enhanced later
+              isCompound: ex.name.toLowerCase().includes('press') ||
+                         ex.name.toLowerCase().includes('squat') ||
+                         ex.name.toLowerCase().includes('deadlift') ||
+                         ex.name.toLowerCase().includes('row') ||
+                         ex.name.toLowerCase().includes('pull-up') ||
+                         ex.name.toLowerCase().includes('chin-up'),
+            }
+          }),
+          totalExercises: exercises.length,
+          totalSets: exercises.reduce((sum, ex) => sum + ex.sets, 0),
+        }}
       />
     </div>
   )

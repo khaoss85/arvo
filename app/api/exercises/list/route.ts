@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = getSupabaseServerClient()
 
     // Fetch exercises from exercise_generations table
     const { data: exercises, error } = await supabase
@@ -21,7 +21,7 @@ export async function GET() {
     }
 
     // Transform to expected format
-    const transformedExercises = exercises?.map((ex) => ({
+    const transformedExercises = exercises?.map((ex: any) => ({
       id: ex.id,
       name: ex.name,
       bodyPart: ex.metadata?.body_part || 'general',

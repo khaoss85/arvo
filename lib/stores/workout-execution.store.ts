@@ -25,6 +25,7 @@ export interface SetGuidance {
 export interface ExerciseExecution {
   exerciseId: string | null
   exerciseName: string
+  equipmentVariant?: string // Equipment variation (e.g., "barbell", "dumbbell", "cable")
   targetSets: number
   targetReps: [number, number]
   targetWeight: number

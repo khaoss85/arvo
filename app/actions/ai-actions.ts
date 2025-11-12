@@ -8,6 +8,8 @@ import { WorkoutSummaryAgent } from '@/lib/agents/workout-summary.agent'
 import { ExerciseSubstitutionAgent } from '@/lib/agents/exercise-substitution.agent'
 import { WorkoutRationaleAgent } from '@/lib/agents/workout-rationale.agent'
 import { WorkoutModificationValidator } from '@/lib/agents/workout-modification-validator.agent'
+import { ExerciseAdditionValidator, type ExerciseAdditionInput } from '@/lib/agents/exercise-addition-validator.agent'
+import { ExerciseSuggester, type ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
 import {
   getNextWorkoutType,
@@ -1002,6 +1004,126 @@ export async function validateWorkoutModificationAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to validate modification'
+    }
+  }
+}
+
+/**
+ * Validate adding a new exercise to workout
+ * Server action for Exercise Addition Validator agent
+ * Analyzes muscle overlap, fatigue, and workout balance
+ */
+export async function validateExerciseAdditionAction(
+  userId: string,
+  input: ExerciseAdditionInput
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Enrich with user profile data
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    // Enrich input with profile data
+    const enrichedInput: ExerciseAdditionInput = {
+      ...input,
+      userContext: {
+        ...input.userContext,
+        approachId: profile.approach_id || input.userContext.approachId,
+        experienceYears: profile.experience_years ?? undefined,
+        userAge: profile.age ?? undefined,
+        weakPoints: profile.weak_points || []
+      },
+      currentWorkout: {
+        ...input.currentWorkout,
+        mesocycleWeek: profile.current_mesocycle_week ?? input.currentWorkout.mesocycleWeek,
+        mesocyclePhase: (profile.mesocycle_phase as any) ?? input.currentWorkout.mesocyclePhase
+      }
+    }
+
+    // Create validator agent and validate exercise addition
+    const validator = new ExerciseAdditionValidator(supabase)
+    const result = await validator.validateExerciseAddition(enrichedInput)
+
+    console.log('[validateExerciseAdditionAction] Validation result:', {
+      validation: result.validation,
+      exerciseName: input.exerciseToAdd.name,
+      currentExercises: input.currentWorkout.totalExercises,
+      warningsCount: result.warnings.length
+    })
+
+    return { success: true, validation: result }
+  } catch (error) {
+    console.error('Server action - Exercise addition validation error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to validate exercise addition'
+    }
+  }
+}
+
+/**
+ * Suggest exercises to add to current workout
+ * Server action for Exercise Suggester agent
+ * Returns 3-5 suggested exercises ranked by appropriateness
+ */
+export async function suggestExerciseAdditionAction(
+  userId: string,
+  input: ExerciseSuggestionInput
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Enrich with user profile data
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (!profile) {
+      throw new Error('User profile not found')
+    }
+
+    // Enrich input with profile data
+    const enrichedInput: ExerciseSuggestionInput = {
+      ...input,
+      userContext: {
+        ...input.userContext,
+        approachId: profile.approach_id || input.userContext.approachId,
+        experienceYears: profile.experience_years ?? undefined,
+        userAge: profile.age ?? undefined,
+        weakPoints: profile.weak_points || [],
+        availableEquipment: profile.available_equipment || []
+      },
+      mesocycleWeek: profile.current_mesocycle_week ?? input.mesocycleWeek,
+      mesocyclePhase: (profile.mesocycle_phase as any) ?? input.mesocyclePhase
+    }
+
+    // Create suggester agent and get suggestions
+    const suggester = new ExerciseSuggester(supabase)
+    const result = await suggester.suggestExercises(enrichedInput)
+
+    console.log('[suggestExerciseAdditionAction] Suggestions generated:', {
+      suggestionsCount: result.suggestions.length,
+      workoutType: input.currentWorkout.workoutType,
+      currentExercises: input.currentWorkout.totalExercises,
+      bestChoice: result.recommendations.bestChoice
+    })
+
+    return { success: true, suggestions: result }
+  } catch (error) {
+    console.error('Server action - Exercise suggestion error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to suggest exercises'
     }
   }
 }

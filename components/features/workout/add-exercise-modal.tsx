@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Search, Dumbbell, Target } from 'lucide-react'
+import { X, Search, Dumbbell, Target, Sparkles, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { suggestExerciseAdditionAction, validateExerciseAdditionAction } from '@/app/actions/ai-actions'
+import type { ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
+import type { ExerciseAdditionInput } from '@/lib/agents/exercise-addition-validator.agent'
 
 interface Exercise {
   id: string
@@ -22,13 +25,31 @@ interface AddExerciseModalProps {
   onSelectExercise: (exercise: Exercise) => Promise<void>
   currentWorkoutType?: string
   excludeExercises?: string[] // Exercise names to exclude (already in workout)
+  // AI enhancements (Phase 2)
+  enableAISuggestions?: boolean
+  enableAIValidation?: boolean
+  userId?: string
+  currentWorkoutContext?: {
+    existingExercises: Array<{
+      name: string
+      sets: number
+      muscleGroups: {
+        primary: string[]
+        secondary: string[]
+      }
+      movementPattern?: string
+      isCompound: boolean
+    }>
+    totalExercises: number
+    totalSets: number
+  }
 }
 
 /**
  * Modal for selecting an exercise to add to the workout
  *
  * Phase 1: Basic search and selection
- * Phase 2: Will add AI suggestions at the top
+ * Phase 2: AI suggestions at the top + validation on selection
  */
 export function AddExerciseModal({
   isOpen,
@@ -36,6 +57,10 @@ export function AddExerciseModal({
   onSelectExercise,
   currentWorkoutType = 'push',
   excludeExercises = [],
+  enableAISuggestions = false,
+  enableAIValidation = false,
+  userId,
+  currentWorkoutContext,
 }: AddExerciseModalProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -43,6 +68,11 @@ export function AddExerciseModal({
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isSelecting, setIsSelecting] = useState(false)
+
+  // AI suggestions state
+  const [aiSuggestions, setAISuggestions] = useState<any[]>([])
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
+  const [validationResults, setValidationResults] = useState<Map<string, any>>(new Map())
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -86,6 +116,41 @@ export function AddExerciseModal({
     loadExercises()
   }, [isOpen])
 
+  // Load AI suggestions (Phase 2)
+  useEffect(() => {
+    if (!isOpen || !enableAISuggestions || !userId || !currentWorkoutContext) return
+
+    const loadSuggestions = async () => {
+      setIsLoadingSuggestions(true)
+      try {
+        const input: ExerciseSuggestionInput = {
+          currentWorkout: {
+            workoutType: currentWorkoutType as any,
+            existingExercises: currentWorkoutContext.existingExercises,
+            totalExercises: currentWorkoutContext.totalExercises,
+            totalSets: currentWorkoutContext.totalSets,
+          },
+          userContext: {
+            userId,
+            approachId: '', // Will be enriched server-side
+          },
+        }
+
+        const result = await suggestExerciseAdditionAction(userId, input)
+
+        if (result.success && result.suggestions) {
+          setAISuggestions(result.suggestions.suggestions || [])
+        }
+      } catch (error) {
+        console.error('Error loading AI suggestions:', error)
+      } finally {
+        setIsLoadingSuggestions(false)
+      }
+    }
+
+    loadSuggestions()
+  }, [isOpen, enableAISuggestions, userId, currentWorkoutContext, currentWorkoutType])
+
   // Filter exercises based on search and category
   useEffect(() => {
     let filtered = exercises
@@ -124,9 +189,81 @@ export function AddExerciseModal({
     setFilteredExercises(filtered)
   }, [exercises, searchQuery, selectedCategory, excludeExercises])
 
+  const validateExercise = async (exercise: Exercise) => {
+    if (!enableAIValidation || !userId || !currentWorkoutContext) {
+      return null
+    }
+
+    try {
+      const input: ExerciseAdditionInput = {
+        exerciseToAdd: {
+          name: exercise.name,
+          equipmentVariant: exercise.equipment,
+          muscleGroups: {
+            primary: exercise.primaryMuscles || [exercise.bodyPart],
+            secondary: exercise.secondaryMuscles || [],
+          },
+          isCompound: exercise.name.toLowerCase().includes('press') ||
+                      exercise.name.toLowerCase().includes('squat') ||
+                      exercise.name.toLowerCase().includes('row'),
+        },
+        currentWorkout: {
+          workoutType: currentWorkoutType as any,
+          existingExercises: currentWorkoutContext.existingExercises,
+          totalExercises: currentWorkoutContext.totalExercises,
+          totalSets: currentWorkoutContext.totalSets,
+          totalVolume: currentWorkoutContext.totalSets * 10, // Rough estimate
+        },
+        userContext: {
+          userId,
+          approachId: '', // Will be enriched server-side
+        },
+      }
+
+      const result = await validateExerciseAdditionAction(userId, input)
+
+      if (result.success && result.validation) {
+        return result.validation
+      }
+    } catch (error) {
+      console.error('Error validating exercise:', error)
+    }
+
+    return null
+  }
+
   const handleSelectExercise = async (exercise: Exercise) => {
     setIsSelecting(true)
     try {
+      // Validate if AI validation is enabled
+      if (enableAIValidation) {
+        const validation = await validateExercise(exercise)
+
+        if (validation) {
+          setValidationResults(new Map(validationResults).set(exercise.name, validation))
+
+          // If rejected, show error and don't proceed
+          if (validation.validation === 'rejected') {
+            alert(`⚠️ ${validation.reasoning}\n\n${validation.warnings.map((w: any) => w.message).join('\n')}`)
+            setIsSelecting(false)
+            return
+          }
+
+          // If caution, ask for confirmation
+          if (validation.validation === 'caution') {
+            const proceed = confirm(
+              `⚠️ Caution: ${validation.reasoning}\n\n` +
+              validation.warnings.map((w: any) => `• ${w.message}`).join('\n') +
+              '\n\nProceed anyway?'
+            )
+            if (!proceed) {
+              setIsSelecting(false)
+              return
+            }
+          }
+        }
+      }
+
       await onSelectExercise(exercise)
       onClose()
     } catch (error) {
@@ -200,6 +337,69 @@ export function AddExerciseModal({
             })}
           </div>
         </div>
+
+        {/* AI Suggestions (Phase 2) */}
+        {enableAISuggestions && (
+          <div className="p-4 border-b border-gray-800 bg-blue-500/5">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-blue-400" />
+              <h3 className="text-sm font-semibold text-blue-400">AI Suggested Exercises</h3>
+            </div>
+
+            {isLoadingSuggestions ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span className="ml-3 text-sm text-gray-400">Analyzing your workout...</span>
+              </div>
+            ) : aiSuggestions.length > 0 ? (
+              <div className="space-y-2">
+                {aiSuggestions.slice(0, 5).map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      // Find matching exercise in exercises list
+                      const matchingExercise = exercises.find(
+                        ex => ex.name.toLowerCase() === suggestion.name.toLowerCase()
+                      )
+                      if (matchingExercise) {
+                        handleSelectExercise(matchingExercise)
+                      }
+                    }}
+                    disabled={isSelecting}
+                    className="w-full flex items-start gap-3 p-3 bg-gray-800/50 hover:bg-gray-800 rounded-lg border border-blue-500/30 hover:border-blue-500 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-white font-medium text-sm">{suggestion.name}</h4>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            suggestion.priority === 'high'
+                              ? 'bg-green-500/20 text-green-400'
+                              : suggestion.priority === 'medium'
+                              ? 'bg-yellow-500/20 text-yellow-400'
+                              : 'bg-gray-500/20 text-gray-400'
+                          }`}
+                        >
+                          {suggestion.priority}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        {suggestion.rationale}
+                      </p>
+                      {suggestion.expectedBenefit && (
+                        <p className="text-xs text-blue-400 mt-1">
+                          → {suggestion.expectedBenefit}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400">No suggestions available</p>
+            )}
+          </div>
+        )}
 
         {/* Exercise List */}
         <div className="flex-1 overflow-y-auto p-4">
