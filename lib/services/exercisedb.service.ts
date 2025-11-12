@@ -233,6 +233,8 @@ export class ExerciseDBService {
         .replace(/\s+\d+-\d+-\d+-\d+/i, '')
         // Normalize em dash to space
         .replace(/—/g, ' ')
+        // Normalize slash to space (e.g., "pec deck / chest fly" → "pec deck chest fly")
+        .replace(/\s*\/\s*/g, ' ')
         // Normalize whitespace
         .replace(/\s+/g, ' ')
         .trim()
@@ -270,7 +272,13 @@ export class ExerciseDBService {
       // Chest fly variations
       'cable pec fly': 'cable chest fly',
       'pec fly': 'chest fly',
-      'pec deck': 'pec deck fly',
+      'pec deck': 'lever seated fly',  // Fixed: was 'pec deck fly' (doesn't exist)
+      'pec deck fly': 'lever seated fly',
+      'pec fly machine': 'lever seated fly',
+      'chest fly machine': 'lever seated fly',
+      'pec deck machine': 'lever seated fly',
+      'seated pec fly': 'lever seated fly',
+      'seated chest fly machine': 'lever seated fly',
       'cable fly': 'cable chest fly',
 
       // Curl variations

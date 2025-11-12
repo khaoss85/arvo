@@ -172,7 +172,7 @@ export const EQUIPMENT_EXERCISE_MAP: Record<string, EquipmentExerciseMapping> = 
   pec_fly: {
     equipmentId: 'pec_fly',
     exercises: [
-      { name: 'pec deck fly', description: 'Chest isolation with deep stretch' },
+      { name: 'lever seated fly', description: 'Chest isolation with deep stretch' },
     ],
   },
   incline_press_machine: {
