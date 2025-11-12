@@ -16,10 +16,18 @@ export class EmbeddingService {
 
   /**
    * Initialize OpenAI client
+   * MUST be called server-side only (uses secure API key)
    */
   private static getClient(): OpenAI {
+    // Ensure we're on server-side
+    if (typeof window !== 'undefined') {
+      throw new Error(
+        '[EmbeddingService] Cannot be used client-side. Use server action (generateQueryEmbedding) instead.'
+      )
+    }
+
     if (!this.openai) {
-      const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
+      const apiKey = process.env.OPENAI_API_KEY
 
       if (!apiKey) {
         throw new Error(
@@ -29,7 +37,6 @@ export class EmbeddingService {
 
       this.openai = new OpenAI({
         apiKey,
-        dangerouslyAllowBrowser: true, // Required for client-side usage
       })
     }
 

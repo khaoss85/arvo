@@ -7,6 +7,7 @@
 
 import { EmbeddingService } from './embedding.service'
 import { EmbeddingStorage } from '../utils/embedding-storage'
+import { generateQueryEmbedding } from '@/app/actions/embedding-actions'
 
 interface ExerciseDBExercise {
   id: string
@@ -481,8 +482,16 @@ export class ExerciseDBService {
     }
 
     try {
-      // Generate embedding for query
-      const queryEmbedding = await EmbeddingService.generateEmbedding(normalizedName)
+      // Generate embedding for query (server-side for security)
+      console.log(`[ExerciseDB] Generating query embedding for: "${normalizedName}"`)
+      const queryEmbedding = await generateQueryEmbedding(normalizedName)
+
+      if (!queryEmbedding) {
+        console.warn('[ExerciseDB] ⚠️  Failed to generate query embedding (server action returned null)')
+        return null
+      }
+
+      console.log('[ExerciseDB] ✓ Query embedding generated, calculating similarities...')
 
       // Calculate similarities with all exercises
       const candidates: Array<{ exercise: ExerciseDBExercise; similarity: number }> = []
@@ -521,6 +530,11 @@ export class ExerciseDBService {
       return null
     } catch (error) {
       console.error('[ExerciseDB] Semantic search error:', error)
+      console.error('[ExerciseDB] Query:', normalizedName)
+      console.error(
+        '[ExerciseDB] Error details:',
+        error instanceof Error ? error.message : error
+      )
       return null
     }
   }
