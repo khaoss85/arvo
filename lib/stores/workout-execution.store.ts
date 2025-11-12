@@ -101,6 +101,9 @@ interface WorkoutExecutionState {
   // Add extra sets
   addSetToExercise: (exerciseIndex: number) => { success: boolean; error?: string; message?: string; warning?: string }
 
+  // Add extra exercise
+  addExerciseToWorkout: (position: number, exercise: ExerciseExecution) => { success: boolean; error?: string; message?: string }
+
   // Persistence
   saveProgress: () => Promise<void>
 
@@ -522,6 +525,40 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           success: true,
           warning: newAddedSets >= 3 ? warnings[0] : undefined
         }
+      },
+
+      // Add extra exercise to workout
+      addExerciseToWorkout: (position: number, exercise: ExerciseExecution) => {
+        const { exercises, currentExerciseIndex } = get()
+        const updatedExercises = [...exercises]
+
+        // Hard limit: max 3 extra exercises
+        // Count exercises that were not AI-recommended (user-added)
+        const userAddedCount = exercises.filter(ex => ex.aiRecommendedSets === undefined).length
+        if (userAddedCount >= 3) {
+          return {
+            success: false,
+            error: 'hard_limit',
+            message: 'Maximum 3 extra exercises allowed to prevent overtraining.'
+          }
+        }
+
+        // Insert exercise at specified position
+        updatedExercises.splice(position, 0, exercise)
+
+        // Update currentExerciseIndex if insertion point is before or at current position
+        const newIndex = position <= currentExerciseIndex ? currentExerciseIndex + 1 : currentExerciseIndex
+
+        set({
+          exercises: updatedExercises,
+          currentExerciseIndex: newIndex,
+          lastActivityAt: new Date()
+        })
+
+        // Save to database
+        get().saveProgress()
+
+        return { success: true }
       },
 
       // Save progress to database

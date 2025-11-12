@@ -10,11 +10,14 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SetLogger } from './set-logger'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AddSetButton } from './add-set-button'
+import { AddExerciseButton } from './add-exercise-button'
+import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
+import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 
 // Mental readiness emoji mapping
 const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
@@ -40,7 +43,7 @@ export function ExerciseCard({
   userId,
   approachId
 }: ExerciseCardProps) {
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, exercises: allExercises, workout } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
   const [showSuggestion, setShowSuggestion] = useState(false)
   const [showExerciseExplanation, setShowExerciseExplanation] = useState(false)
@@ -51,6 +54,7 @@ export function ExerciseCard({
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
   const [showTechnicalCues, setShowTechnicalCues] = useState(false)
   const [showSubstitution, setShowSubstitution] = useState(false)
+  const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
 
   // Rest timer state
   const [isResting, setIsResting] = useState(false)
@@ -277,6 +281,60 @@ export function ExerciseCard({
     } catch (error) {
       console.error('Error validating modification:', error)
       return null
+    }
+  }
+
+  const handleOpenAddExercise = async () => {
+    // Count user-added exercises
+    const userAddedCount = allExercises.filter(ex => ex.aiRecommendedSets === undefined).length
+
+    // Hard limit: max 3 extra exercises
+    if (userAddedCount >= 3) {
+      return {
+        success: false,
+        error: 'hard_limit',
+        message: 'Maximum 3 extra exercises allowed to prevent overtraining.'
+      }
+    }
+
+    setIsAddExerciseModalOpen(true)
+    return { success: true }
+  }
+
+  const handleSelectExercise = async (selectedExercise: {
+    id: string
+    name: string
+    bodyPart: string
+    equipment: string
+    target: string
+    primaryMuscles?: string[]
+    secondaryMuscles?: string[]
+    animationUrl?: string | null
+    hasAnimation?: boolean
+  }) => {
+    try {
+      // Transform to ExerciseExecution format using transformer utility
+      const newExercise = await transformToExerciseExecution(selectedExercise, {
+        userId,
+        userProfile: {
+          experienceYears: userExperienceYears || 0,
+        },
+        workoutType: workout?.workout_type as any,
+      })
+
+      // Add exercise after current one (exerciseIndex + 1)
+      const result = addExerciseToWorkout(exerciseIndex + 1, newExercise)
+
+      if (!result.success) {
+        alert(result.message || 'Failed to add exercise.')
+        return
+      }
+
+      // Close modal on success
+      setIsAddExerciseModalOpen(false)
+    } catch (error) {
+      console.error('Error adding exercise:', error)
+      alert('Failed to add exercise. Please try again.')
     }
   }
 
@@ -507,6 +565,16 @@ export function ExerciseCard({
             />
           </div>
 
+          {/* Add Extra Exercise Option */}
+          <div className="mb-4">
+            <AddExerciseButton
+              position="after"
+              onAddExercise={handleOpenAddExercise}
+              variant="full"
+              currentExerciseCount={totalExercises}
+            />
+          </div>
+
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">
             <div className="flex-1 border-t border-gray-700"></div>
@@ -578,6 +646,15 @@ export function ExerciseCard({
           onClose={() => setShowSubstitution(false)}
         />
       )}
+
+      {/* Add Exercise Modal */}
+      <AddExerciseModal
+        isOpen={isAddExerciseModalOpen}
+        onClose={() => setIsAddExerciseModalOpen(false)}
+        onSelectExercise={handleSelectExercise}
+        currentWorkoutType={workout?.workout_type || 'general'}
+        excludeExercises={allExercises.map(ex => ex.exerciseName.toLowerCase())}
+      />
     </div>
   )
 }

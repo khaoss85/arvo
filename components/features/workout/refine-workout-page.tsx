@@ -14,10 +14,13 @@ import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { AnimationService } from '@/lib/services/animation.service'
 import { ReorderExercisesReviewModal } from './reorder-exercises-review-modal'
 import { AddSetButton } from './add-set-button'
+import { AddExerciseButton } from './add-exercise-button'
+import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
+import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 
 interface Exercise {
   name: string
@@ -63,6 +66,7 @@ export function RefineWorkoutPage({
   const [isMarkingReady, setIsMarkingReady] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null)
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false)
+  const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [customInputs, setCustomInputs] = useState<Map<number, string>>(new Map())
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const rationaleRef = useRef<WorkoutRationaleHandle>(null)
@@ -467,10 +471,101 @@ export function RefineWorkoutPage({
     router.push(`/workout/${workout.id}`)
   }
 
+  const handleOpenAddExercise = async () => {
+    // Count user-added exercises
+    const userAddedCount = exercises.filter(ex => !ex.aiRecommendedSets && ex.aiRecommendedSets !== 0).length
+
+    // Hard limit: max 3 extra exercises
+    if (userAddedCount >= 3) {
+      return {
+        success: false,
+        error: 'hard_limit',
+        message: 'Maximum 3 extra exercises allowed to prevent overtraining.'
+      }
+    }
+
+    setIsAddExerciseModalOpen(true)
+    return { success: true }
+  }
+
+  const handleSelectExercise = async (selectedExercise: {
+    id: string
+    name: string
+    bodyPart: string
+    equipment: string
+    target: string
+    primaryMuscles?: string[]
+    secondaryMuscles?: string[]
+    animationUrl?: string | null
+    hasAnimation?: boolean
+  }) => {
+    if (!workout) return
+
+    try {
+      // Transform to Exercise format (not ExerciseExecution)
+      const newExercise: Exercise = {
+        name: selectedExercise.name,
+        equipmentVariant: selectedExercise.equipment,
+        sets: selectedExercise.bodyPart?.toLowerCase().includes('chest') ||
+              selectedExercise.bodyPart?.toLowerCase().includes('back') ||
+              selectedExercise.bodyPart?.toLowerCase().includes('legs') ? 3 : 2,
+        repRange: selectedExercise.name.toLowerCase().includes('curl') ||
+                  selectedExercise.name.toLowerCase().includes('raise') ? [10, 15] : [8, 12],
+        restSeconds: selectedExercise.name.toLowerCase().includes('squat') ||
+                     selectedExercise.name.toLowerCase().includes('deadlift') ? 180 : 90,
+        targetWeight: 20,
+        targetReps: 10,
+        animationUrl: selectedExercise.animationUrl || undefined,
+        hasAnimation: selectedExercise.hasAnimation || false,
+        // Mark as user-added (not AI-recommended)
+        aiRecommendedSets: undefined,
+        userAddedSets: undefined,
+      }
+
+      // Add to end of exercises array
+      const newExercises = [...exercises, newExercise]
+      setExercises(newExercises)
+
+      // Invalidate workout rationale since exercises changed
+      rationaleRef.current?.invalidate()
+
+      // Save changes to workout
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to add exercise:', result.error)
+        alert('Failed to add exercise. Please try again.')
+        // Revert on failure
+        setExercises([...exercises])
+        return
+      }
+
+      // Close modal on success
+      setIsAddExerciseModalOpen(false)
+    } catch (error) {
+      console.error('Error adding exercise:', error)
+      alert('Failed to add exercise. Please try again.')
+    }
+  }
+
   if (!workout) return null
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Page Header with Actions */}
+      {exercises.length > 1 && (
+        <div className="flex justify-end items-center mb-4">
+          <Button
+            variant="outline"
+            onClick={() => setIsReorderModalOpen(true)}
+            disabled={isMarkingReady}
+            size="sm"
+          >
+            <List className="w-4 h-4 mr-2" />
+            Reorder
+          </Button>
+        </div>
+      )}
+
       {/* Workout Rationale - Overall plan understanding */}
       {exercises.length > 0 && (
         <div className="mb-6">
@@ -730,36 +825,29 @@ export function RefineWorkoutPage({
                 ))}
               </div>
 
+      {/* Add Exercise Section */}
+      <div className="mb-6">
+        <AddExerciseButton
+          position="end"
+          onAddExercise={handleOpenAddExercise}
+          variant="full"
+          currentExerciseCount={exercises.length}
+        />
+      </div>
+
       {/* Footer Actions */}
-      <div className="flex justify-between items-center gap-4 sticky bottom-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-4 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex gap-2">
+      <div className="sticky bottom-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Button
             variant="outline"
             onClick={handleMarkAsReady}
             disabled={isMarkingReady}
+            className="w-full"
           >
             <Check className="w-4 h-4 mr-2" />
             {isMarkingReady ? 'Saving...' : 'Save & Return'}
           </Button>
-          {exercises.length > 1 && (
-            <Button
-              variant="outline"
-              onClick={() => setIsReorderModalOpen(true)}
-              disabled={isMarkingReady}
-            >
-              <List className="w-4 h-4 mr-2" />
-              Reorder
-            </Button>
-          )}
         </div>
-        <Button
-          onClick={handleStartWorkout}
-          disabled={isMarkingReady}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold"
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Start Workout
-        </Button>
       </div>
 
       {/* Exercise Animation Modal */}
@@ -784,6 +872,15 @@ export function RefineWorkoutPage({
           onRationaleInvalidate={() => rationaleRef.current?.invalidate()}
         />
       )}
+
+      {/* Add Exercise Modal */}
+      <AddExerciseModal
+        isOpen={isAddExerciseModalOpen}
+        onClose={() => setIsAddExerciseModalOpen(false)}
+        onSelectExercise={handleSelectExercise}
+        currentWorkoutType={workout.workout_type || 'general'}
+        excludeExercises={exercises.map(ex => ex.name.toLowerCase())}
+      />
     </div>
   )
 }
