@@ -293,7 +293,7 @@ export function ExerciseCard({
       return {
         success: false,
         error: 'hard_limit',
-        message: 'Maximum 3 extra exercises allowed to prevent overtraining.'
+        message: 'Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.'
       }
     }
 

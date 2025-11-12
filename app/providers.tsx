@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { ExerciseDBService } from "@/lib/services/exercisedb.service";
+import { Toaster } from "@/components/ui/toast";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
@@ -47,6 +48,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         {children}
+        <Toaster />
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

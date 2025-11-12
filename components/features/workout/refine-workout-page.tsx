@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
@@ -486,7 +486,7 @@ export function RefineWorkoutPage({
       return {
         success: false,
         error: 'hard_limit',
-        message: 'Maximum 3 extra exercises allowed to prevent overtraining.'
+        message: 'Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.'
       }
     }
 
@@ -550,6 +550,45 @@ export function RefineWorkoutPage({
     } catch (error) {
       console.error('Error adding exercise:', error)
       alert('Failed to add exercise. Please try again.')
+    }
+  }
+
+  const handleRemoveExercise = async (indexToRemove: number) => {
+    if (!workout) return
+
+    const exerciseToRemove = exercises[indexToRemove]
+
+    // Only allow removing user-added exercises
+    if (exerciseToRemove.aiRecommendedSets !== undefined) {
+      alert('Non puoi rimuovere esercizi raccomandati dall\'AI. Puoi solo rimuovere esercizi aggiunti da te.')
+      return
+    }
+
+    // Confirm removal
+    if (!confirm(`Vuoi rimuovere "${exerciseToRemove.name}"?`)) {
+      return
+    }
+
+    try {
+      // Remove exercise from array
+      const newExercises = exercises.filter((_, index) => index !== indexToRemove)
+      setExercises(newExercises)
+
+      // Invalidate workout rationale since exercises changed
+      rationaleRef.current?.invalidate()
+
+      // Save changes to workout
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to remove exercise:', result.error)
+        alert('Failed to remove exercise. Please try again.')
+        // Revert on failure
+        setExercises([...exercises])
+        return
+      }
+    } catch (error) {
+      console.error('Error removing exercise:', error)
+      alert('Failed to remove exercise. Please try again.')
     }
   }
 
@@ -626,17 +665,31 @@ export function RefineWorkoutPage({
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => toggleExerciseExpanded(index)}
-                >
-                  {expandedExercises.has(index) ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
+                <div className="flex items-center gap-1">
+                  {/* Show remove button only for user-added exercises */}
+                  {exercise.aiRecommendedSets === undefined && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveExercise(index)}
+                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      title="Rimuovi esercizio"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   )}
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleExerciseExpanded(index)}
+                  >
+                    {expandedExercises.has(index) ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {/* Exercise Details */}
@@ -857,6 +910,11 @@ export function RefineWorkoutPage({
 
       {/* Add Exercise Section */}
       <div className="mb-6">
+        <div className="text-center mb-2">
+          <p className="text-xs text-gray-500">
+            Esercizi extra: {exercises.filter(ex => ex.aiRecommendedSets === undefined).length}/3
+          </p>
+        </div>
         <AddExerciseButton
           position="end"
           onAddExercise={handleOpenAddExercise}
