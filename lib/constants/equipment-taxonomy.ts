@@ -79,14 +79,28 @@ export const EQUIPMENT_TAXONOMY: EquipmentTaxonomy = {
       { id: "leg_extension", label: "Leg Extension", commonFor: ["Quad isolation", "VMO focus"] },
       { id: "leg_curl_lying", label: "Leg Curl (Lying)", commonFor: ["Hamstring isolation", "Shortened position"] },
       { id: "leg_curl_seated", label: "Leg Curl (Seated)", commonFor: ["Hamstring isolation", "Lengthened position"] },
+      { id: "leg_curl_prone", label: "Leg Curl (Prone)", commonFor: ["Hamstring isolation", "Face-down position"] },
+      { id: "leg_curl_standing", label: "Leg Curl (Standing)", commonFor: ["Hamstring isolation", "Unilateral work"] },
       { id: "seated_calf_raise", label: "Seated Calf Raise", commonFor: ["Soleus focus", "Knee bent"] },
       { id: "standing_calf_raise", label: "Standing Calf Raise", commonFor: ["Gastrocnemius", "Knee extended"] },
       { id: "kick_machine", label: "Kick Machine / Glute Press", commonFor: ["Glute isolation", "Hip extension"] },
+      { id: "hip_thrust_machine", label: "Hip Thrust Machine", commonFor: ["Glute isolation", "Hip thrust", "Glute hypertrophy"] },
+      { id: "multi_hip_machine", label: "Multi-Hip Machine", commonFor: ["Hip abduction", "Hip adduction", "Hip flexion"] },
       { id: "smith_machine", label: "Smith Machine", commonFor: ["Guided barbell paths", "Safer solo training"] },
+
+      // Core/Abs
+      { id: "ab_crunch_machine", label: "Ab Crunch Machine", commonFor: ["Abs isolation", "Weighted crunches"] },
+      { id: "torso_rotation_machine", label: "Torso Rotation Machine", commonFor: ["Obliques", "Core rotation"] },
+      { id: "back_extension_machine", label: "Back Extension / Roman Chair / 45° Back Extension", commonFor: ["Lower back", "Glutes", "Spinal erectors"] },
 
       // Arms
       { id: "preacher_curl_machine", label: "Preacher Curl Machine", commonFor: ["Bicep isolation", "Peak contraction"] },
+      { id: "bicep_curl_machine", label: "Bicep Curl Machine (Seated)", commonFor: ["Bicep isolation", "Constant tension"] },
       { id: "tricep_extension_machine", label: "Tricep Extension Machine", commonFor: ["Tricep isolation", "Long head stretch"] },
+
+      // Multi-function
+      { id: "assisted_pullup_dip", label: "Assisted Pull-up / Dip Machine", commonFor: ["Assisted pull-ups", "Assisted dips", "Beginner-friendly"] },
+      { id: "decline_press_machine", label: "Decline Press Machine", commonFor: ["Lower chest", "Decline pressing"] },
     ]
   },
 
@@ -113,6 +127,37 @@ export const EQUIPMENT_TAXONOMY: EquipmentTaxonomy = {
       { id: "leg_press_horizontal", label: "Horizontal Leg Press", commonFor: ["Glute bias", "Hip dominant"] },
       { id: "adductor_machine", label: "Adductor Machine", commonFor: ["Inner thighs", "Groin"] },
       { id: "abductor_machine", label: "Abductor Machine", commonFor: ["Outer glutes", "Hip abduction"] },
+    ]
+  },
+
+  cardio: {
+    label: "Cardio Equipment",
+    icon: "🏃",
+    items: [
+      { id: "treadmill", label: "Treadmill", commonFor: ["Running", "Walking", "LISS cardio"] },
+      { id: "stationary_bike", label: "Stationary Bike (Upright)", commonFor: ["Cycling", "Low-impact cardio"] },
+      { id: "recumbent_bike", label: "Recumbent Bike", commonFor: ["Low-impact cycling", "Back support"] },
+      { id: "rowing_machine", label: "Rowing Machine", commonFor: ["Full-body cardio", "Low-impact"] },
+      { id: "elliptical", label: "Elliptical Trainer", commonFor: ["Low-impact cardio", "Cross-training"] },
+      { id: "stair_climber", label: "Stair Climber / StairMaster", commonFor: ["Stair climbing", "Glute engagement"] },
+      { id: "assault_bike", label: "Assault Bike / Air Bike", commonFor: ["HIIT", "Full-body conditioning"] },
+      { id: "ski_erg", label: "Ski Erg", commonFor: ["Upper body cardio", "Ski simulation"] },
+    ]
+  },
+
+  benches_racks: {
+    label: "Benches & Racks",
+    icon: "🪑",
+    items: [
+      { id: "flat_bench", label: "Flat Bench", commonFor: ["Bench press", "Dumbbell work", "Rows"] },
+      { id: "adjustable_bench", label: "Adjustable Bench (Incline/Decline)", commonFor: ["Versatile pressing", "Multiple angles"] },
+      { id: "incline_bench", label: "Incline Bench (Fixed)", commonFor: ["Incline press", "Upper chest"] },
+      { id: "decline_bench", label: "Decline Bench (Fixed)", commonFor: ["Decline press", "Lower chest"] },
+      { id: "power_rack", label: "Power Rack / Squat Rack", commonFor: ["Squats", "Bench press", "Safety training"] },
+      { id: "half_rack", label: "Half Rack", commonFor: ["Squats", "Space-efficient"] },
+      { id: "squat_stands", label: "Squat Stands", commonFor: ["Squats", "Minimal setup"] },
+      { id: "olympic_platform", label: "Olympic Lifting Platform", commonFor: ["Olympic lifts", "Heavy drops"] },
+      { id: "deadlift_platform", label: "Deadlift Platform", commonFor: ["Deadlifts", "Floor protection"] },
     ]
   }
 }

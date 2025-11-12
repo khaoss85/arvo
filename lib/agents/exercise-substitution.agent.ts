@@ -26,6 +26,7 @@ export interface SubstitutionInput {
   // Session context
   mesocycleWeek?: number
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
+  caloricPhase?: 'bulk' | 'cut' | 'maintenance'
   // Optional: reason for substitution (for future conversational expansion)
   substitutionReason?: string
   // Active insights and memories (NEW)
@@ -131,6 +132,11 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
       ? `Current Phase: ${input.mesocyclePhase} (Week ${input.mesocycleWeek || 'N/A'})`
       : ''
 
+    // Build caloric phase context
+    const caloricPhaseContext = input.caloricPhase
+      ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}`
+      : ''
+
     // Build substitution reason context
     const reasonContext = input.substitutionReason
       ? `Reason for Substitution: ${input.substitutionReason}`
@@ -182,6 +188,7 @@ ${equipmentContext}
 ${weakPointsContext}
 ${demographicContext}
 ${periodizationContext}
+${caloricPhaseContext}
 ${reasonContext}
 ${insightsContext}
 ${memoriesContext}
@@ -215,7 +222,12 @@ ${input.mesocyclePhase === 'deload' ? '   - Deload: Prefer easier alternatives, 
 ${input.mesocyclePhase === 'intensification' ? '   - Intensification: Maintain intensity, prefer similar stimuli' : ''}
 ${input.mesocyclePhase === 'accumulation' ? '   - Accumulation: Volume focus, variety acceptable' : ''}
 
-5. Apply approach philosophy:
+5. Consider caloric phase:
+${input.caloricPhase === 'cut' ? '   - CUT: Prioritize high stimulus-to-fatigue alternatives (machines > free weights, cables > barbells). Example: Suggest Leg Press over Squat, Machine Chest Press over Barbell Bench.' : ''}
+${input.caloricPhase === 'bulk' ? '   - BULK: Favor compound movements and free weights when possible. Example: Suggest Barbell variations over machines when appropriate.' : ''}
+${input.caloricPhase === 'maintenance' ? '   - MAINTENANCE: Balanced mix, no special bias needed' : ''}
+
+6. Apply approach philosophy:
    - Respect exercise selection principles from approach
    - Prioritize weak point development if relevant
    - Match ROM emphasis when possible

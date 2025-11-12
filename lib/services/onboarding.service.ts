@@ -25,7 +25,9 @@ export class OnboardingService {
         current_cycle_day: null, // No active cycle yet
         current_mesocycle_week: null, // No mesocycle started yet
         mesocycle_phase: null, // No phase yet
-        mesocycle_start_date: null // No start date yet
+        mesocycle_start_date: null, // No start date yet
+        caloric_phase: null, // No caloric phase yet
+        caloric_phase_start_date: null // No caloric phase start date yet
       })
 
       // Generate first AI-powered workout using the collected preferences

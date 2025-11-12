@@ -53,6 +53,54 @@ export type Database = {
         }
         Relationships: []
       }
+      caloric_phase_history: {
+        Row: {
+          avg_weight_change: number | null
+          created_at: string | null
+          duration_weeks: number | null
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phase: string
+          started_at: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_weight_change?: number | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phase: string
+          started_at?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_weight_change?: number | null
+          created_at?: string | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phase?: string
+          started_at?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caloric_phase_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sets_log: {
         Row: {
           created_at: string | null
@@ -348,6 +396,8 @@ export type Database = {
           age: number | null
           approach_id: string | null
           available_equipment: string[] | null
+          caloric_phase: string | null
+          caloric_phase_start_date: string | null
           created_at: string | null
           current_cycle_day: number | null
           current_mesocycle_week: number | null
@@ -359,6 +409,7 @@ export type Database = {
           height: number | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
+          preferred_language: string | null
           preferred_split: string | null
           strength_baseline: Json | null
           updated_at: string | null
@@ -371,6 +422,8 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
+          caloric_phase?: string | null
+          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
@@ -382,6 +435,7 @@ export type Database = {
           height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
+          preferred_language?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
@@ -394,6 +448,8 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
+          caloric_phase?: string | null
+          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
@@ -405,6 +461,7 @@ export type Database = {
           height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
+          preferred_language?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null

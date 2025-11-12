@@ -49,6 +49,9 @@ export const userProfileSchema = z.object({
   current_mesocycle_week: z.number().int().min(1).max(12).nullable(),
   mesocycle_phase: z.enum(['accumulation', 'intensification', 'deload', 'transition']).nullable(),
   mesocycle_start_date: z.string().datetime().nullable(),
+  // Caloric phase tracking fields
+  caloric_phase: z.enum(['bulk', 'cut', 'maintenance']).nullable(),
+  caloric_phase_start_date: z.string().datetime().nullable(),
   // Demographic fields for personalized AI training
   gender: z.enum(['male', 'female', 'other']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
@@ -104,6 +107,34 @@ export const insertExerciseGenerationSchema = exerciseGenerationSchema.omit({ id
 });
 
 export const updateExerciseGenerationSchema = insertExerciseGenerationSchema.partial();
+
+// Caloric Phase History Schema
+export const caloricPhaseHistorySchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  phase: z.enum(['bulk', 'cut', 'maintenance']),
+  started_at: z.string().datetime(),
+  ended_at: z.string().datetime().nullable(),
+  is_active: z.boolean(),
+  duration_weeks: z.number().nullable(), // Computed field
+  avg_weight_change: z.number().nullable(), // kg gained/lost
+  notes: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCaloricPhaseHistorySchema = caloricPhaseHistorySchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  duration_weeks: true, // Computed field
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCaloricPhaseHistorySchema = insertCaloricPhaseHistorySchema.partial();
 
 // DEPRECATED: Old exercises table (dropped in migration)
 // Kept for backwards compatibility with existing code
@@ -213,3 +244,7 @@ export type UpdateSplitPlan = z.infer<typeof updateSplitPlanSchema>;
 export type ExerciseGeneration = z.infer<typeof exerciseGenerationSchema>;
 export type InsertExerciseGeneration = z.infer<typeof insertExerciseGenerationSchema>;
 export type UpdateExerciseGeneration = z.infer<typeof updateExerciseGenerationSchema>;
+
+export type CaloricPhaseHistory = z.infer<typeof caloricPhaseHistorySchema>;
+export type InsertCaloricPhaseHistory = z.infer<typeof insertCaloricPhaseHistorySchema>;
+export type UpdateCaloricPhaseHistory = z.infer<typeof updateCaloricPhaseHistorySchema>;

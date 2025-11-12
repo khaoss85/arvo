@@ -25,6 +25,8 @@ export interface ExerciseSelectionInput {
   // Periodization context
   mesocycleWeek?: number | null
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Caloric phase context
+  caloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
   // Insights and Memories (NEW)
   activeInsights?: Array<{
     id: string
@@ -250,6 +252,98 @@ Exercise Selection Strategy:
 `
       : ''
 
+    // Build caloric phase context
+    const caloricPhaseContext = input.caloricPhase
+      ? `
+=== CALORIC PHASE CONTEXT ===
+Current Nutritional Phase: ${input.caloricPhase.toUpperCase()}
+
+${input.caloricPhase === 'bulk' ? `
+Phase Overview: Caloric surplus for muscle building
+Training Optimization Strategy:
+- VOLUME: Aim for +15-20% higher volume compared to maintenance baseline
+  * User has surplus energy and enhanced recovery capacity
+  * Can handle more total sets and exercises per session
+  * Typical range: 5-7 exercises per workout (vs 4-6 in maintenance)
+
+- EXERCISE SELECTION: Prioritize compound movements
+  * Squat variations, deadlifts, pressing movements are ideal
+  * These maximize muscle stimulus and strength gains
+  * Still include isolation work for weak points and detail
+
+- REP RANGES: Broader spectrum (6-15 reps)
+  * Include heavy sets (6-8 reps) for strength progression
+  * Medium sets (8-12 reps) for hypertrophy
+  * Higher rep sets (12-15 reps) for metabolic work
+  * User can recover from varied intensity
+
+- PROGRESSION FOCUS: Aggressive load progression
+  * This is the prime time to add weight to the bar
+  * Push for PRs on main lifts
+  * User has nutritional support for strength gains
+
+IMPORTANT: Make full use of the surplus - this is muscle-building season!
+` : ''}
+${input.caloricPhase === 'cut' ? `
+Phase Overview: Caloric deficit for fat loss while preserving muscle
+Training Optimization Strategy:
+- VOLUME: Reduce total volume by -15-20% compared to maintenance
+  * User has limited recovery capacity due to deficit
+  * QUALITY over QUANTITY - fewer sets, executed with precision
+  * Typical range: 4-5 exercises per workout (vs 4-6 in maintenance)
+  * This volume reduction helps prevent excessive systemic fatigue
+
+- EXERCISE SELECTION: Prioritize HIGH stimulus-to-fatigue ratio
+  * FAVOR: Machines, cables, isolation movements
+    - Leg press > Back squat (less spinal/systemic fatigue)
+    - Machine chest press > Barbell bench (safer to push hard)
+    - Cable laterals > Heavy overhead press
+    - Leg curl/extension machines for quads/hams
+  * LIMIT: Heavy free-weight compounds that tax CNS heavily
+  * Rationale: Preserve muscle with targeted stimulus while minimizing recovery demands
+
+- REP RANGES: Focus on 8-12 reps (muscle preservation zone)
+  * Avoid excessive low-rep strength work (3-6 reps) - too much CNS fatigue
+  * Avoid excessive high-rep metabolic work (15+ reps) - creates unnecessary fatigue
+  * Sweet spot: 8-12 reps with controlled technique
+  * Maintain strength rather than chase PRs
+
+- PROGRESSION FOCUS: Maintain strength, don't push for PRs
+  * Goal is to lift approximately 85-90% of bulking loads
+  * If strength drops slightly, that's normal and acceptable
+  * Prioritize muscle retention over load progression
+
+CRITICAL PRINCIPLE: Minimum effective dose
+- Ask yourself: "What's the LEAST volume needed to keep this muscle?"
+- Every extra set costs recovery that you don't have
+- Strategic reduction is smart, not lazy
+` : ''}
+${input.caloricPhase === 'maintenance' ? `
+Phase Overview: Balanced caloric intake for sustainable training
+Training Optimization Strategy:
+- VOLUME: Standard baseline approach
+  * No special adjustments needed
+  * Typical range: 4-6 exercises per workout
+
+- EXERCISE SELECTION: Balanced mix
+  * Combine compound and isolation movements
+  * Neither bias toward heavy compounds nor machines exclusively
+  * Choose based on individual preferences and weak points
+
+- REP RANGES: Standard hypertrophy focus (6-12 reps)
+  * Classic muscle-building ranges
+  * Some variety across exercises
+
+- PROGRESSION FOCUS: Steady, sustainable progress
+  * Add weight when possible without forcing it
+  * Focus on technique refinement and consistency
+  * Neither aggressive bulking progression nor conservative cutting maintenance
+
+This is your sustainable baseline - train smart and stay healthy.
+` : ''}
+`
+      : ''
+
     // Build session context if provided (for split-based workouts)
     const sessionContext = input.sessionFocus || input.targetVolume || input.sessionPrinciples
       ? `
@@ -270,6 +364,7 @@ ${exercisePrinciplesContext}
 ${romEmphasisContext}
 ${stimulusToFatigueContext}
 ${periodizationContext}
+${caloricPhaseContext}
 ${sessionContext}
 
 User weak points: ${input.weakPoints.join(', ') || 'None specified'}
