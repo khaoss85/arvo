@@ -17,6 +17,7 @@ import { AddSetButton } from './add-set-button'
 import { AddExerciseButton } from './add-exercise-button'
 import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
+import { ConfirmDialog } from './confirm-dialog'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
@@ -70,6 +71,21 @@ export function RefineWorkoutPage({
   const [customInputs, setCustomInputs] = useState<Map<number, string>>(new Map())
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const rationaleRef = useRef<WorkoutRationaleHandle>(null)
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    type: 'confirm' | 'alert' | 'warning'
+    title: string
+    message: string
+    onConfirm?: () => void
+    confirmText?: string
+  }>({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    message: '',
+  })
 
   // AI Alternatives state
   const [alternatives, setAlternatives] = useState<Map<number, SubstitutionSuggestion[]>>(new Map())
@@ -539,9 +555,14 @@ export function RefineWorkoutPage({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to add exercise:', result.error)
-        alert('Failed to add exercise. Please try again.')
         // Revert on failure
         setExercises([...exercises])
+        setConfirmDialog({
+          isOpen: true,
+          type: 'alert',
+          title: 'Errore',
+          message: 'Impossibile aggiungere l\'esercizio. Riprova.',
+        })
         return
       }
 
@@ -549,47 +570,74 @@ export function RefineWorkoutPage({
       setIsAddExerciseModalOpen(false)
     } catch (error) {
       console.error('Error adding exercise:', error)
-      alert('Failed to add exercise. Please try again.')
+      setConfirmDialog({
+        isOpen: true,
+        type: 'alert',
+        title: 'Errore',
+        message: 'Impossibile aggiungere l\'esercizio. Riprova.',
+      })
     }
   }
 
-  const handleRemoveExercise = async (indexToRemove: number) => {
+  const handleRemoveExercise = (indexToRemove: number) => {
     if (!workout) return
 
     const exerciseToRemove = exercises[indexToRemove]
 
     // Only allow removing user-added exercises
     if (exerciseToRemove.aiRecommendedSets !== undefined) {
-      alert('Non puoi rimuovere esercizi raccomandati dall\'AI. Puoi solo rimuovere esercizi aggiunti da te.')
+      setConfirmDialog({
+        isOpen: true,
+        type: 'alert',
+        title: 'Impossibile Rimuovere',
+        message: 'Non puoi rimuovere esercizi raccomandati dall\'AI. Puoi solo rimuovere esercizi aggiunti da te.',
+      })
       return
     }
 
     // Confirm removal
-    if (!confirm(`Vuoi rimuovere "${exerciseToRemove.name}"?`)) {
-      return
-    }
+    setConfirmDialog({
+      isOpen: true,
+      type: 'warning',
+      title: 'Conferma Rimozione',
+      message: `Vuoi rimuovere "${exerciseToRemove.name}"?`,
+      confirmText: 'Rimuovi',
+      onConfirm: async () => {
+        try {
+          // Remove exercise from array
+          const newExercises = exercises.filter((_, index) => index !== indexToRemove)
+          setExercises(newExercises)
 
-    try {
-      // Remove exercise from array
-      const newExercises = exercises.filter((_, index) => index !== indexToRemove)
-      setExercises(newExercises)
+          // Invalidate workout rationale since exercises changed
+          rationaleRef.current?.invalidate()
 
-      // Invalidate workout rationale since exercises changed
-      rationaleRef.current?.invalidate()
-
-      // Save changes to workout
-      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
-      if (!result.success) {
-        console.error('Failed to remove exercise:', result.error)
-        alert('Failed to remove exercise. Please try again.')
-        // Revert on failure
-        setExercises([...exercises])
-        return
-      }
-    } catch (error) {
-      console.error('Error removing exercise:', error)
-      alert('Failed to remove exercise. Please try again.')
-    }
+          // Save changes to workout
+          const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+          if (!result.success) {
+            console.error('Failed to remove exercise:', result.error)
+            // Revert on failure
+            setExercises([...exercises])
+            setConfirmDialog({
+              isOpen: true,
+              type: 'alert',
+              title: 'Errore',
+              message: 'Impossibile rimuovere l\'esercizio. Riprova.',
+            })
+            return
+          }
+          // Close dialog on success
+          setConfirmDialog({ ...confirmDialog, isOpen: false })
+        } catch (error) {
+          console.error('Error removing exercise:', error)
+          setConfirmDialog({
+            isOpen: true,
+            type: 'alert',
+            title: 'Errore',
+            message: 'Impossibile rimuovere l\'esercizio. Riprova.',
+          })
+        }
+      },
+    })
   }
 
   if (!workout) return null
@@ -1003,6 +1051,17 @@ export function RefineWorkoutPage({
           totalExercises: exercises.length,
           totalSets: exercises.reduce((sum, ex) => sum + ex.sets, 0),
         }}
+      />
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        type={confirmDialog.type}
+        confirmText={confirmDialog.confirmText}
       />
     </div>
   )

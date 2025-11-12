@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ModificationWarningModal } from './modification-warning-modal'
 import type { ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
+import { useUIStore } from '@/lib/stores/ui.store'
 
 interface AddSetButtonProps {
   currentSets: number
@@ -28,6 +29,7 @@ export function AddSetButton({
   onRequestValidation,
   exerciseName = 'Exercise',
 }: AddSetButtonProps) {
+  const { addToast } = useUIStore()
   const [isAdding, setIsAdding] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
   const [validationResult, setValidationResult] = useState<ModificationValidationOutput | null>(null)
@@ -80,21 +82,20 @@ export function AddSetButton({
       // Handle validation errors
       if (result && !result.success) {
         if (result.error === 'hard_limit') {
-          alert(result.message || 'Cannot add more sets')
+          addToast(result.message || 'Non puoi aggiungere più serie', 'warning')
         } else {
-          alert('Failed to add set. Please try again.')
+          addToast('Impossibile aggiungere la serie. Riprova.', 'error')
         }
         return
       }
 
       // Show warning toast (soft warning at 3+ sets)
       if (result?.warning) {
-        // Log warning for now - can be replaced with toast notification
-        console.warn('SET_ADDITION_WARNING:', result.warning)
+        addToast(result.warning, 'info')
       }
     } catch (error) {
       console.error('Failed to add set:', error)
-      alert('Failed to add set. Please try again.')
+      addToast('Impossibile aggiungere la serie. Riprova.', 'error')
     } finally {
       setIsAdding(false)
     }

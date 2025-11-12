@@ -202,7 +202,11 @@ export class WorkoutGeneratorService {
           setGuidance: exercise.setGuidance || [],
           // Animation data (pre-fetched by ExerciseSelector)
           animationUrl: exercise.animationUrl,
-          hasAnimation: exercise.hasAnimation
+          hasAnimation: exercise.hasAnimation,
+          // User modification tracking
+          aiRecommendedSets: exercise.sets, // Mark as AI-recommended
+          userAddedSets: undefined,
+          userModifications: undefined,
         }
       })
     )
