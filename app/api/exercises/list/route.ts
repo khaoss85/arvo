@@ -3,7 +3,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 
 export async function GET() {
   try {
-    const supabase = getSupabaseServerClient()
+    const supabase = await getSupabaseServerClient()
 
     // Fetch exercises from exercise_generations table
     const { data: exercises, error } = await supabase
