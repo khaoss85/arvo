@@ -74,6 +74,11 @@ export function RefineWorkoutPage({
   // AI Alternatives state
   const [alternatives, setAlternatives] = useState<Map<number, SubstitutionSuggestion[]>>(new Map())
   const [alternativesLoading, setAlternativesLoading] = useState<Map<number, boolean>>(new Map())
+  const [alternativeAnimationModal, setAlternativeAnimationModal] = useState<{
+    name: string
+    equipmentVariant?: string
+    animationUrl: string | null
+  } | null>(null)
 
   // Custom input validation state
   const [customValidationResults, setCustomValidationResults] = useState<Map<number, SubstitutionSuggestion>>(new Map())
@@ -705,7 +710,31 @@ export function RefineWorkoutPage({
                         className="flex items-start justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                       >
                         <div className="flex-1">
-                          <p className="font-medium text-sm">{alt.exercise.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{alt.exercise.name}</p>
+                            {/* Animation Preview Icon */}
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation()
+                                // Load animation URL dynamically
+                                const animationUrl = await AnimationService.getAnimationUrl({
+                                  name: alt.exercise.name,
+                                  canonicalPattern: alt.exercise.name,
+                                  equipmentVariant: alt.exercise.equipmentVariant,
+                                })
+                                setAlternativeAnimationModal({
+                                  name: alt.exercise.name,
+                                  equipmentVariant: alt.exercise.equipmentVariant,
+                                  animationUrl: animationUrl || null,
+                                })
+                              }}
+                              className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
+                              aria-label={`View ${alt.exercise.name} animation`}
+                              title="Visualizza esercizio"
+                            >
+                              <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
+                            </button>
+                          </div>
                           {alt.exercise.equipmentVariant && (
                             <p className="text-xs text-muted-foreground">{alt.exercise.equipmentVariant}</p>
                           )}
@@ -857,6 +886,16 @@ export function RefineWorkoutPage({
           onClose={() => setAnimationModalOpen(null)}
           exerciseName={exercises[animationModalOpen].name}
           animationUrl={exercises[animationModalOpen].animationUrl || null}
+        />
+      )}
+
+      {/* Animation Modal for AI Alternatives */}
+      {alternativeAnimationModal && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => setAlternativeAnimationModal(null)}
+          exerciseName={alternativeAnimationModal.name}
+          animationUrl={alternativeAnimationModal.animationUrl}
         />
       )}
 
