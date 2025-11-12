@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useUIStore } from '@/lib/stores/ui.store'
 
 interface AddExerciseButtonProps {
   position: 'after' | 'end' // Where to add: after current exercise or at end
@@ -25,6 +26,7 @@ export function AddExerciseButton({
   onRequestValidation,
 }: AddExerciseButtonProps) {
   const [isAdding, setIsAdding] = useState(false)
+  const { addToast } = useUIStore()
 
   const handleClick = async () => {
     // Phase 1: Direct add (no AI validation yet)
@@ -40,9 +42,12 @@ export function AddExerciseButton({
       // Handle errors
       if (result && !result.success) {
         if (result.error === 'hard_limit') {
-          alert(result.message || 'Cannot add more exercises')
+          addToast(
+            result.message || 'Cannot add more exercises',
+            'warning'
+          )
         } else {
-          alert('Failed to add exercise. Please try again.')
+          addToast('Failed to add exercise. Please try again.', 'error')
         }
         return
       }
@@ -50,7 +55,7 @@ export function AddExerciseButton({
       // Success - modal will handle exercise selection
     } catch (error) {
       console.error('Failed to add exercise:', error)
-      alert('Failed to add exercise. Please try again.')
+      addToast('Failed to add exercise. Please try again.', 'error')
     } finally {
       setIsAdding(false)
     }

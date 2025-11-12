@@ -5,7 +5,9 @@ import { X, Search, Dumbbell, Target, Sparkles, CheckCircle, AlertCircle, XCircl
 import { Button } from '@/components/ui/button'
 import { suggestExerciseAdditionAction, validateExerciseAdditionAction } from '@/app/actions/ai-actions'
 import type { ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
-import type { ExerciseAdditionInput } from '@/lib/agents/exercise-addition-validator.agent'
+import type { ExerciseAdditionInput, ExerciseAdditionOutput } from '@/lib/agents/exercise-addition-validator.agent'
+import { ExerciseValidationModal } from './exercise-validation-modal'
+import { useUIStore } from '@/lib/stores/ui.store'
 
 interface Exercise {
   id: string
@@ -73,6 +75,14 @@ export function AddExerciseModal({
   const [aiSuggestions, setAISuggestions] = useState<any[]>([])
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [validationResults, setValidationResults] = useState<Map<string, any>>(new Map())
+
+  // Validation modal state
+  const [showValidationModal, setShowValidationModal] = useState(false)
+  const [validationResult, setValidationResult] = useState<ExerciseAdditionOutput | null>(null)
+  const [pendingExercise, setPendingExercise] = useState<Exercise | null>(null)
+
+  // Toast notifications
+  const { addToast } = useUIStore()
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -242,25 +252,16 @@ export function AddExerciseModal({
         if (validation) {
           setValidationResults(new Map(validationResults).set(exercise.name, validation))
 
-          // If rejected, show error and don't proceed
-          if (validation.validation === 'rejected') {
-            alert(`⚠️ ${validation.reasoning}\n\n${validation.warnings.map((w: any) => w.message).join('\n')}`)
+          // If rejected or caution, show modal
+          if (validation.validation === 'rejected' || validation.validation === 'caution') {
+            setValidationResult(validation)
+            setPendingExercise(exercise)
+            setShowValidationModal(true)
             setIsSelecting(false)
             return
           }
 
-          // If caution, ask for confirmation
-          if (validation.validation === 'caution') {
-            const proceed = confirm(
-              `⚠️ Caution: ${validation.reasoning}\n\n` +
-              validation.warnings.map((w: any) => `• ${w.message}`).join('\n') +
-              '\n\nProceed anyway?'
-            )
-            if (!proceed) {
-              setIsSelecting(false)
-              return
-            }
-          }
+          // If approved, proceed automatically (no modal needed)
         }
       }
 
@@ -268,9 +269,28 @@ export function AddExerciseModal({
       onClose()
     } catch (error) {
       console.error('Error selecting exercise:', error)
-      alert('Failed to add exercise. Please try again.')
+      addToast('Failed to add exercise. Please try again.', 'error')
     } finally {
       setIsSelecting(false)
+    }
+  }
+
+  const handleProceedWithExercise = async () => {
+    if (!pendingExercise) return
+
+    setShowValidationModal(false)
+    setIsSelecting(true)
+
+    try {
+      await onSelectExercise(pendingExercise)
+      onClose()
+    } catch (error) {
+      console.error('Error selecting exercise:', error)
+      addToast('Failed to add exercise. Please try again.', 'error')
+    } finally {
+      setIsSelecting(false)
+      setPendingExercise(null)
+      setValidationResult(null)
     }
   }
 
@@ -456,6 +476,21 @@ export function AddExerciseModal({
           </p>
         </div>
       </div>
+
+      {/* Exercise Validation Modal */}
+      {validationResult && pendingExercise && (
+        <ExerciseValidationModal
+          isOpen={showValidationModal}
+          onClose={() => {
+            setShowValidationModal(false)
+            setPendingExercise(null)
+            setValidationResult(null)
+          }}
+          onProceed={handleProceedWithExercise}
+          validation={validationResult}
+          exerciseName={pendingExercise.name}
+        />
+      )}
     </div>
   )
 }
