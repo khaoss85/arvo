@@ -189,7 +189,11 @@ export class WorkoutGeneratorService {
           // Exercise metadata for animations and tracking
           primaryMuscles: exercise.primaryMuscles || [],
           secondaryMuscles: exercise.secondaryMuscles || [],
-          canonicalPattern: exercise.movementPattern, // Map movementPattern to canonicalPattern for AnimationService
+          // NOTE: Do NOT map movementPattern to canonicalPattern
+          // movementPattern contains metadata like "horizontal_push", not exercise names
+          // Animation URL is pre-fetched in exercise.animationUrl, so canonicalPattern is not needed
+          canonicalPattern: undefined,
+          movementPattern: exercise.movementPattern, // Keep as separate field for metadata
           romEmphasis: exercise.romEmphasis,
           unilateral: exercise.unilateral,
           // Technical guidance

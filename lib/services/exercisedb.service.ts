@@ -2,7 +2,11 @@
  * ExerciseDB API Integration Service
  * Provides exercise GIF URLs from ExerciseDB API
  * Supports both self-hosted and RapidAPI versions
+ * Includes semantic search via embeddings for improved matching
  */
+
+import { EmbeddingService } from './embedding.service'
+import { EmbeddingStorage } from '../utils/embedding-storage'
 
 interface ExerciseDBExercise {
   id: string
@@ -13,17 +17,20 @@ interface ExerciseDBExercise {
   target: string
   secondaryMuscles: string[]
   instructions: string[]
+  embedding?: number[] // Semantic search embedding (optional, generated on-demand)
 }
 
 interface ExerciseDBCache {
   exercises: Map<string, ExerciseDBExercise>
   lastFetch: number
+  embeddingsGenerated: boolean // Track if embeddings are available
 }
 
 export class ExerciseDBService {
   private static cache: ExerciseDBCache = {
     exercises: new Map(),
     lastFetch: 0,
+    embeddingsGenerated: false,
   }
 
   private static readonly CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
@@ -114,6 +121,12 @@ export class ExerciseDBService {
       console.log(`[ExerciseDB] Contains chest fly: ${hasChestFly.length > 0} (${hasChestFly.length} matches)`)
       console.log(`[ExerciseDB] Contains pec fly: ${hasPecFly.length > 0} (${hasPecFly.length} matches)`)
       console.log(`[ExerciseDB] Contains triceps pushdown: ${hasTricepsPushdown.length > 0} (${hasTricepsPushdown.length} matches)`)
+
+      // Generate embeddings for semantic search (async, non-blocking)
+      this.generateEmbeddings().catch((error) => {
+        console.warn('[ExerciseDB] Failed to generate embeddings:', error)
+        // Graceful degradation - semantic search won't be available
+      })
     } catch (error) {
       console.error('[ExerciseDB] Failed to initialize cache:', error)
       // Don't throw - gracefully degrade to no animations
@@ -130,24 +143,66 @@ export class ExerciseDBService {
       await this.initializeCache()
     }
 
+    // Filter out movement patterns (e.g., "horizontal_push", "vertical_pull")
+    // These are metadata/classifications, not exercise names
+    const movementPatterns = [
+      'horizontal_push',
+      'vertical_push',
+      'horizontal_pull',
+      'vertical_pull',
+      'squat_pattern',
+      'hinge_pattern',
+      'lunge_pattern',
+      'carry_pattern',
+      'rotation_pattern',
+    ]
+
+    const lowerName = exerciseName.toLowerCase()
+    if (
+      movementPatterns.includes(lowerName) ||
+      lowerName.includes('_push') ||
+      lowerName.includes('_pull') ||
+      lowerName.includes('_pattern')
+    ) {
+      console.warn(`[ExerciseDB] Skipping movement pattern: "${exerciseName}"`)
+      return null
+    }
+
     // Try exact match first
     const normalizedName = this.normalizeName(exerciseName)
     const exercise = this.cache.exercises.get(normalizedName)
 
     if (exercise?.gifUrl) {
-      console.log(`[ExerciseDB] Found exact match for "${exerciseName}"`)
+      console.log(`[ExerciseDB] ✓ Found exact match for "${exerciseName}"`)
       return exercise.gifUrl
     }
 
     // Try fuzzy match (e.g., "flat barbell bench press" → "barbell bench press")
     const fuzzyMatch = this.fuzzyMatch(normalizedName)
     if (fuzzyMatch?.gifUrl) {
-      console.log(`[ExerciseDB] Found fuzzy match for "${exerciseName}" → "${fuzzyMatch.name}"`)
+      console.log(`[ExerciseDB] ✓ Found fuzzy match for "${exerciseName}" → "${fuzzyMatch.name}"`)
       return fuzzyMatch.gifUrl
     }
 
-    // No match found - graceful degradation
-    console.warn(`[ExerciseDB] No animation found for "${exerciseName}"`)
+    // Try semantic search as last resort (if embeddings available)
+    if (this.cache.embeddingsGenerated) {
+      const semanticMatch = await this.semanticSearch(normalizedName)
+      if (semanticMatch?.gifUrl) {
+        console.log(`[ExerciseDB] ✓ Found via semantic search for "${exerciseName}" → "${semanticMatch.name}"`)
+        return semanticMatch.gifUrl
+      }
+    }
+
+    // No match found - provide detailed debugging info
+    console.warn(`[ExerciseDB] ✗ No animation found for "${exerciseName}"`)
+    console.log(`  Tried: normalized="${normalizedName}"`)
+
+    // Suggest similar exercises
+    const suggestions = this.findSimilarExercises(normalizedName, 3)
+    if (suggestions.length > 0) {
+      console.log(`  Suggestions: ${suggestions.map((s) => `"${s}"`).join(', ')}`)
+    }
+
     return null
   }
 
@@ -232,6 +287,35 @@ export class ExerciseDBService {
       'pushdown': 'cable triceps pushdown',
       'tricep pushdown': 'cable triceps pushdown',
 
+      // EZ-bar triceps extension variations
+      'ez bar skullcrusher': 'ez barbell lying triceps extension',
+      'ez-bar skullcrusher': 'ez barbell lying triceps extension',
+      'ez bar skull crusher': 'ez barbell lying triceps extension',
+      'ez-bar skull crusher': 'ez barbell lying triceps extension',
+      'ez bar lying skullcrusher': 'ez barbell lying triceps extension',
+      'ez-bar lying skullcrusher': 'ez barbell lying triceps extension',
+      'ez bar lying triceps extension': 'ez barbell lying triceps extension',
+      'ez-bar lying triceps extension': 'ez barbell lying triceps extension',
+      'skullcrusher': 'lying triceps extension',
+      'skull crusher': 'lying triceps extension',
+      'lying skullcrusher': 'lying triceps extension',
+
+      // EZ-bar curl variations
+      'ez bar curl': 'ez barbell curl',
+      'ez-bar curl': 'ez barbell curl',
+      'ez bar bicep curl': 'ez barbell curl',
+      'ez-bar bicep curl': 'ez barbell curl',
+      'ez bar preacher curl': 'ez barbell preacher curl',
+      'ez-bar preacher curl': 'ez barbell preacher curl',
+      'ez bar close grip curl': 'ez barbell close grip curl',
+      'ez-bar close grip curl': 'ez barbell close grip curl',
+      'ez bar spider curl': 'ez barbell spider curl',
+      'ez-bar spider curl': 'ez barbell spider curl',
+
+      // Trap bar variations
+      'trap bar deadlift': 'trap bar deadlift',
+      'hex bar deadlift': 'trap bar deadlift',
+
       // Add more mappings as needed based on ExerciseDB content
     }
 
@@ -244,10 +328,32 @@ export class ExerciseDBService {
    */
   private static fuzzyMatch(normalizedName: string): ExerciseDBExercise | null {
     // Try removing equipment prefix/suffix variations
+    // Expanded to include compound equipment names like "ez bar", "t bar", "trap bar"
+    const equipmentList = [
+      'barbell',
+      'dumbbell',
+      'cable',
+      'machine',
+      'smith',
+      'bodyweight',
+      'band',
+      'ez bar',
+      'ez-bar',
+      'ez barbell',
+      't bar',
+      't-bar',
+      'trap bar',
+      'hex bar',
+      'landmine',
+      'kettlebell',
+      'resistance band',
+      'suspension',
+    ].join('|')
+
     const variations = [
       normalizedName,
-      normalizedName.replace(/^(barbell|dumbbell|cable|machine|smith|bodyweight|band)\s+/i, ''),
-      normalizedName.replace(/\s+(barbell|dumbbell|cable|machine|smith|bodyweight|band)$/i, ''),
+      normalizedName.replace(new RegExp(`^(${equipmentList})\\s+`, 'i'), ''),
+      normalizedName.replace(new RegExp(`\\s+(${equipmentList})$`, 'i'), ''),
     ]
 
     for (const variation of variations) {
@@ -315,6 +421,111 @@ export class ExerciseDBService {
   }
 
   /**
+   * Load embeddings from static file
+   * Embeddings are pre-generated via scripts/generate-embeddings.ts
+   */
+  private static async generateEmbeddings(): Promise<void> {
+    try {
+      // Load embeddings from static file
+      const cachedData = await EmbeddingStorage.loadEmbeddings()
+
+      if (!cachedData || cachedData.embeddings.size === 0) {
+        console.warn('[ExerciseDB] ⚠️  Embeddings file not found or empty')
+        console.warn('[ExerciseDB] Semantic search will be unavailable')
+        console.warn('[ExerciseDB] To enable semantic search, run: npm run generate:embeddings')
+        this.cache.embeddingsGenerated = false
+        return
+      }
+
+      // Apply embeddings to exercises in memory
+      let matchedCount = 0
+      cachedData.embeddings.forEach((embedding, exerciseName) => {
+        const exercise = this.cache.exercises.get(exerciseName)
+        if (exercise) {
+          exercise.embedding = embedding
+          matchedCount++
+        }
+      })
+
+      this.cache.embeddingsGenerated = true
+      console.log(
+        `[ExerciseDB] ✓ Loaded ${cachedData.embeddings.size} embeddings (${matchedCount} matched current exercises)`
+      )
+
+      // Warn if mismatch in counts (might indicate outdated embeddings file)
+      if (matchedCount < cachedData.embeddings.size * 0.9) {
+        console.warn(
+          `[ExerciseDB] ⚠️  Only ${matchedCount}/${cachedData.embeddings.size} embeddings matched`
+        )
+        console.warn('[ExerciseDB] Consider regenerating: npm run generate:embeddings')
+      }
+    } catch (error) {
+      console.error('[ExerciseDB] Failed to load embeddings:', error)
+      // Graceful degradation - semantic search won't be available
+      this.cache.embeddingsGenerated = false
+    }
+  }
+
+  /**
+   * Semantic search using embeddings
+   * Returns best matching exercise if similarity > threshold
+   */
+  private static async semanticSearch(
+    normalizedName: string,
+    threshold: number = 0.75
+  ): Promise<ExerciseDBExercise | null> {
+    // Check if embeddings are available
+    if (!this.cache.embeddingsGenerated) {
+      console.log('[ExerciseDB] Semantic search not available (embeddings not generated)')
+      return null
+    }
+
+    try {
+      // Generate embedding for query
+      const queryEmbedding = await EmbeddingService.generateEmbedding(normalizedName)
+
+      // Calculate similarities with all exercises
+      const candidates: Array<{ exercise: ExerciseDBExercise; similarity: number }> = []
+
+      this.cache.exercises.forEach((exercise) => {
+        if (exercise.embedding) {
+          const similarity = EmbeddingService.cosineSimilarity(
+            queryEmbedding,
+            exercise.embedding
+          )
+          candidates.push({ exercise, similarity })
+        }
+      })
+
+      // Sort by similarity (descending)
+      candidates.sort((a, b) => b.similarity - a.similarity)
+
+      // Return best match if above threshold
+      if (candidates.length > 0 && candidates[0].similarity >= threshold) {
+        const match = candidates[0]
+        console.log(
+          `[ExerciseDB] ✓ Semantic match: "${normalizedName}" → "${match.exercise.name}" (similarity: ${match.similarity.toFixed(3)})`
+        )
+
+        // Log top 3 candidates for debugging
+        const top3 = candidates.slice(0, 3).map((c) => `"${c.exercise.name}" (${c.similarity.toFixed(3)})`)
+        console.log(`  Top matches: ${top3.join(', ')}`)
+
+        return match.exercise
+      }
+
+      // Below threshold
+      console.log(
+        `[ExerciseDB] No semantic match above threshold ${threshold} (best: ${candidates[0]?.similarity.toFixed(3) || 'N/A'})`
+      )
+      return null
+    } catch (error) {
+      console.error('[ExerciseDB] Semantic search error:', error)
+      return null
+    }
+  }
+
+  /**
    * Get exercise details (for future use)
    */
   static async getExercise(exerciseName: string): Promise<ExerciseDBExercise | null> {
@@ -322,6 +533,37 @@ export class ExerciseDBService {
 
     const normalizedName = this.normalizeName(exerciseName)
     return this.cache.exercises.get(normalizedName) || this.fuzzyMatch(normalizedName)
+  }
+
+  /**
+   * Find similar exercises to suggest when no match is found
+   */
+  private static findSimilarExercises(normalizedName: string, limit: number = 3): string[] {
+    const words = normalizedName.split(/\s+/).filter((w) => w.length > 2) // Extract meaningful words
+    const suggestions: Array<{ name: string; score: number }> = []
+
+    // Score exercises based on word overlap
+    this.cache.exercises.forEach((exercise, key) => {
+      let score = 0
+
+      // Check how many words from the search term appear in the exercise name
+      words.forEach((word) => {
+        if (key.includes(word)) {
+          score += 1
+        }
+      })
+
+      // Only include exercises with at least one matching word
+      if (score > 0) {
+        suggestions.push({ name: exercise.name, score })
+      }
+    })
+
+    // Sort by score (descending) and return top N
+    return suggestions
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((s) => s.name)
   }
 
   /**

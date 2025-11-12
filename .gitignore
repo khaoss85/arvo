@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# exercise embeddings
+# Option A (Recommended): Commit embeddings to repo (always available, no setup)
+# Option B: Uncomment below to ignore embeddings (requires generation in CI/CD)
+# public/data/exercise-embeddings.json
