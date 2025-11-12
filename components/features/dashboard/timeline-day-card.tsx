@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
-import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
+import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Play, Eye, Moon } from 'lucide-react'
@@ -281,8 +281,8 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
               key={muscle}
               className="flex items-center justify-between text-sm bg-white/50 dark:bg-gray-800/50 rounded px-2 py-1"
             >
-              <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">
-                {muscle}
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                {getMuscleGroupLabel(muscle)}
               </span>
               <span className="font-bold text-gray-900 dark:text-gray-100">
                 {sets} sets
@@ -425,8 +425,8 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
                 key={muscle}
                 className="flex items-center justify-between text-sm"
               >
-                <span className="font-medium text-gray-700 dark:text-gray-300 capitalize">
-                  {muscle}
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  {getMuscleGroupLabel(muscle)}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-gray-900 dark:text-gray-100">

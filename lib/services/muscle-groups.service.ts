@@ -14,11 +14,20 @@ export type SplitType = Database['public']['Enums']['split_type']
 export const MUSCLE_GROUPS = {
   // Upper body - Push
   chest: 'Petto',
+  chest_upper: 'Petto Alto',
+  chest_lower: 'Petto Basso',
+  chest_total_assist: 'Petto (Assist)',
   shoulders: 'Spalle',
+  front_delts: 'Deltoidi Anteriori',
+  side_delts: 'Deltoidi Laterali',
+  rear_delts: 'Deltoidi Posteriori',
   triceps: 'Tricipiti',
 
   // Upper body - Pull
   back: 'Schiena',
+  upper_back: 'Schiena Alta',
+  back_width: 'Schiena Larghezza',
+  back_thickness: 'Schiena Spessore',
   lats: 'Dorsali',
   traps: 'Trapezi',
   biceps: 'Bicipiti',
@@ -93,6 +102,31 @@ const EXERCISE_PATTERNS: Record<string, keyof typeof MUSCLE_GROUPS> = {
   'plank': 'abs',
   'ab': 'abs',
   'sit': 'abs',
+}
+
+/**
+ * Get user-friendly Italian label for a muscle group key
+ *
+ * @param key - Technical muscle group identifier (e.g., 'chest_upper', 'back_thickness')
+ * @returns Italian label (e.g., 'Petto Alto', 'Schiena Spessore')
+ *
+ * @example
+ * getMuscleGroupLabel('chest_upper') // → 'Petto Alto'
+ * getMuscleGroupLabel('triceps') // → 'Tricipiti'
+ * getMuscleGroupLabel('unknown_key') // → 'Unknown Key' (fallback)
+ */
+export function getMuscleGroupLabel(key: string): string {
+  // Check if key exists in MUSCLE_GROUPS mapping
+  if (key in MUSCLE_GROUPS) {
+    return MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS]
+  }
+
+  // Fallback: capitalize and format the technical name
+  // Convert snake_case to Title Case (e.g., 'chest_upper' → 'Chest Upper')
+  return key
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 /**
