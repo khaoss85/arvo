@@ -111,12 +111,12 @@ export function GymReadyFeatures() {
             <CardContent>
               <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
                 <div className="space-y-1">
-                  <div className="text-green-600 dark:text-green-400">// After EVERY set logged:</div>
+                  <div className="text-green-600 dark:text-green-400">{`// After EVERY set logged:`}</div>
                   <div className="text-muted-foreground">
                     localStorage.setItem(<span className="text-primary-600 dark:text-primary-400">'workout_draft'</span>, JSON.stringify(workoutState));
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">// On app restart:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{`// On app restart:`}</div>
                   <div className="text-muted-foreground">
                     const draft = localStorage.getItem(<span className="text-primary-600 dark:text-primary-400">'workout_draft'</span>);
                   </div>
@@ -124,16 +124,16 @@ export function GymReadyFeatures() {
                     if (draft) {`{`}
                   </div>
                   <div className="text-muted-foreground pl-2">
-                    // Show "Resume workout?" modal
+                    {`// Show "Resume workout?" modal`}
                   </div>
                   <div className="text-muted-foreground pl-2">
-                    // Restore exact state: sets, reps, RIR, notes
+                    {`// Restore exact state: sets, reps, RIR, notes`}
                   </div>
                   <div className="text-muted-foreground">
                     {`}`}
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">// Result:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{`// Result:`}</div>
                   <div className="text-muted-foreground">
                     <span className="text-orange-600 dark:text-orange-400">✓</span> Phone battery dies mid-workout → Resume exactly where you left
                   </div>

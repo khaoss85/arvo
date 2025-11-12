@@ -86,7 +86,7 @@ export function AIShowcase() {
                 <div>
                   <div className="text-xs font-mono text-muted-foreground mb-2">AI REASONING OUTPUT:</div>
                   <div className="bg-background rounded-md p-3 text-sm font-mono space-y-2 border">
-                    <div className="text-green-600 dark:text-green-400">// Selected Exercises:</div>
+                    <div className="text-green-600 dark:text-green-400">{`// Selected Exercises:`}</div>
                     <div className="pl-2 space-y-1">
                       <div><span className="text-orange-600 dark:text-orange-400">1.</span> Incline DB Press</div>
                       <div className="text-xs text-muted-foreground pl-3">
@@ -97,7 +97,7 @@ export function AIShowcase() {
                       </div>
                     </div>
 
-                    <div className="pt-2 text-green-600 dark:text-green-400">// Insight-Influenced Changes:</div>
+                    <div className="pt-2 text-green-600 dark:text-green-400">{`// Insight-Influenced Changes:`}</div>
                     <div className="pl-2 text-xs space-y-1">
                       <div className="text-red-400">✗ Dips (avoided)</div>
                       <div className="text-muted-foreground pl-3">
@@ -109,7 +109,7 @@ export function AIShowcase() {
                       </div>
                     </div>
 
-                    <div className="pt-2 text-green-600 dark:text-green-400">// Technical Cues:</div>
+                    <div className="pt-2 text-green-600 dark:text-green-400">{`// Technical Cues:`}</div>
                     <div className="pl-2 text-xs text-muted-foreground">
                       ["Semi-bent arms throughout", "Squeeze at stretch"]
                     </div>
@@ -175,7 +175,7 @@ export function AIShowcase() {
                     </div>
 
                     <div className="pt-2 border-t text-xs space-y-1">
-                      <div className="text-green-600 dark:text-green-400">// Reasoning:</div>
+                      <div className="text-green-600 dark:text-green-400">{`// Reasoning:`}</div>
                       <div className="text-muted-foreground pl-2 space-y-1">
                         <div>✓ Hit top of rep range (12) with RIR 1</div>
                         <div>✓ Mental readiness is high (4/5)</div>
@@ -186,7 +186,7 @@ export function AIShowcase() {
                     </div>
 
                     <div className="pt-2 border-t text-xs">
-                      <div className="text-green-600 dark:text-green-400">// Technical Focus:</div>
+                      <div className="text-green-600 dark:text-green-400">{`// Technical Focus:`}</div>
                       <div className="text-muted-foreground pl-2">
                         "Controlled descent, explosive press"
                       </div>

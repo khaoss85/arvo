@@ -49,7 +49,7 @@ export function NotesIntelligence() {
               </CardHeader>
               <CardContent>
                 <div className="bg-muted rounded-md p-4 text-sm space-y-3">
-                  <div className="font-mono text-xs text-muted-foreground">// Post-workout note:</div>
+                  <div className="font-mono text-xs text-muted-foreground">{`// Post-workout note:`}</div>
                   <div className="italic text-foreground leading-relaxed">
                     "Felt amazing on squats today, could've pushed heavier. Shoulder still bothering me on overhead press though. Might stick to landmine press for a while."
                   </div>
@@ -82,7 +82,7 @@ export function NotesIntelligence() {
               </CardHeader>
               <CardContent>
                 <div className="bg-background rounded-md p-4 text-sm font-mono space-y-2 border">
-                  <div className="text-green-600 dark:text-green-400">// Insight detected:</div>
+                  <div className="text-green-600 dark:text-green-400">{`// Insight detected:`}</div>
                   <div className="pl-2 space-y-1 text-xs">
                     <div><span className="text-orange-600 dark:text-orange-400">type:</span> "pain"</div>
                     <div><span className="text-orange-600 dark:text-orange-400">severity:</span> "warning"</div>
@@ -91,7 +91,7 @@ export function NotesIntelligence() {
                     <div><span className="text-orange-600 dark:text-orange-400">confidence:</span> 0.75</div>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-2">// Memory created:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-2">{`// Memory created:`}</div>
                   <div className="pl-2 space-y-1 text-xs">
                     <div><span className="text-blue-600 dark:text-blue-400">category:</span> "preference"</div>
                     <div><span className="text-blue-600 dark:text-blue-400">pattern:</span> "High confidence on Squats"</div>
@@ -99,7 +99,7 @@ export function NotesIntelligence() {
                     <div><span className="text-blue-600 dark:text-blue-400">occurrences:</span> 1</div>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-2">// Alternative suggested:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-2">{`// Alternative suggested:`}</div>
                   <div className="pl-2 text-xs">
                     <div><span className="text-purple-600 dark:text-purple-400">substitute:</span> "Landmine Press"</div>
                     <div><span className="text-purple-600 dark:text-purple-400">reason:</span> "Joint-friendly alternative"</div>

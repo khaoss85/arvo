@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate:embeddings": "tsx scripts/generate-embeddings.ts"
+    "generate:embeddings": "tsx scripts/generate-embeddings.ts",
+    "seed:fst7": "tsx scripts/seed-fst7-approach.ts",
+    "seed:mentzer": "tsx scripts/seed-mentzer-approach.ts",
+    "seed:kuba": "tsx scripts/seed-kuba-approach.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

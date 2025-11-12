@@ -129,7 +129,7 @@ export function BiomechanicsDemo() {
             <CardContent>
               <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
                 <div className="space-y-1">
-                  <div className="text-green-600 dark:text-green-400">// Input:</div>
+                  <div className="text-green-600 dark:text-green-400">{`// Input:`}</div>
                   <div className="text-muted-foreground">
                     original: <span className="text-primary-600 dark:text-primary-400">"Barbell Bench Press"</span>
                   </div>
@@ -140,7 +140,7 @@ export function BiomechanicsDemo() {
                     substitute: <span className="text-primary-600 dark:text-primary-400">"Dumbbell Bench Press"</span>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">// AI Processing:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{`// AI Processing:`}</div>
                   <div className="text-muted-foreground pl-2">
                     <div>1. Detect equipment change: Barbell → Dumbbell</div>
                     <div>2. Detect movement pattern: Horizontal Press (same)</div>
@@ -148,7 +148,7 @@ export function BiomechanicsDemo() {
                     <div>4. Calculate per-hand load: 100kg × 0.425 = 42.5kg</div>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">// Output:</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{`// Output:`}</div>
                   <div className="text-muted-foreground">{`{`}</div>
                   <div className="text-muted-foreground pl-2">
                     suggestedWeight: <span className="text-primary-600 dark:text-primary-400">42.5</span>,
