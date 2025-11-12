@@ -375,7 +375,7 @@ export default function ProfilePage() {
         </div>
       </Card>
 
-      <div className="mt-8 flex justify-between items-center">
+      <div className="sticky bottom-0 mt-8 bg-gray-50 dark:bg-gray-950 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
         <Button
           variant="outline"
           onClick={handleSkip}

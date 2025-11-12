@@ -598,14 +598,6 @@ export function RefineWorkoutPage({
                 <div className="flex items-start gap-2 flex-1">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg">{exercise.name}</h3>
-                      {exercise.userAddedSets && exercise.userAddedSets > 0 && (
-                        <UserModificationBadge
-                          addedSets={exercise.userAddedSets}
-                          aiRecommendedSets={exercise.aiRecommendedSets || exercise.sets}
-                          variant="compact"
-                        />
-                      )}
                       {exercise.hasAnimation && (
                         <button
                           onClick={(e) => {
@@ -618,6 +610,14 @@ export function RefineWorkoutPage({
                         >
                           <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
+                      )}
+                      <h3 className="font-semibold text-lg">{exercise.name}</h3>
+                      {exercise.userAddedSets && exercise.userAddedSets > 0 && (
+                        <UserModificationBadge
+                          addedSets={exercise.userAddedSets}
+                          aiRecommendedSets={exercise.aiRecommendedSets || exercise.sets}
+                          variant="compact"
+                        />
                       )}
                     </div>
                     {exercise.equipmentVariant && (

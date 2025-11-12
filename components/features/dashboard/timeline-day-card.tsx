@@ -6,7 +6,7 @@ import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-tim
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Play, Eye } from 'lucide-react'
+import { Sparkles, Play, Eye, Moon } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
@@ -173,7 +173,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   }
 
   // Rest day layout
-  if (!session) {
+  if (!session || session.name === 'Rest') {
     return (
       <div
         className={cn(
@@ -198,7 +198,9 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
 
         {/* Rest day content */}
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <span className="text-4xl mb-3">💤</span>
+          <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-4 mb-3">
+            <Moon className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+          </div>
           <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">
             Rest Day
           </p>
@@ -359,7 +361,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       )}
 
       {/* Pre-Generate Button (for upcoming days without workout) */}
-      {status === 'upcoming' && !isCurrentDay && (
+      {status === 'upcoming' && !isCurrentDay && session && session.name !== 'Rest' && (
         <div className="mb-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <Button
             onClick={handlePreGenerate}

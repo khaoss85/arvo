@@ -180,7 +180,7 @@ export default function SplitSelectionPage() {
       </div>
 
       {/* Continue Button */}
-      <div className="flex justify-end">
+      <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-950 py-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
         <button
           onClick={handleContinue}
           disabled={!selectedSplit}

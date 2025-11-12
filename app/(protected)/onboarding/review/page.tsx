@@ -11,6 +11,7 @@ import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
+import { getEquipmentLabel } from '@/lib/constants/equipment-taxonomy'
 
 // Standard lifts for badge identification
 const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
@@ -270,7 +271,7 @@ export default function ReviewPage() {
                   key={equipment}
                   className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-full text-sm"
                 >
-                  {equipment}
+                  {getEquipmentLabel(equipment)}
                 </span>
               ))}
             </div>
@@ -466,7 +467,7 @@ export default function ReviewPage() {
         </p>
       </div>
 
-      <div className="mt-8 flex flex-col items-center gap-4">
+      <div className="sticky bottom-0 mt-8 bg-gray-50 dark:bg-gray-950 py-4 border-t border-gray-200 dark:border-gray-800 flex flex-col items-center gap-4">
         {loading ? (
           <ProgressFeedback
             variant="inline"

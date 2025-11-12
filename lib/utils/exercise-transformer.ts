@@ -5,7 +5,7 @@
  * into ExerciseExecution format used by workout execution store
  */
 
-import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
+import type { ExerciseExecution, WarmupSet } from '@/lib/stores/workout-execution.store'
 import { AnimationService } from '@/lib/services/animation.service'
 
 interface SimpleExercise {
@@ -230,17 +230,29 @@ function estimateStartingWeight(
 /**
  * Generate warmup sets for compound exercises
  */
-function generateWarmupSets(workingWeight: number): Array<{
-  weight: number
-  reps: number
-  isWarmup: boolean
-}> {
+function generateWarmupSets(workingWeight: number): WarmupSet[] {
   // Standard warmup protocol:
   // - 50% x 8 reps
   // - 75% x 5 reps
   return [
-    { weight: Math.round(workingWeight * 0.5), reps: 8, isWarmup: true },
-    { weight: Math.round(workingWeight * 0.75), reps: 5, isWarmup: true },
+    {
+      setNumber: 1,
+      weightPercentage: 50,
+      weight: Math.round(workingWeight * 0.5),
+      reps: 8,
+      rir: 5, // Warmups should be easy (high RIR)
+      restSeconds: 90, // Shorter rest for warmups
+      technicalFocus: 'Movement pattern and form',
+    },
+    {
+      setNumber: 2,
+      weightPercentage: 75,
+      weight: Math.round(workingWeight * 0.75),
+      reps: 5,
+      rir: 4, // Still submaximal
+      restSeconds: 120, // Slightly longer before working sets
+      technicalFocus: 'Build to working weight',
+    },
   ]
 }
 

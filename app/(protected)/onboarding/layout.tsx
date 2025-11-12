@@ -22,7 +22,7 @@ export default function OnboardingLayout({
   return (
     <div className="min-h-screen flex flex-col">
       {/* Progress indicator */}
-      <div className="p-4 border-b bg-white dark:bg-gray-900">
+      <div className="sticky top-0 z-10 p-4 border-b bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between mb-2">
             {steps.map((step) => (

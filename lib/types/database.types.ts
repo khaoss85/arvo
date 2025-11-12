@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -216,6 +218,69 @@ export type Database = {
           volume_landmarks?: Json | null
         }
         Relationships: []
+      }
+      user_approach_history: {
+        Row: {
+          approach_id: string
+          created_at: string | null
+          ended_at: string | null
+          final_split_plan_id: string | null
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          started_at: string
+          switch_reason: string | null
+          total_weeks: number | null
+          total_workouts_completed: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approach_id: string
+          created_at?: string | null
+          ended_at?: string | null
+          final_split_plan_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          started_at?: string
+          switch_reason?: string | null
+          total_weeks?: number | null
+          total_workouts_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approach_id?: string
+          created_at?: string | null
+          ended_at?: string | null
+          final_split_plan_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          started_at?: string
+          switch_reason?: string | null
+          total_weeks?: number | null
+          total_workouts_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_approach_history_approach_id_fkey"
+            columns: ["approach_id"]
+            isOneToOne: false
+            referencedRelation: "training_approaches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_approach_history_final_split_plan_id_fkey"
+            columns: ["final_split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_memory_entries: {
         Row: {
@@ -613,6 +678,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
