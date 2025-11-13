@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { User, Calendar, Scale, Ruler, HelpCircle, ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 export default function ProfilePage() {
+  const t = useTranslations('onboarding.steps.profile')
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
@@ -61,7 +64,7 @@ export default function ProfilePage() {
   const handleAgeBlur = () => {
     // Validate only when user finishes typing
     if (age !== null && (age < 13 || age > 120)) {
-      setAgeError('Age must be between 13 and 120')
+      setAgeError(t('fields.age.error'))
     } else {
       setAgeError(null)
     }
@@ -90,7 +93,7 @@ export default function ProfilePage() {
   const handleWeightBlur = () => {
     // Validate only when user finishes typing
     if (weight !== null && weight <= 0) {
-      setWeightError('Weight must be greater than 0')
+      setWeightError(t('fields.weight.error'))
     } else {
       setWeightError(null)
     }
@@ -119,7 +122,7 @@ export default function ProfilePage() {
   const handleHeightBlur = () => {
     // Validate only when user finishes typing
     if (height !== null && height <= 0) {
-      setHeightError('Height must be greater than 0')
+      setHeightError(t('fields.height.error'))
     } else {
       setHeightError(null)
     }
@@ -140,14 +143,6 @@ export default function ProfilePage() {
     router.push('/onboarding/weak-points')
   }
 
-  const tooltips = {
-    firstName: 'Your name helps us personalize your experience with greetings and feedback',
-    gender: 'Used for more accurate strength standards and initial weight estimations',
-    age: 'Helps the AI adjust recovery recommendations and progression rates',
-    weight: 'Essential for calculating relative strength (e.g., 1.5x bodyweight squat) and Wilks score',
-    height: 'Optional - used for body composition tracking and BMI calculations',
-  }
-
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       {/* Back Button */}
@@ -156,15 +151,15 @@ export default function ProfilePage() {
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Training Split</span>
+        <span>{t('backToSplit')}</span>
       </button>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Your Profile (Optional)</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Help the AI personalize your training with better recommendations, strength standards, and insights.
+          {t('description')}
           <span className="block mt-2 text-sm font-medium text-blue-600 dark:text-blue-400">
-            All fields are optional - you can skip this entirely and the app will work great.
+            {t('allOptional')}
           </span>
         </p>
       </div>
@@ -175,8 +170,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mb-3">
             <User className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
-              First Name
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+              {t('fields.firstName.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -188,14 +183,14 @@ export default function ProfilePage() {
           </div>
           {showTooltip === 'firstName' && (
             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
-              {tooltips.firstName}
+              {t('fields.firstName.tooltip')}
             </div>
           )}
           <input
             type="text"
             value={firstName}
             onChange={(e) => handleFirstNameChange(e.target.value)}
-            placeholder="e.g., Mario"
+            placeholder={t('fields.firstName.placeholder')}
             className="w-full p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 focus:border-blue-500 focus:outline-none"
           />
         </div>
@@ -205,8 +200,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mb-3">
             <User className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
-              Gender
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+              {t('fields.gender.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -218,7 +213,7 @@ export default function ProfilePage() {
           </div>
           {showTooltip === 'gender' && (
             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
-              {tooltips.gender}
+              {t('fields.gender.tooltip')}
             </div>
           )}
           <div className="grid grid-cols-3 gap-3">
@@ -235,7 +230,7 @@ export default function ProfilePage() {
                 <div className="text-2xl mb-1">
                   {option === 'male' ? '♂' : option === 'female' ? '♀' : '⚧'}
                 </div>
-                <div className="text-sm font-medium capitalize">{option}</div>
+                <div className="text-sm font-medium">{t(`fields.gender.options.${option}`)}</div>
               </button>
             ))}
           </div>
@@ -246,8 +241,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
-              Age
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+              {t('fields.age.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -259,7 +254,7 @@ export default function ProfilePage() {
           </div>
           {showTooltip === 'age' && (
             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
-              {tooltips.age}
+              {t('fields.age.tooltip')}
             </div>
           )}
           <input
@@ -268,7 +263,7 @@ export default function ProfilePage() {
             value={age || ''}
             onChange={(e) => handleAgeChange(e.target.value)}
             onBlur={handleAgeBlur}
-            placeholder="e.g., 28"
+            placeholder={t('fields.age.placeholder')}
             className={`w-full p-3 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
               ageError
                 ? 'border-red-500 focus:border-red-500'
@@ -287,8 +282,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mb-3">
             <Scale className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
-              Bodyweight (kg)
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+              {t('fields.weight.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -300,7 +295,7 @@ export default function ProfilePage() {
           </div>
           {showTooltip === 'weight' && (
             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
-              {tooltips.weight}
+              {t('fields.weight.tooltip')}
             </div>
           )}
           <div className="relative">
@@ -310,7 +305,7 @@ export default function ProfilePage() {
               value={weight || ''}
               onChange={(e) => handleWeightChange(e.target.value)}
               onBlur={handleWeightBlur}
-              placeholder="e.g., 75"
+              placeholder={t('fields.weight.placeholder')}
               className={`w-full p-3 pr-12 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
                 weightError
                   ? 'border-red-500 focus:border-red-500'
@@ -318,7 +313,7 @@ export default function ProfilePage() {
               }`}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-              kg
+              {t('fields.weight.unit')}
             </span>
           </div>
           {weightError && (
@@ -333,8 +328,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mb-3">
             <Ruler className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
-              Height (cm)
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">(Optional)</span>
+              {t('fields.height.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -346,7 +341,7 @@ export default function ProfilePage() {
           </div>
           {showTooltip === 'height' && (
             <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
-              {tooltips.height}
+              {t('fields.height.tooltip')}
             </div>
           )}
           <div className="relative">
@@ -356,7 +351,7 @@ export default function ProfilePage() {
               value={height || ''}
               onChange={(e) => handleHeightChange(e.target.value)}
               onBlur={handleHeightBlur}
-              placeholder="e.g., 180"
+              placeholder={t('fields.height.placeholder')}
               className={`w-full p-3 pr-12 border-2 rounded-lg bg-white dark:bg-gray-900 focus:outline-none ${
                 heightError
                   ? 'border-red-500 focus:border-red-500'
@@ -364,7 +359,7 @@ export default function ProfilePage() {
               }`}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-              cm
+              {t('fields.height.unit')}
             </span>
           </div>
           {heightError && (
@@ -381,13 +376,13 @@ export default function ProfilePage() {
           onClick={handleSkip}
           className="font-medium"
         >
-          Skip Profile
+          {t('skipProfile')}
         </Button>
         <Button
           onClick={handleContinue}
           className="bg-blue-600 hover:bg-blue-700"
         >
-          Continue
+          {tCommon('buttons.continue')}
         </Button>
       </div>
     </div>

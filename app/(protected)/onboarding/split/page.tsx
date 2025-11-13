@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
@@ -9,44 +10,19 @@ type SplitType = 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
 
 interface SplitOption {
   type: SplitType
-  name: string
-  description: string
-  frequency: string
   icon: string
 }
 
 const SPLIT_OPTIONS: SplitOption[] = [
-  {
-    type: 'push_pull_legs',
-    name: 'Push / Pull / Legs',
-    description: 'Separate pushing, pulling, and leg movements across different days. Ideal for balanced development and high frequency.',
-    frequency: '3-6 days/week',
-    icon: '💪'
-  },
-  {
-    type: 'upper_lower',
-    name: 'Upper / Lower',
-    description: 'Alternate between upper body and lower body workouts. Great for strength and balanced recovery.',
-    frequency: '4-6 days/week',
-    icon: '⚖️'
-  },
-  {
-    type: 'full_body',
-    name: 'Full Body',
-    description: 'Train all major muscle groups each session. Perfect for beginners or those with limited training days.',
-    frequency: '2-4 days/week',
-    icon: '🔥'
-  },
-  {
-    type: 'custom',
-    name: 'Custom Split',
-    description: 'Let the AI create a customized split based on your preferences and training approach.',
-    frequency: 'Variable',
-    icon: '🎯'
-  }
+  { type: 'push_pull_legs', icon: '💪' },
+  { type: 'upper_lower', icon: '⚖️' },
+  { type: 'full_body', icon: '🔥' },
+  { type: 'custom', icon: '🎯' }
 ]
 
 export default function SplitSelectionPage() {
+  const t = useTranslations('onboarding.steps.split')
+  const tCommon = useTranslations('common.buttons')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [selectedSplit, setSelectedSplit] = useState<SplitType | null>(data.splitType || null)
@@ -77,12 +53,12 @@ export default function SplitSelectionPage() {
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>Back to Training Approach</span>
+        <span>{t('backToApproach')}</span>
       </button>
 
-      <h1 className="text-3xl font-bold mb-2">Choose Your Training Split</h1>
+      <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
-        Select how you want to organize your training week. This determines how muscle groups are distributed across workouts.
+        {t('description')}
       </p>
 
       {/* Split Type Selection */}
@@ -100,12 +76,14 @@ export default function SplitSelectionPage() {
             <div className="flex items-start gap-4">
               <div className="text-4xl">{option.icon}</div>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold mb-2">{option.name}</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  {t(`options.${option.type}.name`)}
+                </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-2">
-                  {option.description}
+                  {t(`options.${option.type}.description`)}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-500">
-                  Typical frequency: {option.frequency}
+                  {t('typicalFrequency', { frequency: t(`options.${option.type}.frequency`) })}
                 </p>
               </div>
               {selectedSplit === option.type && (
@@ -132,10 +110,10 @@ export default function SplitSelectionPage() {
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
         <label className="block mb-4">
           <span className="text-lg font-semibold mb-2 block">
-            How many days per week can you train?
+            {t('frequencyLabel')}
           </span>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            This helps us optimize your split and volume distribution.
+            {t('frequencyDescription')}
           </p>
           <div className="flex items-center gap-4">
             <input
@@ -146,7 +124,7 @@ export default function SplitSelectionPage() {
               onChange={(e) => setWeeklyFrequency(parseInt(e.target.value) || 1)}
               className="w-24 px-4 py-2 text-lg font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <span className="text-gray-600 dark:text-gray-400">days per week</span>
+            <span className="text-gray-600 dark:text-gray-400">{t('daysPerWeek')}</span>
           </div>
         </label>
 
@@ -156,22 +134,22 @@ export default function SplitSelectionPage() {
             <p className="text-sm text-blue-900 dark:text-blue-200">
               {weeklyFrequency <= 2 && (
                 <>
-                  <strong>Recommendation:</strong> Full Body split is ideal for 2 or fewer training days per week.
+                  <strong>{t('recommendations.label')}</strong> {t('recommendations.low')}
                 </>
               )}
               {weeklyFrequency === 3 && (
                 <>
-                  <strong>Recommendation:</strong> Push/Pull/Legs or Full Body work well with 3 days per week.
+                  <strong>{t('recommendations.label')}</strong> {t('recommendations.three')}
                 </>
               )}
               {weeklyFrequency >= 4 && weeklyFrequency <= 5 && (
                 <>
-                  <strong>Recommendation:</strong> Upper/Lower or Push/Pull/Legs provide optimal frequency and recovery.
+                  <strong>{t('recommendations.label')}</strong> {t('recommendations.medium')}
                 </>
               )}
               {weeklyFrequency >= 6 && (
                 <>
-                  <strong>Recommendation:</strong> Push/Pull/Legs allows high frequency training with adequate recovery.
+                  <strong>{t('recommendations.label')}</strong> {t('recommendations.high')}
                 </>
               )}
             </p>
@@ -190,7 +168,7 @@ export default function SplitSelectionPage() {
               : 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
           }`}
         >
-          Continue
+          {tCommon('continue')}
         </button>
       </div>
     </div>

@@ -204,8 +204,42 @@
         "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba."
       },
       "split": {
-        "title": "Configura la Tua Suddivisione",
-        "description": "Quanti giorni alla settimana vuoi allenarti?"
+        "title": "Scegli la Tua Suddivisione di Allenamento",
+        "description": "Seleziona come vuoi organizzare la tua settimana di allenamento. Questo determina come i gruppi muscolari vengono distribuiti nei vari allenamenti.",
+        "backToApproach": "Torna all'Approccio di Allenamento",
+        "options": {
+          "push_pull_legs": {
+            "name": "Push / Pull / Legs",
+            "description": "Separa movimenti di spinta, tirata e gambe in giorni diversi. Ideale per sviluppo bilanciato e alta frequenza.",
+            "frequency": "3-6 giorni/settimana"
+          },
+          "upper_lower": {
+            "name": "Upper / Lower",
+            "description": "Alterna allenamenti per parte superiore e inferiore del corpo. Ottimo per forza e recupero bilanciato.",
+            "frequency": "4-6 giorni/settimana"
+          },
+          "full_body": {
+            "name": "Full Body",
+            "description": "Allena tutti i principali gruppi muscolari ogni sessione. Perfetto per principianti o chi ha pochi giorni di allenamento.",
+            "frequency": "2-4 giorni/settimana"
+          },
+          "custom": {
+            "name": "Suddivisione Personalizzata",
+            "description": "Lascia che l'AI crei una suddivisione personalizzata basata sulle tue preferenze e approccio di allenamento.",
+            "frequency": "Variabile"
+          }
+        },
+        "frequencyLabel": "Quanti giorni alla settimana puoi allenarti?",
+        "frequencyDescription": "Questo ci aiuta a ottimizzare la tua suddivisione e distribuzione del volume.",
+        "daysPerWeek": "giorni alla settimana",
+        "typicalFrequency": "Frequenza tipica: {frequency}",
+        "recommendations": {
+          "label": "Raccomandazione:",
+          "low": "La suddivisione Full Body è ideale per 2 o meno giorni di allenamento a settimana.",
+          "three": "Push/Pull/Legs o Full Body funzionano bene con 3 giorni alla settimana.",
+          "medium": "Upper/Lower o Push/Pull/Legs forniscono frequenza e recupero ottimali.",
+          "high": "Push/Pull/Legs permette allenamenti ad alta frequenza con recupero adeguato."
+        }
       },
       "equipment": {
         "title": "Preferenze Attrezzatura",
@@ -250,8 +284,47 @@
         "description": "Aiutaci a capire i tuoi livelli di forza attuali"
       },
       "profile": {
-        "title": "Completa il Tuo Profilo",
-        "description": "Raccontaci un po' di te"
+        "title": "Il Tuo Profilo (Opzionale)",
+        "description": "Aiuta l'AI a personalizzare il tuo allenamento con migliori raccomandazioni, standard di forza e approfondimenti.",
+        "allOptional": "Tutti i campi sono opzionali - puoi saltare completamente e l'app funzionerà benissimo.",
+        "backToSplit": "Torna alla Suddivisione",
+        "fields": {
+          "firstName": {
+            "label": "Nome",
+            "placeholder": "es., Mario",
+            "tooltip": "Il tuo nome ci aiuta a personalizzare la tua esperienza con saluti e feedback"
+          },
+          "gender": {
+            "label": "Genere",
+            "tooltip": "Usato per standard di forza più accurati e stime iniziali del peso",
+            "options": {
+              "male": "Maschio",
+              "female": "Femmina",
+              "other": "Altro"
+            }
+          },
+          "age": {
+            "label": "Età",
+            "placeholder": "es., 28",
+            "tooltip": "Aiuta l'AI ad adattare le raccomandazioni di recupero e i tassi di progressione",
+            "error": "L'età deve essere compresa tra 13 e 120"
+          },
+          "weight": {
+            "label": "Peso Corporeo (kg)",
+            "placeholder": "es., 75",
+            "unit": "kg",
+            "tooltip": "Essenziale per calcolare la forza relativa (es., 1.5x peso corporeo squat) e punteggio Wilks",
+            "error": "Il peso deve essere maggiore di 0"
+          },
+          "height": {
+            "label": "Altezza (cm)",
+            "placeholder": "es., 180",
+            "unit": "cm",
+            "tooltip": "Opzionale - usato per tracciamento composizione corporea e calcoli BMI",
+            "error": "L'altezza deve essere maggiore di 0"
+          }
+        },
+        "skipProfile": "Salta Profilo"
       },
       "review": {
         "title": "Rivedi e Conferma",

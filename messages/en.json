@@ -204,8 +204,42 @@
         "noApproachesFound": "No training approaches found. Please run the seed script to populate the Kuba Method."
       },
       "split": {
-        "title": "Configure Your Split",
-        "description": "How many days per week do you want to train?"
+        "title": "Choose Your Training Split",
+        "description": "Select how you want to organize your training week. This determines how muscle groups are distributed across workouts.",
+        "backToApproach": "Back to Training Approach",
+        "options": {
+          "push_pull_legs": {
+            "name": "Push / Pull / Legs",
+            "description": "Separate pushing, pulling, and leg movements across different days. Ideal for balanced development and high frequency.",
+            "frequency": "3-6 days/week"
+          },
+          "upper_lower": {
+            "name": "Upper / Lower",
+            "description": "Alternate between upper body and lower body workouts. Great for strength and balanced recovery.",
+            "frequency": "4-6 days/week"
+          },
+          "full_body": {
+            "name": "Full Body",
+            "description": "Train all major muscle groups each session. Perfect for beginners or those with limited training days.",
+            "frequency": "2-4 days/week"
+          },
+          "custom": {
+            "name": "Custom Split",
+            "description": "Let the AI create a customized split based on your preferences and training approach.",
+            "frequency": "Variable"
+          }
+        },
+        "frequencyLabel": "How many days per week can you train?",
+        "frequencyDescription": "This helps us optimize your split and volume distribution.",
+        "daysPerWeek": "days per week",
+        "typicalFrequency": "Typical frequency: {frequency}",
+        "recommendations": {
+          "label": "Recommendation:",
+          "low": "Full Body split is ideal for 2 or fewer training days per week.",
+          "three": "Push/Pull/Legs or Full Body work well with 3 days per week.",
+          "medium": "Upper/Lower or Push/Pull/Legs provide optimal frequency and recovery.",
+          "high": "Push/Pull/Legs allows high frequency training with adequate recovery."
+        }
       },
       "equipment": {
         "title": "Equipment Preferences",
@@ -250,8 +284,47 @@
         "description": "Help us understand your current strength levels"
       },
       "profile": {
-        "title": "Complete Your Profile",
-        "description": "Tell us a bit about yourself"
+        "title": "Your Profile (Optional)",
+        "description": "Help the AI personalize your training with better recommendations, strength standards, and insights.",
+        "allOptional": "All fields are optional - you can skip this entirely and the app will work great.",
+        "backToSplit": "Back to Training Split",
+        "fields": {
+          "firstName": {
+            "label": "First Name",
+            "placeholder": "e.g., Mario",
+            "tooltip": "Your name helps us personalize your experience with greetings and feedback"
+          },
+          "gender": {
+            "label": "Gender",
+            "tooltip": "Used for more accurate strength standards and initial weight estimations",
+            "options": {
+              "male": "Male",
+              "female": "Female",
+              "other": "Other"
+            }
+          },
+          "age": {
+            "label": "Age",
+            "placeholder": "e.g., 28",
+            "tooltip": "Helps the AI adjust recovery recommendations and progression rates",
+            "error": "Age must be between 13 and 120"
+          },
+          "weight": {
+            "label": "Bodyweight (kg)",
+            "placeholder": "e.g., 75",
+            "unit": "kg",
+            "tooltip": "Essential for calculating relative strength (e.g., 1.5x bodyweight squat) and Wilks score",
+            "error": "Weight must be greater than 0"
+          },
+          "height": {
+            "label": "Height (cm)",
+            "placeholder": "e.g., 180",
+            "unit": "cm",
+            "tooltip": "Optional - used for body composition tracking and BMI calculations",
+            "error": "Height must be greater than 0"
+          }
+        },
+        "skipProfile": "Skip Profile"
       },
       "review": {
         "title": "Review & Confirm",
