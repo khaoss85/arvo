@@ -1,9 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 
 export async function GET() {
   try {
     const supabase = await getSupabaseServerClient()
+
+    // Get user locale for translations
+    const { data: { user } } = await supabase.auth.getUser()
+    const locale = user ? await getUserLanguage(user.id) : 'en'
+    const t = await getTranslations({ locale, namespace: 'api.exercises.errors' })
 
     // Fetch exercises from exercise_generations table
     const { data: exercises, error } = await supabase
@@ -15,7 +22,7 @@ export async function GET() {
     if (error) {
       console.error('Error fetching exercises:', error)
       return NextResponse.json(
-        { error: 'Failed to fetch exercises' },
+        { error: t('failedToFetch') },
         { status: 500 }
       )
     }
@@ -39,8 +46,10 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Unexpected error fetching exercises:', error)
+    // Fall back to default locale for errors
+    const t = await getTranslations({ locale: 'en', namespace: 'api.exercises.errors' })
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: t('internalServerError') },
       { status: 500 }
     )
   }

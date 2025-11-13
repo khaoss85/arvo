@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { WorkoutGeneratorService } from '@/lib/services/workout-generator.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -13,14 +15,21 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      const locale = await getUserLanguage(user?.id || '')
+      const tErrors = await getTranslations({ locale, namespace: 'api.workouts.generate.errors' })
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: tErrors('unauthorized') }),
         { status: 401 }
       )
     }
 
     const userId = user.id
+    const locale = await getUserLanguage(userId)
     const { targetCycleDay } = await request.json()
+
+    // Get translations for progress messages and errors
+    const tProgress = await getTranslations({ locale, namespace: 'api.workouts.generate.progress' })
+    const tErrors = await getTranslations({ locale, namespace: 'api.workouts.generate.errors' })
 
     // Create a stream for progress updates
     const encoder = new TextEncoder()
@@ -34,22 +43,22 @@ export async function POST(request: NextRequest) {
           }
 
           // Phase 1: Starting
-          sendProgress('profile', 5, 'Starting workout generation')
+          sendProgress('profile', 5, tProgress('starting'))
           await new Promise(resolve => setTimeout(resolve, 100))
 
           // Phase 2: Loading profile
-          sendProgress('profile', 15, 'Loading your profile')
+          sendProgress('profile', 15, tProgress('loadingProfile'))
 
           // Phase 3: Planning workout
-          sendProgress('split', 25, 'Planning your workout')
+          sendProgress('split', 25, tProgress('planningWorkout'))
           await new Promise(resolve => setTimeout(resolve, 200))
 
           // Phase 4: AI selecting exercises (longest phase)
-          sendProgress('ai', 35, 'AI analyzing exercises')
+          sendProgress('ai', 35, tProgress('aiAnalyzing'))
           await new Promise(resolve => setTimeout(resolve, 500))
-          sendProgress('ai', 50, 'AI selecting best exercises')
+          sendProgress('ai', 50, tProgress('aiSelecting'))
           await new Promise(resolve => setTimeout(resolve, 500))
-          sendProgress('ai', 65, 'Optimizing exercise selection')
+          sendProgress('ai', 65, tProgress('optimizingSelection'))
 
           // Determine if we're generating for current day or future day
           let result
@@ -71,7 +80,7 @@ export async function POST(request: NextRequest) {
                 targetCycleDay
               )
             } else {
-              throw new Error(`Cannot generate workout for past cycle day. Current: ${currentCycleDay}, Target: ${targetCycleDay}`)
+              throw new Error(tErrors('cannotGeneratePastDay', { current: currentCycleDay, target: targetCycleDay }))
             }
           } else {
             // No targetCycleDay specified: generate for current day
@@ -81,15 +90,15 @@ export async function POST(request: NextRequest) {
           }
 
           // Phase 5: Analyzing history
-          sendProgress('history', 80, 'Analyzing your performance history')
+          sendProgress('history', 80, tProgress('analyzingHistory'))
           await new Promise(resolve => setTimeout(resolve, 300))
 
           // Phase 6: Finalizing
-          sendProgress('finalize', 95, 'Finalizing your workout')
+          sendProgress('finalize', 95, tProgress('finalizing'))
           await new Promise(resolve => setTimeout(resolve, 200))
 
           // Complete
-          sendProgress('complete', 100, 'Workout ready!')
+          sendProgress('complete', 100, tProgress('workoutReady'))
           const completeData = JSON.stringify({
             phase: 'complete',
             workout: result.workout,
@@ -102,7 +111,7 @@ export async function POST(request: NextRequest) {
           console.error('Stream error:', error)
           const errorData = JSON.stringify({
             phase: 'error',
-            error: error instanceof Error ? error.message : 'Failed to generate workout'
+            error: error instanceof Error ? error.message : tErrors('failedToGenerate')
           })
           controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
           controller.close()
@@ -120,9 +129,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('API error:', error)
+    // For the outer catch, we don't have user context, so we fall back to default locale
+    const tErrors = await getTranslations({ locale: 'en', namespace: 'api.workouts.generate.errors' })
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Internal server error'
+        error: error instanceof Error ? error.message : tErrors('internalServerError')
       }),
       { status: 500 }
     )

@@ -145,6 +145,14 @@
     }
   },
   "workout": {
+    "pages": {
+      "layout": {
+        "exitWorkout": "Esci dall'Allenamento",
+        "backToDashboard": "Torna alla Dashboard",
+        "back": "Indietro",
+        "reviewWorkout": "Revisiona Allenamento"
+      }
+    },
     "modals": {
       "reorderExercises": {
         "title": "Riordina Esercizi",
@@ -674,6 +682,152 @@
   "onboarding": {
     "welcome": "Benvenuto in Arvo",
     "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
+    "layout": {
+      "stepNames": {
+        "approach": "Approccio",
+        "split": "Suddivisione",
+        "profile": "Profilo",
+        "weakPoints": "Punti Deboli",
+        "equipment": "Attrezzatura",
+        "strength": "Forza",
+        "review": "Revisione"
+      }
+    },
+    "approachCard": {
+      "by": "di",
+      "workingSets": "Serie di Lavoro:",
+      "repRanges": "Range Ripetizioni (Composti):",
+      "rirTarget": "RIR Target:",
+      "progression": "Progressione:",
+      "learnMore": "Scopri di Più"
+    },
+    "approachDetails": {
+      "by": "di",
+      "experienceLevels": {
+        "beginnerFriendly": "Adatto ai Principianti",
+        "beginnerDescription": "Perfetto per chi è nuovo all'allenamento strutturato",
+        "advanced": "Avanzato",
+        "advancedDescription": "Ideale per atleti esperti",
+        "allLevels": "Tutti i Livelli",
+        "allLevelsDescription": "Adatto a principianti e atleti avanzati"
+      },
+      "perfectFor": {
+        "title": "Perfetto Per Te Se...",
+        "buildingMass": "Costruire massa e volume muscolare",
+        "increasingStrength": "Aumentare la forza massimale",
+        "highVolume": "Chi può gestire volumi di allenamento elevati",
+        "sustainable": "Progresso sostenibile a lungo termine",
+        "powerlifting": "Obiettivi specifici di powerlifting",
+        "balanced": "Sviluppo equilibrato e completo",
+        "structured": "Allenamento progressivo strutturato",
+        "evidenceBased": "Programmazione basata su evidenze scientifiche"
+      },
+      "sections": {
+        "philosophy": "Filosofia",
+        "trainingVariables": "Variabili di Allenamento",
+        "progressionStrategy": "Strategia di Progressione",
+        "volumeGuidelines": "Linee Guida Volume (MEV/MAV/MRV)",
+        "advancedTechniques": "Tecniche Avanzate",
+        "periodization": "Periodizzazione",
+        "keyPrinciples": "Principi Chiave"
+      },
+      "variables": {
+        "setsReps": "Serie & Ripetizioni",
+        "workingSets": "Serie di Lavoro",
+        "warmup": "Riscaldamento",
+        "compoundReps": "Ripetizioni Composti",
+        "isolationReps": "Ripetizioni Isolamento",
+        "noneSpecified": "Non specificato",
+        "rirTarget": "RIR Target (Ripetizioni di Riserva)",
+        "normal": "Normale",
+        "intense": "Intenso",
+        "deload": "Scarico",
+        "restPeriods": "Periodi di Riposo",
+        "compound": "Composti",
+        "isolation": "Isolamento",
+        "betweenSets": "Tra le Serie",
+        "tempo": "Tempo (Velocità di Esecuzione)",
+        "tempoFormat": "Eccentrica - Pausa - Concentrica - Alto",
+        "eccentric": "Eccentrica",
+        "concentric": "Concentrica",
+        "pause": "Pausa",
+        "top": "Alto",
+        "trainingFrequency": "Frequenza di Allenamento",
+        "perMuscleGroup": "Per Gruppo Muscolare:",
+        "pattern": "Schema:",
+        "sessionDuration": "Durata Sessione",
+        "duration": "Durata",
+        "totalSets": "Serie Totali",
+        "priority": "Priorità",
+        "weightIncrement": "Incremento Peso",
+        "default": "predefinito",
+        "whenToAddWeight": "Quando Aggiungere Peso",
+        "setProgressionStrategy": "Strategia Progressione Serie",
+        "deloadTriggers": "Trigger di Scarico"
+      },
+      "volumeLandmarks": {
+        "mev": "MEV",
+        "mevFull": "Minimo Effettivo",
+        "mav": "MAV",
+        "mavFull": "Massimo Adattivo",
+        "mrv": "MRV",
+        "mrvFull": "Massimo Recuperabile"
+      },
+      "periodization": {
+        "when": "Quando:",
+        "how": "Come:",
+        "frequency": "Frequenza:",
+        "model": "Modello",
+        "cycleDuration": "Durata Ciclo",
+        "phase": "Fase"
+      },
+      "closeButton": "Ho capito, grazie!"
+    },
+    "reviewPage": {
+      "edit": "Modifica",
+      "splitType": "Tipo Suddivisione:",
+      "trainingFrequency": "Frequenza Allenamento:",
+      "daysPerWeek": "giorni/settimana",
+      "noSplitSelected": "Nessuna suddivisione selezionata",
+      "profile": "Profilo",
+      "profileLabels": {
+        "name": "Nome:",
+        "gender": "Genere:",
+        "age": "Età:",
+        "weight": "Peso:",
+        "height": "Altezza:",
+        "years": "anni"
+      },
+      "noProfileData": "Nessun dato profilo fornito",
+      "noWeakPoints": "Nessun punto debole selezionato",
+      "noEquipment": "Nessuna attrezzatura selezionata",
+      "strengthBaseline": {
+        "noBaseline": "Nessun livello di forza registrato (l'AI stimerà)",
+        "standard": "Standard",
+        "custom": "Personalizzato",
+        "at": "@",
+        "experienceTitle": "Stima Esperienza di Allenamento",
+        "basedOnStrength": "In base al tuo livello di forza, sembri essere",
+        "withApproximately": "con circa",
+        "ofExperience": "di esperienza di allenamento",
+        "confidence": "Confidenza:",
+        "considerProviding": "(Considera di fornire il peso corporeo e più esercizi per una maggiore accuratezza)",
+        "viewBreakdown": "Visualizza dettaglio per esercizio",
+        "e1rm": "e1RM:",
+        "relativeStrength": "(x PC)",
+        "adjustExperience": "Regola la tua esperienza di allenamento (anni):",
+        "experiencePlaceholder": "es: 2.5",
+        "disagreeNote": "Non sei d'accordo con la stima AI? Regolala liberamente in base alla tua effettiva storia di allenamento.",
+        "confirmed": "Confermato:",
+        "usingEstimate": "Usando stima AI:"
+      },
+      "whatHappensNext": {
+        "title": "Cosa succede dopo:",
+        "description": "L'AI creerà il tuo profilo utente e genererà il tuo primo allenamento personalizzato basato su",
+        "andPreferences": "e le tue preferenze. Potrebbe richiedere alcuni istanti."
+      },
+      "medicalDisclaimer": "Disclaimer Medico - Si Prega di Leggere Attentamente"
+    },
     "steps": {
       "approach": {
         "title": "Scegli la Tua Filosofia di Allenamento",
@@ -933,5 +1087,38 @@
     "insights": "Insight AI",
     "history": "Cronologia",
     "noData": "Nessun dato disponibile. Completa alcuni allenamenti per vedere i tuoi progressi!"
+  },
+  "api": {
+    "workouts": {
+      "generate": {
+        "progress": {
+          "starting": "Avvio generazione allenamento",
+          "loadingProfile": "Caricamento del tuo profilo",
+          "planningWorkout": "Pianificazione del tuo allenamento",
+          "aiAnalyzing": "AI in analisi degli esercizi",
+          "aiSelecting": "AI in selezione degli esercizi migliori",
+          "optimizingSelection": "Ottimizzazione selezione esercizi",
+          "analyzingHistory": "Analisi della tua cronologia performance",
+          "finalizing": "Finalizzazione del tuo allenamento",
+          "workoutReady": "Allenamento pronto!"
+        },
+        "errors": {
+          "unauthorized": "Non autorizzato",
+          "failedToGenerate": "Impossibile generare l'allenamento",
+          "internalServerError": "Errore interno del server",
+          "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Allenamento non trovato",
+        "failedToFetch": "Impossibile recuperare l'allenamento"
+      }
+    },
+    "exercises": {
+      "errors": {
+        "failedToFetch": "Impossibile recuperare gli esercizi",
+        "internalServerError": "Errore interno del server"
+      }
+    }
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -9,6 +10,7 @@ export default function ReviewLayout({
 }: {
   children: React.ReactNode
 }) {
+  const t = useTranslations('workout.pages.layout')
   const router = useRouter()
 
   const handleBack = () => {
@@ -28,11 +30,11 @@ export default function ReviewLayout({
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
-              <span className="sm:hidden">Back</span>
+              <span className="hidden sm:inline">{t('backToDashboard')}</span>
+              <span className="sm:hidden">{t('back')}</span>
             </Button>
             <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Review Workout
+              {t('reviewWorkout')}
             </h1>
             <div className="w-24"></div> {/* Spacer for centering */}
           </div>

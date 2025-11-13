@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ExitWorkoutModal } from '@/components/features/workout/exit-workout-modal'
 
 export default function WorkoutLayout({
@@ -9,6 +10,7 @@ export default function WorkoutLayout({
 }: {
   children: React.ReactNode
 }) {
+  const t = useTranslations('workout.pages.layout')
   const router = useRouter()
   const pathname = usePathname()
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -104,7 +106,7 @@ export default function WorkoutLayout({
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          <span className="text-sm font-medium">Exit Workout</span>
+          <span className="text-sm font-medium">{t('exitWorkout')}</span>
         </button>
 
         <button

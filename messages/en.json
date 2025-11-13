@@ -145,6 +145,14 @@
     }
   },
   "workout": {
+    "pages": {
+      "layout": {
+        "exitWorkout": "Exit Workout",
+        "backToDashboard": "Back to Dashboard",
+        "back": "Back",
+        "reviewWorkout": "Review Workout"
+      }
+    },
     "modals": {
       "reorderExercises": {
         "title": "Reorder Exercises",
@@ -674,6 +682,152 @@
   "onboarding": {
     "welcome": "Welcome to Arvo",
     "subtitle": "Let's set up your personalized training program",
+    "layout": {
+      "stepNames": {
+        "approach": "Approach",
+        "split": "Split",
+        "profile": "Profile",
+        "weakPoints": "Weak Points",
+        "equipment": "Equipment",
+        "strength": "Strength",
+        "review": "Review"
+      }
+    },
+    "approachCard": {
+      "by": "by",
+      "workingSets": "Working Sets:",
+      "repRanges": "Rep Ranges (Compound):",
+      "rirTarget": "RIR Target:",
+      "progression": "Progression:",
+      "learnMore": "Learn More"
+    },
+    "approachDetails": {
+      "by": "by",
+      "experienceLevels": {
+        "beginnerFriendly": "Beginner-Friendly",
+        "beginnerDescription": "Perfect for those new to structured training",
+        "advanced": "Advanced",
+        "advancedDescription": "Best suited for experienced lifters",
+        "allLevels": "All Levels",
+        "allLevelsDescription": "Suitable for beginners to advanced athletes"
+      },
+      "perfectFor": {
+        "title": "Perfect For You If...",
+        "buildingMass": "Building muscle mass and size",
+        "increasingStrength": "Increasing maximal strength",
+        "highVolume": "Those who can handle high training volumes",
+        "sustainable": "Sustainable long-term progress",
+        "powerlifting": "Powerlifting-specific goals",
+        "balanced": "Balanced, well-rounded development",
+        "structured": "Structured progressive training",
+        "evidenceBased": "Evidence-based programming"
+      },
+      "sections": {
+        "philosophy": "Philosophy",
+        "trainingVariables": "Training Variables",
+        "progressionStrategy": "Progression Strategy",
+        "volumeGuidelines": "Volume Guidelines (MEV/MAV/MRV)",
+        "advancedTechniques": "Advanced Techniques",
+        "periodization": "Periodization",
+        "keyPrinciples": "Key Principles"
+      },
+      "variables": {
+        "setsReps": "Sets & Reps",
+        "workingSets": "Working Sets",
+        "warmup": "Warmup",
+        "compoundReps": "Compound Reps",
+        "isolationReps": "Isolation Reps",
+        "noneSpecified": "None specified",
+        "rirTarget": "RIR Target (Reps in Reserve)",
+        "normal": "Normal",
+        "intense": "Intense",
+        "deload": "Deload",
+        "restPeriods": "Rest Periods",
+        "compound": "Compound",
+        "isolation": "Isolation",
+        "betweenSets": "Between Sets",
+        "tempo": "Tempo (Execution Speed)",
+        "tempoFormat": "Eccentric - Pause - Concentric - Top",
+        "eccentric": "Eccentric",
+        "concentric": "Concentric",
+        "pause": "Pause",
+        "top": "Top",
+        "trainingFrequency": "Training Frequency",
+        "perMuscleGroup": "Per Muscle Group:",
+        "pattern": "Pattern:",
+        "sessionDuration": "Session Duration",
+        "duration": "Duration",
+        "totalSets": "Total Sets",
+        "priority": "Priority",
+        "weightIncrement": "Weight Increment",
+        "default": "default",
+        "whenToAddWeight": "When to Add Weight",
+        "setProgressionStrategy": "Set Progression Strategy",
+        "deloadTriggers": "Deload Triggers"
+      },
+      "volumeLandmarks": {
+        "mev": "MEV",
+        "mevFull": "Minimum Effective",
+        "mav": "MAV",
+        "mavFull": "Maximum Adaptive",
+        "mrv": "MRV",
+        "mrvFull": "Maximum Recoverable"
+      },
+      "periodization": {
+        "when": "When:",
+        "how": "How:",
+        "frequency": "Frequency:",
+        "model": "Model",
+        "cycleDuration": "Cycle Duration",
+        "phase": "Phase"
+      },
+      "closeButton": "Got it, thanks!"
+    },
+    "reviewPage": {
+      "edit": "Edit",
+      "splitType": "Split Type:",
+      "trainingFrequency": "Training Frequency:",
+      "daysPerWeek": "days/week",
+      "noSplitSelected": "No split selected",
+      "profile": "Profile",
+      "profileLabels": {
+        "name": "Name:",
+        "gender": "Gender:",
+        "age": "Age:",
+        "weight": "Weight:",
+        "height": "Height:",
+        "years": "years"
+      },
+      "noProfileData": "No profile data provided",
+      "noWeakPoints": "No weak points selected",
+      "noEquipment": "No equipment selected",
+      "strengthBaseline": {
+        "noBaseline": "No strength baseline recorded (AI will estimate)",
+        "standard": "Standard",
+        "custom": "Custom",
+        "at": "@",
+        "experienceTitle": "Training Experience Estimate",
+        "basedOnStrength": "Based on your strength baseline, you appear to be",
+        "withApproximately": "with approximately",
+        "ofExperience": "of training experience",
+        "confidence": "Confidence:",
+        "considerProviding": "(Consider providing bodyweight and more lifts for better accuracy)",
+        "viewBreakdown": "View lift-by-lift breakdown",
+        "e1rm": "e1RM:",
+        "relativeStrength": "(x BW)",
+        "adjustExperience": "Adjust your training experience (years):",
+        "experiencePlaceholder": "e.g., 2.5",
+        "disagreeNote": "Disagree with the AI estimate? Feel free to adjust it based on your actual training history.",
+        "confirmed": "Confirmed:",
+        "usingEstimate": "Using AI estimate:"
+      },
+      "whatHappensNext": {
+        "title": "What happens next:",
+        "description": "The AI will create your user profile and generate your first personalized workout based on the",
+        "andPreferences": "and your preferences. This may take a few moments."
+      },
+      "medicalDisclaimer": "Medical Disclaimer - Please Read Carefully"
+    },
     "steps": {
       "approach": {
         "title": "Choose Your Training Philosophy",
@@ -933,5 +1087,38 @@
     "insights": "AI Insights",
     "history": "History",
     "noData": "No data available yet. Complete some workouts to see your progress!"
+  },
+  "api": {
+    "workouts": {
+      "generate": {
+        "progress": {
+          "starting": "Starting workout generation",
+          "loadingProfile": "Loading your profile",
+          "planningWorkout": "Planning your workout",
+          "aiAnalyzing": "AI analyzing exercises",
+          "aiSelecting": "AI selecting best exercises",
+          "optimizingSelection": "Optimizing exercise selection",
+          "analyzingHistory": "Analyzing your performance history",
+          "finalizing": "Finalizing your workout",
+          "workoutReady": "Workout ready!"
+        },
+        "errors": {
+          "unauthorized": "Unauthorized",
+          "failedToGenerate": "Failed to generate workout",
+          "internalServerError": "Internal server error",
+          "cannotGeneratePastDay": "Cannot generate workout for past cycle day. Current: {current}, Target: {target}"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Workout not found",
+        "failedToFetch": "Failed to fetch workout"
+      }
+    },
+    "exercises": {
+      "errors": {
+        "failedToFetch": "Failed to fetch exercises",
+        "internalServerError": "Internal server error"
+      }
+    }
   }
 }
