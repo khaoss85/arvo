@@ -245,13 +245,168 @@ export class SetLogService {
       return null;
     }
 
+    // Remove the nested 'workouts' field and cast to SetLog type
+    const setsOnly = data.map(({ workouts, ...set }) => set as SetLog);
+
     // Find the set with the highest volume (weight × reps)
-    return data.reduce((best, current) => {
+    return setsOnly.reduce((best, current) => {
       const currentVolume =
         (current.weight_actual || 0) * (current.reps_actual || 0);
       const bestVolume = (best.weight_actual || 0) * (best.reps_actual || 0);
 
       return currentVolume > bestVolume ? current : best;
-    }) as SetLog;
+    });
+  }
+
+  /**
+   * Create a skipped set log entry
+   * Used when user skips warmup or other sets
+   */
+  static async createSkippedSet(params: {
+    workout_id: string;
+    exercise_id?: string;
+    exercise_name: string;
+    set_number: number;
+    set_type: "warmup" | "working";
+    skip_reason?: string;
+  }): Promise<SetLog> {
+    const setLog: InsertSetLog = {
+      workout_id: params.workout_id,
+      exercise_id: params.exercise_id || null,
+      exercise_name: params.exercise_name,
+      set_number: params.set_number,
+      set_type: params.set_type,
+      skipped: true,
+      skip_reason: params.skip_reason || null,
+      // Skipped sets have no actual values
+      weight_actual: null,
+      reps_actual: null,
+      rir_actual: null,
+      weight_target: null,
+      reps_target: null,
+      notes: null,
+      mental_readiness: null,
+    };
+
+    return this.create(setLog);
+  }
+
+  /**
+   * Create multiple skipped set log entries
+   * Useful for skipping all warmup sets at once
+   */
+  static async createSkippedSets(
+    sets: Array<{
+      workout_id: string;
+      exercise_id?: string;
+      exercise_name: string;
+      set_number: number;
+      set_type: "warmup" | "working";
+      skip_reason?: string;
+    }>
+  ): Promise<SetLog[]> {
+    const setLogs: InsertSetLog[] = sets.map((params) => ({
+      workout_id: params.workout_id,
+      exercise_id: params.exercise_id || null,
+      exercise_name: params.exercise_name,
+      set_number: params.set_number,
+      set_type: params.set_type,
+      skipped: true,
+      skip_reason: params.skip_reason || null,
+      weight_actual: null,
+      reps_actual: null,
+      rir_actual: null,
+      weight_target: null,
+      reps_target: null,
+      notes: null,
+      mental_readiness: null,
+    }));
+
+    return this.createMany(setLogs);
+  }
+
+  /**
+   * Get skip analytics for a user
+   * Returns statistics about warmup skip patterns
+   */
+  static async getSkipAnalytics(
+    userId: string,
+    options?: {
+      startDate?: string;
+      endDate?: string;
+      approachId?: string;
+    }
+  ): Promise<{
+    totalSkipped: number;
+    totalSets: number;
+    skipRate: number;
+    byReason: Record<string, number>;
+    bySetType: Record<string, number>;
+  }> {
+    const supabase = getSupabaseBrowserClient();
+
+    // Build query with filters
+    let query = supabase
+      .from("sets_log")
+      .select("*, workouts!inner(user_id, approach_id, created_at)")
+      .eq("workouts.user_id", userId);
+
+    if (options?.startDate) {
+      query = query.gte("workouts.created_at", options.startDate);
+    }
+
+    if (options?.endDate) {
+      query = query.lte("workouts.created_at", options.endDate);
+    }
+
+    if (options?.approachId) {
+      query = query.eq("workouts.approach_id", options.approachId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch skip analytics: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return {
+        totalSkipped: 0,
+        totalSets: 0,
+        skipRate: 0,
+        byReason: {},
+        bySetType: {},
+      };
+    }
+
+    // Calculate analytics
+    // Cast to any to access new fields until Supabase types are regenerated
+    const dataWithNewFields = data as any[];
+    const totalSets = dataWithNewFields.length;
+    const skippedSets = dataWithNewFields.filter((set) => set.skipped);
+    const totalSkipped = skippedSets.length;
+    const skipRate = totalSets > 0 ? (totalSkipped / totalSets) * 100 : 0;
+
+    // Group by reason
+    const byReason: Record<string, number> = {};
+    skippedSets.forEach((set) => {
+      const reason = set.skip_reason || "unknown";
+      byReason[reason] = (byReason[reason] || 0) + 1;
+    });
+
+    // Group by set type
+    const bySetType: Record<string, number> = {};
+    skippedSets.forEach((set) => {
+      const type = set.set_type || "unknown";
+      bySetType[type] = (bySetType[type] || 0) + 1;
+    });
+
+    return {
+      totalSkipped,
+      totalSets,
+      skipRate: Math.round(skipRate * 100) / 100, // Round to 2 decimals
+      byReason,
+      bySetType,
+    };
   }
 }

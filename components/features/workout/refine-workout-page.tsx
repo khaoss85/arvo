@@ -64,7 +64,7 @@ export function RefineWorkoutPage({
 }: RefineWorkoutPageProps) {
   const router = useRouter()
   const t = useTranslations('workout.modals.refineWorkout')
-  const [exercises, setExercises] = useState<Exercise[]>([])
+  const [exercises, setExercises] = useState<Exercise[]>(workout?.exercises as unknown as Exercise[] || [])
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set())
   const [isMarkingReady, setIsMarkingReady] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState<number | null>(null)
