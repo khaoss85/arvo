@@ -5,6 +5,7 @@ import type { ProgressionOutput } from '@/lib/agents/progression-calculator.agen
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { AnimationService } from '@/lib/services/animation.service'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export interface WarmupSet {
   setNumber: number
@@ -47,6 +48,7 @@ export interface ExerciseExecution {
   restSeconds?: number // Rest period from approach (seconds between sets)
   animationUrl?: string // URL path to Lottie JSON animation (e.g., "/animations/exercises/barbell-squat.json")
   hasAnimation?: boolean // Whether a Lottie animation is available for this exercise
+  warmupSetsSkipped?: number // Number of warmup sets that were skipped (used to calculate correct totalSets)
 
   // User modification tracking
   aiRecommendedSets?: number // Original AI recommendation (before user modifications)
@@ -225,15 +227,24 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             const exerciseSets = sets.filter((s) => {
               const exId = ex.id || null
               // Match by ID (if available) OR by name (case-insensitive, trimmed)
-              const nameMatch = s.exercise_name?.toLowerCase().trim() === ex.name?.toLowerCase().trim()
+              const exerciseName = getExerciseName(ex)
+              const nameMatch = s.exercise_name?.toLowerCase().trim() === exerciseName.toLowerCase().trim()
               return s.exercise_id === exId || nameMatch
             })
 
+            // Filter out skipped sets - they should NOT be in completedSets
+            const completedSetsOnly = exerciseSets.filter((s) => !(s as any).skipped)
+            const skippedSetsOnly = exerciseSets.filter((s) => (s as any).skipped)
+            const warmupSetsSkipped = skippedSetsOnly.filter((s) => (s as any).set_type === 'warmup').length
+
             // Debug logging for completed sets loading
             console.log('[Store] Exercise sets loaded:', {
-              exerciseName: ex.name,
+              exerciseName: getExerciseName(ex),
               exerciseId: ex.id,
               setsFound: exerciseSets.length,
+              completedSetsOnly: completedSetsOnly.length,
+              skippedSets: skippedSetsOnly.length,
+              warmupSetsSkipped,
               totalSetsInDB: sets.length
             })
 
@@ -253,7 +264,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,
-              completedSets: exerciseSets.map((s) => ({
+              completedSets: completedSetsOnly.map((s) => ({
                 id: s.id, // Include set ID for editing/deleting
                 weight: s.weight_actual || 0,
                 reps: s.reps_actual || 0,
@@ -266,6 +277,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               currentAISuggestion: null,
               technicalCues: ex.technicalCues || [],
               warmupSets: ex.warmupSets || [],
+              warmupSetsSkipped: warmupSetsSkipped > 0 ? warmupSetsSkipped : undefined,
               setGuidance: ex.setGuidance || [],
               tempo: ex.tempo,
               restSeconds: ex.restSeconds || 90, // Default to 90s if not specified by approach
@@ -353,7 +365,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         // Check if all sets are already completed
         const warmupSetsCount = currentExercise.warmupSets?.length || 0
-        const totalSets = warmupSetsCount + currentExercise.targetSets
+        const warmupSetsSkipped = currentExercise.warmupSetsSkipped || 0
+        const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+        const totalSets = remainingWarmupSets + currentExercise.targetSets
 
         if (currentExercise.completedSets.length >= totalSets) {
           throw new Error('All sets already completed for this exercise')
@@ -362,7 +376,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         // Save to database
         try {
           // Determine if this is a warmup or working set
-          const isWarmupSet = currentExercise.completedSets.length < warmupSetsCount
+          const isWarmupSet = currentExercise.completedSets.length < remainingWarmupSets
 
           const createdSet = await SetLogService.create({
             workout_id: workoutId,
@@ -573,7 +587,15 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           // This way, the set counter will start from 1 for working sets
           // And the user can immediately start logging their first working set
 
+          // Update local state to track skipped warmups
+          const updatedExercises = [...exercises]
+          updatedExercises[currentExerciseIndex] = {
+            ...currentExercise,
+            warmupSetsSkipped: warmupSetsCount
+          }
+
           set({
+            exercises: updatedExercises,
             lastActivityAt: new Date()
           })
 

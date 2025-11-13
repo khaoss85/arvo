@@ -6,6 +6,7 @@
  */
 
 import type { Database } from '@/lib/types/database.types'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export type WorkoutType = Database['public']['Enums']['workout_type']
 export type SplitType = Database['public']['Enums']['split_type']
@@ -161,11 +162,14 @@ export function getMuscleGroupsFromExercise(exerciseName: string): string[] {
 /**
  * Extracts all target muscle groups from a list of exercises
  */
-export function getTargetMuscleGroups(exercises: Array<{ name: string }>): string[] {
+export function getTargetMuscleGroups(exercises: any[]): string[] {
   const allMuscleGroups = new Set<string>()
 
   for (const exercise of exercises) {
-    const groups = getMuscleGroupsFromExercise(exercise.name)
+    const name = getExerciseName(exercise)
+    if (name === 'Unknown Exercise') continue
+
+    const groups = getMuscleGroupsFromExercise(name)
     groups.forEach(group => allMuscleGroups.add(group))
   }
 
@@ -175,12 +179,12 @@ export function getTargetMuscleGroups(exercises: Array<{ name: string }>): strin
 /**
  * Infers workout type from exercise list
  */
-export function inferWorkoutType(exercises: Array<{ name: string }>): WorkoutType {
+export function inferWorkoutType(exercises: any[]): WorkoutType {
   if (!exercises || exercises.length === 0) {
     return 'push' // default
   }
 
-  const firstExerciseName = exercises[0].name.toLowerCase()
+  const firstExerciseName = getExerciseName(exercises[0]).toLowerCase()
 
   // Push patterns
   if (

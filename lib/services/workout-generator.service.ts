@@ -12,6 +12,7 @@ import {
   type SplitType
 } from './muscle-groups.service'
 import type { Workout, InsertWorkout, WorkoutStatus } from '@/lib/types/schemas'
+import { normalizeExercise, getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export class WorkoutGeneratorService {
   /**
@@ -225,7 +226,8 @@ export class WorkoutGeneratorService {
         }
 
         return {
-          name: exercise.name,
+          exerciseName: exercise.name, // Use canonical field name
+          name: exercise.name, // Keep for backwards compatibility
           equipmentVariant: exercise.equipmentVariant,
           equipment: exercise.equipmentVariant, // Duplicate for AnimationService compatibility
           sets: exercise.sets,
@@ -412,7 +414,7 @@ export class WorkoutGeneratorService {
   private static extractRecentExercises(workouts: Workout[]): string[] {
     return workouts.flatMap(w => {
       const exercises = w.exercises as any[]
-      return exercises?.map((e: any) => e.name) || []
+      return exercises?.map((e: any) => getExerciseName(e)) || []
     })
   }
 

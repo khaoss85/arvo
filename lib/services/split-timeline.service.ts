@@ -8,6 +8,7 @@ import type {
   TimelineDayData,
   SplitTimelineData,
 } from "@/lib/services/split-timeline.types";
+import { getExerciseName } from "@/lib/utils/exercise-helpers";
 
 // Re-export types for convenience
 export type {
@@ -92,10 +93,12 @@ export class SplitTimelineService {
     const exercises = workout.exercises as any[];
 
     for (const exercise of exercises) {
-      if (!exercise.name) continue;
+      // Use utility to safely extract exercise name
+      const name = getExerciseName(exercise);
+      if (name === 'Unknown Exercise') continue;
 
       // Get muscle groups for this exercise
-      const muscleGroups = this.getMuscleGroupsFromExercise(exercise.name);
+      const muscleGroups = this.getMuscleGroupsFromExercise(name);
 
       // Count completed sets
       const completedSets = exercise.completedSets || exercise.sets || [];

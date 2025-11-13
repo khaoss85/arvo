@@ -1,4 +1,5 @@
 import { BaseAgent } from './base.agent'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export interface WorkoutSummaryInput {
   exercises: Array<{
@@ -96,7 +97,7 @@ Completion Rate: ${Math.round(completionRate * 100)}%
 ${mentalReadinessContext}
 Exercises Completed:
 ${input.exercises.map(e =>
-  `- ${e.name}: ${e.completedSets}/${e.sets} sets, ${e.totalVolume}kg total volume, avg RIR ${e.avgRIR.toFixed(1)}`
+  `- ${getExerciseName(e)}: ${e.completedSets}/${e.sets} sets, ${e.totalVolume}kg total volume, avg RIR ${e.avgRIR.toFixed(1)}`
 ).join('\n')}
 ${demographicContext}
 Training Approach Context:

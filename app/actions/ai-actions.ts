@@ -30,6 +30,7 @@ import type { WorkoutSummaryInput } from '@/lib/agents/workout-summary.agent'
 import type { SubstitutionInput, SubstitutionOutput, CustomSubstitutionInput, SubstitutionSuggestion } from '@/lib/agents/exercise-substitution.agent'
 import type { WorkoutRationaleInput, WorkoutRationaleOutput } from '@/lib/agents/workout-rationale.agent'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 /**
  * Server action to complete onboarding
@@ -318,7 +319,7 @@ async function generateWorkoutWithServerClient(
 function extractRecentExercises(workouts: Workout[]): string[] {
   return workouts.flatMap(w => {
     const exercises = w.exercises as any[]
-    return exercises?.map((e: any) => e.name) || []
+    return exercises?.map((e: any) => getExerciseName(e)) || []
   })
 }
 

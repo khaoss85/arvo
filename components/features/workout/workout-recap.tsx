@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import type { Workout } from '@/lib/types/schemas'
 import { formatDuration } from '@/lib/utils/workout-helpers'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 interface WorkoutRecapProps {
   workout: Workout
@@ -176,7 +177,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                      {exercise.name || exercise.exerciseName || exercise.exercise_name || t('exercises.title')}
+                      {getExerciseName(exercise) === 'Unknown Exercise' ? t('exercises.title') : getExerciseName(exercise)}
                     </h3>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       {setCount} {t('exercises.sets', { count: setCount })}

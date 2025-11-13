@@ -1,4 +1,5 @@
 import { BaseAgent } from './base.agent'
+import { getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export interface WorkoutRationaleInput {
   // Workout context
@@ -102,7 +103,7 @@ WORKOUT OVERVIEW:
 - Total Exercises: ${input.exercises.length}
 
 EXERCISES:
-${input.exercises.map((ex, idx) => `${idx + 1}. ${ex.name} - ${ex.sets} × ${ex.repRange[0]}-${ex.repRange[1]} reps${ex.targetWeight ? ` @ ${ex.targetWeight}kg` : ''}`).join('\n')}
+${input.exercises.map((ex, idx) => `${idx + 1}. ${getExerciseName(ex)} - ${ex.sets} × ${ex.repRange[0]}-${ex.repRange[1]} reps${ex.targetWeight ? ` @ ${ex.targetWeight}kg` : ''}`).join('\n')}
 
 USER CONTEXT:
 ${weakPointsContext}

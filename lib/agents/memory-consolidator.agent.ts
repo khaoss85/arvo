@@ -1,5 +1,6 @@
 import { BaseAgent } from './base.agent';
 import type { MemoryCategory, MemorySource } from '@/lib/services/memory.service';
+import { getExerciseName } from '@/lib/utils/exercise-helpers';
 
 export interface MemoryConsolidatorInput {
   userId: string;
@@ -238,7 +239,7 @@ Be thorough in your analysis and only suggest high-confidence patterns.`;
       if (workout.mentalReadiness) {
         prompt += ` (Mental Readiness: ${workout.mentalReadiness}/5)`;
       }
-      prompt += `\nExercises: ${workout.exercises.map((e) => e.name).join(', ')}\n`;
+      prompt += `\nExercises: ${workout.exercises.map((e) => getExerciseName(e)).join(', ')}\n`;
     });
 
     // Substitution history
