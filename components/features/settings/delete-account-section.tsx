@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,6 +14,7 @@ interface DeleteAccountSectionProps {
 }
 
 export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSectionProps) {
+  const t = useTranslations('settings.deleteAccount')
   const [showConfirm, setShowConfirm] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
@@ -24,7 +26,7 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
       // User will be redirected by the server action
     } catch (error) {
       console.error('Delete error:', error)
-      alert(`Error deleting account: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`${t('errorDeleting')}: ${error instanceof Error ? error.message : t('unknownError')}`)
       setIsDeleting(false)
     }
   }
@@ -36,11 +38,11 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
           <div className="flex items-center gap-2 mb-2">
             <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
             <h3 className="text-lg font-semibold text-red-600 dark:text-red-400">
-              Danger Zone
+              {t('title')}
             </h3>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Permanently delete your account and all associated data. This action cannot be undone.
+            {t('description')}
           </p>
         </div>
 
@@ -50,7 +52,7 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
             onClick={() => setShowConfirm(true)}
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            Delete Account
+            {t('button')}
           </Button>
         ) : (
           <div className="space-y-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -59,27 +61,27 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
                 <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
                   <p className="text-sm font-bold text-red-900 dark:text-red-100">
-                    ⚠️ WARNING: This action CANNOT be undone!
+                    {t('warningMessage')}
                   </p>
                   <p className="text-sm text-red-800 dark:text-red-200">
-                    This will permanently delete:
+                    {t('confirmMessage')}
                   </p>
                   <ul className="text-sm text-red-800 dark:text-red-200 list-disc list-inside ml-2 space-y-1">
-                    <li>Your user profile and preferences</li>
-                    <li>All workout history and sets logged</li>
-                    <li>All split plans and training data</li>
-                    <li>Custom exercises you've created</li>
-                    <li><strong>Your entire account</strong> (you will be signed out)</li>
+                    <li>{t('deleteItems.profile')}</li>
+                    <li>{t('deleteItems.workoutHistory')}</li>
+                    <li>{t('deleteItems.splitPlans')}</li>
+                    <li>{t('deleteItems.customExercises')}</li>
+                    <li><strong>{t('deleteItems.account')}</strong> {t('deleteItems.accountNote')}</li>
                   </ul>
                   <p className="text-sm text-red-800 dark:text-red-200 mt-3">
-                    You can create a new account with the same email after deletion.
+                    {t('canRecreate')}
                   </p>
                 </div>
               </div>
 
               <div className="pt-3 border-t border-red-300 dark:border-red-700">
                 <label htmlFor="confirm-delete" className="block text-sm font-medium text-red-900 dark:text-red-100 mb-2">
-                  Type <span className="font-bold bg-red-200 dark:bg-red-800 px-1 rounded">DELETE</span> to confirm:
+                  {t('typeDeleteLabel')} <span className="font-bold bg-red-200 dark:bg-red-800 px-1 rounded">DELETE</span> {t('typeDeleteSuffix')}
                 </label>
                 <Input
                   id="confirm-delete"
@@ -100,7 +102,7 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
                 disabled={confirmText !== 'DELETE' || isDeleting}
                 className="font-bold"
               >
-                {isDeleting ? 'Deleting Account...' : 'Delete My Account Permanently'}
+                {isDeleting ? t('deleting') : t('confirmButton')}
               </Button>
               <Button
                 variant="outline"
@@ -110,13 +112,13 @@ export function DeleteAccountSection({ userId, userEmail }: DeleteAccountSection
                 }}
                 disabled={isDeleting}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
 
             {confirmText !== '' && confirmText !== 'DELETE' && (
               <p className="text-xs text-red-600 dark:text-red-400">
-                You must type exactly "DELETE" (all caps) to proceed
+                {t('validationError')}
               </p>
             )}
           </div>

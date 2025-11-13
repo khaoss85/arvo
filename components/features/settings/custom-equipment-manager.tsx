@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -41,6 +42,7 @@ export function CustomEquipmentManager({
   userId,
   initialCustomEquipment
 }: CustomEquipmentManagerProps) {
+  const t = useTranslations('settings.customEquipment')
   const [customEquipment, setCustomEquipment] = useState(initialCustomEquipment)
   const [inputValue, setInputValue] = useState('')
   const [isValidating, setIsValidating] = useState(false)
@@ -65,10 +67,10 @@ export function CustomEquipmentManager({
       if (result.success && result.result) {
         setValidationResult(result.result as ValidationResult)
       } else {
-        setError(result.error || 'Failed to validate equipment')
+        setError(result.error || t('errors.validationFailed'))
       }
     } catch (err) {
-      setError('An error occurred during validation')
+      setError(t('errors.validationError'))
       console.error(err)
     } finally {
       setIsValidating(false)
@@ -96,10 +98,10 @@ export function CustomEquipmentManager({
         setInputValue('')
         setValidationResult(null)
       } else {
-        setError(result.error || 'Failed to add equipment')
+        setError(result.error || t('errors.addFailed'))
       }
     } catch (err) {
-      setError('An error occurred while adding equipment')
+      setError(t('errors.addError'))
       console.error(err)
     } finally {
       setIsAdding(false)
@@ -113,10 +115,10 @@ export function CustomEquipmentManager({
       if (result.success) {
         setCustomEquipment(customEquipment.filter(eq => eq.id !== equipmentId))
       } else {
-        setError(result.error || 'Failed to remove equipment')
+        setError(result.error || t('errors.removeFailed'))
       }
     } catch (err) {
-      setError('An error occurred while removing equipment')
+      setError(t('errors.removeError'))
       console.error(err)
     }
   }
@@ -143,9 +145,9 @@ export function CustomEquipmentManager({
     <Card className="p-6">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-2">Custom Equipment</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
           <p className="text-sm text-muted-foreground">
-            Add equipment that's not in our standard list. AI will validate and suggest exercises.
+            {t('description')}
           </p>
         </div>
 
@@ -154,7 +156,7 @@ export function CustomEquipmentManager({
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="Enter equipment name (e.g., 'Hex Bar', 'Concept2 Rower')"
+              placeholder={t('inputPlaceholder')}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => {
@@ -170,7 +172,7 @@ export function CustomEquipmentManager({
                 variant="outline"
                 size="icon"
                 onClick={handleClearValidation}
-                title="Clear and start over"
+                title={t('clearButton')}
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -182,12 +184,12 @@ export function CustomEquipmentManager({
                 {isValidating ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Validating...
+                    {t('validating')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Validate
+                    {t('validateButton')}
                   </>
                 )}
               </Button>
@@ -229,7 +231,7 @@ export function CustomEquipmentManager({
                   )}
                   {validationResult.exampleExercises.length > 0 && (
                     <div className="mt-2">
-                      <p className="text-xs font-medium mb-1">Example exercises:</p>
+                      <p className="text-xs font-medium mb-1">{t('exampleExercises')}</p>
                       <div className="flex flex-wrap gap-1">
                         {validationResult.exampleExercises.map((exercise, idx) => (
                           <button
@@ -246,7 +248,7 @@ export function CustomEquipmentManager({
                   )}
                   {validationResult.suggestions && validationResult.suggestions.length > 0 && (
                     <div className="mt-2">
-                      <p className="text-xs font-medium mb-1">Suggestions:</p>
+                      <p className="text-xs font-medium mb-1">{t('suggestions')}</p>
                       <ul className="text-xs space-y-0.5 list-disc list-inside">
                         {validationResult.suggestions.map((suggestion, idx) => (
                           <li key={idx}>{suggestion}</li>
@@ -266,12 +268,12 @@ export function CustomEquipmentManager({
                   {isAdding ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Adding...
+                      {t('adding')}
                     </>
                   ) : (
                     <>
                       <Plus className="w-4 h-4 mr-2" />
-                      Add to My Equipment
+                      {t('addButton')}
                     </>
                   )}
                 </Button>
@@ -290,7 +292,7 @@ export function CustomEquipmentManager({
         {/* Custom Equipment List */}
         {customEquipment.length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-medium">Your Custom Equipment</h4>
+            <h4 className="text-sm font-medium">{t('yourEquipment')}</h4>
             <div className="space-y-2">
               {customEquipment.map((equipment) => (
                 <div
@@ -301,11 +303,11 @@ export function CustomEquipmentManager({
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-medium text-sm">{equipment.name}</p>
                       <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
-                        Custom
+                        {t('customBadge')}
                       </span>
                       {!equipment.validated && (
                         <span className="px-2 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded">
-                          Unverified
+                          {t('unverifiedBadge')}
                         </span>
                       )}
                     </div>

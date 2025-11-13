@@ -1094,6 +1094,407 @@
       "title": "Account",
       "signOut": "Esci",
       "deleteAccount": "Elimina Account"
+    },
+    "splitSelector": {
+      "title": "Tipo di Split",
+      "description": "Scegli il tipo di programmazione che preferisci per i tuoi allenamenti",
+      "rotation": "Rotazione",
+      "days": "{count} {count, plural, one {giorno} other {giorni}}",
+      "sequence": "Sequenza",
+      "success": "Split aggiornato con successo!",
+      "error": "Errore durante l'aggiornamento",
+      "updating": "Aggiornamento in corso...",
+      "splits": {
+        "push_pull_legs": {
+          "name": "Push / Pull / Legs",
+          "description": "Split a 3 giorni: giorni push (petto, spalle, tricipiti), pull (schiena, bicipiti) e legs (gambe)",
+          "schedule": "Push → Pull → Legs"
+        },
+        "upper_lower": {
+          "name": "Upper / Lower",
+          "description": "Split a 2 giorni: upper body (parte superiore) e lower body (parte inferiore)",
+          "schedule": "Upper → Lower"
+        },
+        "full_body": {
+          "name": "Full Body",
+          "description": "Allenamento total body ogni sessione, ideale per principianti o chi si allena 2-3 volte a settimana",
+          "schedule": "Full Body"
+        }
+      }
+    },
+    "page": {
+      "metadata": {
+        "title": "Impostazioni",
+        "description": "Personalizza le tue preferenze di allenamento, gestisci il tuo profilo e configura la tua esperienza di allenamento."
+      },
+      "accountInfo": {
+        "title": "Informazioni Account",
+        "description": "I dettagli del tuo account",
+        "email": "Email",
+        "userId": "ID Utente",
+        "trainingExperience": "Esperienza di Allenamento",
+        "experienceYears": "{years, plural, one {# anno} other {# anni}}"
+      },
+      "accountManagement": {
+        "title": "Gestione Account",
+        "description": "Resetta i tuoi dati di allenamento o elimina permanentemente il tuo account"
+      }
+    },
+    "resetData": {
+      "title": "Resetta Tutti i Dati",
+      "description": "Elimina tutti i tuoi dati di allenamento e ricomincia dall'onboarding. Il tuo account rimarrà attivo.",
+      "button": "Resetta Dati",
+      "confirmMessage": "Questo eliminerà permanentemente:",
+      "deleteItems": {
+        "profile": "Il tuo profilo utente e preferenze",
+        "workoutHistory": "Tutta la cronologia allenamenti e serie registrate",
+        "splitPlans": "Tutti i piani split e dati di allenamento",
+        "customExercises": "Esercizi personalizzati che hai creato"
+      },
+      "accountRemains": "Il tuo account e email rimarranno attivi. Rifarai l'onboarding.",
+      "confirmButton": "Conferma Reset",
+      "resetting": "Reset in corso...",
+      "cancel": "Annulla",
+      "errorResetting": "Errore nel reset dei dati",
+      "unknownError": "Errore sconosciuto"
+    },
+    "deleteAccount": {
+      "title": "Zona Pericolosa",
+      "description": "Elimina permanentemente il tuo account e tutti i dati associati. Questa azione non può essere annullata.",
+      "button": "Elimina Account",
+      "warningMessage": "⚠️ ATTENZIONE: Questa azione NON può essere annullata!",
+      "confirmMessage": "Questo eliminerà permanentemente:",
+      "deleteItems": {
+        "profile": "Il tuo profilo utente e preferenze",
+        "workoutHistory": "Tutta la cronologia allenamenti e serie registrate",
+        "splitPlans": "Tutti i piani split e dati di allenamento",
+        "customExercises": "Esercizi personalizzati che hai creato",
+        "account": "Il tuo intero account",
+        "accountNote": "(verrai disconnesso)"
+      },
+      "canRecreate": "Potrai creare un nuovo account con la stessa email dopo l'eliminazione.",
+      "typeDeleteLabel": "Digita",
+      "typeDeleteSuffix": "per confermare:",
+      "confirmButton": "Elimina il Mio Account Permanentemente",
+      "deleting": "Eliminazione Account...",
+      "cancel": "Annulla",
+      "validationError": "Devi digitare esattamente \"DELETE\" (tutto maiuscolo) per procedere",
+      "errorDeleting": "Errore nell'eliminazione dell'account",
+      "unknownError": "Errore sconosciuto"
+    },
+    "caloricPhase": {
+      "title": "Fase Calorica",
+      "description": "La tua fase nutrizionale attuale influenza il volume di allenamento, la selezione degli esercizi e i range di ripetizioni",
+      "active": "✓ Attivo",
+      "phases": {
+        "bulk": {
+          "name": "Bulk",
+          "description": "Eccedenza calorica per guadagno muscolare",
+          "details": "Ottimizza per la massima crescita muscolare con maggiore tolleranza al volume (+15-20% serie)"
+        },
+        "cut": {
+          "name": "Cut",
+          "description": "Deficit calorico per perdita di grasso",
+          "details": "Priorità alla preservazione muscolare con riduzione strategica del volume (-15-20% serie) ed esercizi ad alto S:F"
+        },
+        "maintenance": {
+          "name": "Maintenance",
+          "description": "Apporto calorico bilanciato",
+          "details": "Mantiene massa muscolare e forza con approccio di allenamento standard"
+        }
+      },
+      "input": {
+        "label": "Specifica la tua {type} calorica giornaliera (opzionale)",
+        "surplus": "eccedenza",
+        "deficit": "deficit",
+        "unit": "kcal",
+        "placeholder": {
+          "bulk": "Es. +500",
+          "cut": "Es. -300"
+        },
+        "help": {
+          "bulk": "Valore positivo per eccedenza calorica (es. +500 significa mangiare 500 kcal sopra il mantenimento)",
+          "cut": "Valore negativo per deficit calorico (es. -300 significa mangiare 300 kcal sotto il mantenimento)"
+        },
+        "range": "Lascia vuoto se preferisci non specificarlo. Range: da -1500 a +1500 kcal."
+      },
+      "messages": {
+        "phaseUpdated": "Fase calorica aggiornata a {phase}. Il tuo prossimo allenamento rifletterà questi cambiamenti.",
+        "updateFailed": "Impossibile aggiornare la fase calorica. Riprova.",
+        "invalidNumber": "Inserisci un numero valido",
+        "rangeError": "L'apporto calorico deve essere tra -1500 e +1500 kcal",
+        "intakeUpdated": "Apporto calorico aggiornato a {value} kcal",
+        "intakeUpdateFailed": "Impossibile aggiornare l'apporto calorico"
+      },
+      "tip": "💡 Consiglio: Cambia fase quando i tuoi obiettivi nutrizionali cambiano (es. iniziare un cut dopo una stagione di bulk)"
+    },
+    "weakPoints": {
+      "title": "Punti Deboli",
+      "description": "Identifica i gruppi muscolari che vuoi dare priorità (max 3)",
+      "editButton": "Modifica",
+      "saveButton": "Salva Modifiche",
+      "savingButton": "Salvataggio...",
+      "cancelButton": "Annulla",
+      "emptyState": "Nessun punto debole selezionato",
+      "maxWeakPointsError": "Massimo 3 punti deboli consentiti",
+      "updateSuccess": "Punti deboli aggiornati con successo!",
+      "updateError": "Impossibile aggiornare i punti deboli",
+      "muscles": {
+        "chestUpper": "Petto Alto",
+        "chestLower": "Petto Basso",
+        "shoulders": "Spalle",
+        "backWidth": "Dorsali Larghezza",
+        "backThickness": "Dorsali Spessore",
+        "biceps": "Bicipiti",
+        "triceps": "Tricipiti",
+        "quads": "Quadricipiti",
+        "hamstrings": "Femorali",
+        "glutes": "Glutei",
+        "calves": "Polpacci",
+        "abs": "Addominali"
+      }
+    },
+    "equipment": {
+      "title": "Inventario Attrezzatura",
+      "description": "Seleziona tutta l'attrezzatura a cui hai accesso. Questo ci aiuta a generare allenamenti personalizzati in base alla tua attrezzatura disponibile.",
+      "saveButton": "Salva Modifiche",
+      "savingButton": "Salvataggio...",
+      "savedButton": "Salvato!",
+      "itemsSelected": "{count} elementi selezionati",
+      "saveError": "Impossibile salvare l'attrezzatura",
+      "genericError": "Si è verificato un errore durante il salvataggio"
+    },
+    "customEquipment": {
+      "title": "Attrezzatura Personalizzata",
+      "description": "Aggiungi attrezzatura che non è nella nostra lista standard. L'AI la convaliderà e suggerirà esercizi.",
+      "inputPlaceholder": "Inserisci nome attrezzatura (es. 'Trap Bar', 'Vogatore Concept2')",
+      "clearButton": "Cancella e ricomincia",
+      "validateButton": "Convalida",
+      "validating": "Convalida in corso...",
+      "exampleExercises": "Esercizi di esempio:",
+      "suggestions": "Suggerimenti:",
+      "addButton": "Aggiungi alla Mia Attrezzatura",
+      "adding": "Aggiunta in corso...",
+      "yourEquipment": "La Tua Attrezzatura Personalizzata",
+      "customBadge": "Personalizzato",
+      "unverifiedBadge": "Non Verificato",
+      "errors": {
+        "validationFailed": "Impossibile convalidare l'attrezzatura",
+        "validationError": "Si è verificato un errore durante la convalida",
+        "addFailed": "Impossibile aggiungere l'attrezzatura",
+        "addError": "Si è verificato un errore durante l'aggiunta dell'attrezzatura",
+        "removeFailed": "Impossibile rimuovere l'attrezzatura",
+        "removeError": "Si è verificato un errore durante la rimozione dell'attrezzatura"
+      }
+    },
+    "limitations": {
+      "title": "Limitazioni Fisiche e Infortuni",
+      "description": "Traccia infortuni, dolori o limitazioni. L'AI adatterà gli allenamenti per evitare di aggravarli.",
+      "activeLimitations": "{count}/{max} limitazioni attive",
+      "maxReached": "(Massimo raggiunto - risolvi una per aggiungerne altre)",
+      "reportIssue": "Segnala Problema",
+      "loadingMessage": "Caricamento limitazioni...",
+      "emptyState": {
+        "emoji": "💪",
+        "title": "Nessuna limitazione attiva",
+        "description": "L'AI ti allenerà alla massima capacità"
+      },
+      "severity": {
+        "mild": {
+          "name": "Lieve",
+          "icon": "🟢",
+          "description": "L'AI preferirà esercizi alternativi quando possibile"
+        },
+        "moderate": {
+          "name": "Moderato",
+          "icon": "🟡",
+          "description": "L'AI eviterà fortemente esercizi correlati"
+        },
+        "severe": {
+          "name": "Grave",
+          "icon": "🔴",
+          "description": "L'AI eviterà completamente esercizi correlati"
+        }
+      },
+      "form": {
+        "descriptionLabel": "Descrivi il problema",
+        "descriptionRequired": "*",
+        "descriptionPlaceholder": "es. Dolore al ginocchio destro durante squat profondi, Impingement spalla sinistra su lento avanti",
+        "charactersCount": "{count}/500 caratteri",
+        "severityLabel": "Gravità",
+        "severityRequired": "*",
+        "specificExerciseLabel": "Esercizio specifico (opzionale)",
+        "specificExercisePlaceholder": "es. Squat con Bilanciere, Lento Avanti",
+        "affectedMusclesLabel": "Muscoli coinvolti (opzionale)",
+        "addButton": "Aggiungi Limitazione",
+        "cancelButton": "Annulla",
+        "saving": "Salvataggio...",
+        "infoMessage": "Sii specifico sul dolore o sulla limitazione. L'AI userà queste informazioni per evitare esercizi problematici e suggerire alternative più sicure."
+      },
+      "limitationCard": {
+        "resolvedButton": "Risolto",
+        "onExercise": "su {exerciseName}"
+      },
+      "messages": {
+        "descriptionRequired": "Descrivi l'infortunio o il dolore",
+        "addSuccess": "Limitazione aggiunta! L'AI adatterà i tuoi allenamenti.",
+        "addError": "Impossibile aggiungere la limitazione",
+        "resolveSuccess": "Limitazione risolta con successo",
+        "resolveError": "Impossibile risolvere la limitazione",
+        "loadError": "Impossibile caricare le limitazioni"
+      }
+    },
+    "approachSwitcher": {
+      "title": "Approccio di Allenamento",
+      "description": "Passa tra diverse metodologie di allenamento. La tua cronologia degli allenamenti sarà preservata.",
+      "currentLabel": "Attuale: {name}",
+      "loading": "Caricamento...",
+      "workingSets": "Serie di Lavoro:",
+      "repRange": "Range Ripetizioni:",
+      "rirTarget": "RIR Target:",
+      "learnMore": "Scopri di più",
+      "activeBadge": "Attivo",
+      "alreadyUsing": "Stai già utilizzando questo approccio",
+      "switchTitle": "Passare a {name}?",
+      "currentTo": "Attuale: {current} → Nuovo: {new}",
+      "warningTitle": "Questo farà:",
+      "warningItems": {
+        "deactivateSplit": "Disattivare il tuo piano split attuale",
+        "archiveApproach": "Archiviare il tuo approccio attuale nella cronologia",
+        "updateMethodology": "Aggiornare la tua metodologia di allenamento",
+        "preserveHistory": "Preservare tutta la tua cronologia allenamenti per l'analisi"
+      },
+      "splitSetup": {
+        "title": "Configurazione Piano Split",
+        "auto": {
+          "label": "Genera automaticamente nuovo piano split",
+          "description": "L'AI creerà uno split compatibile con {approachName}"
+        },
+        "manual": {
+          "label": "Configura split manualmente",
+          "description": "Verrai reindirizzato alla pagina di configurazione split"
+        },
+        "selectType": "Seleziona tipo di split:",
+        "pushPullLegs": "Push / Pull / Legs",
+        "upperLower": "Upper / Lower",
+        "fullBody": "Full Body"
+      },
+      "switchReason": {
+        "label": "Perché stai cambiando? (opzionale)",
+        "placeholder": "es. Voglio provare allenamento ad alta intensità, Ho bisogno di più recupero..."
+      },
+      "buttons": {
+        "cancel": "Annulla",
+        "confirmSwitch": "Conferma Cambio",
+        "switching": "Cambio in corso..."
+      },
+      "messages": {
+        "switchSuccessAuto": "Approccio di allenamento cambiato con successo! Nuovo piano split generato.",
+        "switchSuccessManual": "Approccio di allenamento cambiato con successo! Configura il tuo piano split.",
+        "switchError": "Impossibile cambiare approccio",
+        "loadError": "Impossibile caricare gli approcci"
+      }
+    },
+    "approachHistory": {
+      "title": "Cronologia Approcci",
+      "description": "Timeline degli approcci di allenamento che hai usato",
+      "loading": "Caricamento...",
+      "emptyState": "Nessuna cronologia approcci ancora",
+      "activeBadge": "Attivo",
+      "byCreator": "di {creator}",
+      "moreButton": "Altro",
+      "lessButton": "Meno",
+      "stats": {
+        "duration": "Durata",
+        "weeks": "{count} settimane",
+        "workouts": "Allenamenti",
+        "period": "Periodo"
+      },
+      "expandedSections": {
+        "philosophy": "Filosofia",
+        "switchReason": "Motivo del Cambio",
+        "notes": "Note",
+        "keyVariables": "Variabili Chiave",
+        "workingSets": "Serie di Lavoro:",
+        "rirTarget": "RIR Target:"
+      },
+      "summary": {
+        "title": "Riepilogo",
+        "totalApproaches": "Approcci Totali Usati",
+        "totalWorkouts": "Allenamenti Totali",
+        "trainingWeeks": "Settimane di Allenamento"
+      },
+      "errors": {
+        "loadError": "Impossibile caricare la cronologia"
+      }
+    },
+    "methodDetails": {
+      "loading": "Caricamento dettagli metodo...",
+      "notFound": "Metodo non trovato",
+      "byCreator": "di {creator}",
+      "sections": {
+        "philosophy": "Filosofia",
+        "trainingVariables": "Variabili di Allenamento",
+        "progressionRules": "Regole di Progressione",
+        "volumeLandmarks": "Volume Landmarks (MEV/MAV/MRV)",
+        "advancedTechniques": "Tecniche Avanzate",
+        "periodization": "Modello di Periodizzazione"
+      },
+      "variables": {
+        "setsReps": "Serie e Ripetizioni",
+        "workingSets": "Serie di lavoro",
+        "warmup": "Riscaldamento",
+        "compoundReps": "Reps composti",
+        "isolationReps": "Reps isolamento",
+        "rirTarget": "Target RIR (Ripetizioni di Riserva)",
+        "normal": "Normale",
+        "intense": "Intenso",
+        "deload": "Deload",
+        "restPeriods": "Periodi di Recupero",
+        "compoundExercises": "Esercizi composti",
+        "isolationExercises": "Esercizi isolamento",
+        "autoRegulation": "Autoregolazione",
+        "executionTempo": "Tempo di Esecuzione",
+        "eccentric": "Discesa",
+        "pauseBottom": "Pausa",
+        "concentric": "Salita",
+        "pauseTop": "Contrazione",
+        "tempoDescription": "Discesa - Pausa - Salita - Contrazione",
+        "trainingFrequency": "Frequenza di Allenamento",
+        "perMuscleGroup": "Giorni per gruppo muscolare",
+        "weeklyPattern": "Pattern settimanale",
+        "priority": "Priorità",
+        "whenToAddWeight": "Quando aumentare il peso",
+        "setProgressionStrategy": "Strategia progressione serie",
+        "deloadTriggers": "Trigger per Deload"
+      },
+      "volumeLandmarks": {
+        "mevDesc": "MEV = Minimum Effective Volume (minimo per crescita)",
+        "mavDesc": "MAV = Maximum Adaptive Volume (range ottimale)",
+        "mrvDesc": "MRV = Maximum Recoverable Volume (massimo recuperabile)",
+        "setsPerWeek": "serie/settimana"
+      },
+      "periodization": {
+        "mesocycleLength": "Lunghezza mesociclo",
+        "weeks": "settimane",
+        "accumulation": "Fase di Accumulazione",
+        "intensification": "Fase di Intensificazione",
+        "deload": "Fase di Deload",
+        "duration": "Durata:",
+        "focus": "Focus:",
+        "volume": "Volume:",
+        "baselinePercent": "{percent}% della baseline",
+        "techniquesIntroduced": "Tecniche introdotte:",
+        "frequency": "Frequenza:",
+        "volumeReduction": "Riduzione volume:",
+        "intensity": "Intensità:",
+        "phaseDuration": "Durata:"
+      },
+      "advancedTechniques": {
+        "when": "Quando:",
+        "protocol": "Protocollo:",
+        "frequency": "Frequenza:"
+      }
     }
   },
   "progress": {

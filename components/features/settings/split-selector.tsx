@@ -1,39 +1,28 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { updatePreferredSplitAction } from '@/app/actions/ai-actions'
 import type { SplitType } from '@/lib/services/muscle-groups.service'
 import { Card } from '@/components/ui/card'
 
 interface SplitOption {
   type: SplitType
-  name: string
-  description: string
   days: number
-  schedule: string
 }
 
 const SPLIT_OPTIONS: SplitOption[] = [
   {
     type: 'push_pull_legs',
-    name: 'Push / Pull / Legs',
-    description: 'Split a 3 giorni: giorni push (petto, spalle, tricipiti), pull (schiena, bicipiti) e legs (gambe)',
     days: 3,
-    schedule: 'Push → Pull → Legs',
   },
   {
     type: 'upper_lower',
-    name: 'Upper / Lower',
-    description: 'Split a 2 giorni: upper body (parte superiore) e lower body (parte inferiore)',
     days: 2,
-    schedule: 'Upper → Lower',
   },
   {
     type: 'full_body',
-    name: 'Full Body',
-    description: 'Allenamento total body ogni sessione, ideale per principianti o chi si allena 2-3 volte a settimana',
     days: 1,
-    schedule: 'Full Body',
   },
 ]
 
@@ -43,6 +32,7 @@ interface SplitSelectorProps {
 }
 
 export function SplitSelector({ userId, currentSplit }: SplitSelectorProps) {
+  const t = useTranslations('settings.splitSelector')
   const [selectedSplit, setSelectedSplit] = useState<SplitType>(
     (currentSplit as SplitType) || 'push_pull_legs'
   )
@@ -59,19 +49,19 @@ export function SplitSelector({ userId, currentSplit }: SplitSelectorProps) {
     setIsLoading(false)
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Split aggiornato con successo!' })
+      setMessage({ type: 'success', text: t('success') })
       setTimeout(() => setMessage(null), 3000)
     } else {
-      setMessage({ type: 'error', text: result.error || 'Errore durante l\'aggiornamento' })
+      setMessage({ type: 'error', text: result.error || t('error') })
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Tipo di Split</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Scegli il tipo di programmazione che preferisci per i tuoi allenamenti
+          {t('description')}
         </p>
       </div>
 
@@ -88,7 +78,7 @@ export function SplitSelector({ userId, currentSplit }: SplitSelectorProps) {
           >
             <div className="space-y-2">
               <div className="flex items-start justify-between">
-                <h4 className="font-semibold">{option.name}</h4>
+                <h4 className="font-semibold">{t(`splits.${option.type}.name`)}</h4>
                 {selectedSplit === option.type && (
                   <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
                     <svg
@@ -106,16 +96,16 @@ export function SplitSelector({ userId, currentSplit }: SplitSelectorProps) {
                 )}
               </div>
 
-              <p className="text-sm text-muted-foreground">{option.description}</p>
+              <p className="text-sm text-muted-foreground">{t(`splits.${option.type}.description`)}</p>
 
               <div className="pt-2 space-y-1">
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="font-medium">Rotazione:</span>
-                  <span className="text-muted-foreground">{option.days} giorni</span>
+                  <span className="font-medium">{t('rotation')}:</span>
+                  <span className="text-muted-foreground">{t('days', { count: option.days })}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="font-medium">Sequenza:</span>
-                  <span className="text-muted-foreground">{option.schedule}</span>
+                  <span className="font-medium">{t('sequence')}:</span>
+                  <span className="text-muted-foreground">{t(`splits.${option.type}.schedule`)}</span>
                 </div>
               </div>
             </div>
@@ -138,7 +128,7 @@ export function SplitSelector({ userId, currentSplit }: SplitSelectorProps) {
       {isLoading && (
         <div className="text-sm text-muted-foreground flex items-center gap-2">
           <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          Aggiornamento in corso...
+          {t('updating')}
         </div>
       )}
     </div>

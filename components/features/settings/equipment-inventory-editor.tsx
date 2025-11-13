@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { EquipmentSelector } from '@/components/equipment/equipment-selector'
 import { updateAvailableEquipmentAction } from '@/app/actions/ai-actions'
 import { Loader2, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface EquipmentInventoryEditorProps {
   userId: string
@@ -15,6 +16,7 @@ export function EquipmentInventoryEditor({
   userId,
   initialEquipment
 }: EquipmentInventoryEditorProps) {
+  const t = useTranslations('settings.equipment')
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>(initialEquipment)
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -36,10 +38,10 @@ export function EquipmentInventoryEditor({
         // Reset success message after 2 seconds
         setTimeout(() => setSaveSuccess(false), 2000)
       } else {
-        setError(result.error || 'Failed to save equipment')
+        setError(result.error || t('saveError'))
       }
     } catch (err) {
-      setError('An error occurred while saving')
+      setError(t('genericError'))
       console.error(err)
     } finally {
       setIsSaving(false)
@@ -49,9 +51,9 @@ export function EquipmentInventoryEditor({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Equipment Inventory</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Select all equipment you have access to. This helps us generate workouts tailored to your available equipment.
+          {t('description')}
         </p>
       </div>
 
@@ -76,20 +78,20 @@ export function EquipmentInventoryEditor({
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
+              {t('savingButton')}
             </>
           ) : saveSuccess ? (
             <>
               <Check className="w-4 h-4 mr-2" />
-              Saved!
+              {t('savedButton')}
             </>
           ) : (
-            'Save Changes'
+            t('saveButton')
           )}
         </Button>
         {hasChanges && !isSaving && (
           <span className="text-sm text-muted-foreground">
-            {selectedEquipment.length} items selected
+            {t('itemsSelected', { count: selectedEquipment.length })}
           </span>
         )}
       </div>

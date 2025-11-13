@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation"
 import { Metadata } from "next"
 import { getUser } from "@/lib/utils/auth.server"
+import { getUserLanguage } from "@/lib/utils/get-user-language"
+import { getTranslations } from "next-intl/server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { TrainingApproachService } from "@/lib/services/training-approach.service"
 import { SettingsClientWrapper } from "@/components/features/settings/settings-client-wrapper"
@@ -17,10 +19,20 @@ import { ApproachSwitcher } from "@/components/features/settings/approach-switch
 import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
 import { Card } from "@/components/ui/card"
 
-export const metadata: Metadata = {
-  title: 'Settings',
-  description: 'Customize your training preferences, manage your profile, and configure your workout experience.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const user = await getUser()
+  if (!user) {
+    return { title: 'Settings' }
+  }
+
+  const locale = await getUserLanguage(user.id)
+  const t = await getTranslations({ locale, namespace: 'settings.page.metadata' })
+
+  return {
+    title: t('title'),
+    description: t('description'),
+  }
+}
 
 export default async function SettingsPage() {
   const user = await getUser()
@@ -42,6 +54,10 @@ export default async function SettingsPage() {
         approaches => approaches.find(a => a.id === profile.approach_id)
       )
     : null
+
+  // Get translations
+  const locale = await getUserLanguage(user.id)
+  const t = await getTranslations({ locale, namespace: 'settings.page' })
 
   return (
     <SettingsClientWrapper userId={user.id}>
@@ -110,30 +126,30 @@ export default async function SettingsPage() {
           <Card className="p-6">
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold mb-2">Account Information</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('accountInfo.title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Your account details
+                  {t('accountInfo.description')}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Email</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('accountInfo.email')}</span>
                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {user.email}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-gray-700">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">User ID</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{t('accountInfo.userId')}</span>
                   <span className="text-sm font-mono text-gray-500 dark:text-gray-500">
                     {user.id.slice(0, 8)}...
                   </span>
                 </div>
                 {profile.experience_years !== null && (
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Training Experience</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('accountInfo.trainingExperience')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {profile.experience_years} {profile.experience_years === 1 ? 'year' : 'years'}
+                      {t('accountInfo.experienceYears', { years: profile.experience_years })}
                     </span>
                   </div>
                 )}
@@ -144,9 +160,9 @@ export default async function SettingsPage() {
           {/* Account Management Section */}
           <div className="pt-8 border-t-2 border-gray-300 dark:border-gray-700">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Account Management</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t('accountManagement.title')}</h2>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                Reset your training data or permanently delete your account
+                {t('accountManagement.description')}
               </p>
             </div>
 

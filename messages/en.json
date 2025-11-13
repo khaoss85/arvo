@@ -1094,6 +1094,407 @@
       "title": "Account",
       "signOut": "Sign Out",
       "deleteAccount": "Delete Account"
+    },
+    "splitSelector": {
+      "title": "Split Type",
+      "description": "Choose the training split you prefer for your workouts",
+      "rotation": "Rotation",
+      "days": "{count} {count, plural, one {day} other {days}}",
+      "sequence": "Sequence",
+      "success": "Split updated successfully!",
+      "error": "Error during update",
+      "updating": "Updating...",
+      "splits": {
+        "push_pull_legs": {
+          "name": "Push / Pull / Legs",
+          "description": "3-day split: push days (chest, shoulders, triceps), pull days (back, biceps), and leg days",
+          "schedule": "Push → Pull → Legs"
+        },
+        "upper_lower": {
+          "name": "Upper / Lower",
+          "description": "2-day split: upper body and lower body workouts",
+          "schedule": "Upper → Lower"
+        },
+        "full_body": {
+          "name": "Full Body",
+          "description": "Full body workout each session, ideal for beginners or those training 2-3 times per week",
+          "schedule": "Full Body"
+        }
+      }
+    },
+    "page": {
+      "metadata": {
+        "title": "Settings",
+        "description": "Customize your training preferences, manage your profile, and configure your workout experience."
+      },
+      "accountInfo": {
+        "title": "Account Information",
+        "description": "Your account details",
+        "email": "Email",
+        "userId": "User ID",
+        "trainingExperience": "Training Experience",
+        "experienceYears": "{years, plural, one {# year} other {# years}}"
+      },
+      "accountManagement": {
+        "title": "Account Management",
+        "description": "Reset your training data or permanently delete your account"
+      }
+    },
+    "resetData": {
+      "title": "Reset All Data",
+      "description": "Delete all your training data and restart from onboarding. Your account will remain active.",
+      "button": "Reset Data",
+      "confirmMessage": "This will permanently delete:",
+      "deleteItems": {
+        "profile": "Your user profile and preferences",
+        "workoutHistory": "All workout history and sets logged",
+        "splitPlans": "All split plans and training data",
+        "customExercises": "Custom exercises you've created"
+      },
+      "accountRemains": "Your account and email will remain active. You'll go through onboarding again.",
+      "confirmButton": "Confirm Reset",
+      "resetting": "Resetting...",
+      "cancel": "Cancel",
+      "errorResetting": "Error resetting data",
+      "unknownError": "Unknown error"
+    },
+    "deleteAccount": {
+      "title": "Danger Zone",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "button": "Delete Account",
+      "warningMessage": "⚠️ WARNING: This action CANNOT be undone!",
+      "confirmMessage": "This will permanently delete:",
+      "deleteItems": {
+        "profile": "Your user profile and preferences",
+        "workoutHistory": "All workout history and sets logged",
+        "splitPlans": "All split plans and training data",
+        "customExercises": "Custom exercises you've created",
+        "account": "Your entire account",
+        "accountNote": "(you will be signed out)"
+      },
+      "canRecreate": "You can create a new account with the same email after deletion.",
+      "typeDeleteLabel": "Type",
+      "typeDeleteSuffix": "to confirm:",
+      "confirmButton": "Delete My Account Permanently",
+      "deleting": "Deleting Account...",
+      "cancel": "Cancel",
+      "validationError": "You must type exactly \"DELETE\" (all caps) to proceed",
+      "errorDeleting": "Error deleting account",
+      "unknownError": "Unknown error"
+    },
+    "caloricPhase": {
+      "title": "Caloric Phase",
+      "description": "Your current nutritional phase influences workout volume, exercise selection, and rep ranges",
+      "active": "✓ Active",
+      "phases": {
+        "bulk": {
+          "name": "Bulk",
+          "description": "Caloric surplus for muscle gain",
+          "details": "Optimizes for maximum muscle building with higher volume tolerance (+15-20% sets)"
+        },
+        "cut": {
+          "name": "Cut",
+          "description": "Caloric deficit for fat loss",
+          "details": "Prioritizes muscle preservation with strategic volume reduction (-15-20% sets) and high S:F exercises"
+        },
+        "maintenance": {
+          "name": "Maintenance",
+          "description": "Balanced caloric intake",
+          "details": "Maintains muscle and strength with standard training approach"
+        }
+      },
+      "input": {
+        "label": "Specify your daily caloric {type} (optional)",
+        "surplus": "surplus",
+        "deficit": "deficit",
+        "unit": "kcal",
+        "placeholder": {
+          "bulk": "E.g., +500",
+          "cut": "E.g., -300"
+        },
+        "help": {
+          "bulk": "Positive value for caloric surplus (e.g., +500 means eating 500 kcal above maintenance)",
+          "cut": "Negative value for caloric deficit (e.g., -300 means eating 300 kcal below maintenance)"
+        },
+        "range": "Leave empty if you prefer not to specify. Range: -1500 to +1500 kcal."
+      },
+      "messages": {
+        "phaseUpdated": "Caloric phase updated to {phase}. Your next workout will reflect these changes.",
+        "updateFailed": "Failed to update caloric phase. Please try again.",
+        "invalidNumber": "Please enter a valid number",
+        "rangeError": "Caloric intake must be between -1500 and +1500 kcal",
+        "intakeUpdated": "Caloric intake updated to {value} kcal",
+        "intakeUpdateFailed": "Failed to update caloric intake"
+      },
+      "tip": "💡 Tip: Switch phases when your nutrition goals change (e.g., starting a cut after a bulk season)"
+    },
+    "weakPoints": {
+      "title": "Weak Points",
+      "description": "Identify muscle groups you want to prioritize (max 3)",
+      "editButton": "Edit",
+      "saveButton": "Save Changes",
+      "savingButton": "Saving...",
+      "cancelButton": "Cancel",
+      "emptyState": "No weak points selected",
+      "maxWeakPointsError": "Maximum 3 weak points allowed",
+      "updateSuccess": "Weak points updated successfully!",
+      "updateError": "Failed to update weak points",
+      "muscles": {
+        "chestUpper": "Upper Chest",
+        "chestLower": "Lower Chest",
+        "shoulders": "Shoulders",
+        "backWidth": "Back Width",
+        "backThickness": "Back Thickness",
+        "biceps": "Biceps",
+        "triceps": "Triceps",
+        "quads": "Quadriceps",
+        "hamstrings": "Hamstrings",
+        "glutes": "Glutes",
+        "calves": "Calves",
+        "abs": "Abs"
+      }
+    },
+    "equipment": {
+      "title": "Equipment Inventory",
+      "description": "Select all equipment you have access to. This helps us generate workouts tailored to your available equipment.",
+      "saveButton": "Save Changes",
+      "savingButton": "Saving...",
+      "savedButton": "Saved!",
+      "itemsSelected": "{count} items selected",
+      "saveError": "Failed to save equipment",
+      "genericError": "An error occurred while saving"
+    },
+    "customEquipment": {
+      "title": "Custom Equipment",
+      "description": "Add equipment that's not in our standard list. AI will validate and suggest exercises.",
+      "inputPlaceholder": "Enter equipment name (e.g., 'Hex Bar', 'Concept2 Rower')",
+      "clearButton": "Clear and start over",
+      "validateButton": "Validate",
+      "validating": "Validating...",
+      "exampleExercises": "Example exercises:",
+      "suggestions": "Suggestions:",
+      "addButton": "Add to My Equipment",
+      "adding": "Adding...",
+      "yourEquipment": "Your Custom Equipment",
+      "customBadge": "Custom",
+      "unverifiedBadge": "Unverified",
+      "errors": {
+        "validationFailed": "Failed to validate equipment",
+        "validationError": "An error occurred during validation",
+        "addFailed": "Failed to add equipment",
+        "addError": "An error occurred while adding equipment",
+        "removeFailed": "Failed to remove equipment",
+        "removeError": "An error occurred while removing equipment"
+      }
+    },
+    "limitations": {
+      "title": "Physical Limitations & Injuries",
+      "description": "Track injuries, pain, or limitations. The AI will adapt workouts to avoid aggravating them.",
+      "activeLimitations": "{count}/{max} active limitations",
+      "maxReached": "(Maximum reached - resolve one to add more)",
+      "reportIssue": "Report Issue",
+      "loadingMessage": "Loading limitations...",
+      "emptyState": {
+        "emoji": "💪",
+        "title": "No active limitations",
+        "description": "The AI will train you at full capacity"
+      },
+      "severity": {
+        "mild": {
+          "name": "Mild",
+          "icon": "🟢",
+          "description": "AI will prefer alternative exercises when possible"
+        },
+        "moderate": {
+          "name": "Moderate",
+          "icon": "🟡",
+          "description": "AI will strongly avoid related exercises"
+        },
+        "severe": {
+          "name": "Severe",
+          "icon": "🔴",
+          "description": "AI will completely avoid related exercises"
+        }
+      },
+      "form": {
+        "descriptionLabel": "Describe the issue",
+        "descriptionRequired": "*",
+        "descriptionPlaceholder": "e.g., Right knee pain during deep squats, Left shoulder impingement on overhead press",
+        "charactersCount": "{count}/500 characters",
+        "severityLabel": "Severity",
+        "severityRequired": "*",
+        "specificExerciseLabel": "Specific exercise (optional)",
+        "specificExercisePlaceholder": "e.g., Barbell Squat, Overhead Press",
+        "affectedMusclesLabel": "Affected muscles (optional)",
+        "addButton": "Add Limitation",
+        "cancelButton": "Cancel",
+        "saving": "Saving...",
+        "infoMessage": "Be specific about the pain or limitation. The AI will use this to avoid problematic exercises and suggest safer alternatives."
+      },
+      "limitationCard": {
+        "resolvedButton": "Resolved",
+        "onExercise": "on {exerciseName}"
+      },
+      "messages": {
+        "descriptionRequired": "Please describe the injury or pain",
+        "addSuccess": "Limitation added! The AI will adapt your workouts.",
+        "addError": "Failed to add limitation",
+        "resolveSuccess": "Limitation resolved successfully",
+        "resolveError": "Failed to resolve limitation",
+        "loadError": "Failed to load limitations"
+      }
+    },
+    "approachSwitcher": {
+      "title": "Training Approach",
+      "description": "Switch between different training methodologies. Your workout history will be preserved.",
+      "currentLabel": "Current: {name}",
+      "loading": "Loading...",
+      "workingSets": "Working Sets:",
+      "repRange": "Rep Range:",
+      "rirTarget": "RIR Target:",
+      "learnMore": "Learn more",
+      "activeBadge": "Active",
+      "alreadyUsing": "You are already using this approach",
+      "switchTitle": "Switch to {name}?",
+      "currentTo": "Current: {current} → New: {new}",
+      "warningTitle": "This will:",
+      "warningItems": {
+        "deactivateSplit": "Deactivate your current split plan",
+        "archiveApproach": "Archive your current approach in history",
+        "updateMethodology": "Update your training methodology",
+        "preserveHistory": "Preserve all your workout history for analysis"
+      },
+      "splitSetup": {
+        "title": "Split Plan Setup",
+        "auto": {
+          "label": "Auto-generate new split plan",
+          "description": "AI will create a split compatible with {approachName}"
+        },
+        "manual": {
+          "label": "Configure split manually",
+          "description": "You'll be redirected to split configuration page"
+        },
+        "selectType": "Select split type:",
+        "pushPullLegs": "Push / Pull / Legs",
+        "upperLower": "Upper / Lower",
+        "fullBody": "Full Body"
+      },
+      "switchReason": {
+        "label": "Why are you switching? (optional)",
+        "placeholder": "e.g., Want to try high intensity training, Need more recovery time..."
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "confirmSwitch": "Confirm Switch",
+        "switching": "Switching..."
+      },
+      "messages": {
+        "switchSuccessAuto": "Training approach switched successfully! New split plan generated.",
+        "switchSuccessManual": "Training approach switched successfully! Please configure your split plan.",
+        "switchError": "Failed to switch approach",
+        "loadError": "Failed to load approaches"
+      }
+    },
+    "approachHistory": {
+      "title": "Approach History",
+      "description": "Timeline of training approaches you've used",
+      "loading": "Loading...",
+      "emptyState": "No approach history yet",
+      "activeBadge": "Active",
+      "byCreator": "by {creator}",
+      "moreButton": "More",
+      "lessButton": "Less",
+      "stats": {
+        "duration": "Duration",
+        "weeks": "{count} weeks",
+        "workouts": "Workouts",
+        "period": "Period"
+      },
+      "expandedSections": {
+        "philosophy": "Philosophy",
+        "switchReason": "Switch Reason",
+        "notes": "Notes",
+        "keyVariables": "Key Variables",
+        "workingSets": "Working Sets:",
+        "rirTarget": "RIR Target:"
+      },
+      "summary": {
+        "title": "Summary",
+        "totalApproaches": "Total Approaches Used",
+        "totalWorkouts": "Total Workouts",
+        "trainingWeeks": "Training Weeks"
+      },
+      "errors": {
+        "loadError": "Failed to load history"
+      }
+    },
+    "methodDetails": {
+      "loading": "Loading method details...",
+      "notFound": "Method not found",
+      "byCreator": "by {creator}",
+      "sections": {
+        "philosophy": "Philosophy",
+        "trainingVariables": "Training Variables",
+        "progressionRules": "Progression Rules",
+        "volumeLandmarks": "Volume Landmarks (MEV/MAV/MRV)",
+        "advancedTechniques": "Advanced Techniques",
+        "periodization": "Periodization Model"
+      },
+      "variables": {
+        "setsReps": "Sets and Repetitions",
+        "workingSets": "Working sets",
+        "warmup": "Warmup",
+        "compoundReps": "Compound reps",
+        "isolationReps": "Isolation reps",
+        "rirTarget": "Target RIR (Reps in Reserve)",
+        "normal": "Normal",
+        "intense": "Intense",
+        "deload": "Deload",
+        "restPeriods": "Rest Periods",
+        "compoundExercises": "Compound exercises",
+        "isolationExercises": "Isolation exercises",
+        "autoRegulation": "Auto-regulation",
+        "executionTempo": "Execution Tempo",
+        "eccentric": "Eccentric",
+        "pauseBottom": "Pause",
+        "concentric": "Concentric",
+        "pauseTop": "Squeeze",
+        "tempoDescription": "Eccentric - Pause - Concentric - Top",
+        "trainingFrequency": "Training Frequency",
+        "perMuscleGroup": "Days per muscle group",
+        "weeklyPattern": "Weekly pattern",
+        "priority": "Priority",
+        "whenToAddWeight": "When to add weight",
+        "setProgressionStrategy": "Set progression strategy",
+        "deloadTriggers": "Deload Triggers"
+      },
+      "volumeLandmarks": {
+        "mevDesc": "MEV = Minimum Effective Volume (minimum for growth)",
+        "mavDesc": "MAV = Maximum Adaptive Volume (optimal range)",
+        "mrvDesc": "MRV = Maximum Recoverable Volume (maximum recoverable)",
+        "setsPerWeek": "sets/week"
+      },
+      "periodization": {
+        "mesocycleLength": "Mesocycle length",
+        "weeks": "weeks",
+        "accumulation": "Accumulation Phase",
+        "intensification": "Intensification Phase",
+        "deload": "Deload Phase",
+        "duration": "Duration:",
+        "focus": "Focus:",
+        "volume": "Volume:",
+        "baselinePercent": "{percent}% of baseline",
+        "techniquesIntroduced": "Techniques introduced:",
+        "frequency": "Frequency:",
+        "volumeReduction": "Volume reduction:",
+        "intensity": "Intensity:",
+        "phaseDuration": "Duration:"
+      },
+      "advancedTechniques": {
+        "when": "When:",
+        "protocol": "Protocol:",
+        "frequency": "Frequency:"
+      }
     }
   },
   "progress": {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { ApproachDetails } from '@/components/features/onboarding/approach-details'
@@ -30,6 +31,7 @@ export function ApproachSwitcher({
   currentApproachId,
   currentApproachName
 }: ApproachSwitcherProps) {
+  const t = useTranslations('settings.approachSwitcher')
   const [approaches, setApproaches] = useState<TrainingApproach[]>([])
   const [selectedApproach, setSelectedApproach] = useState<TrainingApproach | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -56,13 +58,13 @@ export function ApproachSwitcher({
     if (result.success && result.data) {
       setApproaches(result.data)
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to load approaches' })
+      setMessage({ type: 'error', text: result.error || t('messages.loadError') })
     }
   }
 
   const handleSelectApproach = (approach: TrainingApproach) => {
     if (approach.id === currentApproachId) {
-      setMessage({ type: 'error', text: 'You are already using this approach' })
+      setMessage({ type: 'error', text: t('alreadyUsing') })
       setTimeout(() => setMessage(null), 3000)
       return
     }
@@ -93,8 +95,8 @@ export function ApproachSwitcher({
       setMessage({
         type: 'success',
         text: splitSetupType === 'auto'
-          ? 'Training approach switched successfully! New split plan generated.'
-          : 'Training approach switched successfully! Please configure your split plan.'
+          ? t('messages.switchSuccessAuto')
+          : t('messages.switchSuccessManual')
       })
 
       // Reload approaches to update UI
@@ -112,7 +114,7 @@ export function ApproachSwitcher({
         }, 2000)
       }
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to switch approach' })
+      setMessage({ type: 'error', text: result.error || t('messages.switchError') })
     }
 
     // Reset form
@@ -138,14 +140,14 @@ export function ApproachSwitcher({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Training Approach</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Switch between different training methodologies. Your workout history will be preserved.
+          {t('description')}
         </p>
         {currentApproachName && (
           <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
             <CheckCircle2 className="w-4 h-4" />
-            Current: {currentApproachName}
+            {t('currentLabel', { name: currentApproachName })}
           </div>
         )}
       </div>
@@ -177,30 +179,30 @@ export function ApproachSwitcher({
                   </div>
                   {isCurrent && (
                     <div className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium">
-                      Active
+                      {t('activeBadge')}
                     </div>
                   )}
                 </div>
 
-                {approach.philosophy && (
+                {(approach.short_philosophy || approach.philosophy) && (
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {approach.philosophy}
+                    {approach.short_philosophy || approach.philosophy}
                   </p>
                 )}
 
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Working Sets:</span>
+                    <span className="text-muted-foreground">{t('workingSets')}</span>
                     <span className="font-medium">{variables?.setsPerExercise?.working || 'N/A'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Rep Range:</span>
+                    <span className="text-muted-foreground">{t('repRange')}</span>
                     <span className="font-medium">
                       {variables?.repRanges?.compound?.[0]}-{variables?.repRanges?.compound?.[1] || variables?.repRanges?.isolation?.[1] || 'N/A'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">RIR Target:</span>
+                    <span className="text-muted-foreground">{t('rirTarget')}</span>
                     <span className="font-medium">{variables?.rirTarget?.normal ?? 'N/A'}</span>
                   </div>
                 </div>
@@ -210,7 +212,7 @@ export function ApproachSwitcher({
                   className="flex items-center gap-1.5 text-xs text-primary hover:underline mt-2"
                 >
                   <Info className="w-3.5 h-3.5" />
-                  Learn more
+                  {t('learnMore')}
                 </button>
               </div>
             </Card>
@@ -224,12 +226,12 @@ export function ApproachSwitcher({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-amber-500" />
-              Switch to {selectedApproach?.name}?
+              {t('switchTitle', { name: selectedApproach?.name || '' })}
             </DialogTitle>
             <DialogDescription>
               {currentApproachName && (
                 <span className="block mb-2">
-                  Current: <strong>{currentApproachName}</strong> → New: <strong>{selectedApproach?.name}</strong>
+                  {t('currentTo', { current: currentApproachName, new: selectedApproach?.name || '' })}
                 </span>
               )}
             </DialogDescription>
@@ -239,19 +241,19 @@ export function ApproachSwitcher({
             {/* Warning section */}
             <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800">
               <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                This will:
+                {t('warningTitle')}
               </h4>
               <ul className="space-y-1 text-sm text-amber-800 dark:text-amber-200">
-                <li>• Deactivate your current split plan</li>
-                <li>• Archive your current approach in history</li>
-                <li>• Update your training methodology</li>
-                <li>• Preserve all your workout history for analysis</li>
+                <li>• {t('warningItems.deactivateSplit')}</li>
+                <li>• {t('warningItems.archiveApproach')}</li>
+                <li>• {t('warningItems.updateMethodology')}</li>
+                <li>• {t('warningItems.preserveHistory')}</li>
               </ul>
             </div>
 
             {/* Split setup option */}
             <div className="space-y-3">
-              <label className="text-base font-semibold block">Split Plan Setup</label>
+              <label className="text-base font-semibold block">{t('splitSetup.title')}</label>
               <div className="space-y-2">
                 <div className="flex items-start space-x-3 p-3 rounded-lg border">
                   <input
@@ -265,10 +267,10 @@ export function ApproachSwitcher({
                   />
                   <div className="flex-1">
                     <label htmlFor="auto" className="font-medium cursor-pointer">
-                      Auto-generate new split plan
+                      {t('splitSetup.auto.label')}
                     </label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      AI will create a split compatible with {selectedApproach?.name}
+                      {t('splitSetup.auto.description', { approachName: selectedApproach?.name || '' })}
                     </p>
                   </div>
                 </div>
@@ -284,10 +286,10 @@ export function ApproachSwitcher({
                   />
                   <div className="flex-1">
                     <label htmlFor="manual" className="font-medium cursor-pointer">
-                      Configure split manually
+                      {t('splitSetup.manual.label')}
                     </label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      You'll be redirected to split configuration page
+                      {t('splitSetup.manual.description')}
                     </p>
                   </div>
                 </div>
@@ -296,7 +298,7 @@ export function ApproachSwitcher({
               {/* Split type selector (only if auto) */}
               {splitSetupType === 'auto' && (
                 <div className="ml-7 space-y-2 pt-2">
-                  <label className="text-sm block">Select split type:</label>
+                  <label className="text-sm block">{t('splitSetup.selectType')}</label>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <input
@@ -308,7 +310,7 @@ export function ApproachSwitcher({
                         onChange={(e) => setSelectedSplitType(e.target.value as any)}
                       />
                       <label htmlFor="ppl" className="text-sm font-normal cursor-pointer">
-                        Push / Pull / Legs
+                        {t('splitSetup.pushPullLegs')}
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -321,7 +323,7 @@ export function ApproachSwitcher({
                         onChange={(e) => setSelectedSplitType(e.target.value as any)}
                       />
                       <label htmlFor="ul" className="text-sm font-normal cursor-pointer">
-                        Upper / Lower
+                        {t('splitSetup.upperLower')}
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -334,7 +336,7 @@ export function ApproachSwitcher({
                         onChange={(e) => setSelectedSplitType(e.target.value as any)}
                       />
                       <label htmlFor="fb" className="text-sm font-normal cursor-pointer">
-                        Full Body
+                        {t('splitSetup.fullBody')}
                       </label>
                     </div>
                   </div>
@@ -345,13 +347,13 @@ export function ApproachSwitcher({
             {/* Optional reason */}
             <div className="space-y-2">
               <label htmlFor="reason" className="text-sm block">
-                Why are you switching? (optional)
+                {t('switchReason.label')}
               </label>
               <textarea
                 id="reason"
                 value={switchReason}
                 onChange={(e) => setSwitchReason(e.target.value)}
-                placeholder="e.g., Want to try high intensity training, Need more recovery time..."
+                placeholder={t('switchReason.placeholder')}
                 className="w-full h-20 resize-none p-3 rounded-md border border-input bg-background text-sm"
               />
             </div>
@@ -363,7 +365,7 @@ export function ApproachSwitcher({
               onClick={() => setShowConfirmModal(false)}
               disabled={isLoading}
             >
-              Cancel
+              {t('buttons.cancel')}
             </Button>
             <Button
               onClick={handleConfirmSwitch}
@@ -372,10 +374,10 @@ export function ApproachSwitcher({
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                  Switching...
+                  {t('buttons.switching')}
                 </>
               ) : (
-                'Confirm Switch'
+                t('buttons.confirmSwitch')
               )}
             </Button>
           </DialogFooter>

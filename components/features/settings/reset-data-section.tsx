@@ -2,12 +2,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { RotateCcw, AlertTriangle } from 'lucide-react'
 import { resetUserData } from '@/app/actions/account-actions'
 
 export function ResetDataSection() {
+  const t = useTranslations('settings.resetData')
   const router = useRouter()
   const [showConfirm, setShowConfirm] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
@@ -20,7 +22,7 @@ export function ResetDataSection() {
       router.push('/onboarding/approach')
     } catch (error) {
       console.error('Reset error:', error)
-      alert(`Error resetting data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`${t('errorResetting')}: ${error instanceof Error ? error.message : t('unknownError')}`)
       setIsResetting(false)
     }
   }
@@ -32,11 +34,11 @@ export function ResetDataSection() {
           <div className="flex items-center gap-2 mb-2">
             <RotateCcw className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             <h3 className="text-lg font-semibold text-orange-600 dark:text-orange-400">
-              Reset All Data
+              {t('title')}
             </h3>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Delete all your training data and restart from onboarding. Your account will remain active.
+            {t('description')}
           </p>
         </div>
 
@@ -47,7 +49,7 @@ export function ResetDataSection() {
             onClick={() => setShowConfirm(true)}
           >
             <RotateCcw className="w-4 h-4 mr-2" />
-            Reset Data
+            {t('button')}
           </Button>
         ) : (
           <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
@@ -56,16 +58,16 @@ export function ResetDataSection() {
                 <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
-                    This will permanently delete:
+                    {t('confirmMessage')}
                   </p>
                   <ul className="text-sm text-orange-800 dark:text-orange-200 list-disc list-inside ml-2 space-y-1">
-                    <li>Your user profile and preferences</li>
-                    <li>All workout history and sets logged</li>
-                    <li>All split plans and training data</li>
-                    <li>Custom exercises you've created</li>
+                    <li>{t('deleteItems.profile')}</li>
+                    <li>{t('deleteItems.workoutHistory')}</li>
+                    <li>{t('deleteItems.splitPlans')}</li>
+                    <li>{t('deleteItems.customExercises')}</li>
                   </ul>
                   <p className="text-sm font-medium text-orange-900 dark:text-orange-100 mt-3">
-                    Your account and email will remain active. You'll go through onboarding again.
+                    {t('accountRemains')}
                   </p>
                 </div>
               </div>
@@ -77,14 +79,14 @@ export function ResetDataSection() {
                 onClick={handleReset}
                 disabled={isResetting}
               >
-                {isResetting ? 'Resetting...' : 'Confirm Reset'}
+                {isResetting ? t('resetting') : t('confirmButton')}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowConfirm(false)}
                 disabled={isResetting}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { ChevronDown, ChevronRight, BookOpen, TrendingUp, Target, Zap, Calendar } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
@@ -11,6 +12,7 @@ interface MethodDetailsProps {
 }
 
 export function MethodDetails({ approachId }: MethodDetailsProps) {
+  const t = useTranslations('settings.methodDetails')
   const [approach, setApproach] = useState<TrainingApproach | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['philosophy']))
@@ -47,7 +49,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center py-8">
-          <div className="text-gray-400">Caricamento dettagli metodo...</div>
+          <div className="text-gray-400">{t('loading')}</div>
         </div>
       </Card>
     )
@@ -56,7 +58,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
   if (!approach) {
     return (
       <Card className="p-6">
-        <div className="text-gray-400">Metodo non trovato</div>
+        <div className="text-gray-400">{t('notFound')}</div>
       </Card>
     )
   }
@@ -94,14 +96,14 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
           <h2 className="text-2xl font-bold text-white">{approach.name}</h2>
         </div>
         {approach.creator && (
-          <p className="text-sm text-gray-400">di {approach.creator}</p>
+          <p className="text-sm text-gray-400">{t('byCreator', { creator: approach.creator })}</p>
         )}
       </div>
 
       <div className="space-y-2">
         {/* Philosophy */}
         <div className="border border-gray-800 rounded-lg overflow-hidden">
-          <SectionHeader icon={BookOpen} title="Filosofia" section="philosophy" />
+          <SectionHeader icon={BookOpen} title={t('sections.philosophy')} section="philosophy" />
           {expandedSections.has('philosophy') && (
             <div className="p-4 bg-gray-900/30">
               <p className="text-gray-300 leading-relaxed">{approach.philosophy}</p>
@@ -111,27 +113,27 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
         {/* Training Variables */}
         <div className="border border-gray-800 rounded-lg overflow-hidden">
-          <SectionHeader icon={Target} title="Variabili di Allenamento" section="variables" />
+          <SectionHeader icon={Target} title={t('sections.trainingVariables')} section="variables" />
           {expandedSections.has('variables') && (
             <div className="p-4 bg-gray-900/30 space-y-4">
               {/* Sets & Reps */}
               <div>
-                <h4 className="text-sm font-semibold text-blue-300 mb-2">Serie e Ripetizioni</h4>
+                <h4 className="text-sm font-semibold text-blue-300 mb-2">{t('variables.setsReps')}</h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Serie di lavoro</div>
+                    <div className="text-gray-400">{t('variables.workingSets')}</div>
                     <div className="text-white font-semibold">{approach.variables.setsPerExercise.working} sets</div>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Riscaldamento</div>
+                    <div className="text-gray-400">{t('variables.warmup')}</div>
                     <div className="text-white font-semibold">{approach.variables.setsPerExercise.warmup}</div>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Reps composti</div>
+                    <div className="text-gray-400">{t('variables.compoundReps')}</div>
                     <div className="text-white font-semibold">{approach.variables.repRanges.compound.join('-')} reps</div>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Reps isolamento</div>
+                    <div className="text-gray-400">{t('variables.isolationReps')}</div>
                     <div className="text-white font-semibold">{approach.variables.repRanges.isolation.join('-')} reps</div>
                   </div>
                 </div>
@@ -139,18 +141,18 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
               {/* RIR */}
               <div>
-                <h4 className="text-sm font-semibold text-blue-300 mb-2">Target RIR (Reps In Reserve)</h4>
+                <h4 className="text-sm font-semibold text-blue-300 mb-2">{t('variables.rirTarget')}</h4>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Normale</div>
+                    <div className="text-gray-400">{t('variables.normal')}</div>
                     <div className="text-white font-semibold">{approach.variables.rirTarget.normal} RIR</div>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Intenso</div>
+                    <div className="text-gray-400">{t('variables.intense')}</div>
                     <div className="text-white font-semibold">{approach.variables.rirTarget.intense} RIR</div>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded">
-                    <div className="text-gray-400">Deload</div>
+                    <div className="text-gray-400">{t('variables.deload')}</div>
                     <div className="text-white font-semibold">{approach.variables.rirTarget.deload} RIR</div>
                   </div>
                 </div>
@@ -158,19 +160,19 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
               {/* Rest Periods */}
               <div>
-                <h4 className="text-sm font-semibold text-blue-300 mb-2">Periodi di Recupero</h4>
+                <h4 className="text-sm font-semibold text-blue-300 mb-2">{t('variables.restPeriods')}</h4>
                 <div className="space-y-2 text-sm">
                   <div className="bg-gray-800/50 p-3 rounded flex justify-between">
-                    <span className="text-gray-400">Esercizi composti</span>
+                    <span className="text-gray-400">{t('variables.compoundExercises')}</span>
                     <span className="text-white font-semibold">{approach.variables.restPeriods.compound.join('-')}s</span>
                   </div>
                   <div className="bg-gray-800/50 p-3 rounded flex justify-between">
-                    <span className="text-gray-400">Esercizi isolamento</span>
+                    <span className="text-gray-400">{t('variables.isolationExercises')}</span>
                     <span className="text-white font-semibold">{approach.variables.restPeriods.isolation.join('-')}s</span>
                   </div>
                   {approach.variables.restPeriods.autoRegulation && (
                     <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                      <div className="text-blue-300 text-xs mb-1">Autoregolazione</div>
+                      <div className="text-blue-300 text-xs mb-1">{t('variables.autoRegulation')}</div>
                       <div className="text-gray-300">{approach.variables.restPeriods.autoRegulation}</div>
                     </div>
                   )}
@@ -227,7 +229,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
         {/* Progression Rules */}
         <div className="border border-gray-800 rounded-lg overflow-hidden">
-          <SectionHeader icon={TrendingUp} title="Regole di Progressione" section="progression" />
+          <SectionHeader icon={TrendingUp} title={t('sections.progressionRules')} section="progression" />
           {expandedSections.has('progression') && (
             <div className="p-4 bg-gray-900/30 space-y-4">
               <div className="bg-gray-800/50 p-3 rounded">
@@ -260,7 +262,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
         {/* Volume Landmarks */}
         {approach.volumeLandmarks && (
           <div className="border border-gray-800 rounded-lg overflow-hidden">
-            <SectionHeader icon={Target} title="Volume Landmarks (MEV/MAV/MRV)" section="volume" />
+            <SectionHeader icon={Target} title={t('sections.volumeLandmarks')} section="volume" />
             {expandedSections.has('volume') && (
               <div className="p-4 bg-gray-900/30">
                 <div className="mb-3 p-3 bg-blue-900/20 rounded border border-blue-500/30">
@@ -299,7 +301,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
         {/* Advanced Techniques */}
         {approach.advancedTechniques && Object.keys(approach.advancedTechniques).length > 0 && (
           <div className="border border-gray-800 rounded-lg overflow-hidden">
-            <SectionHeader icon={Zap} title="Tecniche Avanzate" section="advanced" />
+            <SectionHeader icon={Zap} title={t('sections.advancedTechniques')} section="advanced" />
             {expandedSections.has('advanced') && (
               <div className="p-4 bg-gray-900/30 space-y-3">
                 {Object.entries(approach.advancedTechniques).map(([name, technique]) => (
@@ -332,7 +334,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
         {/* Periodization */}
         {approach.periodization && (
           <div className="border border-gray-800 rounded-lg overflow-hidden">
-            <SectionHeader icon={Calendar} title="Modello di Periodizzazione" section="periodization" />
+            <SectionHeader icon={Calendar} title={t('sections.periodization')} section="periodization" />
             {expandedSections.has('periodization') && (
               <div className="p-4 bg-gray-900/30 space-y-4">
                 {approach.periodization.mesocycleLength && (

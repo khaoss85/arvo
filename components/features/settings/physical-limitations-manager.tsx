@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus, AlertTriangle, Check, X, Info } from 'lucide-react'
@@ -31,27 +32,28 @@ interface ActiveLimitation {
 
 const MAX_LIMITATIONS = 3
 
-const SEVERITY_INFO: Record<UserSeverity, { color: string; icon: string; description: string }> = {
+const getSeverityInfo = (t: any): Record<UserSeverity, { color: string; icon: string; description: string }> => ({
   'Mild': {
     color: 'green',
-    icon: '🟢',
-    description: 'AI will prefer alternative exercises when possible'
+    icon: t('severity.mild.icon'),
+    description: t('severity.mild.description')
   },
   'Moderate': {
     color: 'orange',
-    icon: '🟡',
-    description: 'AI will strongly avoid related exercises'
+    icon: t('severity.moderate.icon'),
+    description: t('severity.moderate.description')
   },
   'Severe': {
     color: 'red',
-    icon: '🔴',
-    description: 'AI will completely avoid related exercises'
+    icon: t('severity.severe.icon'),
+    description: t('severity.severe.description')
   }
-}
+})
 
 const MEDICAL_DISCLAIMER_KEY = 'physical_limitations_disclaimer_accepted'
 
 export function PhysicalLimitationsManager({ userId }: { userId: string }) {
+  const t = useTranslations('settings.limitations')
   const [limitations, setLimitations] = useState<ActiveLimitation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
@@ -85,7 +87,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
       const proactiveLimitations = result.data.filter((l: any) => l.workout_id === null)
       setLimitations(proactiveLimitations as ActiveLimitation[])
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to load limitations' })
+      setMessage({ type: 'error', text: result.error || t('messages.loadError') })
     }
     setIsLoading(false)
   }
@@ -101,7 +103,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
 
   const handleAddLimitation = async () => {
     if (!newLimitation.description.trim()) {
-      setMessage({ type: 'error', text: 'Please describe the injury or pain' })
+      setMessage({ type: 'error', text: t('messages.descriptionRequired') })
       return
     }
 
@@ -118,12 +120,12 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
     setIsSaving(false)
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Limitation added! The AI will adapt your workouts.' })
+      setMessage({ type: 'success', text: t('messages.addSuccess') })
       setIsAdding(false)
       resetForm()
       loadLimitations()
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to add limitation' })
+      setMessage({ type: 'error', text: result.error || t('messages.addError') })
     }
   }
 
@@ -131,10 +133,10 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
     const result = await resolveLimitationAction(id)
 
     if (result.success) {
-      setMessage({ type: 'success', text: 'Limitation resolved successfully' })
+      setMessage({ type: 'success', text: t('messages.resolveSuccess') })
       loadLimitations()
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to resolve limitation' })
+      setMessage({ type: 'error', text: result.error || t('messages.resolveError') })
     }
   }
 
@@ -162,6 +164,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
 
   const SeverityBadge = ({ severity }: { severity: string }) => {
     const userSeverity = mapDatabaseSeverityToUser(severity)
+    const SEVERITY_INFO = getSeverityInfo(t)
     const info = SEVERITY_INFO[userSeverity]
 
     return (
@@ -185,18 +188,18 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
         <div className="flex-1">
           <h3 className="text-lg font-semibold flex items-center gap-2 mb-1">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            Physical Limitations & Injuries
+            {t('title')}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Track injuries, pain, or limitations. The AI will adapt workouts to avoid aggravating them.
+            {t('description')}
           </p>
           <div className="flex items-center gap-2 mt-2">
             <span className="text-xs text-muted-foreground">
-              {proactiveCount}/{MAX_LIMITATIONS} active limitations
+              {t('activeLimitations', { count: proactiveCount, max: MAX_LIMITATIONS })}
             </span>
             {!canAddMore && (
               <span className="text-xs text-orange-600 dark:text-orange-400">
-                (Maximum reached - resolve one to add more)
+                {t('maxReached')}
               </span>
             )}
           </div>
@@ -204,7 +207,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
         {!isAdding && canAddMore && (
           <Button onClick={handleReportIssueClick} variant="outline" size="sm">
             <Plus className="w-4 h-4 mr-2" />
-            Report Issue
+            {t('reportIssue')}
           </Button>
         )}
       </div>
@@ -225,7 +228,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-8 text-muted-foreground">
-          Loading limitations...
+          {t('loadingMessage')}
         </div>
       )}
 
@@ -242,7 +245,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
                       <SeverityBadge severity={limitation.severity} />
                       {limitation.exercise_name && (
                         <span className="text-xs text-muted-foreground">
-                          on {limitation.exercise_name}
+                          {t('limitationCard.onExercise', { exerciseName: limitation.exercise_name })}
                         </span>
                       )}
                     </div>
@@ -267,7 +270,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
                     className="shrink-0"
                   >
                     <Check className="w-4 h-4 mr-1" />
-                    Resolved
+                    {t('limitationCard.resolvedButton')}
                   </Button>
                 </div>
               </div>
@@ -279,12 +282,12 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
       {/* Empty State */}
       {!isLoading && limitations.length === 0 && !isAdding && (
         <div className="text-center py-8 border-2 border-dashed rounded-lg">
-          <div className="text-4xl mb-2">💪</div>
+          <div className="text-4xl mb-2">{t('emptyState.emoji')}</div>
           <p className="text-sm text-muted-foreground font-medium mb-1">
-            No active limitations
+            {t('emptyState.title')}
           </p>
           <p className="text-xs text-muted-foreground">
-            The AI will train you at full capacity
+            {t('emptyState.description')}
           </p>
         </div>
       )}
@@ -295,33 +298,34 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
           <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
             <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
             <p className="text-xs text-blue-700 dark:text-blue-300">
-              Be specific about the pain or limitation. The AI will use this to avoid problematic exercises and suggest safer alternatives.
+              {t('form.infoMessage')}
             </p>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-1.5 block">
-              Describe the issue <span className="text-red-500">*</span>
+              {t('form.descriptionLabel')} <span className="text-red-500">{t('form.descriptionRequired')}</span>
             </label>
             <textarea
               value={newLimitation.description}
               onChange={(e) => setNewLimitation({ ...newLimitation, description: e.target.value })}
-              placeholder="e.g., Right knee pain during deep squats, Left shoulder impingement on overhead press"
+              placeholder={t('form.descriptionPlaceholder')}
               className="w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               maxLength={500}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {newLimitation.description.length}/500 characters
+              {t('form.charactersCount', { count: newLimitation.description.length })}
             </p>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-2 block">
-              Severity <span className="text-red-500">*</span>
+              {t('form.severityLabel')} <span className="text-red-500">{t('form.severityRequired')}</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(SEVERITY_INFO) as UserSeverity[]).map(sev => {
+              {(Object.keys(getSeverityInfo(t)) as UserSeverity[]).map(sev => {
+                const SEVERITY_INFO = getSeverityInfo(t)
                 const info = SEVERITY_INFO[sev]
                 const isSelected = newLimitation.severity === sev
                 return (
@@ -342,26 +346,26 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
               })}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {SEVERITY_INFO[newLimitation.severity].description}
+              {getSeverityInfo(t)[newLimitation.severity].description}
             </p>
           </div>
 
           <div>
             <label className="text-sm font-medium mb-1.5 block">
-              Specific exercise (optional)
+              {t('form.specificExerciseLabel')}
             </label>
             <input
               type="text"
               value={newLimitation.exerciseName}
               onChange={(e) => setNewLimitation({ ...newLimitation, exerciseName: e.target.value })}
-              placeholder="e.g., Barbell Squat, Overhead Press"
+              placeholder={t('form.specificExercisePlaceholder')}
               className="w-full p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium mb-1.5 block">
-              Affected muscles (optional)
+              {t('form.affectedMusclesLabel')}
             </label>
             <MuscleDropdown
               selected={newLimitation.affectedMuscles}
@@ -376,11 +380,11 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
               disabled={!newLimitation.description.trim() || isSaving}
             >
               {isSaving ? (
-                <>Saving...</>
+                <>{t('form.saving')}</>
               ) : (
                 <>
                   <Check className="w-4 h-4 mr-2" />
-                  Add Limitation
+                  {t('form.addButton')}
                 </>
               )}
             </Button>
@@ -393,7 +397,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
               disabled={isSaving}
             >
               <X className="w-4 h-4 mr-2" />
-              Cancel
+              {t('form.cancelButton')}
             </Button>
           </div>
         </div>

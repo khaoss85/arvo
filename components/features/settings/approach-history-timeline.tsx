@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Calendar, TrendingUp, Clock, CheckCircle2, FileText } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { getApproachHistoryAction } from '@/app/actions/approach-actions'
@@ -27,6 +28,7 @@ interface ApproachHistoryTimelineProps {
 }
 
 export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps) {
+  const t = useTranslations('settings.approachHistory')
   const [history, setHistory] = useState<ApproachHistoryEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -47,7 +49,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
     if (result.success && result.data) {
       setHistory(result.data)
     } else {
-      setError(result.error || 'Failed to load history')
+      setError(result.error || t('errors.loadError'))
     }
   }
 
@@ -82,7 +84,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-        <p>No approach history yet</p>
+        <p>{t('emptyState')}</p>
       </div>
     )
   }
@@ -90,9 +92,9 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-2">Approach History</h3>
+        <h3 className="text-lg font-semibold mb-2">{t('title')}</h3>
         <p className="text-sm text-muted-foreground">
-          Timeline of training approaches you've used
+          {t('description')}
         </p>
       </div>
 
@@ -133,13 +135,13 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                         </h4>
                         {isActive && (
                           <span className="px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                            Active
+                            {t('activeBadge')}
                           </span>
                         )}
                       </div>
                       {entry.approach?.creator && (
                         <p className="text-xs text-muted-foreground">
-                          by {entry.approach.creator}
+                          {t('byCreator', { creator: entry.approach.creator })}
                         </p>
                       )}
                     </div>
@@ -148,7 +150,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                       onClick={() => setExpandedId(isExpanded ? null : entry.id)}
                       className="text-sm text-primary hover:underline"
                     >
-                      {isExpanded ? 'Less' : 'More'}
+                      {isExpanded ? t('lessButton') : t('moreButton')}
                     </button>
                   </div>
 
@@ -157,16 +159,16 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Duration</p>
+                        <p className="text-xs text-muted-foreground">{t('stats.duration')}</p>
                         <p className="font-medium">
-                          {entry.calculated_duration_weeks} weeks
+                          {t('stats.weeks', { count: entry.calculated_duration_weeks })}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Workouts</p>
+                        <p className="text-xs text-muted-foreground">{t('stats.workouts')}</p>
                         <p className="font-medium">
                           {entry.calculated_workouts_completed}
                         </p>
@@ -175,7 +177,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-muted-foreground" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Period</p>
+                        <p className="text-xs text-muted-foreground">{t('stats.period')}</p>
                         <p className="font-medium text-xs">
                           {formatDateRange(entry.started_at, entry.ended_at)}
                         </p>
@@ -186,11 +188,11 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                   {/* Expanded details */}
                   {isExpanded && (
                     <div className="pt-3 border-t space-y-3">
-                      {entry.approach?.philosophy && (
+                      {(entry.approach?.short_philosophy || entry.approach?.philosophy) && (
                         <div>
-                          <h5 className="text-sm font-medium mb-1">Philosophy</h5>
+                          <h5 className="text-sm font-medium mb-1">{t('expandedSections.philosophy')}</h5>
                           <p className="text-sm text-muted-foreground">
-                            {entry.approach.philosophy}
+                            {entry.approach.short_philosophy || entry.approach.philosophy}
                           </p>
                         </div>
                       )}
@@ -199,7 +201,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                         <div className="flex gap-2">
                           <FileText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
-                            <h5 className="text-sm font-medium mb-1">Switch Reason</h5>
+                            <h5 className="text-sm font-medium mb-1">{t('expandedSections.switchReason')}</h5>
                             <p className="text-sm text-muted-foreground">
                               {entry.switch_reason}
                             </p>
@@ -211,7 +213,7 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
                         <div className="flex gap-2">
                           <FileText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
-                            <h5 className="text-sm font-medium mb-1">Notes</h5>
+                            <h5 className="text-sm font-medium mb-1">{t('expandedSections.notes')}</h5>
                             <p className="text-sm text-muted-foreground">
                               {entry.notes}
                             </p>
@@ -221,16 +223,16 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
 
                       {entry.approach && (
                         <div>
-                          <h5 className="text-sm font-medium mb-2">Key Variables</h5>
+                          <h5 className="text-sm font-medium mb-2">{t('expandedSections.keyVariables')}</h5>
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div className="flex justify-between p-2 rounded bg-muted/50">
-                              <span className="text-muted-foreground">Working Sets:</span>
+                              <span className="text-muted-foreground">{t('expandedSections.workingSets')}</span>
                               <span className="font-medium">
                                 {(entry.approach.variables as any)?.setsPerExercise?.working || 'N/A'}
                               </span>
                             </div>
                             <div className="flex justify-between p-2 rounded bg-muted/50">
-                              <span className="text-muted-foreground">RIR Target:</span>
+                              <span className="text-muted-foreground">{t('expandedSections.rirTarget')}</span>
                               <span className="font-medium">
                                 {(entry.approach.variables as any)?.targetRIR?.normal ?? 'N/A'}
                               </span>
@@ -252,21 +254,21 @@ export function ApproachHistoryTimeline({ userId }: ApproachHistoryTimelineProps
         <Card className="p-4 bg-muted/30">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle2 className="w-4 h-4 text-primary" />
-            <h4 className="font-medium text-sm">Summary</h4>
+            <h4 className="font-medium text-sm">{t('summary.title')}</h4>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div>
-              <p className="text-muted-foreground">Total Approaches Used</p>
+              <p className="text-muted-foreground">{t('summary.totalApproaches')}</p>
               <p className="text-lg font-semibold">{history.length}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Total Workouts</p>
+              <p className="text-muted-foreground">{t('summary.totalWorkouts')}</p>
               <p className="text-lg font-semibold">
                 {history.reduce((sum, entry) => sum + entry.calculated_workouts_completed, 0)}
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground">Training Weeks</p>
+              <p className="text-muted-foreground">{t('summary.trainingWeeks')}</p>
               <p className="text-lg font-semibold">
                 {history.reduce((sum, entry) => sum + entry.calculated_duration_weeks, 0)}
               </p>

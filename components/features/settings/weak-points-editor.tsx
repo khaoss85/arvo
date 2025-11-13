@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { BodyMap } from '@/components/features/onboarding/body-map'
 import { updateWeakPointsAction } from '@/app/actions/ai-actions'
 import { Pencil, X, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface WeakPointsEditorProps {
   userId: string
@@ -13,6 +14,7 @@ interface WeakPointsEditorProps {
 }
 
 export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditorProps) {
+  const t = useTranslations('settings.weakPoints')
   const [isEditing, setIsEditing] = useState(false)
   const [weakPoints, setWeakPoints] = useState<string[]>(initialWeakPoints || [])
   const [tempWeakPoints, setTempWeakPoints] = useState<string[]>(initialWeakPoints || [])
@@ -24,7 +26,7 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
       setTempWeakPoints(tempWeakPoints.filter(p => p !== part))
     } else {
       if (tempWeakPoints.length >= 3) {
-        setMessage({ type: 'error', text: 'Maximum 3 weak points allowed' })
+        setMessage({ type: 'error', text: t('maxWeakPointsError') })
         setTimeout(() => setMessage(null), 3000)
         return
       }
@@ -42,10 +44,10 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
     if (result.success) {
       setWeakPoints(tempWeakPoints)
       setIsEditing(false)
-      setMessage({ type: 'success', text: 'Weak points updated successfully!' })
+      setMessage({ type: 'success', text: t('updateSuccess') })
       setTimeout(() => setMessage(null), 3000)
     } else {
-      setMessage({ type: 'error', text: result.error || 'Failed to update weak points' })
+      setMessage({ type: 'error', text: result.error || t('updateError') })
     }
   }
 
@@ -57,27 +59,27 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
 
   // Muscle group label mapping
   const muscleLabels: Record<string, string> = {
-    'chest_upper': 'Upper Chest',
-    'chest_lower': 'Lower Chest',
-    'shoulders': 'Shoulders',
-    'back_width': 'Back Width',
-    'back_thickness': 'Back Thickness',
-    'biceps': 'Biceps',
-    'triceps': 'Triceps',
-    'quads': 'Quadriceps',
-    'hamstrings': 'Hamstrings',
-    'glutes': 'Glutes',
-    'calves': 'Calves',
-    'abs': 'Abs'
+    'chest_upper': t('muscles.chestUpper'),
+    'chest_lower': t('muscles.chestLower'),
+    'shoulders': t('muscles.shoulders'),
+    'back_width': t('muscles.backWidth'),
+    'back_thickness': t('muscles.backThickness'),
+    'biceps': t('muscles.biceps'),
+    'triceps': t('muscles.triceps'),
+    'quads': t('muscles.quads'),
+    'hamstrings': t('muscles.hamstrings'),
+    'glutes': t('muscles.glutes'),
+    'calves': t('muscles.calves'),
+    'abs': t('muscles.abs')
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Weak Points</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('title')}</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Identify muscle groups you want to prioritize (max 5)
+            {t('description')}
           </p>
         </div>
         {!isEditing && (
@@ -88,7 +90,7 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
             className="flex items-center gap-2"
           >
             <Pencil className="h-4 w-4" />
-            Edit
+            {t('editButton')}
           </Button>
         )}
       </div>
@@ -120,7 +122,7 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
               className="flex items-center gap-2"
             >
               <X className="h-4 w-4" />
-              Cancel
+              {t('cancelButton')}
             </Button>
             <Button
               onClick={handleSave}
@@ -128,7 +130,7 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
               className="flex items-center gap-2"
             >
               <Check className="h-4 w-4" />
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? t('savingButton') : t('saveButton')}
             </Button>
           </div>
         </div>
@@ -136,7 +138,7 @@ export function WeakPointsEditor({ userId, initialWeakPoints }: WeakPointsEditor
         <div className="flex flex-wrap gap-2">
           {weakPoints.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              No weak points selected
+              {t('emptyState')}
             </p>
           ) : (
             weakPoints.map(part => (
