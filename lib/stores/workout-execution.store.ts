@@ -30,10 +30,12 @@ export interface ExerciseExecution {
   targetReps: [number, number]
   targetWeight: number
   completedSets: Array<{
+    id?: string // Set ID from database (for editing/deleting)
     weight: number
     reps: number
     rir: number
     mentalReadiness?: number // Optional 1-5 rating
+    notes?: string // Optional notes for the set
     loggedAt: Date
     isWarmup?: boolean // Track if this was a warmup set
   }>
@@ -85,6 +87,8 @@ interface WorkoutExecutionState {
 
   // Set logging
   logSet: (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => Promise<void>
+  editSet: (exerciseIndex: number, setIndex: number, setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; notes?: string }) => Promise<void>
+  deleteSet: (exerciseIndex: number, setIndex: number) => Promise<void>
 
   // Mental readiness tracking
   setOverallMentalReadiness: (value: number) => void
@@ -245,10 +249,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,
               completedSets: exerciseSets.map((s) => ({
+                id: s.id, // Include set ID for editing/deleting
                 weight: s.weight_actual || 0,
                 reps: s.reps_actual || 0,
                 rir: s.rir_actual || 0,
                 mentalReadiness: s.mental_readiness || undefined,
+                notes: s.notes || undefined,
                 loggedAt: s.created_at ? new Date(s.created_at) : new Date(),
                 // Note: isWarmup info is lost on resume - we rely on set_number and warmupSets length
               })),
@@ -348,7 +354,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         // Save to database
         try {
-          await SetLogService.create({
+          const createdSet = await SetLogService.create({
             workout_id: workoutId,
             exercise_id: currentExercise.exerciseId || null,
             exercise_name: currentExercise.exerciseName,
@@ -369,6 +375,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             completedSets: [
               ...currentExercise.completedSets,
               {
+                id: createdSet.id, // Save set ID for editing/deleting
                 weight: setData.weight,
                 reps: setData.reps,
                 rir: setData.rir,
@@ -398,6 +405,117 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           }
         } catch (error) {
           console.error('Failed to log set:', error)
+          throw error
+        }
+      },
+
+      // Edit a logged set
+      editSet: async (exerciseIndex: number, setIndex: number, setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; notes?: string }) => {
+        const { exercises } = get()
+        const exercise = exercises[exerciseIndex]
+
+        if (!exercise) {
+          throw new Error('Exercise not found')
+        }
+
+        const currentSet = exercise.completedSets[setIndex]
+        if (!currentSet || !currentSet.id) {
+          throw new Error('Set not found or missing ID')
+        }
+
+        try {
+          // Update in database
+          await SetLogService.update(currentSet.id, {
+            weight_actual: setData.weight,
+            reps_actual: setData.reps,
+            rir_actual: setData.rir,
+            mental_readiness: setData.mentalReadiness || null,
+            notes: setData.notes || null,
+          })
+
+          // Update local state
+          const updatedExercises = [...exercises]
+          updatedExercises[exerciseIndex] = {
+            ...exercise,
+            completedSets: exercise.completedSets.map((s, idx) =>
+              idx === setIndex
+                ? {
+                    ...s,
+                    weight: setData.weight,
+                    reps: setData.reps,
+                    rir: setData.rir,
+                    mentalReadiness: setData.mentalReadiness,
+                    notes: setData.notes,
+                  }
+                : s
+            ),
+          }
+
+          set({
+            exercises: updatedExercises,
+            lastActivityAt: new Date(),
+          })
+
+          // Clear AI suggestion as the set data changed
+          if (exerciseIndex === get().currentExerciseIndex) {
+            get().clearAISuggestion()
+          }
+        } catch (error) {
+          console.error('Failed to edit set:', error)
+          throw error
+        }
+      },
+
+      // Delete a logged set
+      deleteSet: async (exerciseIndex: number, setIndex: number) => {
+        const { exercises } = get()
+        const exercise = exercises[exerciseIndex]
+
+        if (!exercise) {
+          throw new Error('Exercise not found')
+        }
+
+        const currentSet = exercise.completedSets[setIndex]
+        if (!currentSet || !currentSet.id) {
+          throw new Error('Set not found or missing ID')
+        }
+
+        try {
+          // Delete from database
+          await SetLogService.delete(currentSet.id)
+
+          // Update local state
+          const updatedExercises = [...exercises]
+          const newCompletedSets = exercise.completedSets.filter((_, idx) => idx !== setIndex)
+
+          updatedExercises[exerciseIndex] = {
+            ...exercise,
+            completedSets: newCompletedSets,
+          }
+
+          // If this was a user-added set, decrement targetSets and userAddedSets
+          if (exercise.userAddedSets && exercise.userAddedSets > 0) {
+            const originalTargetSets = exercise.aiRecommendedSets || exercise.targetSets
+            if (newCompletedSets.length < originalTargetSets && exercise.targetSets > originalTargetSets) {
+              updatedExercises[exerciseIndex].targetSets -= 1
+              updatedExercises[exerciseIndex].userAddedSets = (exercise.userAddedSets || 1) - 1
+            }
+          }
+
+          set({
+            exercises: updatedExercises,
+            lastActivityAt: new Date(),
+          })
+
+          // Clear AI suggestion as the set data changed
+          if (exerciseIndex === get().currentExerciseIndex) {
+            get().clearAISuggestion()
+          }
+
+          // Save progress
+          await get().saveProgress()
+        } catch (error) {
+          console.error('Failed to delete set:', error)
           throw error
         }
       },

@@ -32,6 +32,12 @@
       "saved": "Salvato con successo!",
       "updated": "Aggiornato con successo!",
       "deleted": "Eliminato con successo!"
+    },
+    "actions": {
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "deleting": "Eliminazione...",
+      "confirmDelete": "Conferma Eliminazione"
     }
   },
   "auth": {
@@ -385,12 +391,31 @@
         "restSeconds": "{seconds}s di riposo prescritto",
         "defaultRestPeriod": "Periodo di riposo predefinito",
         "restDescription": "Il riposo permette il recupero di ATP per prestazioni ottimali nella prossima serie",
+        "restTimer": {
+          "status": {
+            "optimal": "Nel range ottimale",
+            "acceptable": "Variazione accettabile",
+            "warning": "Deviazione dalle linee guida dell'approccio",
+            "critical": "Significativamente fuori dal range raccomandato"
+          },
+          "recommendedRange": "Raccomandato: {min}-{max} min",
+          "original": "Originale"
+        },
         "exerciseComplete": "Esercizio Completato!",
         "greatWork": "Ottimo lavoro su {exerciseName}",
         "changeExercise": "Cambia Esercizio",
         "previous": "← Precedente",
         "gettingAiSuggestion": "Ottenimento suggerimento AI...",
-        "exerciseLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo."
+        "exerciseLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.",
+        "editSet": "Modifica serie"
+      },
+      "editSet": {
+        "title": "Modifica Serie {setNumber}",
+        "deleteConfirmMessage": "Sei sicuro di voler eliminare questa serie? L'azione non può essere annullata.",
+        "notesLabel": "Note (opzionale)",
+        "notesPlaceholder": "Aggiungi note su questa serie...",
+        "saveButton": "Salva Modifiche",
+        "deleteButton": "Elimina Serie"
       },
       "modificationWarning": {
         "approved": "Modificazione Approvata",
@@ -415,6 +440,235 @@
       "loading": "Ricerca alternative...",
       "selectAlternative": "Seleziona un esercizio alternativo",
       "keepOriginal": "Mantieni esercizio originale"
+    },
+    "components": {
+      "userModificationBadge": {
+        "compactTitle": "Hai aggiunto {count} {count, plural, one {serie extra} other {serie extra}} oltre la raccomandazione AI",
+        "extraSetsAdded": "{count} {count, plural, one {serie extra aggiunta} other {serie extra aggiunte}}"
+      },
+      "confirmDialog": {
+        "closeAriaLabel": "Chiudi",
+        "closeButtonText": "Chiudi",
+        "escHint": "ESC",
+        "enterHint": "ENTER"
+      },
+      "exerciseAnimation": {
+        "notAvailable": "Animazione non disponibile",
+        "loadingFailed": "Impossibile caricare l'animazione"
+      },
+      "exerciseAnimationModal": {
+        "exerciseVisualization": "Visualizzazione esercizio",
+        "closeAriaLabel": "Chiudi",
+        "notYetAvailable": "Animazione non ancora disponibile",
+        "buildingLibrary": "Stiamo ancora costruendo la libreria di animazioni. Torna presto!"
+      },
+      "quickAdjustments": {
+        "title": "Azioni Rapide",
+        "equipmentBusy": {
+          "title": "Attrezzatura Occupata",
+          "description": "Trova un esercizio simile con attrezzatura disponibile"
+        },
+        "weightTooHeavy": {
+          "title": "Peso Troppo Pesante",
+          "description": "Riduci il peso target del 10%"
+        },
+        "weightTooLight": {
+          "title": "Peso Troppo Leggero",
+          "description": "Aumenta il peso target del 10%"
+        },
+        "restPeriods": {
+          "title": "Periodi di Riposo",
+          "description": "Info sul riposo auto-regolato",
+          "alertMessage": "I periodi di riposo sono auto-regolati in base al tuo respiro e alla tua prontezza. Riposati quanto necessario!"
+        },
+        "cancelButton": "Annulla"
+      },
+      "workoutRationale": {
+        "title": "Perché questi esercizi?",
+        "generatingExplanation": "Generazione spiegazione...",
+        "tryAgain": "Riprova",
+        "workoutFocus": "Focus Allenamento",
+        "workoutFlow": "Flusso Allenamento",
+        "exerciseFlow": "Flusso Esercizi",
+        "exerciseBreakdown": "Dettaglio Esercizi"
+      },
+      "insightChanges": {
+        "title": "Modifiche Applicate al Workout",
+        "description": "Ho personalizzato il tuo workout in base a ciò che ho imparato su di te:",
+        "actions": {
+          "avoided": "Evitato",
+          "substituted": "Sostituito",
+          "preferred": "Preferito",
+          "adjusted": "Adattato"
+        },
+        "sourceLabels": {
+          "insight": "Insight",
+          "memory": "Memory"
+        },
+        "basedOn": "Basato su:",
+        "viewAllMemories": "Vedi tutte le Memories",
+        "understood": "Ho capito"
+      },
+      "addExerciseModal": {
+        "title": "Aggiungi Esercizio",
+        "closeAriaLabel": "Chiudi",
+        "searchPlaceholder": "Cerca esercizi...",
+        "categories": {
+          "all": "Tutti",
+          "chest": "Petto",
+          "back": "Schiena",
+          "legs": "Gambe",
+          "shoulders": "Spalle",
+          "arms": "Braccia"
+        },
+        "aiSuggestions": {
+          "title": "Esercizi Suggeriti dall'AI",
+          "analyzing": "Analisi del tuo allenamento...",
+          "noSuggestions": "Nessun suggerimento disponibile"
+        },
+        "priority": {
+          "high": "alta",
+          "medium": "media",
+          "low": "bassa"
+        },
+        "emptyState": {
+          "title": "Nessun esercizio trovato",
+          "description": "Prova a modificare la ricerca o la categoria"
+        },
+        "footer": "ESC per chiudere • Seleziona un esercizio per aggiungerlo al tuo allenamento",
+        "viewExercise": "Visualizza esercizio",
+        "viewExerciseAria": "Visualizza animazione {name}",
+        "bodyPartLabels": {
+          "general": "Generale",
+          "any": "Qualsiasi"
+        }
+      },
+      "exerciseValidation": {
+        "closeAriaLabel": "Chiudi",
+        "status": {
+          "approved": "Esercizio Approvato",
+          "caution": "Attenzione: Considera i Trade-Off",
+          "rejected": "Esercizio Non Raccomandato"
+        },
+        "sections": {
+          "aiEvaluation": "Valutazione AI",
+          "warnings": "Avvertenze",
+          "suggestions": "Suggerimenti",
+          "workoutContext": "Contesto Workout"
+        },
+        "warningSeverity": {
+          "low": "bassa",
+          "medium": "media",
+          "high": "alta"
+        },
+        "workoutBalance": {
+          "muscleOverlap": "Sovrapposizione muscolare",
+          "fatigueEstimate": "Stima affaticamento",
+          "phaseAlignment": "Allineamento fase"
+        },
+        "buttons": {
+          "close": "Chiudi",
+          "cancel": "Annulla",
+          "addExercise": "Aggiungi Esercizio",
+          "addAnyway": "Aggiungi Comunque"
+        },
+        "keyboardHints": {
+          "closeOnly": "ESC per chiudere",
+          "proceedOrCancel": "ESC per annullare • ENTER per procedere",
+          "esc": "ESC",
+          "enter": "ENTER"
+        }
+      },
+      "workoutRecap": {
+        "backToDashboard": "Torna alla Dashboard",
+        "completedWorkout": "Allenamento Completato",
+        "workout": "Allenamento",
+        "stats": {
+          "date": "Data",
+          "duration": "Durata",
+          "volume": "Volume",
+          "totalSets": "Serie Totali",
+          "unknownDate": "Data sconosciuta",
+          "na": "N/D"
+        },
+        "mentalState": {
+          "title": "Stato Mentale",
+          "readiness": "Prontezza mentale: {value}/5"
+        },
+        "muscleGroups": {
+          "title": "Gruppi Muscolari"
+        },
+        "exercises": {
+          "title": "Esercizi",
+          "titleWithCount": "Esercizi ({count})",
+          "set": "Serie {number}",
+          "sets": "{count, plural, one {serie} other {serie}}",
+          "reps": "reps",
+          "rir": "RIR: {value}"
+        },
+        "notes": {
+          "title": "Note"
+        },
+        "buttons": {
+          "viewProgress": "Visualizza Progressi"
+        }
+      },
+      "exerciseSubstitution": {
+        "title": "Cambia Esercizio",
+        "closeAriaLabel": "Chiudi",
+        "currentExercise": {
+          "label": "Esercizio Corrente",
+          "viewAnimation": "Visualizza esercizio",
+          "viewAnimationAria": "Visualizza animazione {name}"
+        },
+        "customInput": {
+          "title": "Suggerisci il Tuo",
+          "placeholder": "Digita il nome dell'esercizio o descrivi cosa vuoi...",
+          "validateButton": "Valida con AI →",
+          "validating": "Validazione con AI...",
+          "error": "Impossibile validare l'esercizio personalizzato"
+        },
+        "validation": {
+          "approved": "✓ Buono",
+          "caution": "⚠ Attenzione",
+          "notRecommended": "✗ Non raccomandato",
+          "targetWeight": "→ {weight}kg"
+        },
+        "rationalePreview": {
+          "impactTitle": "Impatto sull'Allenamento"
+        },
+        "buttons": {
+          "edit": "Modifica",
+          "select": "Seleziona →",
+          "back": "Indietro",
+          "confirmSwap": "Conferma Scambio",
+          "tryAgain": "Riprova",
+          "cancel": "Annulla"
+        },
+        "loading": {
+          "findingAlternatives": "Ricerca alternative intelligenti...",
+          "analyzingContext": "L'AI sta analizzando il tuo contesto di allenamento"
+        },
+        "suggestions": {
+          "aiTitle": "🤖 Suggerimenti AI ({count})",
+          "overallReasoning": "Ragionamento Generale",
+          "noGoodOptions": "Nessuna di queste va bene?",
+          "emailSupport": "Contatta il Supporto"
+        },
+        "confirmation": {
+          "swapTo": "Passare a {name}?",
+          "details": {
+            "sets": "Serie:",
+            "reps": "Ripetizioni:",
+            "weight": "Peso:",
+            "weightChange": "{current}kg → {target}kg"
+          }
+        },
+        "errors": {
+          "failedToLoad": "Impossibile caricare i suggerimenti",
+          "unexpectedError": "Si è verificato un errore imprevisto"
+        }
+      }
     }
   },
   "onboarding": {

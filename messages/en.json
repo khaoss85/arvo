@@ -32,6 +32,12 @@
       "saved": "Saved successfully!",
       "updated": "Updated successfully!",
       "deleted": "Deleted successfully!"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "deleting": "Deleting...",
+      "confirmDelete": "Confirm Delete"
     }
   },
   "auth": {
@@ -385,12 +391,31 @@
         "restSeconds": "{seconds}s rest prescribed",
         "defaultRestPeriod": "Default rest period",
         "restDescription": "Rest allows ATP recovery for optimal performance on your next set",
+        "restTimer": {
+          "status": {
+            "optimal": "Within optimal range",
+            "acceptable": "Acceptable variation",
+            "warning": "Deviating from approach guidelines",
+            "critical": "Significantly outside recommended range"
+          },
+          "recommendedRange": "Recommended: {min}-{max} min",
+          "original": "Original"
+        },
         "exerciseComplete": "Exercise Complete!",
         "greatWork": "Great work on {exerciseName}",
         "changeExercise": "Change Exercise",
         "previous": "← Previous",
         "gettingAiSuggestion": "Getting AI suggestion...",
-        "exerciseLimitReached": "You have reached the limit of 3 extra exercises. Remove an exercise to add a new one."
+        "exerciseLimitReached": "You have reached the limit of 3 extra exercises. Remove an exercise to add a new one.",
+        "editSet": "Edit set"
+      },
+      "editSet": {
+        "title": "Edit Set {setNumber}",
+        "deleteConfirmMessage": "Are you sure you want to delete this set? This action cannot be undone.",
+        "notesLabel": "Notes (optional)",
+        "notesPlaceholder": "Add notes about this set...",
+        "saveButton": "Save Changes",
+        "deleteButton": "Delete Set"
       },
       "modificationWarning": {
         "approved": "Modification Approved",
@@ -415,6 +440,235 @@
       "loading": "Finding alternatives...",
       "selectAlternative": "Select an alternative exercise",
       "keepOriginal": "Keep original exercise"
+    },
+    "components": {
+      "userModificationBadge": {
+        "compactTitle": "You added {count} extra {count, plural, one {set} other {sets}} beyond AI recommendation",
+        "extraSetsAdded": "{count} extra {count, plural, one {set} other {sets}} added"
+      },
+      "confirmDialog": {
+        "closeAriaLabel": "Close",
+        "closeButtonText": "Close",
+        "escHint": "ESC",
+        "enterHint": "ENTER"
+      },
+      "exerciseAnimation": {
+        "notAvailable": "Animation not available",
+        "loadingFailed": "Failed to load animation"
+      },
+      "exerciseAnimationModal": {
+        "exerciseVisualization": "Exercise visualization",
+        "closeAriaLabel": "Close",
+        "notYetAvailable": "Animation not yet available",
+        "buildingLibrary": "We're still building the animation library. Check back soon!"
+      },
+      "quickAdjustments": {
+        "title": "Quick Actions",
+        "equipmentBusy": {
+          "title": "Equipment Busy",
+          "description": "Find a similar exercise with available equipment"
+        },
+        "weightTooHeavy": {
+          "title": "Weight Too Heavy",
+          "description": "Reduce target weight by 10%"
+        },
+        "weightTooLight": {
+          "title": "Weight Too Light",
+          "description": "Increase target weight by 10%"
+        },
+        "restPeriods": {
+          "title": "Rest Periods",
+          "description": "Info about auto-regulated rest",
+          "alertMessage": "Rest periods are auto-regulated based on your breathing and readiness. Take rest as needed!"
+        },
+        "cancelButton": "Cancel"
+      },
+      "workoutRationale": {
+        "title": "Why these exercises?",
+        "generatingExplanation": "Generating explanation...",
+        "tryAgain": "Try again",
+        "workoutFocus": "Workout Focus",
+        "workoutFlow": "Workout Flow",
+        "exerciseFlow": "Exercise Flow",
+        "exerciseBreakdown": "Exercise Breakdown"
+      },
+      "insightChanges": {
+        "title": "Applied Workout Changes",
+        "description": "I personalized your workout based on what I've learned about you:",
+        "actions": {
+          "avoided": "Avoided",
+          "substituted": "Substituted",
+          "preferred": "Preferred",
+          "adjusted": "Adjusted"
+        },
+        "sourceLabels": {
+          "insight": "Insight",
+          "memory": "Memory"
+        },
+        "basedOn": "Based on:",
+        "viewAllMemories": "View All Memories",
+        "understood": "Got it"
+      },
+      "addExerciseModal": {
+        "title": "Add Exercise",
+        "closeAriaLabel": "Close",
+        "searchPlaceholder": "Search exercises...",
+        "categories": {
+          "all": "All",
+          "chest": "Chest",
+          "back": "Back",
+          "legs": "Legs",
+          "shoulders": "Shoulders",
+          "arms": "Arms"
+        },
+        "aiSuggestions": {
+          "title": "AI Suggested Exercises",
+          "analyzing": "Analyzing your workout...",
+          "noSuggestions": "No suggestions available"
+        },
+        "priority": {
+          "high": "high",
+          "medium": "medium",
+          "low": "low"
+        },
+        "emptyState": {
+          "title": "No exercises found",
+          "description": "Try adjusting your search or category"
+        },
+        "footer": "ESC to close • Select an exercise to add it to your workout",
+        "viewExercise": "View exercise",
+        "viewExerciseAria": "View {name} animation",
+        "bodyPartLabels": {
+          "general": "General",
+          "any": "Any"
+        }
+      },
+      "exerciseValidation": {
+        "closeAriaLabel": "Close",
+        "status": {
+          "approved": "Exercise Approved",
+          "caution": "Caution: Consider Trade-Offs",
+          "rejected": "Exercise Not Recommended"
+        },
+        "sections": {
+          "aiEvaluation": "AI Evaluation",
+          "warnings": "Warnings",
+          "suggestions": "Suggestions",
+          "workoutContext": "Workout Context"
+        },
+        "warningSeverity": {
+          "low": "low",
+          "medium": "medium",
+          "high": "high"
+        },
+        "workoutBalance": {
+          "muscleOverlap": "Muscle overlap",
+          "fatigueEstimate": "Fatigue estimate",
+          "phaseAlignment": "Phase alignment"
+        },
+        "buttons": {
+          "close": "Close",
+          "cancel": "Cancel",
+          "addExercise": "Add Exercise",
+          "addAnyway": "Add Anyway"
+        },
+        "keyboardHints": {
+          "closeOnly": "ESC to close",
+          "proceedOrCancel": "ESC to cancel • ENTER to proceed",
+          "esc": "ESC",
+          "enter": "ENTER"
+        }
+      },
+      "workoutRecap": {
+        "backToDashboard": "Back to Dashboard",
+        "completedWorkout": "Completed Workout",
+        "workout": "Workout",
+        "stats": {
+          "date": "Date",
+          "duration": "Duration",
+          "volume": "Volume",
+          "totalSets": "Total Sets",
+          "unknownDate": "Unknown date",
+          "na": "N/A"
+        },
+        "mentalState": {
+          "title": "Mental State",
+          "readiness": "Mental readiness: {value}/5"
+        },
+        "muscleGroups": {
+          "title": "Muscle Groups"
+        },
+        "exercises": {
+          "title": "Exercises",
+          "titleWithCount": "Exercises ({count})",
+          "set": "Set {number}",
+          "sets": "{count, plural, one {set} other {sets}}",
+          "reps": "reps",
+          "rir": "RIR: {value}"
+        },
+        "notes": {
+          "title": "Notes"
+        },
+        "buttons": {
+          "viewProgress": "View Progress"
+        }
+      },
+      "exerciseSubstitution": {
+        "title": "Change Exercise",
+        "closeAriaLabel": "Close",
+        "currentExercise": {
+          "label": "Current Exercise",
+          "viewAnimation": "View exercise",
+          "viewAnimationAria": "View {name} animation"
+        },
+        "customInput": {
+          "title": "Suggest Your Own",
+          "placeholder": "Type exercise name or describe what you want...",
+          "validateButton": "Validate with AI →",
+          "validating": "Validating with AI...",
+          "error": "Failed to validate custom exercise"
+        },
+        "validation": {
+          "approved": "✓ Good",
+          "caution": "⚠ Caution",
+          "notRecommended": "✗ Not recommended",
+          "targetWeight": "→ {weight}kg"
+        },
+        "rationalePreview": {
+          "impactTitle": "Impact on Workout"
+        },
+        "buttons": {
+          "edit": "Edit",
+          "select": "Select →",
+          "back": "Back",
+          "confirmSwap": "Confirm Swap",
+          "tryAgain": "Try Again",
+          "cancel": "Cancel"
+        },
+        "loading": {
+          "findingAlternatives": "Finding smart alternatives...",
+          "analyzingContext": "AI is analyzing your training context"
+        },
+        "suggestions": {
+          "aiTitle": "🤖 AI Suggestions ({count})",
+          "overallReasoning": "Overall Reasoning",
+          "noGoodOptions": "None of these fit?",
+          "emailSupport": "Email Support"
+        },
+        "confirmation": {
+          "swapTo": "Swap to {name}?",
+          "details": {
+            "sets": "Sets:",
+            "reps": "Reps:",
+            "weight": "Weight:",
+            "weightChange": "{current}kg → {target}kg"
+          }
+        },
+        "errors": {
+          "failedToLoad": "Failed to load suggestions",
+          "unexpectedError": "An unexpected error occurred"
+        }
+      }
     }
   },
   "onboarding": {

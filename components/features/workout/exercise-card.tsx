@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
@@ -14,11 +14,18 @@ import { AddSetButton } from './add-set-button'
 import { AddExerciseButton } from './add-exercise-button'
 import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
+import { EditSetModal } from './edit-set-modal'
 import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
+import {
+  calculateRestTimerLimits,
+  getRestTimerStatusColor,
+  inferExerciseType,
+  type RestTimerStatus
+} from '@/lib/utils/rest-timer-limits'
 
 interface ExerciseCardProps {
   exercise: ExerciseExecution
@@ -69,10 +76,12 @@ export function ExerciseCard({
   const [showTechnicalCues, setShowTechnicalCues] = useState(false)
   const [showSubstitution, setShowSubstitution] = useState(false)
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
+  const [editSetIndex, setEditSetIndex] = useState<number | null>(null)
 
   // Rest timer state
   const [isResting, setIsResting] = useState(false)
   const [restTimeRemaining, setRestTimeRemaining] = useState(0)
+  const [originalRestSeconds, setOriginalRestSeconds] = useState(0)
   const restTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [lastCompletedSetCount, setLastCompletedSetCount] = useState(0)
 
@@ -114,6 +123,7 @@ export function ExerciseCard({
       // A set was just logged - start rest timer
       const restSeconds = exercise.restSeconds || 90 // Default to 90s if not specified
       setRestTimeRemaining(restSeconds)
+      setOriginalRestSeconds(restSeconds)
       setIsResting(true)
       setLastCompletedSetCount(exercise.completedSets.length)
     }
@@ -144,6 +154,32 @@ export function ExerciseCard({
     if (restTimerRef.current) {
       clearTimeout(restTimerRef.current)
     }
+  }
+
+  // Modify rest timer by ±15 seconds
+  const modifyRestTimer = (delta: number) => {
+    setRestTimeRemaining(prev => {
+      const newValue = Math.max(15, prev + delta) // Minimum 15 seconds
+      return newValue
+    })
+  }
+
+  // Calculate rest timer limits and status
+  const getRestTimerInfo = () => {
+    if (!isResting || originalRestSeconds === 0) {
+      return null
+    }
+
+    const exerciseType = inferExerciseType(exercise.exerciseName)
+
+    const limits = calculateRestTimerLimits({
+      approachName: undefined, // TODO: Load approach name from approach_id if needed
+      exerciseType,
+      currentRestSeconds: restTimeRemaining,
+      originalRestSeconds
+    })
+
+    return limits
   }
 
   // Load exercise selection explanation
@@ -462,7 +498,7 @@ export function ExerciseCard({
               return (
                 <div
                   key={idx}
-                  className="flex items-center justify-between bg-gray-800 rounded p-3"
+                  className="flex items-center justify-between bg-gray-800 rounded p-3 group"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-300">{t('exercise.set', { number: idx + 1 })}</span>
@@ -475,9 +511,18 @@ export function ExerciseCard({
                       </span>
                     )}
                   </div>
-                  <span className="text-white font-medium">
-                    {set.weight}kg × {set.reps} @ RIR {set.rir}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-white font-medium">
+                      {set.weight}kg × {set.reps} @ RIR {set.rir}
+                    </span>
+                    <button
+                      onClick={() => setEditSetIndex(idx)}
+                      className="p-1.5 rounded hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                      title={t('exercise.editSet')}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )
             })}
@@ -518,47 +563,99 @@ export function ExerciseCard({
       )}
 
       {/* Rest Timer */}
-      {isResting && !isLastSet && (
-        <div className="mb-6 bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-500/50 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
-              <h3 className="text-lg font-medium text-amber-200">{t('exercise.restPeriod')}</h3>
-            </div>
-            <button
-              onClick={skipRest}
-              className="flex items-center gap-1 px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded text-sm text-amber-300 transition-colors"
-            >
-              <SkipForward className="w-3.5 h-3.5" />
-              {t('exercise.skip')}
-            </button>
-          </div>
+      {isResting && !isLastSet && (() => {
+        const timerInfo = getRestTimerInfo()
+        const statusColors = timerInfo ? getRestTimerStatusColor(timerInfo.status) : null
+        const hasModified = restTimeRemaining !== originalRestSeconds
 
-          {/* Countdown Display */}
-          <div className="flex flex-col items-center justify-center py-4">
-            <div className="text-6xl font-bold text-white font-mono mb-2">
-              {Math.floor(restTimeRemaining / 60)}:{String(restTimeRemaining % 60).padStart(2, '0')}
+        return (
+          <div className="mb-6 bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-500/50 rounded-lg p-6">
+            {/* Header with Skip button */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
+                <h3 className="text-lg font-medium text-amber-200">{t('exercise.restPeriod')}</h3>
+              </div>
+              <button
+                onClick={skipRest}
+                className="flex items-center gap-1 px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded text-sm text-amber-300 transition-colors"
+              >
+                <SkipForward className="w-3.5 h-3.5" />
+                {t('exercise.skip')}
+              </button>
             </div>
-            <div className="text-sm text-amber-300">
-              {exercise.restSeconds ? t('exercise.restSeconds', { seconds: exercise.restSeconds }) : t('exercise.defaultRestPeriod')}
+
+            {/* Status Badge */}
+            {timerInfo && hasModified && (
+              <div className={`mb-3 px-3 py-1.5 rounded-lg border ${statusColors?.border} ${statusColors?.bg} ${statusColors?.text} text-xs font-medium text-center`}>
+                {timerInfo.status === 'optimal' && t('restTimer.status.optimal')}
+                {timerInfo.status === 'acceptable' && t('restTimer.status.acceptable')}
+                {timerInfo.status === 'warning' && t('restTimer.status.warning')}
+                {timerInfo.status === 'critical' && t('restTimer.status.critical')}
+                {timerInfo.status === 'warning' || timerInfo.status === 'critical' ? (
+                  <span className="block mt-1 opacity-80">
+                    {t('restTimer.recommendedRange', { min: Math.floor(timerInfo.min / 60), max: Math.floor(timerInfo.max / 60) })}
+                  </span>
+                ) : null}
+              </div>
+            )}
+
+            {/* Countdown Display */}
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="text-6xl font-bold text-white font-mono mb-2">
+                {Math.floor(restTimeRemaining / 60)}:{String(restTimeRemaining % 60).padStart(2, '0')}
+              </div>
+              <div className="text-sm text-amber-300">
+                {exercise.restSeconds ? t('exercise.restSeconds', { seconds: exercise.restSeconds }) : t('exercise.defaultRestPeriod')}
+              </div>
             </div>
-          </div>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-1000 ease-linear"
-              style={{
-                width: `${exercise.restSeconds ? ((exercise.restSeconds - restTimeRemaining) / exercise.restSeconds) * 100 : 0}%`
-              }}
-            />
-          </div>
+            {/* Timer Adjustment Buttons */}
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <button
+                onClick={() => modifyRestTimer(-15)}
+                disabled={restTimeRemaining <= 15}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-600 rounded-lg text-white font-medium transition-colors active:scale-95"
+              >
+                <Minus className="w-4 h-4" />
+                <span>15s</span>
+              </button>
 
-          <p className="text-xs text-gray-400 mt-3 text-center italic">
-            {t('exercise.restDescription')}
-          </p>
-        </div>
-      )}
+              <div className="text-xs text-gray-400 font-medium min-w-[60px] text-center">
+                {hasModified ? (
+                  <span className="text-amber-400">
+                    {restTimeRemaining > originalRestSeconds ? '+' : ''}{restTimeRemaining - originalRestSeconds}s
+                  </span>
+                ) : (
+                  <span>{t('restTimer.original')}</span>
+                )}
+              </div>
+
+              <button
+                onClick={() => modifyRestTimer(15)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg text-white font-medium transition-colors active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>15s</span>
+              </button>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-1000 ease-linear"
+                style={{
+                  width: `${originalRestSeconds ? ((originalRestSeconds - restTimeRemaining) / originalRestSeconds) * 100 : 0}%`
+                }}
+              />
+            </div>
+
+            <p className="text-xs text-gray-400 mt-3 text-center italic">
+              {t('exercise.restDescription')}
+            </p>
+          </div>
+        )
+      })()}
 
       {/* Current Set Logger or Next Exercise */}
       {isLastSet ? (
@@ -699,6 +796,23 @@ export function ExerciseCard({
           totalSets: allExercises.reduce((sum, ex) => sum + ex.targetSets + (ex.userAddedSets || 0), 0),
         }}
       />
+
+      {/* Edit Set Modal */}
+      {editSetIndex !== null && exercise.completedSets[editSetIndex] && (
+        <EditSetModal
+          isOpen={true}
+          onClose={() => setEditSetIndex(null)}
+          exerciseIndex={exerciseIndex}
+          setIndex={editSetIndex}
+          setData={{
+            weight: exercise.completedSets[editSetIndex].weight,
+            reps: exercise.completedSets[editSetIndex].reps,
+            rir: exercise.completedSets[editSetIndex].rir,
+            mentalReadiness: exercise.completedSets[editSetIndex].mentalReadiness,
+            notes: exercise.completedSets[editSetIndex].notes,
+          }}
+        />
+      )}
     </div>
   )
 }
