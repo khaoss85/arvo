@@ -198,20 +198,52 @@
     "subtitle": "Let's set up your personalized training program",
     "steps": {
       "approach": {
-        "title": "Select Your Training Approach",
-        "description": "Choose the training methodology that best fits your goals"
+        "title": "Choose Your Training Philosophy",
+        "description": "Select the approach that best aligns with your training style. This will guide how the AI generates your workouts.",
+        "loading": "Loading training approaches...",
+        "noApproachesFound": "No training approaches found. Please run the seed script to populate the Kuba Method."
       },
       "split": {
         "title": "Configure Your Split",
         "description": "How many days per week do you want to train?"
       },
       "equipment": {
-        "title": "Available Equipment",
-        "description": "Select the equipment you have access to"
+        "title": "Equipment Preferences",
+        "description": "Select all the equipment you have access to. The AI will use this to generate personalized workouts.",
+        "backToWeakPoints": "Back to Weak Points",
+        "selector": {
+          "title": "Equipment Selection",
+          "itemsSelected": "{count} {count, plural, one {item} other {items}} selected",
+          "clearAll": "Clear All",
+          "continueButton": "Continue ({count} selected)"
+        }
       },
       "weakPoints": {
-        "title": "Weak Points",
-        "description": "Which muscle groups need extra attention?"
+        "title": "Identify Your Weak Points",
+        "description": "Select up to 3 muscle groups that you want to prioritize. The AI will adjust workout volume and exercise selection accordingly.",
+        "optionalNote": "This is optional - you can skip if you don't have specific weak points.",
+        "backToProfile": "Back to Profile",
+        "skipButton": "Skip (No weak points)",
+        "continueButton": "Continue with {count} {count, plural, one {selection} other {selections}}",
+        "bodyMap": {
+          "front": "Front",
+          "back": "Back",
+          "selectedWeakPoints": "Selected weak points: {count}/3",
+          "muscles": {
+            "chest_upper": "Upper Chest",
+            "chest_lower": "Lower Chest",
+            "shoulders": "Shoulders",
+            "back_width": "Back Width",
+            "back_thickness": "Back Thickness",
+            "biceps": "Biceps",
+            "triceps": "Triceps",
+            "quads": "Quadriceps",
+            "hamstrings": "Hamstrings",
+            "glutes": "Glutes",
+            "calves": "Calves",
+            "abs": "Abs"
+          }
+        }
       },
       "strength": {
         "title": "Strength Baseline",

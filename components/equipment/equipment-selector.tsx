@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { EquipmentCategory } from './equipment-category'
 import { EquipmentPresetBar } from './equipment-preset-bar'
@@ -20,6 +21,7 @@ export function EquipmentSelector({
   onComplete,
   showContinueButton = true
 }: EquipmentSelectorProps) {
+  const t = useTranslations('onboarding.equipment.selector')
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(
     new Set(initialSelection)
   )
@@ -66,10 +68,10 @@ export function EquipmentSelector({
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Equipment Selection
+              {t('title')}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {selectedCount} {selectedCount === 1 ? 'item' : 'items'} selected
+              {t('itemsSelected', { count: selectedCount })}
             </p>
           </div>
           {selectedCount > 0 && (
@@ -78,7 +80,7 @@ export function EquipmentSelector({
               size="sm"
               onClick={clearAll}
             >
-              Clear All
+              {t('clearAll')}
             </Button>
           )}
         </div>
@@ -112,7 +114,7 @@ export function EquipmentSelector({
             size="lg"
             className="w-full"
           >
-            Continue ({selectedCount} selected)
+            {t('continueButton', { count: selectedCount })}
           </Button>
         </div>
       )}

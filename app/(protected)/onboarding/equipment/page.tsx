@@ -2,11 +2,13 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { EquipmentSelector } from '@/components/equipment/equipment-selector'
 
 export default function EquipmentPreferencesPage() {
+  const t = useTranslations('onboarding.equipment')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
@@ -33,14 +35,14 @@ export default function EquipmentPreferencesPage() {
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Weak Points</span>
+          <span>{t('backToWeakPoints')}</span>
         </button>
 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Equipment Preferences
+          {t('title')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Select all the equipment you have access to. The AI will use this to generate personalized workouts.
+          {t('description')}
         </p>
       </div>
 

@@ -198,20 +198,52 @@
     "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
     "steps": {
       "approach": {
-        "title": "Seleziona il Tuo Approccio di Allenamento",
-        "description": "Scegli la metodologia di allenamento che meglio si adatta ai tuoi obiettivi"
+        "title": "Scegli la Tua Filosofia di Allenamento",
+        "description": "Seleziona l'approccio che meglio si allinea al tuo stile di allenamento. Questo guiderà come l'AI genera i tuoi allenamenti.",
+        "loading": "Caricamento approcci di allenamento...",
+        "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba."
       },
       "split": {
         "title": "Configura la Tua Suddivisione",
         "description": "Quanti giorni alla settimana vuoi allenarti?"
       },
       "equipment": {
-        "title": "Attrezzatura Disponibile",
-        "description": "Seleziona l'attrezzatura a cui hai accesso"
+        "title": "Preferenze Attrezzatura",
+        "description": "Seleziona tutta l'attrezzatura a cui hai accesso. L'AI userà queste informazioni per generare allenamenti personalizzati.",
+        "backToWeakPoints": "Torna a Punti Deboli",
+        "selector": {
+          "title": "Selezione Attrezzatura",
+          "itemsSelected": "{count} {count, plural, one {elemento} other {elementi}} selezionato",
+          "clearAll": "Cancella Tutto",
+          "continueButton": "Continua ({count} selezionati)"
+        }
       },
       "weakPoints": {
-        "title": "Punti Deboli",
-        "description": "Quali gruppi muscolari necessitano di attenzione extra?"
+        "title": "Identifica i Tuoi Punti Deboli",
+        "description": "Seleziona fino a 3 gruppi muscolari che vuoi prioritizzare. L'AI adatterà il volume di allenamento e la selezione degli esercizi di conseguenza.",
+        "optionalNote": "Questo è opzionale - puoi saltare se non hai punti deboli specifici.",
+        "backToProfile": "Torna al Profilo",
+        "skipButton": "Salta (Nessun punto debole)",
+        "continueButton": "Continua con {count} {count, plural, one {selezione} other {selezioni}}",
+        "bodyMap": {
+          "front": "Frontale",
+          "back": "Posteriore",
+          "selectedWeakPoints": "Punti deboli selezionati: {count}/3",
+          "muscles": {
+            "chest_upper": "Petto Superiore",
+            "chest_lower": "Petto Inferiore",
+            "shoulders": "Spalle",
+            "back_width": "Larghezza Schiena",
+            "back_thickness": "Spessore Schiena",
+            "biceps": "Bicipiti",
+            "triceps": "Tricipiti",
+            "quads": "Quadricipiti",
+            "hamstrings": "Femorali",
+            "glutes": "Glutei",
+            "calves": "Polpacci",
+            "abs": "Addominali"
+          }
+        }
       },
       "strength": {
         "title": "Livello di Forza Base",
