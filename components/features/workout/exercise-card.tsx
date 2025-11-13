@@ -15,6 +15,8 @@ import { AddExerciseButton } from './add-exercise-button'
 import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
+import { WarmupSkipPrompt } from './warmup-skip-prompt'
+import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
 import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
@@ -44,7 +46,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -77,11 +79,14 @@ export function ExerciseCard({
   const [showSubstitution, setShowSubstitution] = useState(false)
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [editSetIndex, setEditSetIndex] = useState<number | null>(null)
+  const [warmupSkipPromptDismissed, setWarmupSkipPromptDismissed] = useState(false)
 
   // Rest timer state
   const [isResting, setIsResting] = useState(false)
   const [restTimeRemaining, setRestTimeRemaining] = useState(0)
   const [originalRestSeconds, setOriginalRestSeconds] = useState(0)
+  const [restStartTime, setRestStartTime] = useState<number | null>(null) // Timestamp when timer started
+  const [restDuration, setRestDuration] = useState(0) // Total duration in seconds
   const restTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [lastCompletedSetCount, setLastCompletedSetCount] = useState(0)
 
@@ -98,6 +103,25 @@ export function ExerciseCard({
   // Progress tracking
   const completedWarmupSets = Math.min(exercise.completedSets.length, warmupSetsCount)
   const completedWorkingSets = Math.max(0, exercise.completedSets.length - warmupSetsCount)
+
+  // Calculate warmup skip suggestion
+  const warmupSkipSuggestion = workout ? shouldSuggestWarmupSkip(
+    exercise,
+    allExercises,
+    {
+      workout,
+      exerciseIndex,
+      totalExercises,
+      completedSetsCount: allExercises.reduce((sum, ex) => sum + ex.completedSets.length, 0),
+      mentalReadiness: overallMentalReadiness
+    }
+  ) : { shouldSuggest: false, reason: '', confidence: 'low' as const }
+
+  const showWarmupSkipPrompt =
+    warmupSetsCount > 0 &&
+    exercise.completedSets.length === 0 &&
+    warmupSkipSuggestion.shouldSuggest &&
+    !warmupSkipPromptDismissed
 
   // Fetch user demographics for personalized progression
   useEffect(() => {
@@ -122,6 +146,8 @@ export function ExerciseCard({
     if (exercise.completedSets.length > lastCompletedSetCount && !isLastSet) {
       // A set was just logged - start rest timer
       const restSeconds = exercise.restSeconds || 90 // Default to 90s if not specified
+      setRestDuration(restSeconds)
+      setRestStartTime(Date.now()) // Store when timer started
       setRestTimeRemaining(restSeconds)
       setOriginalRestSeconds(restSeconds)
       setIsResting(true)
@@ -129,39 +155,81 @@ export function ExerciseCard({
     }
   }, [exercise.completedSets.length, lastCompletedSetCount, isLastSet, exercise.restSeconds])
 
-  // Countdown timer
+  // Countdown timer - timestamp-based for background resilience
   useEffect(() => {
-    if (isResting && restTimeRemaining > 0) {
-      restTimerRef.current = setTimeout(() => {
-        setRestTimeRemaining(prev => prev - 1)
-      }, 1000)
-    } else if (restTimeRemaining === 0 && isResting) {
-      // Timer completed
-      setIsResting(false)
+    if (!isResting || !restStartTime || !restDuration) return
+
+    const updateTimer = () => {
+      const elapsed = Math.floor((Date.now() - restStartTime) / 1000)
+      const remaining = Math.max(0, restDuration - elapsed)
+
+      setRestTimeRemaining(remaining)
+
+      if (remaining === 0) {
+        setIsResting(false)
+        setRestStartTime(null)
+      }
     }
+
+    // Update immediately
+    updateTimer()
+
+    // Update every second
+    restTimerRef.current = setInterval(updateTimer, 1000)
 
     return () => {
       if (restTimerRef.current) {
-        clearTimeout(restTimerRef.current)
+        clearInterval(restTimerRef.current)
       }
     }
-  }, [isResting, restTimeRemaining])
+  }, [isResting, restStartTime, restDuration])
+
+  // Recalculate timer when page becomes visible again (handles background/standby)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isResting && restStartTime && restDuration) {
+        // Page became visible - recalculate elapsed time
+        const elapsed = Math.floor((Date.now() - restStartTime) / 1000)
+        const remaining = Math.max(0, restDuration - elapsed)
+        setRestTimeRemaining(remaining)
+
+        if (remaining === 0) {
+          setIsResting(false)
+          setRestStartTime(null)
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isResting, restStartTime, restDuration])
 
   // Skip rest function
   const skipRest = () => {
     setIsResting(false)
     setRestTimeRemaining(0)
+    setRestStartTime(null) // Clear start time
     if (restTimerRef.current) {
-      clearTimeout(restTimerRef.current)
+      clearInterval(restTimerRef.current) // Changed from clearTimeout
     }
   }
 
   // Modify rest timer by ±15 seconds
   const modifyRestTimer = (delta: number) => {
-    setRestTimeRemaining(prev => {
-      const newValue = Math.max(15, prev + delta) // Minimum 15 seconds
-      return newValue
-    })
+    if (!restStartTime || !restDuration) return
+
+    // Calculate current elapsed time
+    const currentElapsed = Math.floor((Date.now() - restStartTime) / 1000)
+    const newDuration = Math.max(15, restDuration + delta) // Minimum 15 seconds
+    const newRemaining = Math.max(15, restTimeRemaining + delta)
+
+    setRestDuration(newDuration)
+    setRestTimeRemaining(newRemaining)
+    // Adjust start time so that elapsed time matches
+    setRestStartTime(Date.now() - (currentElapsed * 1000))
   }
 
   // Calculate rest timer limits and status
@@ -390,6 +458,21 @@ export function ExerciseCard({
     }
   }
 
+
+  const handleSkipWarmup = async () => {
+    try {
+      const reason = getSkipReasonCode(warmupSkipSuggestion)
+      await skipWarmupSets(reason)
+      setWarmupSkipPromptDismissed(true)
+    } catch (error) {
+      console.error("Failed to skip warmup:", error)
+      alert(tCommon("errors.failedToSkipWarmup"))
+    }
+  }
+
+  const handleDismissSkipPrompt = () => {
+    setWarmupSkipPromptDismissed(true)
+  }
   const handleMoveToNext = () => {
     setShowSuggestion(false)
     if (exerciseIndex < totalExercises - 1) {
@@ -714,6 +797,16 @@ export function ExerciseCard({
         <>
           {!isResting && (
             <>
+              {showWarmupSkipPrompt && (
+                <WarmupSkipPrompt
+                  suggestion={warmupSkipSuggestion}
+                  warmupCount={warmupSetsCount}
+                  onSkip={handleSkipWarmup}
+                  onDismiss={handleDismissSkipPrompt}
+                  className="mb-4"
+                />
+              )}
+
               <SetLogger
                 exercise={exercise}
                 setNumber={currentSetNumber}
