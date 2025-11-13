@@ -8,6 +8,7 @@ import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import { UserProfileService } from '@/lib/services/user-profile.service'
+import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { SetLogger } from './set-logger'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AddSetButton } from './add-set-button'
@@ -94,6 +95,9 @@ export function ExerciseCard({
   const [userExperienceYears, setUserExperienceYears] = useState<number | null>(null)
   const [userAge, setUserAge] = useState<number | null>(null)
 
+  // Approach name for rest timer validation
+  const [approachName, setApproachName] = useState<string | undefined>(undefined)
+
   const warmupSetsCount = exercise.warmupSets?.length || 0
   const totalSets = warmupSetsCount + exercise.targetSets
   const currentSetNumber = exercise.completedSets.length + 1
@@ -139,6 +143,24 @@ export function ExerciseCard({
 
     fetchUserProfile()
   }, [userId])
+
+  // Fetch approach name for rest timer validation
+  useEffect(() => {
+    const fetchApproachName = async () => {
+      if (!approachId) return
+
+      try {
+        const approach = await TrainingApproachService.getById(approachId)
+        if (approach) {
+          setApproachName(approach.name)
+        }
+      } catch (error) {
+        console.error('Failed to fetch approach name for rest timer validation:', error)
+      }
+    }
+
+    fetchApproachName()
+  }, [approachId])
 
   // Rest timer management - start when a new set is completed
   useEffect(() => {
@@ -241,7 +263,7 @@ export function ExerciseCard({
     const exerciseType = inferExerciseType(exercise.exerciseName)
 
     const limits = calculateRestTimerLimits({
-      approachName: undefined, // TODO: Load approach name from approach_id if needed
+      approachName,
       exerciseType,
       currentRestSeconds: restTimeRemaining,
       originalRestSeconds

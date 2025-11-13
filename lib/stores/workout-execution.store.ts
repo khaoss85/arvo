@@ -163,6 +163,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             const mapped = {
               exerciseId: ex.id || null,
               exerciseName: ex.exerciseName || ex.name,
+              equipmentVariant: ex.equipmentVariant || ex.equipment,
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,
@@ -171,6 +172,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               technicalCues: ex.technicalCues || [],
               warmupSets: ex.warmupSets || [],
               setGuidance: ex.setGuidance || [],
+              tempo: ex.tempo,
+              restSeconds: ex.restSeconds || 90, // Default to 90s if not specified by approach
               animationUrl,
               hasAnimation: !!animationUrl,
             }
@@ -246,6 +249,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             return {
               exerciseId: ex.id || null,
               exerciseName: ex.exerciseName || ex.name,
+              equipmentVariant: ex.equipmentVariant || ex.equipment,
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,
@@ -263,6 +267,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               technicalCues: ex.technicalCues || [],
               warmupSets: ex.warmupSets || [],
               setGuidance: ex.setGuidance || [],
+              tempo: ex.tempo,
+              restSeconds: ex.restSeconds || 90, // Default to 90s if not specified by approach
               animationUrl,
               hasAnimation: !!animationUrl,
             }
