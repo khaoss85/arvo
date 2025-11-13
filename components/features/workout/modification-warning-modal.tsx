@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { X, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react'
 import type { ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 
@@ -30,6 +31,8 @@ export function ModificationWarningModal({
   exerciseName,
   addedSets,
 }: ModificationWarningModalProps) {
+  const t = useTranslations('workout.execution.modificationWarning')
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return
@@ -55,21 +58,21 @@ export function ModificationWarningModal({
       border: 'border-green-500/30',
       text: 'text-green-400',
       icon: CheckCircle2,
-      title: 'Modificazione Approvata',
+      title: t('approved'),
     },
     caution: {
       bg: 'bg-yellow-500/10',
       border: 'border-yellow-500/30',
       text: 'text-yellow-400',
       icon: AlertTriangle,
-      title: 'Attenzione: Considera i Trade-Off',
+      title: t('caution'),
     },
     not_recommended: {
       bg: 'bg-red-500/10',
       border: 'border-red-500/30',
       text: 'text-red-400',
       icon: XCircle,
-      title: 'Non Raccomandato',
+      title: t('notRecommended'),
     },
   }
 
@@ -89,14 +92,14 @@ export function ModificationWarningModal({
                   {scheme.title}
                 </h2>
                 <p className="text-sm text-gray-400 mt-1">
-                  {exerciseName} • +{addedSets} {addedSets === 1 ? 'serie' : 'serie'}
+                  {exerciseName} • +{addedSets} {t('sets', { count: addedSets })}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
               className="p-1 hover:bg-gray-800 rounded transition-colors"
-              aria-label="Chiudi"
+              aria-label={t('close')}
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>
@@ -108,7 +111,7 @@ export function ModificationWarningModal({
           {/* Reasoning */}
           <div>
             <h3 className="text-sm font-medium text-gray-300 mb-2">
-              Valutazione AI
+              {t('aiEvaluation')}
             </h3>
             <p className="text-sm text-gray-200 leading-relaxed">
               {validation.reasoning}
@@ -119,7 +122,7 @@ export function ModificationWarningModal({
           {validation.warnings && validation.warnings.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Avvertenze
+                {t('warnings')}
               </h3>
               <div className="space-y-2">
                 {validation.warnings.map((warning, index) => {
@@ -155,7 +158,7 @@ export function ModificationWarningModal({
             validation.suggestions.educationalNote) && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Suggerimenti
+                {t('suggestions')}
               </h3>
               <div className="space-y-2">
                 {validation.suggestions.alternative && (
@@ -180,7 +183,7 @@ export function ModificationWarningModal({
           {validation.approachGuidelines && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Linee Guida del Tuo Approccio
+                {t('approachGuidelines')}
               </h3>
               <div className="space-y-2 text-sm text-gray-400">
                 {validation.approachGuidelines.volumeLandmarkStatus && (
@@ -206,8 +209,8 @@ export function ModificationWarningModal({
             onClick={onClose}
             className="flex-1 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg font-medium transition-colors"
           >
-            Annulla
-            <span className="text-xs text-gray-500 ml-2">(ESC)</span>
+            {t('cancel')}
+            <span className="text-xs text-gray-500 ml-2">({t('esc')})</span>
           </button>
           <button
             onClick={onProceed}
@@ -220,16 +223,16 @@ export function ModificationWarningModal({
             }`}
           >
             {validation.validation === 'approved'
-              ? 'Aggiungi Serie'
-              : 'Aggiungi Comunque'}
-            <span className="text-xs opacity-70 ml-2">(ENTER)</span>
+              ? t('addSets')
+              : t('addAnyway')}
+            <span className="text-xs opacity-70 ml-2">({t('enter')})</span>
           </button>
         </div>
 
         {/* Keyboard Hints */}
         <div className="px-4 pb-3">
           <p className="text-xs text-gray-500 text-center">
-            ESC per annullare • ENTER per procedere
+            {t('keyboardHints')}
           </p>
         </div>
       </div>

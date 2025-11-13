@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { RefreshCw, PlayCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 
@@ -12,15 +13,16 @@ interface WorkoutProgressProps {
 }
 
 export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: WorkoutProgressProps) {
+  const t = useTranslations('workout.execution.progress')
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const progress = ((currentIndex + 1) / exercises.length) * 100
 
   return (
     <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-gray-400">Workout Progress</span>
+        <span className="text-sm text-gray-400">{t('title')}</span>
         <span className="text-sm font-medium text-white">
-          {currentIndex + 1} of {exercises.length} exercises
+          {t('exercisesCount', { current: currentIndex + 1, total: exercises.length })}
         </span>
       </div>
 
@@ -58,7 +60,7 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: Wor
                     }}
                     className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
                     aria-label={`View ${ex.exerciseName} animation`}
-                    title="Visualizza esercizio"
+                    title={t('viewExercise')}
                   >
                     <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                   </button>
@@ -69,7 +71,7 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: Wor
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">
-                  {ex.completedSets.length}/{ex.targetSets} sets
+                  {ex.completedSets.length}/{ex.targetSets} {t('sets')}
                 </span>
                 {/* Swap button - only show if not completed and callback provided */}
                 {!isCompleted && onSwapExercise && (
@@ -80,7 +82,7 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise }: Wor
                     }}
                     className="p-1 hover:bg-purple-600/20 rounded transition-colors group"
                     aria-label={`Change ${ex.exerciseName}`}
-                    title="Change exercise"
+                    title={t('changeExercise')}
                   >
                     <RefreshCw className="w-3.5 h-3.5 text-gray-500 group-hover:text-purple-400 transition-colors" />
                   </button>

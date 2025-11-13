@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,17 +16,28 @@ interface SetLoggerProps {
   }
 }
 
-// Mental readiness emoji mapping
-const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
-  1: { emoji: '😫', label: 'Drained' },
-  2: { emoji: '😕', label: 'Struggling' },
-  3: { emoji: '😐', label: 'Neutral' },
-  4: { emoji: '🙂', label: 'Engaged' },
-  5: { emoji: '🔥', label: 'Locked In' },
-}
-
 export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
+  const t = useTranslations('workout.execution')
   const { logSet } = useWorkoutExecutionStore()
+
+  // Mental readiness emoji mapping with translations
+  const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
+    const emojis: Record<number, string> = {
+      1: '😫',
+      2: '😕',
+      3: '😐',
+      4: '🙂',
+      5: '🔥',
+    }
+    const labels: Record<number, string> = {
+      1: t('mentalReadiness.drained'),
+      2: t('mentalReadiness.struggling'),
+      3: t('mentalReadiness.neutral'),
+      4: t('mentalReadiness.engaged'),
+      5: t('mentalReadiness.lockedIn'),
+    }
+    return { emoji: emojis[value], label: labels[value] }
+  }
 
   // Determine if current set is warmup
   const warmupSetsCount = exercise.warmupSets?.length || 0
@@ -103,7 +115,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
                 : 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
             }`}
           >
-            {isWarmup ? `Riscaldamento ${setNumber}/${warmupSetsCount}` : `Serie ${workingSetNumber}/${exercise.targetSets}`}
+            {isWarmup ? t('setLogger.warmup', { current: setNumber, total: warmupSetsCount }) : t('setLogger.workingSet', { current: workingSetNumber, total: exercise.targetSets })}
           </span>
         </div>
 
@@ -139,7 +151,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
       {/* Weight Input */}
       <div>
-        <label className="block text-sm text-gray-400 mb-2">Weight (kg)</label>
+        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.weightLabel')}</label>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setWeight(Math.max(0, weight - 2.5))}
@@ -165,7 +177,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
       {/* Reps Input */}
       <div>
-        <label className="block text-sm text-gray-400 mb-2">Reps</label>
+        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.repsLabel')}</label>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setReps(Math.max(1, reps - 1))}
@@ -190,7 +202,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
       {/* RIR Selector */}
       <div>
-        <label className="block text-sm text-gray-400 mb-2">RIR (Reps in Reserve)</label>
+        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.rirLabel')}</label>
         <div className="grid grid-cols-6 gap-2">
           {[0, 1, 2, 3, 4, 5].map((value) => (
             <button
@@ -212,8 +224,8 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       {!isWarmup && exercise.tempo && (
         <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-2 border-blue-500/40 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-blue-300">⏱️ Tempo Requirement</label>
-            <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">From your approach</span>
+            <label className="text-sm font-medium text-blue-300">{t('setLogger.tempoRequirement')}</label>
+            <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">{t('setLogger.fromYourApproach')}</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex-1 bg-gray-900/50 rounded-lg p-3 text-center">
@@ -221,25 +233,25 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
               <div className="text-xs text-gray-400 mt-1 grid grid-cols-4 gap-1 max-w-[240px] mx-auto mt-2">
                 <div className="flex flex-col">
                   <span className="font-semibold text-blue-300">{exercise.tempo.split('-')[0]}s</span>
-                  <span className="text-[10px]">Down</span>
+                  <span className="text-[10px]">{t('setLogger.tempoDown')}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-purple-300">{exercise.tempo.split('-')[1]}s</span>
-                  <span className="text-[10px]">Pause</span>
+                  <span className="text-[10px]">{t('setLogger.tempoPause')}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-green-300">{exercise.tempo.split('-')[2]}s</span>
-                  <span className="text-[10px]">Up</span>
+                  <span className="text-[10px]">{t('setLogger.tempoUp')}</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-amber-300">{exercise.tempo.split('-')[3]}s</span>
-                  <span className="text-[10px]">Squeeze</span>
+                  <span className="text-[10px]">{t('setLogger.tempoSqueeze')}</span>
                 </div>
               </div>
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-2 text-center italic">
-            Maintain this tempo for optimal time under tension
+            {t('setLogger.tempoDescription')}
           </p>
         </div>
       )}
@@ -250,32 +262,35 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
           onClick={() => setShowMentalSelector(!showMentalSelector)}
           className="text-sm text-gray-400 hover:text-gray-300 mb-2 transition-colors"
         >
-          {showMentalSelector ? '▼' : '▶'} Feeling mentally drained? (optional)
+          {showMentalSelector ? '▼' : '▶'} {t('setLogger.mentalDrainedOptional')}
         </button>
 
         {showMentalSelector && (
           <div className="grid grid-cols-5 gap-2 mt-2">
-            {[1, 2, 3, 4, 5].map((value) => (
-              <button
-                key={value}
-                onClick={() => setMentalReadiness(mentalReadiness === value ? undefined : value)}
-                className={`h-16 rounded font-medium transition-all flex flex-col items-center justify-center gap-1 ${
-                  mentalReadiness === value
-                    ? 'bg-purple-600 text-white ring-2 ring-purple-400'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}
-                title={MENTAL_READINESS_EMOJIS[value].label}
-              >
-                <span className="text-2xl">{MENTAL_READINESS_EMOJIS[value].emoji}</span>
-                <span className="text-xs">{value}</span>
-              </button>
-            ))}
+            {[1, 2, 3, 4, 5].map((value) => {
+              const readiness = getMentalReadinessEmoji(value)
+              return (
+                <button
+                  key={value}
+                  onClick={() => setMentalReadiness(mentalReadiness === value ? undefined : value)}
+                  className={`h-16 rounded font-medium transition-all flex flex-col items-center justify-center gap-1 ${
+                    mentalReadiness === value
+                      ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  }`}
+                  title={readiness.label}
+                >
+                  <span className="text-2xl">{readiness.emoji}</span>
+                  <span className="text-xs">{value}</span>
+                </button>
+              )
+            })}
           </div>
         )}
 
         {mentalReadiness && (
           <p className="text-xs text-gray-400 mt-2 text-center">
-            Mental state: {MENTAL_READINESS_EMOJIS[mentalReadiness].label}
+            {t('setLogger.mentalState', { state: getMentalReadinessEmoji(mentalReadiness).label })}
           </p>
         )}
       </div>
@@ -286,7 +301,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         disabled={isLogging}
         className="w-full h-14 text-lg bg-green-600 hover:bg-green-700 text-white font-medium"
       >
-        {isLogging ? 'Logging...' : 'Log Set'}
+        {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
       </Button>
     </div>
   )

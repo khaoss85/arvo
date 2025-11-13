@@ -71,14 +71,14 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-100 border border-primary-200 dark:border-primary-800">
+            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
               <Sparkles className="inline-block w-4 h-4 mr-1" />
               15 AI Agents
             </div>
-            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-100 border border-primary-200 dark:border-primary-800">
+            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
               1300+ Exercises
             </div>
-            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-100 border border-primary-200 dark:border-primary-800">
+            <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
               362 Lines of Kuba Config
             </div>
           </motion.div>

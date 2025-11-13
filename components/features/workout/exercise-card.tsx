@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
@@ -19,15 +20,6 @@ import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 
-// Mental readiness emoji mapping
-const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
-  1: { emoji: '😫', label: 'Drained' },
-  2: { emoji: '😕', label: 'Struggling' },
-  3: { emoji: '😐', label: 'Neutral' },
-  4: { emoji: '🙂', label: 'Engaged' },
-  5: { emoji: '🔥', label: 'Locked In' },
-}
-
 interface ExerciseCardProps {
   exercise: ExerciseExecution
   exerciseIndex: number
@@ -43,8 +35,29 @@ export function ExerciseCard({
   userId,
   approachId
 }: ExerciseCardProps) {
+  const t = useTranslations('workout.execution')
   const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
+
+  // Mental readiness emoji mapping with translations
+  const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
+    const emojis: Record<number, string> = {
+      1: '😫',
+      2: '😕',
+      3: '😐',
+      4: '🙂',
+      5: '🔥',
+    }
+    const labels: Record<number, string> = {
+      1: t('mentalReadiness.drained'),
+      2: t('mentalReadiness.struggling'),
+      3: t('mentalReadiness.neutral'),
+      4: t('mentalReadiness.engaged'),
+      5: t('mentalReadiness.lockedIn'),
+    }
+    return { emoji: emojis[value], label: labels[value] }
+  }
+
   const [showSuggestion, setShowSuggestion] = useState(false)
   const [showExerciseExplanation, setShowExerciseExplanation] = useState(false)
   const [exerciseExplanation, setExerciseExplanation] = useState('')
@@ -295,7 +308,7 @@ export function ExerciseCard({
       return {
         success: false,
         error: 'hard_limit',
-        message: 'Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.'
+        message: t('exercise.exerciseLimitReached')
       }
     }
 
@@ -358,7 +371,7 @@ export function ExerciseCard({
               onClick={loadExerciseExplanation}
               disabled={loadingExerciseExplanation}
               className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="Why this exercise?"
+              title={t('exercise.whyThisExercise')}
             >
               {loadingExerciseExplanation ? (
                 <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -368,7 +381,7 @@ export function ExerciseCard({
             </button>
           </div>
           <span className="text-sm text-gray-400">
-            Exercise {exerciseIndex + 1} of {totalExercises}
+            {t('exercise.exerciseNumber', { current: exerciseIndex + 1, total: totalExercises })}
           </span>
         </div>
 
@@ -383,13 +396,13 @@ export function ExerciseCard({
           {warmupSetsCount > 0 && (
             <>
               <span className="text-amber-400">
-                Riscaldamento: {completedWarmupSets}/{warmupSetsCount}
+                {t('exercise.warmupProgress', { current: completedWarmupSets, total: warmupSetsCount })}
               </span>
               <span>•</span>
             </>
           )}
           <span className="flex items-center gap-2">
-            Serie: {completedWorkingSets}/{exercise.targetSets}
+            {t('exercise.setsProgress', { current: completedWorkingSets, total: exercise.targetSets })}
             {exercise.userAddedSets && exercise.userAddedSets > 0 && (
               <UserModificationBadge
                 addedSets={exercise.userAddedSets}
@@ -399,9 +412,9 @@ export function ExerciseCard({
             )}
           </span>
           <span>•</span>
-          <span>{exercise.targetReps[0]}-{exercise.targetReps[1]} reps</span>
+          <span>{exercise.targetReps[0]}-{exercise.targetReps[1]} {t('exercise.reps')}</span>
           <span>•</span>
-          <span>Target: {exercise.targetWeight}kg</span>
+          <span>{t('exercise.target', { weight: exercise.targetWeight })}</span>
         </div>
       </div>
 
@@ -414,7 +427,7 @@ export function ExerciseCard({
           >
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-gray-300">Tecnica Esercizio</span>
+              <span className="text-sm font-medium text-gray-300">{t('exercise.techniqueCues')}</span>
             </div>
             <ChevronDown
               className={`w-4 h-4 text-gray-400 transition-transform ${
@@ -441,29 +454,32 @@ export function ExerciseCard({
       {/* Completed Sets Summary */}
       {exercise.completedSets.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-3">Completed Sets</h3>
+          <h3 className="text-sm font-medium text-gray-400 mb-3">{t('exercise.completedSets')}</h3>
           <div className="space-y-2">
-            {exercise.completedSets.map((set, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between bg-gray-800 rounded p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-300">Set {idx + 1}</span>
-                  {set.mentalReadiness && (
-                    <span
-                      className="text-lg"
-                      title={`Mental state: ${MENTAL_READINESS_EMOJIS[set.mentalReadiness].label}`}
-                    >
-                      {MENTAL_READINESS_EMOJIS[set.mentalReadiness].emoji}
-                    </span>
-                  )}
+            {exercise.completedSets.map((set, idx) => {
+              const mentalReadiness = set.mentalReadiness ? getMentalReadinessEmoji(set.mentalReadiness) : null
+              return (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between bg-gray-800 rounded p-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-300">{t('exercise.set', { number: idx + 1 })}</span>
+                    {mentalReadiness && (
+                      <span
+                        className="text-lg"
+                        title={t('exercise.mentalStateLabel', { state: mentalReadiness.label })}
+                      >
+                        {mentalReadiness.emoji}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-white font-medium">
+                    {set.weight}kg × {set.reps} @ RIR {set.rir}
+                  </span>
                 </div>
-                <span className="text-white font-medium">
-                  {set.weight}kg × {set.reps} @ RIR {set.rir}
-                </span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
@@ -472,12 +488,12 @@ export function ExerciseCard({
       {showSuggestion && exercise.currentAISuggestion && (
         <div className="mb-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-300">AI Suggestion for Set {currentSetNumber}</h3>
+            <h3 className="text-sm font-medium text-blue-300">{t('exercise.aiSuggestion', { number: currentSetNumber })}</h3>
             <button
               onClick={loadProgressionExplanation}
               disabled={loadingProgressionExplanation}
               className="p-1 hover:bg-blue-800/50 rounded transition-colors disabled:opacity-50"
-              title="Why this progression?"
+              title={t('exercise.whyThisProgression')}
             >
               {loadingProgressionExplanation ? (
                 <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -506,14 +522,14 @@ export function ExerciseCard({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
-              <h3 className="text-lg font-medium text-amber-200">Rest Period</h3>
+              <h3 className="text-lg font-medium text-amber-200">{t('exercise.restPeriod')}</h3>
             </div>
             <button
               onClick={skipRest}
               className="flex items-center gap-1 px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded text-sm text-amber-300 transition-colors"
             >
               <SkipForward className="w-3.5 h-3.5" />
-              Skip
+              {t('exercise.skip')}
             </button>
           </div>
 
@@ -523,7 +539,7 @@ export function ExerciseCard({
               {Math.floor(restTimeRemaining / 60)}:{String(restTimeRemaining % 60).padStart(2, '0')}
             </div>
             <div className="text-sm text-amber-300">
-              {exercise.restSeconds ? `${exercise.restSeconds}s rest prescribed` : 'Default rest period'}
+              {exercise.restSeconds ? t('exercise.restSeconds', { seconds: exercise.restSeconds }) : t('exercise.defaultRestPeriod')}
             </div>
           </div>
 
@@ -538,7 +554,7 @@ export function ExerciseCard({
           </div>
 
           <p className="text-xs text-gray-400 mt-3 text-center italic">
-            Rest allows ATP recovery for optimal performance on your next set
+            {t('exercise.restDescription')}
           </p>
         </div>
       )}
@@ -551,8 +567,8 @@ export function ExerciseCard({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-white mb-2">Exercise Complete!</h3>
-          <p className="text-gray-400 mb-6">Great work on {exercise.exerciseName}</p>
+          <h3 className="text-xl font-bold text-white mb-2">{t('exercise.exerciseComplete')}</h3>
+          <p className="text-gray-400 mb-6">{t('exercise.greatWork', { exerciseName: exercise.exerciseName })}</p>
 
           {/* Add Extra Set Option */}
           <div className="mb-4">
@@ -588,7 +604,7 @@ export function ExerciseCard({
             onClick={handleMoveToNext}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
           >
-            {exerciseIndex < totalExercises - 1 ? 'Next Exercise' : 'Finish Workout'}
+            {exerciseIndex < totalExercises - 1 ? t('nextExercise') : t('finishWorkout')}
           </Button>
         </div>
       ) : (
@@ -604,7 +620,7 @@ export function ExerciseCard({
               {isSuggestionPending && (
                 <div className="mt-4 text-center text-sm text-gray-400">
                   <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                  Getting AI suggestion...
+                  {t('exercise.gettingAiSuggestion')}
                 </div>
               )}
             </>
@@ -621,7 +637,7 @@ export function ExerciseCard({
             className="w-full border-gray-700 text-gray-300 hover:border-purple-600 hover:text-purple-400 transition-colors"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
-            Change Exercise
+            {t('exercise.changeExercise')}
           </Button>
         </div>
       )}
@@ -634,7 +650,7 @@ export function ExerciseCard({
             variant="outline"
             className="flex-1 border-gray-700 text-gray-300"
           >
-            ← Previous
+            {t('exercise.previous')}
           </Button>
         )}
       </div>
