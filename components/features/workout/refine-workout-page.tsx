@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react'
@@ -62,6 +63,7 @@ export function RefineWorkoutPage({
   userId
 }: RefineWorkoutPageProps) {
   const router = useRouter()
+  const t = useTranslations('workout.modals.refineWorkout')
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set())
   const [isMarkingReady, setIsMarkingReady] = useState(false)
@@ -236,11 +238,11 @@ export function RefineWorkoutPage({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to save exercise swap:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
       }
     } catch (error) {
       console.error('Error saving exercise swap:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     }
   }
 
@@ -276,11 +278,11 @@ export function RefineWorkoutPage({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to save custom exercise:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
       }
     } catch (error) {
       console.error('Error saving custom exercise:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     }
   }
 
@@ -362,22 +364,19 @@ export function RefineWorkoutPage({
 
       // HARD LIMIT: Maximum 5 extra sets
       if (newAddedSets > 5) {
-        alert('Maximum 5 extra sets allowed. You\'ve reached your limit to prevent overtraining.')
+        alert(t('alerts.maxExtraSets'))
         return { success: false, error: 'hard_limit' }
       }
 
       // SOFT WARNING: At 3+ extra sets
       if (newAddedSets >= 3) {
-        const proceed = confirm(
-          `You're adding set #${newAddedSets} beyond AI recommendation.\n\n` +
-          'This increases fatigue and recovery needs. Continue?'
-        )
+        const proceed = confirm(t('alerts.highVolumeWarning', { count: newAddedSets }))
         if (!proceed) return { success: false, error: 'user_cancelled' }
       }
 
       // Update local state
       const newExercises = [...exercises]
-      const warnings: string[] = newAddedSets >= 3 ? ['High volume - monitor recovery'] : []
+      const warnings: string[] = newAddedSets >= 3 ? [t('alerts.highVolumeLabel')] : []
 
       newExercises[exerciseIndex] = {
         ...exercise,
@@ -401,7 +400,7 @@ export function RefineWorkoutPage({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to add set:', result.error)
-        alert('Failed to add set. Please try again.')
+        alert(t('errors.failedToAddSet'))
         // Revert on failure
         setExercises([...exercises])
         return { success: false }
@@ -413,7 +412,7 @@ export function RefineWorkoutPage({
       }
     } catch (error) {
       console.error('Error adding set:', error)
-      alert('Failed to add set. Please try again.')
+      alert(t('errors.failedToAddSet'))
       // Revert on failure
       setExercises([...exercises])
       return { success: false }
@@ -435,7 +434,7 @@ export function RefineWorkoutPage({
       console.log('Regenerate exercise', exerciseIndex)
     } catch (error) {
       console.error('Failed to regenerate exercise:', error)
-      alert('Failed to regenerate exercise. Please try again.')
+      alert(t('errors.failedToRegenerate'))
     } finally {
       setIsRegenerating(null)
     }
@@ -457,11 +456,11 @@ export function RefineWorkoutPage({
       if (result.success) {
         router.push('/dashboard')
       } else {
-        alert(`Failed to mark workout as ready: ${result.error}`)
+        alert(t('errors.failedToMarkReady'))
       }
     } catch (error) {
       console.error('Failed to mark workout as ready:', error)
-      alert('Failed to mark workout as ready. Please try again.')
+      alert(t('errors.failedToMarkReady'))
     } finally {
       setIsMarkingReady(false)
     }
@@ -476,12 +475,12 @@ export function RefineWorkoutPage({
       try {
         const result = await updateWorkoutStatusAction(workout.id, 'ready')
         if (!result.success) {
-          alert(`Failed to prepare workout: ${result.error}`)
+          alert(t('errors.failedToPrepareWorkout', { error: result.error || 'Unknown error' }))
           return
         }
       } catch (error) {
         console.error('Failed to prepare workout:', error)
-        alert('Failed to prepare workout. Please try again.')
+        alert(t('errors.failedToPrepareWorkoutGeneric'))
         return
       } finally {
         setIsMarkingReady(false)
@@ -502,7 +501,7 @@ export function RefineWorkoutPage({
       return {
         success: false,
         error: 'hard_limit',
-        message: 'Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.'
+        message: t('addExercise.hardLimitReached')
       }
     }
 
@@ -560,8 +559,8 @@ export function RefineWorkoutPage({
         setConfirmDialog({
           isOpen: true,
           type: 'alert',
-          title: 'Errore',
-          message: 'Impossibile aggiungere l\'esercizio. Riprova.',
+          title: t('errors.error'),
+          message: t('errors.failedToAddExercise'),
         })
         return
       }
@@ -573,8 +572,8 @@ export function RefineWorkoutPage({
       setConfirmDialog({
         isOpen: true,
         type: 'alert',
-        title: 'Errore',
-        message: 'Impossibile aggiungere l\'esercizio. Riprova.',
+        title: t('errors.error'),
+        message: t('errors.failedToAddExercise'),
       })
     }
   }
@@ -589,8 +588,8 @@ export function RefineWorkoutPage({
       setConfirmDialog({
         isOpen: true,
         type: 'alert',
-        title: 'Impossibile Rimuovere',
-        message: 'Non puoi rimuovere esercizi raccomandati dall\'AI. Puoi solo rimuovere esercizi aggiunti da te.',
+        title: t('removeDialog.cannotRemoveTitle'),
+        message: t('removeDialog.cannotRemoveMessage'),
       })
       return
     }
@@ -599,9 +598,9 @@ export function RefineWorkoutPage({
     setConfirmDialog({
       isOpen: true,
       type: 'warning',
-      title: 'Conferma Rimozione',
-      message: `Vuoi rimuovere "${exerciseToRemove.name}"?`,
-      confirmText: 'Rimuovi',
+      title: t('removeDialog.confirmTitle'),
+      message: t('removeDialog.confirmMessage', { name: exerciseToRemove.name }),
+      confirmText: t('removeDialog.removeButton'),
       onConfirm: async () => {
         try {
           // Remove exercise from array
@@ -620,8 +619,8 @@ export function RefineWorkoutPage({
             setConfirmDialog({
               isOpen: true,
               type: 'alert',
-              title: 'Errore',
-              message: 'Impossibile rimuovere l\'esercizio. Riprova.',
+              title: t('errors.error'),
+              message: t('errors.failedToRemoveExercise'),
             })
             return
           }
@@ -632,8 +631,8 @@ export function RefineWorkoutPage({
           setConfirmDialog({
             isOpen: true,
             type: 'alert',
-            title: 'Errore',
-            message: 'Impossibile rimuovere l\'esercizio. Riprova.',
+            title: t('errors.error'),
+            message: t('errors.failedToRemoveExercise'),
           })
         }
       },
@@ -654,7 +653,7 @@ export function RefineWorkoutPage({
             size="sm"
           >
             <List className="w-4 h-4 mr-2" />
-            Reorder
+            {t('buttons.reorder')}
           </Button>
         </div>
       )}
@@ -693,8 +692,8 @@ export function RefineWorkoutPage({
                             setAnimationModalOpen(index)
                           }}
                           className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                          aria-label={`View ${exercise.name} animation`}
-                          title="Visualizza esercizio"
+                          aria-label={t('exercise.viewAnimationAria', { name: exercise.name })}
+                          title={t('exercise.viewAnimation')}
                         >
                           <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
@@ -721,7 +720,7 @@ export function RefineWorkoutPage({
                       size="sm"
                       onClick={() => handleRemoveExercise(index)}
                       className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      title="Rimuovi esercizio"
+                      title={t('exercise.removeExercise')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -743,22 +742,22 @@ export function RefineWorkoutPage({
               {/* Exercise Details */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Sets:</span>
+                  <span className="text-muted-foreground">{t('exercise.sets')}</span>
                   <span className="ml-2 font-medium">{exercise.sets}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Reps:</span>
+                  <span className="text-muted-foreground">{t('exercise.reps')}</span>
                   <span className="ml-2 font-medium">
                     {exercise.repRange ? `${exercise.repRange[0]}-${exercise.repRange[1]}` : 'N/A'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Weight:</span>
-                  <span className="ml-2 font-medium">{exercise.targetWeight} kg</span>
+                  <span className="text-muted-foreground">{t('exercise.weight')}</span>
+                  <span className="ml-2 font-medium">{exercise.targetWeight} {t('exercise.units.kg')}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Rest:</span>
-                  <span className="ml-2 font-medium">{exercise.restSeconds}s</span>
+                  <span className="text-muted-foreground">{t('exercise.rest')}</span>
+                  <span className="ml-2 font-medium">{exercise.restSeconds}{t('exercise.units.seconds')}</span>
                 </div>
               </div>
 
@@ -779,11 +778,11 @@ export function RefineWorkoutPage({
               {exercise.userAddedSets && exercise.userAddedSets > 0 && (
                 <div className="pt-2 text-xs text-gray-400 flex items-center justify-between">
                   <span>
-                    AI recommended: {exercise.aiRecommendedSets || exercise.sets} sets •
-                    You added: +{exercise.userAddedSets}
+                    {t('userModifications.aiRecommended', { count: exercise.aiRecommendedSets || exercise.sets })} •
+                    {' '}{t('userModifications.youAdded', { count: exercise.userAddedSets })}
                   </span>
                   {exercise.userModifications?.aiWarnings && exercise.userModifications.aiWarnings.length > 0 && (
-                    <span className="text-yellow-400">⚠️ Volume warning</span>
+                    <span className="text-yellow-400">{t('userModifications.volumeWarning')}</span>
                   )}
                 </div>
               )}
@@ -791,7 +790,7 @@ export function RefineWorkoutPage({
               {/* Rationale (Expanded) */}
               {expandedExercises.has(index) && exercise.rationale && (
                 <div className="pt-2 border-t">
-                  <p className="text-sm text-muted-foreground mb-2 font-medium">Why this exercise:</p>
+                  <p className="text-sm text-muted-foreground mb-2 font-medium">{t('rationale.title')}</p>
                   <p className="text-sm">{exercise.rationale}</p>
                 </div>
               )}
@@ -799,11 +798,11 @@ export function RefineWorkoutPage({
               {/* Alternatives (Expanded) */}
               {expandedExercises.has(index) && (
                 <div className="pt-2 border-t space-y-2">
-                  <p className="text-sm text-muted-foreground font-medium">AI-suggested alternatives:</p>
+                  <p className="text-sm text-muted-foreground font-medium">{t('rationale.alternatives')}</p>
                   {alternativesLoading.get(index) ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-sm text-muted-foreground">Loading alternatives...</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{t('rationale.loadingAlternatives')}</span>
                     </div>
                   ) : alternatives.get(index) && alternatives.get(index)!.length > 0 ? (
                     alternatives.get(index)!.map((alt, altIndex) => (
@@ -830,8 +829,8 @@ export function RefineWorkoutPage({
                                 })
                               }}
                               className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                              aria-label={`View ${alt.exercise.name} animation`}
-                              title="Visualizza esercizio"
+                              aria-label={t('exercise.viewAnimationAria', { name: alt.exercise.name })}
+                              title={t('exercise.viewAnimation')}
                             >
                               <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                             </button>
@@ -847,23 +846,23 @@ export function RefineWorkoutPage({
                         size="sm"
                         onClick={() => handleSwapExercise(index, altIndex)}
                       >
-                        Swap
+                        {t('buttons.swap')}
                       </Button>
                     </div>
                   ))
                   ) : (
-                    <p className="text-sm text-muted-foreground py-2">No alternatives available</p>
+                    <p className="text-sm text-muted-foreground py-2">{t('rationale.noAlternatives')}</p>
                   )}
 
                   {/* Custom Exercise Input */}
                   <div className="pt-2 space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">Or enter your own:</p>
+                    <p className="text-sm text-muted-foreground font-medium">{t('rationale.custom')}</p>
                     {!customValidationResults.get(index) ? (
                       <>
                         <div className="flex gap-2">
                           <input
                             type="text"
-                            placeholder="Type exercise name..."
+                            placeholder={t('customInput.placeholder')}
                             value={customInputs.get(index) || ''}
                             onChange={(e) => {
                               const newInputs = new Map(customInputs)
@@ -883,11 +882,11 @@ export function RefineWorkoutPage({
                             onClick={() => handleValidateCustom(index)}
                             disabled={!customInputs.get(index)?.trim() || customValidating.get(index)}
                           >
-                            {customValidating.get(index) ? 'Validating...' : 'Validate'}
+                            {customValidating.get(index) ? t('customInput.validating') : t('customInput.validate')}
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Enter any exercise name. The AI will validate it fits the workout.
+                          {t('customInput.hint')}
                         </p>
                       </>
                     ) : (
@@ -925,8 +924,8 @@ export function RefineWorkoutPage({
                                   })
                                 }}
                                 className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                                aria-label={`View ${customValidationResults.get(index)!.exercise.name} animation`}
-                                title="Visualizza esercizio"
+                                aria-label={t('exercise.viewAnimationAria', { name: customValidationResults.get(index)!.exercise.name })}
+                                title={t('exercise.viewAnimation')}
                               >
                                 <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                               </button>
@@ -934,7 +933,7 @@ export function RefineWorkoutPage({
                             </div>
                             {customValidationResults.get(index)!.validation === 'caution' ? (
                               <p className="text-xs mt-1 font-medium text-yellow-700 dark:text-yellow-400">
-                                ⚠️ Caution: {customValidationResults.get(index)!.rationale}
+                                {t('validation.caution', { rationale: customValidationResults.get(index)!.rationale })}
                               </p>
                             ) : (
                               <p className="text-xs text-muted-foreground mt-1">{customValidationResults.get(index)!.rationale}</p>
@@ -951,7 +950,7 @@ export function RefineWorkoutPage({
                               setCustomValidationResults(newResults)
                             }}
                           >
-                            Edit
+                            {t('validation.edit')}
                           </Button>
                           {(customValidationResults.get(index)!.validation === 'approved' ||
                             customValidationResults.get(index)!.validation === 'caution') && (
@@ -960,7 +959,7 @@ export function RefineWorkoutPage({
                               size="sm"
                               onClick={() => handleCustomSwap(index)}
                             >
-                              Swap
+                              {t('buttons.swap')}
                             </Button>
                           )}
                         </div>
@@ -979,7 +978,7 @@ export function RefineWorkoutPage({
                   disabled={isRegenerating === index}
                 >
                   <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
-                  {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
+                  {isRegenerating === index ? t('buttons.regenerating') : t('buttons.regenerate')}
                 </Button>
               </div>
                     </div>
@@ -991,7 +990,7 @@ export function RefineWorkoutPage({
       <div className="mb-6">
         <div className="text-center mb-2">
           <p className="text-xs text-gray-500">
-            Esercizi extra: {exercises.filter(ex => ex.aiRecommendedSets === undefined).length}/3
+            {t('addExercise.extraExercises', { current: exercises.filter(ex => ex.aiRecommendedSets === undefined).length, max: 3 })}
           </p>
         </div>
         <AddExerciseButton
@@ -1012,7 +1011,7 @@ export function RefineWorkoutPage({
             className="w-full"
           >
             <Check className="w-4 h-4 mr-2" />
-            {isMarkingReady ? 'Saving...' : 'Save & Return'}
+            {isMarkingReady ? t('buttons.saving') : t('buttons.saveAndReturn')}
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { X, GripVertical, AlertTriangle, CheckCircle, Info, Sparkles, ArrowRight } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
@@ -16,6 +17,7 @@ interface ReorderExercisesModalProps {
 }
 
 export function ReorderExercisesModal({ workoutType, approachId, onClose, onRationaleInvalidate }: ReorderExercisesModalProps) {
+  const t = useTranslations('workout.modals.reorderExercises')
   const { exercises, reorderExercises } = useWorkoutExecutionStore()
   const [orderedExercises, setOrderedExercises] = useState<ExerciseExecution[]>(exercises)
   const [validation, setValidation] = useState<ReorderValidationOutput | null>(null)
@@ -96,10 +98,10 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Reorder Exercises
+              {t('title')}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Drag exercises to reorder. AI will validate your changes.
+              {t('description')}
             </p>
           </div>
           <button
@@ -145,7 +147,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                               {index + 1}. {exercise.exerciseName}
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              {exercise.completedSets.length}/{exercise.targetSets} sets completed
+                              {t('setsCompleted', { completed: exercise.completedSets.length, total: exercise.targetSets })}
                             </div>
                           </div>
                         </div>
@@ -166,7 +168,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                 disabled={validating}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {validating ? 'Validating with AI...' : 'Validate Reorder with AI'}
+                {validating ? t('validating') : t('validateButton')}
               </Button>
             </div>
           )}
@@ -185,7 +187,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                   {getRecommendationIcon(validation.recommendation)}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      AI Recommendation: {validation.recommendation.replace('_', ' ').toUpperCase()}
+                      {t('aiRecommendation')} {validation.recommendation.replace('_', ' ').toUpperCase()}
                     </h3>
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {validation.reasoning}
@@ -199,7 +201,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                 <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                   <h4 className="font-semibold text-purple-900 dark:text-purple-300 mb-3 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Workout Flow Preview
+                    {t('workoutFlowPreview')}
                   </h4>
                   <p className="text-sm text-purple-800 dark:text-purple-200 mb-3 leading-relaxed">
                     {validation.rationalePreview.newSequencingRationale}
@@ -207,7 +209,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                   {validation.rationalePreview.keyChanges.length > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">
-                        Key Changes:
+                        {t('keyChanges')}
                       </p>
                       <ul className="space-y-1">
                         {validation.rationalePreview.keyChanges.map((change, idx) => (
@@ -227,7 +229,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                 <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
                   <h4 className="font-semibold text-orange-900 dark:text-orange-300 mb-2 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
-                    Warnings
+                    {t('warnings')}
                   </h4>
                   <ul className="space-y-1 ml-6">
                     {validation.warnings.map((warning, idx) => (
@@ -244,7 +246,7 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
                 <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
                     <Info className="w-4 h-4" />
-                    Better Alternatives
+                    {t('betterAlternatives')}
                   </h4>
                   <ul className="space-y-1 ml-6">
                     {validation.suggestions.map((suggestion, idx) => (
@@ -266,14 +268,14 @@ export function ReorderExercisesModal({ workoutType, approachId, onClose, onRati
             variant="outline"
             className="flex-1 border-gray-300 dark:border-gray-600"
           >
-            Cancel
+            {t('cancelButton')}
           </Button>
           <Button
             onClick={handleApply}
             disabled={!hasReordered || (validation ? validation.isValid === false : false)}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Apply Reorder
+            {t('applyButton')}
           </Button>
         </div>
       </div>

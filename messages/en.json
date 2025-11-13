@@ -140,6 +140,25 @@
   },
   "workout": {
     "modals": {
+      "reorderExercises": {
+        "title": "Reorder Exercises",
+        "description": "Drag exercises to reorder. AI will validate your changes.",
+        "setsCompleted": "{completed}/{total} sets completed",
+        "setsReps": "{sets} sets × {reps} reps",
+        "validating": "Validating with AI...",
+        "validateButton": "Validate Reorder with AI",
+        "aiRecommendation": "AI Recommendation:",
+        "workoutFlowPreview": "Workout Flow Preview",
+        "keyChanges": "Key Changes:",
+        "warnings": "Warnings",
+        "betterAlternatives": "Better Alternatives",
+        "cancelButton": "Cancel",
+        "applyButton": "Apply Reorder",
+        "saving": "Saving...",
+        "errors": {
+          "failedToSave": "Failed to save changes. Please try again."
+        }
+      },
       "exitWorkout": {
         "title": "End Workout Session?",
         "description": "Your progress has been saved. You can resume this workout anytime from your dashboard.",
@@ -170,6 +189,89 @@
         "errors": {
           "hardLimit": "Cannot add more exercises",
           "failed": "Failed to add exercise. Please try again."
+        }
+      },
+      "refineWorkout": {
+        "title": "Refine Workout",
+        "titleWithName": "Refine Workout - {name}",
+        "description": "Review and customize your pre-generated workout before starting",
+        "reorderMode": {
+          "done": "Done Reordering",
+          "start": "Reorder Exercises"
+        },
+        "exercise": {
+          "sets": "Sets:",
+          "reps": "Reps:",
+          "weight": "Weight:",
+          "rest": "Rest:",
+          "units": {
+            "kg": "kg",
+            "seconds": "s"
+          },
+          "viewAnimation": "View exercise",
+          "viewAnimationAria": "View {name} animation",
+          "removeExercise": "Remove exercise"
+        },
+        "rationale": {
+          "title": "Why this exercise:",
+          "alternatives": "AI-suggested alternatives:",
+          "custom": "Or enter your own:",
+          "noAlternatives": "No alternatives available",
+          "loadingAlternatives": "Loading alternatives..."
+        },
+        "customInput": {
+          "placeholder": "Type exercise name...",
+          "hint": "Enter any exercise name. The AI will validate it fits the workout.",
+          "useButton": "Use This",
+          "validating": "Validating...",
+          "validate": "Validate"
+        },
+        "validation": {
+          "caution": "⚠️ Caution: {rationale}",
+          "edit": "Edit"
+        },
+        "userModifications": {
+          "aiRecommended": "AI recommended: {count} sets",
+          "youAdded": "You added: +{count}",
+          "volumeWarning": "⚠️ Volume warning"
+        },
+        "buttons": {
+          "swap": "Swap",
+          "regenerate": "Regenerate",
+          "regenerating": "Regenerating...",
+          "cancel": "Cancel",
+          "markAsReady": "Mark as Ready",
+          "markingAsReady": "Marking as Ready...",
+          "reorder": "Reorder",
+          "saveAndReturn": "Save & Return",
+          "saving": "Saving..."
+        },
+        "addExercise": {
+          "extraExercises": "Extra exercises: {current}/{max}",
+          "hardLimitReached": "You have reached the limit of 3 extra exercises. Remove an exercise to add a new one."
+        },
+        "removeDialog": {
+          "cannotRemoveTitle": "Cannot Remove",
+          "cannotRemoveMessage": "You cannot remove AI-recommended exercises. You can only remove exercises you added.",
+          "confirmTitle": "Confirm Removal",
+          "confirmMessage": "Do you want to remove \"{name}\"?",
+          "removeButton": "Remove"
+        },
+        "alerts": {
+          "maxExtraSets": "Maximum 5 extra sets allowed. You've reached your limit to prevent overtraining.",
+          "highVolumeWarning": "You're adding set #{count} beyond AI recommendation.\n\nThis increases fatigue and recovery needs. Continue?",
+          "highVolumeLabel": "High volume - monitor recovery"
+        },
+        "errors": {
+          "error": "Error",
+          "failedToSave": "Failed to save changes. Please try again.",
+          "failedToMarkReady": "Failed to mark workout as ready. Please try again.",
+          "failedToRegenerate": "Failed to regenerate exercise. Please try again.",
+          "failedToAddExercise": "Unable to add the exercise. Please try again.",
+          "failedToRemoveExercise": "Unable to remove the exercise. Please try again.",
+          "failedToAddSet": "Failed to add set. Please try again.",
+          "failedToPrepareWorkout": "Failed to prepare workout: {error}",
+          "failedToPrepareWorkoutGeneric": "Failed to prepare workout. Please try again."
         }
       }
     },

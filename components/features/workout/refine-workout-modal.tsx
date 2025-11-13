@@ -11,6 +11,7 @@ import type { Workout } from '@/lib/types/schemas'
 import { WorkoutRationale, WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { AnimationService } from '@/lib/services/animation.service'
+import { useTranslations } from 'next-intl'
 
 interface Exercise {
   name: string
@@ -45,6 +46,7 @@ export function RefineWorkoutModal({
   onWorkoutUpdated,
   userId
 }: RefineWorkoutModalProps) {
+  const t = useTranslations('workout.modals.refineWorkout')
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set())
   const [isMarkingReady, setIsMarkingReady] = useState(false)
@@ -113,11 +115,11 @@ export function RefineWorkoutModal({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to save exercise swap:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
       }
     } catch (error) {
       console.error('Error saving exercise swap:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     }
   }
 
@@ -146,11 +148,11 @@ export function RefineWorkoutModal({
       const result = await updateWorkoutExercisesAction(workout.id, newExercises)
       if (!result.success) {
         console.error('Failed to save custom exercise:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
       }
     } catch (error) {
       console.error('Error saving custom exercise:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     }
   }
 
@@ -169,7 +171,7 @@ export function RefineWorkoutModal({
       console.log('Regenerate exercise', exerciseIndex)
     } catch (error) {
       console.error('Failed to regenerate exercise:', error)
-      alert('Failed to regenerate exercise. Please try again.')
+      alert(t('errors.failedToRegenerate'))
     } finally {
       setIsRegenerating(null)
     }
@@ -190,11 +192,11 @@ export function RefineWorkoutModal({
       const result = await updateWorkoutExercisesAction(workout.id, items)
       if (!result.success) {
         console.error('Failed to save reorder:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
       }
     } catch (error) {
       console.error('Error saving reorder:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     }
   }
 
@@ -210,11 +212,11 @@ export function RefineWorkoutModal({
         onWorkoutUpdated()
         onClose()
       } else {
-        alert(`Failed to mark workout as ready: ${result.error}`)
+        alert(`${t('errors.failedToMarkReady')}: ${result.error}`)
       }
     } catch (error) {
       console.error('Failed to mark workout as ready:', error)
-      alert('Failed to mark workout as ready. Please try again.')
+      alert(t('errors.failedToMarkReady'))
     } finally {
       setIsMarkingReady(false)
     }
@@ -228,10 +230,10 @@ export function RefineWorkoutModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-blue-500" />
-            Refine Workout - {workout.workout_name}
+            {t('titleWithName', { name: workout.workout_name || 'Workout' })}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Review and customize your pre-generated workout before starting
+            {t('description')}
           </p>
         </DialogHeader>
 
@@ -244,7 +246,7 @@ export function RefineWorkoutModal({
               onClick={() => setIsReorderMode(!isReorderMode)}
             >
               <List className="w-4 h-4 mr-2" />
-              {isReorderMode ? 'Done Reordering' : 'Reorder Exercises'}
+              {isReorderMode ? t('reorderMode.done') : t('reorderMode.start')}
             </Button>
           </div>
         )}
@@ -306,8 +308,8 @@ export function RefineWorkoutModal({
                                         setAnimationModalOpen(index)
                                       }}
                                       className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                                      aria-label={`View ${exercise.name} animation`}
-                                      title="Visualizza esercizio"
+                                      aria-label={t('exercise.viewAnimationAria', { name: exercise.name })}
+                                      title={t('exercise.viewAnimation')}
                                     >
                                       <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                                     </button>
@@ -336,29 +338,29 @@ export function RefineWorkoutModal({
                 {/* Exercise Details */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Sets:</span>
+                    <span className="text-muted-foreground">{t('exercise.sets')}</span>
                     <span className="ml-2 font-medium">{exercise.sets}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Reps:</span>
+                    <span className="text-muted-foreground">{t('exercise.reps')}</span>
                     <span className="ml-2 font-medium">
                       {exercise.repRange ? `${exercise.repRange[0]}-${exercise.repRange[1]}` : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Weight:</span>
-                    <span className="ml-2 font-medium">{exercise.targetWeight} kg</span>
+                    <span className="text-muted-foreground">{t('exercise.weight')}</span>
+                    <span className="ml-2 font-medium">{exercise.targetWeight} {t('exercise.units.kg')}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Rest:</span>
-                    <span className="ml-2 font-medium">{exercise.restSeconds}s</span>
+                    <span className="text-muted-foreground">{t('exercise.rest')}</span>
+                    <span className="ml-2 font-medium">{exercise.restSeconds}{t('exercise.units.seconds')}</span>
                   </div>
                 </div>
 
                 {/* Rationale (Expanded) */}
                 {expandedExercises.has(index) && exercise.rationale && (
                   <div className="pt-2 border-t">
-                    <p className="text-sm text-muted-foreground mb-2 font-medium">Why this exercise:</p>
+                    <p className="text-sm text-muted-foreground mb-2 font-medium">{t('rationale.title')}</p>
                     <p className="text-sm">{exercise.rationale}</p>
                   </div>
                 )}
@@ -366,7 +368,7 @@ export function RefineWorkoutModal({
                 {/* Alternatives (Expanded) */}
                 {expandedExercises.has(index) && exercise.alternatives && exercise.alternatives.length > 0 && (
                   <div className="pt-2 border-t space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">AI-suggested alternatives:</p>
+                    <p className="text-sm text-muted-foreground font-medium">{t('rationale.alternatives')}</p>
                     {exercise.alternatives.map((alt, altIndex) => (
                       <div
                         key={altIndex}
@@ -384,18 +386,18 @@ export function RefineWorkoutModal({
                           size="sm"
                           onClick={() => handleSwapExercise(index, altIndex)}
                         >
-                          Swap
+                          {t('buttons.swap')}
                         </Button>
                       </div>
                     ))}
 
                     {/* Custom Exercise Input */}
                     <div className="pt-2 space-y-2">
-                      <p className="text-sm text-muted-foreground font-medium">Or enter your own:</p>
+                      <p className="text-sm text-muted-foreground font-medium">{t('rationale.custom')}</p>
                       <div className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="Type exercise name..."
+                          placeholder={t('customInput.placeholder')}
                           value={customInputs.get(index) || ''}
                           onChange={(e) => {
                             const newInputs = new Map(customInputs)
@@ -415,11 +417,11 @@ export function RefineWorkoutModal({
                           onClick={() => handleCustomSwap(index)}
                           disabled={!customInputs.get(index)?.trim()}
                         >
-                          Use This
+                          {t('customInput.useButton')}
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Enter any exercise name. The AI will validate it fits the workout.
+                        {t('customInput.hint')}
                       </p>
                     </div>
                   </div>
@@ -435,7 +437,7 @@ export function RefineWorkoutModal({
                       disabled={isRegenerating === index}
                     >
                       <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
-                      {isRegenerating === index ? 'Regenerating...' : 'Regenerate'}
+                      {isRegenerating === index ? t('buttons.regenerating') : t('buttons.regenerate')}
                     </Button>
                   </div>
                 )}
@@ -453,11 +455,11 @@ export function RefineWorkoutModal({
         <DialogFooter className="flex justify-between items-center">
           <Button variant="outline" onClick={onClose} disabled={isMarkingReady}>
             <X className="w-4 h-4 mr-2" />
-            Cancel
+            {t('buttons.cancel')}
           </Button>
           <Button onClick={handleMarkAsReady} disabled={isMarkingReady}>
             <Check className="w-4 h-4 mr-2" />
-            {isMarkingReady ? 'Marking as Ready...' : 'Mark as Ready'}
+            {isMarkingReady ? t('buttons.markingAsReady') : t('buttons.markAsReady')}
           </Button>
         </DialogFooter>
       </DialogContent>

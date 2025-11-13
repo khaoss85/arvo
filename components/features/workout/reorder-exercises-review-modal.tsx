@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { X, GripVertical, AlertTriangle, CheckCircle, Info, Sparkles, ArrowRight } from 'lucide-react'
 import { validateReorderAction, updateWorkoutExercisesAction } from '@/app/actions/ai-actions'
@@ -44,6 +45,7 @@ export function ReorderExercisesReviewModal({
   onReorderComplete,
   onRationaleInvalidate
 }: ReorderExercisesReviewModalProps) {
+  const t = useTranslations('workout.modals.reorderExercises')
   const [orderedExercises, setOrderedExercises] = useState<Exercise[]>(exercises)
   const [validation, setValidation] = useState<ReorderValidationOutput | null>(null)
   const [validating, setValidating] = useState(false)
@@ -93,7 +95,7 @@ export function ReorderExercisesReviewModal({
 
       if (!result.success) {
         console.error('Failed to save reorder:', result.error)
-        alert('Failed to save changes. Please try again.')
+        alert(t('errors.failedToSave'))
         setSaving(false)
         return
       }
@@ -104,7 +106,7 @@ export function ReorderExercisesReviewModal({
       onClose()
     } catch (error) {
       console.error('Error saving reorder:', error)
-      alert('Failed to save changes. Please try again.')
+      alert(t('errors.failedToSave'))
     } finally {
       setSaving(false)
     }
@@ -130,10 +132,10 @@ export function ReorderExercisesReviewModal({
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Reorder Exercises
+              {t('title')}
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Drag exercises to reorder. AI will validate your changes.
+              {t('description')}
             </p>
           </div>
           <button
@@ -184,7 +186,7 @@ export function ReorderExercisesReviewModal({
                               </div>
                             )}
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              {exercise.sets} sets × {exercise.repRange[0]}-{exercise.repRange[1]} reps
+                              {t('setsReps', { sets: exercise.sets, reps: `${exercise.repRange[0]}-${exercise.repRange[1]}` })}
                             </div>
                           </div>
                         </div>
@@ -205,7 +207,7 @@ export function ReorderExercisesReviewModal({
                 disabled={validating}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {validating ? 'Validating with AI...' : 'Validate Reorder with AI'}
+                {validating ? t('validating') : t('validateButton')}
               </Button>
             </div>
           )}
@@ -224,7 +226,7 @@ export function ReorderExercisesReviewModal({
                   {getRecommendationIcon(validation.recommendation)}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                      AI Recommendation: {validation.recommendation.replace('_', ' ').toUpperCase()}
+                      {t('aiRecommendation')} {validation.recommendation.replace('_', ' ').toUpperCase()}
                     </h3>
                     <p className="text-sm text-gray-700 dark:text-gray-300">
                       {validation.reasoning}
@@ -238,7 +240,7 @@ export function ReorderExercisesReviewModal({
                 <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
                   <h4 className="font-semibold text-purple-900 dark:text-purple-300 mb-3 flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Workout Flow Preview
+                    {t('workoutFlowPreview')}
                   </h4>
                   <p className="text-sm text-purple-800 dark:text-purple-200 mb-3 leading-relaxed">
                     {validation.rationalePreview.newSequencingRationale}
@@ -246,7 +248,7 @@ export function ReorderExercisesReviewModal({
                   {validation.rationalePreview.keyChanges.length > 0 && (
                     <div className="space-y-1.5">
                       <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wide">
-                        Key Changes:
+                        {t('keyChanges')}
                       </p>
                       <ul className="space-y-1">
                         {validation.rationalePreview.keyChanges.map((change, idx) => (
@@ -266,7 +268,7 @@ export function ReorderExercisesReviewModal({
                 <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
                   <h4 className="font-semibold text-orange-900 dark:text-orange-300 mb-2 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
-                    Warnings
+                    {t('warnings')}
                   </h4>
                   <ul className="space-y-1 ml-6">
                     {validation.warnings.map((warning, idx) => (
@@ -283,7 +285,7 @@ export function ReorderExercisesReviewModal({
                 <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
                     <Info className="w-4 h-4" />
-                    Better Alternatives
+                    {t('betterAlternatives')}
                   </h4>
                   <ul className="space-y-1 ml-6">
                     {validation.suggestions.map((suggestion, idx) => (
@@ -305,14 +307,14 @@ export function ReorderExercisesReviewModal({
             variant="outline"
             className="flex-1 border-gray-300 dark:border-gray-600"
           >
-            Cancel
+            {t('cancelButton')}
           </Button>
           <Button
             onClick={handleApply}
             disabled={!hasReordered || (validation ? validation.isValid === false : false) || saving}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? 'Saving...' : 'Apply Reorder'}
+            {saving ? t('saving') : t('applyButton')}
           </Button>
         </div>
       </div>

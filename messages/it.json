@@ -140,6 +140,25 @@
   },
   "workout": {
     "modals": {
+      "reorderExercises": {
+        "title": "Riordina Esercizi",
+        "description": "Trascina gli esercizi per riordinarli. L'IA validerà le tue modifiche.",
+        "setsCompleted": "{completed}/{total} serie completate",
+        "setsReps": "{sets} serie × {reps} reps",
+        "validating": "Validazione in corso...",
+        "validateButton": "Valida Riordino con IA",
+        "aiRecommendation": "Raccomandazione IA:",
+        "workoutFlowPreview": "Anteprima Flusso Allenamento",
+        "keyChanges": "Cambiamenti Chiave:",
+        "warnings": "Avvisi",
+        "betterAlternatives": "Alternative Migliori",
+        "cancelButton": "Annulla",
+        "applyButton": "Applica Riordino",
+        "saving": "Salvataggio...",
+        "errors": {
+          "failedToSave": "Impossibile salvare le modifiche. Riprova."
+        }
+      },
       "exitWorkout": {
         "title": "Terminare la Sessione?",
         "description": "I tuoi progressi sono stati salvati. Puoi riprendere questo allenamento in qualsiasi momento dalla dashboard.",
@@ -170,6 +189,89 @@
         "errors": {
           "hardLimit": "Non puoi aggiungere più esercizi",
           "failed": "Impossibile aggiungere l'esercizio. Riprova."
+        }
+      },
+      "refineWorkout": {
+        "title": "Perfeziona Allenamento",
+        "titleWithName": "Perfeziona Allenamento - {name}",
+        "description": "Rivedi e personalizza il tuo allenamento pre-generato prima di iniziare",
+        "reorderMode": {
+          "done": "Fine Riordino",
+          "start": "Riordina Esercizi"
+        },
+        "exercise": {
+          "sets": "Serie:",
+          "reps": "Reps:",
+          "weight": "Peso:",
+          "rest": "Riposo:",
+          "units": {
+            "kg": "kg",
+            "seconds": "s"
+          },
+          "viewAnimation": "Visualizza esercizio",
+          "viewAnimationAria": "Visualizza animazione {name}",
+          "removeExercise": "Rimuovi esercizio"
+        },
+        "rationale": {
+          "title": "Perché questo esercizio:",
+          "alternatives": "Alternative suggerite dall'AI:",
+          "custom": "Oppure inserisci il tuo:",
+          "noAlternatives": "Nessuna alternativa disponibile",
+          "loadingAlternatives": "Caricamento alternative..."
+        },
+        "customInput": {
+          "placeholder": "Digita nome esercizio...",
+          "hint": "Inserisci qualsiasi nome di esercizio. L'AI verificherà che si adatti all'allenamento.",
+          "useButton": "Usa Questo",
+          "validating": "Validazione...",
+          "validate": "Valida"
+        },
+        "validation": {
+          "caution": "⚠️ Attenzione: {rationale}",
+          "edit": "Modifica"
+        },
+        "userModifications": {
+          "aiRecommended": "AI raccomandato: {count} serie",
+          "youAdded": "Hai aggiunto: +{count}",
+          "volumeWarning": "⚠️ Avviso volume"
+        },
+        "buttons": {
+          "swap": "Scambia",
+          "regenerate": "Rigenera",
+          "regenerating": "Rigenerazione...",
+          "cancel": "Annulla",
+          "markAsReady": "Segna come Pronto",
+          "markingAsReady": "Contrassegno come Pronto...",
+          "reorder": "Riordina",
+          "saveAndReturn": "Salva e Torna",
+          "saving": "Salvataggio..."
+        },
+        "addExercise": {
+          "extraExercises": "Esercizi extra: {current}/{max}",
+          "hardLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo."
+        },
+        "removeDialog": {
+          "cannotRemoveTitle": "Impossibile Rimuovere",
+          "cannotRemoveMessage": "Non puoi rimuovere esercizi raccomandati dall'AI. Puoi solo rimuovere esercizi aggiunti da te.",
+          "confirmTitle": "Conferma Rimozione",
+          "confirmMessage": "Vuoi rimuovere \"{name}\"?",
+          "removeButton": "Rimuovi"
+        },
+        "alerts": {
+          "maxExtraSets": "Massimo 5 serie extra consentite. Hai raggiunto il limite per prevenire il sovrallenamento.",
+          "highVolumeWarning": "Stai aggiungendo la serie #{count} oltre la raccomandazione AI.\n\nQuesto aumenta l'affaticamento e le esigenze di recupero. Continuare?",
+          "highVolumeLabel": "Volume elevato - monitora il recupero"
+        },
+        "errors": {
+          "error": "Errore",
+          "failedToSave": "Impossibile salvare le modifiche. Riprova.",
+          "failedToMarkReady": "Impossibile contrassegnare l'allenamento come pronto. Riprova.",
+          "failedToRegenerate": "Impossibile rigenerare l'esercizio. Riprova.",
+          "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova.",
+          "failedToRemoveExercise": "Impossibile rimuovere l'esercizio. Riprova.",
+          "failedToAddSet": "Impossibile aggiungere la serie. Riprova.",
+          "failedToPrepareWorkout": "Impossibile preparare l'allenamento: {error}",
+          "failedToPrepareWorkoutGeneric": "Impossibile preparare l'allenamento. Riprova."
         }
       }
     },
