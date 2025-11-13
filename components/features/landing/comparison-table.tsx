@@ -3,8 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Check, X, Minus } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function ComparisonTable() {
+  const t = useTranslations('landing.comparison');
   type FeatureValue = boolean | "partial" | string;
 
   interface Feature {
@@ -17,77 +19,77 @@ export function ComparisonTable() {
 
   const features: Feature[] = [
     {
-      name: "AI Reasoning (GPT-5)",
+      name: t('features.aiReasoning'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: "partial",
     },
     {
-      name: "Set-by-set progression",
+      name: t('features.setBySetProgression'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: true,
     },
     {
-      name: "Pattern learning",
+      name: t('features.patternLearning'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: true,
     },
     {
-      name: "Natural language notes → AI insights",
+      name: t('features.naturalLanguageNotes'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: false,
     },
     {
-      name: "Biomechanical adjustments",
+      name: t('features.biomechanicalAdjustments'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: "partial",
     },
     {
-      name: "Volume tracking (MEV/MAV/MRV)",
+      name: t('features.volumeTracking'),
       arvo: true,
       excel: "partial",
       genericApps: false,
       personalTrainer: "partial",
     },
     {
-      name: "Injury prevention",
+      name: t('features.injuryPrevention'),
       arvo: true,
       excel: false,
       genericApps: false,
       personalTrainer: true,
     },
     {
-      name: "Offline support",
+      name: t('features.offlineSupport'),
       arvo: true,
       excel: true,
       genericApps: "partial",
       personalTrainer: false,
     },
     {
-      name: "Methodology fidelity",
-      arvo: "Kuba/Mentzer",
-      excel: "Manual",
-      genericApps: "Generic",
-      personalTrainer: "Varies",
+      name: t('features.methodologyFidelity.name'),
+      arvo: t('features.methodologyFidelity.values.arvo'),
+      excel: t('features.methodologyFidelity.values.excel'),
+      genericApps: t('features.methodologyFidelity.values.genericApps'),
+      personalTrainer: t('features.methodologyFidelity.values.personalTrainer'),
     },
     {
-      name: "Cost",
-      arvo: "Free",
-      excel: "Free",
-      genericApps: "$10/mo",
-      personalTrainer: "$100+/session",
+      name: t('features.cost.name'),
+      arvo: t('features.cost.values.arvo'),
+      excel: t('features.cost.values.excel'),
+      genericApps: t('features.cost.values.genericApps'),
+      personalTrainer: t('features.cost.values.personalTrainer'),
     },
     {
-      name: "Always available",
+      name: t('features.alwaysAvailable'),
       arvo: true,
       excel: true,
       genericApps: true,
@@ -119,10 +121,10 @@ export function ComparisonTable() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Why <span className="text-primary-600 dark:text-primary-400">Arvo</span>?
+            {t('title.part1')} <span className="text-primary-600 dark:text-primary-400">Arvo</span>{t('title.part2')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            No marketing claims. Just feature-by-feature comparison.
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -134,8 +136,8 @@ export function ComparisonTable() {
         >
           <Card className="overflow-hidden border-2">
             <CardHeader className="bg-primary-50 dark:bg-primary-950/20 border-b">
-              <CardTitle>Feature Comparison</CardTitle>
-              <CardDescription>Arvo vs alternatives you're probably considering</CardDescription>
+              <CardTitle>{t('card.title')}</CardTitle>
+              <CardDescription>{t('card.description')}</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {/* Desktop Table */}
@@ -143,11 +145,11 @@ export function ComparisonTable() {
                 <table className="w-full">
                   <thead className="bg-muted/50">
                     <tr>
-                      <th className="text-left p-4 font-semibold">Feature</th>
-                      <th className="text-center p-4 font-semibold text-primary-600 dark:text-primary-400">Arvo</th>
-                      <th className="text-center p-4 font-semibold">Excel</th>
-                      <th className="text-center p-4 font-semibold">Generic Apps</th>
-                      <th className="text-center p-4 font-semibold">Personal Trainer</th>
+                      <th className="text-left p-4 font-semibold">{t('table.headers.feature')}</th>
+                      <th className="text-center p-4 font-semibold text-primary-600 dark:text-primary-400">{t('table.headers.arvo')}</th>
+                      <th className="text-center p-4 font-semibold">{t('table.headers.excel')}</th>
+                      <th className="text-center p-4 font-semibold">{t('table.headers.genericApps')}</th>
+                      <th className="text-center p-4 font-semibold">{t('table.headers.personalTrainer')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -176,19 +178,19 @@ export function ComparisonTable() {
                     <div className="font-semibold text-sm mb-3">{feature.name}</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center justify-between p-2 bg-primary-50 dark:bg-primary-950/20 rounded">
-                        <span className="text-xs font-medium text-primary-600 dark:text-primary-400">Arvo</span>
+                        <span className="text-xs font-medium text-primary-600 dark:text-primary-400">{t('table.headers.arvo')}</span>
                         {renderValue(feature.arvo, true)}
                       </div>
                       <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <span className="text-xs text-muted-foreground">Excel</span>
+                        <span className="text-xs text-muted-foreground">{t('table.headers.excel')}</span>
                         {renderValue(feature.excel)}
                       </div>
                       <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <span className="text-xs text-muted-foreground">Apps</span>
+                        <span className="text-xs text-muted-foreground">{t('mobile.apps')}</span>
                         {renderValue(feature.genericApps)}
                       </div>
                       <div className="flex items-center justify-between p-2 bg-muted/50 rounded">
-                        <span className="text-xs text-muted-foreground">Trainer</span>
+                        <span className="text-xs text-muted-foreground">{t('mobile.trainer')}</span>
                         {renderValue(feature.personalTrainer)}
                       </div>
                     </div>
@@ -209,15 +211,15 @@ export function ComparisonTable() {
         >
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-muted-foreground">Full support</span>
+            <span className="text-muted-foreground">{t('legend.fullSupport')}</span>
           </div>
           <div className="flex items-center gap-2">
             <Minus className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-            <span className="text-muted-foreground">Partial/Varies</span>
+            <span className="text-muted-foreground">{t('legend.partialVaries')}</span>
           </div>
           <div className="flex items-center gap-2">
             <X className="w-4 h-4 text-red-400 dark:text-red-500" />
-            <span className="text-muted-foreground">Not available</span>
+            <span className="text-muted-foreground">{t('legend.notAvailable')}</span>
           </div>
         </motion.div>
 
@@ -231,7 +233,7 @@ export function ComparisonTable() {
         >
           <div className="inline-block bg-background border-2 border-primary-200 dark:border-primary-800 rounded-lg p-4 max-w-3xl">
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">The reality:</span> Excel gives you full control but zero intelligence. Generic apps track sets but don't understand progression. PTs are great but expensive and unavailable 24/7. Arvo combines AI reasoning with always-on availability at zero cost.
+              <span className="font-semibold text-foreground">{t('bottomNote.label')}</span> {t('bottomNote.text')}
             </p>
           </div>
         </motion.div>

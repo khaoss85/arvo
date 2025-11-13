@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface CTASectionProps {
   isAuthenticated: boolean;
 }
 
 export function CTASection({ isAuthenticated }: CTASectionProps) {
+  const t = useTranslations('landing.cta');
+
   return (
     <section className="py-24 px-4 bg-gradient-to-b from-background to-primary-50 dark:to-primary-950/20">
       <div className="container max-w-4xl mx-auto">
@@ -30,26 +33,26 @@ export function CTASection({ isAuthenticated }: CTASectionProps) {
           {/* Headline */}
           <div className="space-y-4">
             <h2 className="text-3xl md:text-5xl font-bold">
-              Ready to Train{" "}
+              {t('title.part1')}{" "}
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                Smarter?
+                {t('title.part2')}
               </span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join athletes using AI-powered training. Complete your first AI-generated workout in minutes.
+              {t('subtitle')}
             </p>
           </div>
 
           {/* Features Pills */}
           <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
             <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ 5-minute onboarding
+              ✓ {t('features.onboarding')}
             </div>
             <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ Instant workout generation
+              ✓ {t('features.instantGeneration')}
             </div>
             <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ Free to start
+              ✓ {t('features.freeToStart')}
             </div>
           </div>
 
@@ -57,7 +60,7 @@ export function CTASection({ isAuthenticated }: CTASectionProps) {
           <div className="pt-4">
             <Link href={isAuthenticated ? "/dashboard" : "/login"}>
               <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? "Go to Dashboard" : "Start Your First Workout"}
+                {isAuthenticated ? t('button.dashboard') : t('button.startWorkout')}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -65,9 +68,10 @@ export function CTASection({ isAuthenticated }: CTASectionProps) {
 
           {/* Technical Note */}
           <p className="text-xs text-muted-foreground/70 max-w-2xl mx-auto">
-            No credit card required. Passwordless magic link authentication.
+            {t('technical.noCreditCard')}{" "}
+            {t('technical.magicLink')}
             <br />
-            Your data is yours. Privacy-first design.
+            {t('technical.privacyFirst')}
           </p>
         </motion.div>
       </div>

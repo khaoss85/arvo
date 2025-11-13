@@ -3,8 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Brain, TrendingUp, Zap, ArrowRight } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function AIShowcase() {
+  const t = useTranslations('landing.aiShowcase');
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -35,10 +38,10 @@ export function AIShowcase() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            AI That Actually <span className="text-primary-600 dark:text-primary-400">Reasons</span>
+            {t('title.part1')} <span className="text-primary-600 dark:text-primary-400">{t('title.part2')}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Not just random exercise suggestions. See real AI decisions with complete reasoning.
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -57,10 +60,10 @@ export function AIShowcase() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <Brain className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                      Exercise Architect
+                      {t('exerciseArchitect.title')}
                     </CardTitle>
                     <CardDescription className="mt-2">
-                      Architects your training using GPT-5 reasoning · AI Agent
+                      {t('exerciseArchitect.description')}
                     </CardDescription>
                   </div>
                 </div>
@@ -68,7 +71,7 @@ export function AIShowcase() {
               <CardContent className="space-y-4">
                 {/* Input */}
                 <div>
-                  <div className="text-xs font-mono text-muted-foreground mb-2">INPUT CONTEXT:</div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('exerciseArchitect.inputContextLabel')}</div>
                   <div className="bg-muted rounded-md p-3 text-sm font-mono space-y-1">
                     <div><span className="text-primary-600 dark:text-primary-400">weakPoints:</span> ["upper_chest"]</div>
                     <div><span className="text-primary-600 dark:text-primary-400">mesocyclePhase:</span> "accumulation"</div>
@@ -84,42 +87,42 @@ export function AIShowcase() {
 
                 {/* Output */}
                 <div>
-                  <div className="text-xs font-mono text-muted-foreground mb-2">AI REASONING OUTPUT:</div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('exerciseArchitect.outputLabel')}</div>
                   <div className="bg-background rounded-md p-3 text-sm font-mono space-y-2 border">
-                    <div className="text-green-600 dark:text-green-400">{`// Selected Exercises:`}</div>
+                    <div className="text-green-600 dark:text-green-400">{`// ${t('exerciseArchitect.selectedExercises')}`}</div>
                     <div className="pl-2 space-y-1">
                       <div><span className="text-orange-600 dark:text-orange-400">1.</span> Incline DB Press</div>
                       <div className="text-xs text-muted-foreground pl-3">
-                        → "Targets weak upper chest while fresh"
+                        → {t('exerciseArchitect.example.reason1')}
                       </div>
                       <div className="text-xs text-muted-foreground pl-3">
                         → Sets: 3 × 8-12 @ RIR 1-2
                       </div>
                     </div>
 
-                    <div className="pt-2 text-green-600 dark:text-green-400">{`// Insight-Influenced Changes:`}</div>
+                    <div className="pt-2 text-green-600 dark:text-green-400">{`// ${t('exerciseArchitect.insightChanges')}`}</div>
                     <div className="pl-2 text-xs space-y-1">
-                      <div className="text-red-400">✗ Dips (avoided)</div>
+                      <div className="text-red-400">{t('exerciseArchitect.example.avoided')}</div>
                       <div className="text-muted-foreground pl-3">
-                        Reason: "Active warning for shoulder pain"
+                        {t('exerciseArchitect.example.avoidedReason')}
                       </div>
-                      <div className="text-green-400">✓ Cable Flyes (substituted)</div>
+                      <div className="text-green-400">{t('exerciseArchitect.example.substituted')}</div>
                       <div className="text-muted-foreground pl-3">
-                        Reason: "Joint-friendly alternative for chest isolation"
+                        {t('exerciseArchitect.example.substitutedReason')}
                       </div>
                     </div>
 
-                    <div className="pt-2 text-green-600 dark:text-green-400">{`// Technical Cues:`}</div>
+                    <div className="pt-2 text-green-600 dark:text-green-400">{`// ${t('exerciseArchitect.technicalCues')}`}</div>
                     <div className="pl-2 text-xs text-muted-foreground">
-                      ["Semi-bent arms throughout", "Squeeze at stretch"]
+                      {t('exerciseArchitect.example.cues')}
                     </div>
                   </div>
                 </div>
 
                 {/* Stats */}
                 <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
-                  <span>Considers: 8+ variables</span>
-                  <span>Reasoning model: GPT-5</span>
+                  <span>{t('exerciseArchitect.stats.considers')}</span>
+                  <span>{t('exerciseArchitect.stats.model')}</span>
                 </div>
               </CardContent>
             </Card>
@@ -133,10 +136,10 @@ export function AIShowcase() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                      Load Navigator
+                      {t('loadNavigator.title')}
                     </CardTitle>
                     <CardDescription className="mt-2">
-                      Navigates your loads in real-time, set-by-set · AI Agent
+                      {t('loadNavigator.description')}
                     </CardDescription>
                   </div>
                 </div>
@@ -144,13 +147,13 @@ export function AIShowcase() {
               <CardContent className="space-y-4">
                 {/* Previous Set */}
                 <div>
-                  <div className="text-xs font-mono text-muted-foreground mb-2">PREVIOUS SET PERFORMANCE:</div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('loadNavigator.previousSetLabel')}</div>
                   <div className="bg-muted rounded-md p-3 text-sm font-mono space-y-1">
                     <div><span className="text-primary-600 dark:text-primary-400">exercise:</span> "Barbell Bench Press"</div>
                     <div><span className="text-primary-600 dark:text-primary-400">weight:</span> 100kg</div>
-                    <div><span className="text-primary-600 dark:text-primary-400">reps:</span> 12 (top of range)</div>
-                    <div><span className="text-primary-600 dark:text-primary-400">RIR:</span> 1 (close to failure)</div>
-                    <div><span className="text-primary-600 dark:text-primary-400">mentalReadiness:</span> 4/5 (good)</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">reps:</span> {t('loadNavigator.example.reps')}</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">RIR:</span> {t('loadNavigator.example.rir')}</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">mentalReadiness:</span> {t('loadNavigator.example.mentalReadiness')}</div>
                   </div>
                 </div>
 
@@ -158,13 +161,13 @@ export function AIShowcase() {
                 <div className="flex items-center justify-center">
                   <div className="flex flex-col items-center gap-1">
                     <Zap className="w-5 h-5 text-yellow-500 animate-pulse" />
-                    <span className="text-xs text-muted-foreground">AI reasoning...</span>
+                    <span className="text-xs text-muted-foreground">{t('loadNavigator.aiReasoning')}</span>
                   </div>
                 </div>
 
                 {/* Next Set Suggestion */}
                 <div>
-                  <div className="text-xs font-mono text-muted-foreground mb-2">NEXT SET SUGGESTION:</div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('loadNavigator.nextSetLabel')}</div>
                   <div className="bg-background rounded-md p-3 text-sm font-mono space-y-2 border border-primary-300 dark:border-primary-700">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">102.5kg</span>
@@ -175,20 +178,20 @@ export function AIShowcase() {
                     </div>
 
                     <div className="pt-2 border-t text-xs space-y-1">
-                      <div className="text-green-600 dark:text-green-400">{`// Reasoning:`}</div>
+                      <div className="text-green-600 dark:text-green-400">{`// ${t('loadNavigator.reasoningLabel')}`}</div>
                       <div className="text-muted-foreground pl-2 space-y-1">
-                        <div>✓ Hit top of rep range (12) with RIR 1</div>
-                        <div>✓ Mental readiness is high (4/5)</div>
-                        <div>✓ Accumulation phase → weight increase</div>
-                        <div>✓ Increment: +2.5kg (standard for barbell)</div>
-                        <div>✓ Target reps: 8 (bottom of 8-12 range)</div>
+                        <div>{t('loadNavigator.reasoning.point1')}</div>
+                        <div>{t('loadNavigator.reasoning.point2')}</div>
+                        <div>{t('loadNavigator.reasoning.point3')}</div>
+                        <div>{t('loadNavigator.reasoning.point4')}</div>
+                        <div>{t('loadNavigator.reasoning.point5')}</div>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t text-xs">
-                      <div className="text-green-600 dark:text-green-400">{`// Technical Focus:`}</div>
+                      <div className="text-green-600 dark:text-green-400">{`// ${t('loadNavigator.technicalFocusLabel')}`}</div>
                       <div className="text-muted-foreground pl-2">
-                        "Controlled descent, explosive press"
+                        {t('loadNavigator.technicalFocus')}
                       </div>
                     </div>
                   </div>
@@ -196,8 +199,8 @@ export function AIShowcase() {
 
                 {/* Stats */}
                 <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
-                  <span>Decision factors: 6+</span>
-                  <span>Response: &lt;500ms</span>
+                  <span>{t('loadNavigator.stats.factors')}</span>
+                  <span>{t('loadNavigator.stats.response')}</span>
                 </div>
               </CardContent>
             </Card>
@@ -209,17 +212,17 @@ export function AIShowcase() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  Safety-First: Insights Integration
+                  {t('safetyFirst.title')}
                 </CardTitle>
                 <CardDescription>
-                  Every AI agent reads active insights and adapts automatically
+                  {t('safetyFirst.description')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-3 gap-4">
                   {/* Detection */}
                   <div className="space-y-2">
-                    <div className="text-xs font-semibold text-muted-foreground">1. DETECTION</div>
+                    <div className="text-xs font-semibold text-muted-foreground">{t('safetyFirst.detection.title')}</div>
                     <div className="bg-background rounded-md p-3 text-xs font-mono border">
                       <div className="text-orange-600 dark:text-orange-400 mb-1">insight: {`{`}</div>
                       <div className="pl-2 space-y-0.5 text-muted-foreground">
@@ -234,7 +237,7 @@ export function AIShowcase() {
 
                   {/* Learning */}
                   <div className="space-y-2">
-                    <div className="text-xs font-semibold text-muted-foreground">2. LEARNING</div>
+                    <div className="text-xs font-semibold text-muted-foreground">{t('safetyFirst.learning.title')}</div>
                     <div className="bg-background rounded-md p-3 text-xs font-mono border">
                       <div className="text-green-600 dark:text-green-400 mb-1">memory: {`{`}</div>
                       <div className="pl-2 space-y-0.5 text-muted-foreground">
@@ -250,26 +253,26 @@ export function AIShowcase() {
 
                   {/* Application */}
                   <div className="space-y-2">
-                    <div className="text-xs font-semibold text-muted-foreground">3. APPLICATION</div>
+                    <div className="text-xs font-semibold text-muted-foreground">{t('safetyFirst.application.title')}</div>
                     <div className="bg-background rounded-md p-3 text-xs space-y-2 border">
                       <div className="font-mono">
                         <div className="text-blue-600 dark:text-blue-400">ExerciseSelector:</div>
-                        <div className="text-muted-foreground pl-2">Suggests Cable Pushdown</div>
+                        <div className="text-muted-foreground pl-2">{t('safetyFirst.application.selector')}</div>
                       </div>
                       <div className="font-mono">
                         <div className="text-blue-600 dark:text-blue-400">ProgressionCalc:</div>
-                        <div className="text-muted-foreground pl-2">Conservative load</div>
+                        <div className="text-muted-foreground pl-2">{t('safetyFirst.application.progression')}</div>
                       </div>
                       <div className="font-mono">
                         <div className="text-blue-600 dark:text-blue-400">SubstitutionAgent:</div>
-                        <div className="text-muted-foreground pl-2">Validates alternatives</div>
+                        <div className="text-muted-foreground pl-2">{t('safetyFirst.application.substitution')}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-950/40 rounded-md text-xs text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800">
-                  <strong>Zero configuration required.</strong> The system learns from your behavior and protects you automatically.
+                  <strong>{t('safetyFirst.footer.bold')}</strong> {t('safetyFirst.footer.text')}
                 </div>
               </CardContent>
             </Card>

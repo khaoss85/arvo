@@ -3,8 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { BookOpen, Zap } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function MethodologiesSection() {
+  const t = useTranslations('landing.methodologies');
+
   return (
     <section className="py-24 px-4 bg-muted/30">
       <div className="container max-w-7xl mx-auto">
@@ -16,11 +19,11 @@ export function MethodologiesSection() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Training Methods with{" "}
-            <span className="text-primary-600 dark:text-primary-400">Scientific Fidelity</span>
+            {t('title.part1')}{" "}
+            <span className="text-primary-600 dark:text-primary-400">{t('title.part2')}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Not generic interpretations. Complete methodology implementations.
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -36,50 +39,58 @@ export function MethodologiesSection() {
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  <CardTitle>Kuba Method</CardTitle>
+                  <CardTitle>{t('kubaMethod.name')}</CardTitle>
                 </div>
-                <CardDescription>Evidence-based parametric training</CardDescription>
+                <CardDescription>{t('kubaMethod.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Configuration Depth */}
                 <div className="bg-primary-50 dark:bg-primary-950/20 rounded-md p-3 border border-primary-200 dark:border-primary-800">
                   <div className="text-sm font-semibold text-primary-700 dark:text-primary-300 mb-2">
-                    Implementation Depth
+                    {t('kubaMethod.implementationDepth')}
                   </div>
                   <div className="font-mono text-2xl font-bold text-primary-600 dark:text-primary-400">
-                    362 lines
+                    {t('kubaMethod.configLines', { count: 362 })}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    of configuration & methodology rules
+                    {t('kubaMethod.configDescription')}
                   </div>
                 </div>
 
                 {/* Core Principles */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Core Principles:</div>
+                  <div className="text-sm font-semibold">{t('kubaMethod.corePrinciples')}</div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        <span className="font-mono text-primary-600 dark:text-primary-400">2 working sets</span> per exercise @ RIR 0-1
+                        {t.rich('kubaMethod.principles.workingSets', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        Tempo: <span className="font-mono text-primary-600 dark:text-primary-400">3-1-1-1</span> (3s eccentric, 1s pause, 1s concentric, 1s squeeze)
+                        {t.rich('kubaMethod.principles.tempo', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        <span className="font-mono text-primary-600 dark:text-primary-400">60%</span> lengthened-biased exercises
+                        {t.rich('kubaMethod.principles.lengthenedBiased', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        Rest: <span className="font-mono text-primary-600 dark:text-primary-400">150-180s</span> compound, <span className="font-mono text-primary-600 dark:text-primary-400">90-120s</span> isolation
+                        {t.rich('kubaMethod.principles.rest', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                   </div>
@@ -87,53 +98,53 @@ export function MethodologiesSection() {
 
                 {/* Volume Landmarks */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Volume Landmarks (sets/week):</div>
+                  <div className="text-sm font-semibold">{t('kubaMethod.volumeLandmarks')}</div>
                   <div className="bg-muted rounded-md p-3 font-mono text-xs space-y-1">
                     <div className="grid grid-cols-4 gap-2 font-semibold text-muted-foreground mb-1">
-                      <div>Muscle</div>
-                      <div>MEV</div>
-                      <div>MAV</div>
-                      <div>MRV</div>
+                      <div>{t('kubaMethod.volumeTable.muscle')}</div>
+                      <div>{t('kubaMethod.volumeTable.mev')}</div>
+                      <div>{t('kubaMethod.volumeTable.mav')}</div>
+                      <div>{t('kubaMethod.volumeTable.mrv')}</div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      <div>Chest</div>
+                      <div>{t('kubaMethod.volumeTable.chest')}</div>
                       <div className="text-green-600 dark:text-green-400">10</div>
                       <div className="text-primary-600 dark:text-primary-400">18</div>
                       <div className="text-orange-600 dark:text-orange-400">22</div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      <div>Back</div>
+                      <div>{t('kubaMethod.volumeTable.back')}</div>
                       <div className="text-green-600 dark:text-green-400">12</div>
                       <div className="text-primary-600 dark:text-primary-400">20</div>
                       <div className="text-orange-600 dark:text-orange-400">25</div>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      <div>Quads</div>
+                      <div>{t('kubaMethod.volumeTable.quads')}</div>
                       <div className="text-green-600 dark:text-green-400">10</div>
                       <div className="text-primary-600 dark:text-primary-400">16</div>
                       <div className="text-orange-600 dark:text-orange-400">20</div>
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    MEV: Minimum Effective Volume · MAV: Maximum Adaptive Volume · MRV: Maximum Recoverable Volume
+                    {t('kubaMethod.volumeAcronyms')}
                   </div>
                 </div>
 
                 {/* Periodization */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Periodization:</div>
+                  <div className="text-sm font-semibold">{t('kubaMethod.periodization')}</div>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div className="bg-blue-50 dark:bg-blue-950/20 rounded p-2 border border-blue-200 dark:border-blue-900">
-                      <div className="font-semibold text-blue-700 dark:text-blue-300">Weeks 1-3</div>
-                      <div className="text-muted-foreground mt-1">Accumulation</div>
+                      <div className="font-semibold text-blue-700 dark:text-blue-300">{t('kubaMethod.phases.weeks1to3')}</div>
+                      <div className="text-muted-foreground mt-1">{t('kubaMethod.phases.accumulation')}</div>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-950/20 rounded p-2 border border-orange-200 dark:border-orange-900">
-                      <div className="font-semibold text-orange-700 dark:text-orange-300">Weeks 4-5</div>
-                      <div className="text-muted-foreground mt-1">Intensification</div>
+                      <div className="font-semibold text-orange-700 dark:text-orange-300">{t('kubaMethod.phases.weeks4to5')}</div>
+                      <div className="text-muted-foreground mt-1">{t('kubaMethod.phases.intensification')}</div>
                     </div>
                     <div className="bg-green-50 dark:bg-green-950/20 rounded p-2 border border-green-200 dark:border-green-900">
-                      <div className="font-semibold text-green-700 dark:text-green-300">Week 6</div>
-                      <div className="text-muted-foreground mt-1">Deload</div>
+                      <div className="font-semibold text-green-700 dark:text-green-300">{t('kubaMethod.phases.week6')}</div>
+                      <div className="text-muted-foreground mt-1">{t('kubaMethod.phases.deload')}</div>
                     </div>
                   </div>
                 </div>
@@ -152,50 +163,56 @@ export function MethodologiesSection() {
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  <CardTitle>Mike Mentzer HIT</CardTitle>
+                  <CardTitle>{t('mentzerHIT.name')}</CardTitle>
                 </div>
-                <CardDescription>High-intensity training philosophy</CardDescription>
+                <CardDescription>{t('mentzerHIT.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Configuration Depth */}
                 <div className="bg-primary-50 dark:bg-primary-950/20 rounded-md p-3 border border-primary-200 dark:border-primary-800">
                   <div className="text-sm font-semibold text-primary-700 dark:text-primary-300 mb-2">
-                    Implementation Depth
+                    {t('mentzerHIT.implementationDepth')}
                   </div>
                   <div className="font-mono text-2xl font-bold text-primary-600 dark:text-primary-400">
-                    532 lines
+                    {t('mentzerHIT.configLines', { count: 532 })}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    of configuration & methodology rules
+                    {t('mentzerHIT.configDescription')}
                   </div>
                 </div>
 
                 {/* Core Principles */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Core Principles:</div>
+                  <div className="text-sm font-semibold">{t('mentzerHIT.corePrinciples')}</div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        <span className="font-mono text-primary-600 dark:text-primary-400">1-2 sets</span> per exercise to absolute failure
+                        {t.rich('mentzerHIT.principles.sets', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        Low volume, <span className="font-semibold">maximum intensity</span>
+                        {t.rich('mentzerHIT.principles.intensity', {
+                          bold: (chunks) => <span className="font-semibold">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        Recovery: <span className="font-mono text-primary-600 dark:text-primary-400">4-7 days</span> between sessions
+                        {t.rich('mentzerHIT.principles.recovery', {
+                          mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span>
+                        })}
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
                       <div>
-                        Pre-exhaust techniques
+                        {t('mentzerHIT.principles.preExhaust')}
                       </div>
                     </div>
                   </div>
@@ -203,50 +220,50 @@ export function MethodologiesSection() {
 
                 {/* Advanced Techniques */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Advanced Techniques:</div>
+                  <div className="text-sm font-semibold">{t('mentzerHIT.advancedTechniques')}</div>
                   <div className="bg-muted rounded-md p-3 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span>Static Holds</span>
-                      <span className="font-mono text-primary-600 dark:text-primary-400">Post-failure</span>
+                      <span>{t('mentzerHIT.techniques.staticHolds')}</span>
+                      <span className="font-mono text-primary-600 dark:text-primary-400">{t('mentzerHIT.techniques.staticHoldsValue')}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Forced Reps</span>
-                      <span className="font-mono text-primary-600 dark:text-primary-400">1-2 reps</span>
+                      <span>{t('mentzerHIT.techniques.forcedReps')}</span>
+                      <span className="font-mono text-primary-600 dark:text-primary-400">{t('mentzerHIT.techniques.forcedRepsValue')}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Rest-Pause</span>
-                      <span className="font-mono text-primary-600 dark:text-primary-400">10s rest</span>
+                      <span>{t('mentzerHIT.techniques.restPause')}</span>
+                      <span className="font-mono text-primary-600 dark:text-primary-400">{t('mentzerHIT.techniques.restPauseValue')}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span>Negative Emphasis</span>
-                      <span className="font-mono text-primary-600 dark:text-primary-400">4-6s eccentric</span>
+                      <span>{t('mentzerHIT.techniques.negativeEmphasis')}</span>
+                      <span className="font-mono text-primary-600 dark:text-primary-400">{t('mentzerHIT.techniques.negativeEmphasisValue')}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Philosophy */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Training Philosophy:</div>
+                  <div className="text-sm font-semibold">{t('mentzerHIT.philosophy')}</div>
                   <div className="bg-background rounded-md p-3 text-sm border italic text-muted-foreground">
-                    "More is not better. Better is better. Train with absolute intensity, then allow full recovery for growth."
+                    {t('mentzerHIT.philosophyQuote')}
                   </div>
                 </div>
 
                 {/* Frequency */}
                 <div className="space-y-2">
-                  <div className="text-sm font-semibold">Typical Split:</div>
+                  <div className="text-sm font-semibold">{t('mentzerHIT.typicalSplit')}</div>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="bg-muted rounded p-2">
-                      <div className="font-semibold">Workout A</div>
-                      <div className="text-muted-foreground mt-1">Chest, Back, Delts</div>
+                      <div className="font-semibold">{t('mentzerHIT.split.workoutA')}</div>
+                      <div className="text-muted-foreground mt-1">{t('mentzerHIT.split.workoutAMuscles')}</div>
                     </div>
                     <div className="bg-muted rounded p-2">
-                      <div className="font-semibold">Workout B</div>
-                      <div className="text-muted-foreground mt-1">Legs, Arms</div>
+                      <div className="font-semibold">{t('mentzerHIT.split.workoutB')}</div>
+                      <div className="text-muted-foreground mt-1">{t('mentzerHIT.split.workoutBMuscles')}</div>
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Frequency: Every 4-7 days per workout
+                    {t('mentzerHIT.frequency')}
                   </div>
                 </div>
               </CardContent>
@@ -264,7 +281,7 @@ export function MethodologiesSection() {
         >
           <div className="inline-block bg-background border-2 border-primary-200 dark:border-primary-800 rounded-lg p-4 max-w-3xl">
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">Knowledge-Driven Architecture:</span> Training approaches are implemented as complete knowledge bases, not hardcoded rules. AI agents query these knowledge engines to make decisions with full methodological fidelity.
+              <span className="font-semibold text-foreground">{t('bottomNote.bold')}</span> {t('bottomNote.text')}
             </p>
           </div>
         </motion.div>

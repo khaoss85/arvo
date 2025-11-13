@@ -1,8 +1,10 @@
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const t = useTranslations('landing.footer');
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
@@ -12,22 +14,22 @@ export function Footer() {
           <div className="space-y-4">
             <Logo size="sm" showTagline={false} animated={false} />
             <p className="text-sm text-muted-foreground max-w-xs">
-              AI-powered parametric training for serious athletes.
+              {t('brand.tagline')}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Product</h3>
+            <h3 className="font-semibold mb-4">{t('product.title')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Login
+                  {t('product.login')}
                 </Link>
               </li>
               <li>
                 <Link href="#ai-showcase" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Features
+                  {t('product.features')}
                 </Link>
               </li>
               <li>
@@ -45,16 +47,16 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-4">{t('legal.title')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Privacy Policy
+                  {t('legal.privacy')}
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Terms of Service
+                  {t('legal.terms')}
                 </Link>
               </li>
             </ul>
@@ -65,10 +67,10 @@ export function Footer() {
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex flex-col items-center md:items-start gap-1">
             <p>
-              © {currentYear} Arvo. Built with precision.
+              {t('copyright', { year: currentYear })}
             </p>
             <p className="text-xs">
-              Developed by{" "}
+              {t('developer.text')}{" "}
               <a
                 href="https://aetha.inc"
                 target="_blank"
@@ -80,7 +82,7 @@ export function Footer() {
             </p>
           </div>
           <p className="text-xs">
-            Powered by GPT-5 · Next.js · Supabase
+            {t('powered')}
           </p>
         </div>
       </div>

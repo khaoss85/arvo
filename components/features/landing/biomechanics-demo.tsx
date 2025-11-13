@@ -3,40 +3,43 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Scale, ArrowRight } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function BiomechanicsDemo() {
+  const t = useTranslations('landing.biomechanics');
+
   const conversions = [
     {
-      from: "Barbell Bench Press",
+      from: t('conversions.benchToDumbbell.from'),
       fromWeight: "100kg",
-      to: "Dumbbell Bench Press",
-      toWeight: "40-45kg per hand",
+      to: t('conversions.benchToDumbbell.to'),
+      toWeight: t('conversions.benchToDumbbell.toWeight'),
       multiplier: "~40-45%",
-      reason: "Unilateral load distribution + stability demand"
+      reason: t('conversions.benchToDumbbell.reason')
     },
     {
-      from: "Barbell Bench Press",
+      from: t('conversions.benchToMachine.from'),
       fromWeight: "100kg",
-      to: "Machine Chest Press",
+      to: t('conversions.benchToMachine.to'),
       toWeight: "~80kg",
       multiplier: "~80%",
-      reason: "Fixed path reduces stability requirements"
+      reason: t('conversions.benchToMachine.reason')
     },
     {
-      from: "Barbell Bench Press",
+      from: t('conversions.benchToCable.from'),
       fromWeight: "100kg",
-      to: "Cable Chest Press",
+      to: t('conversions.benchToCable.to'),
       toWeight: "~70-75kg",
       multiplier: "~70-75%",
-      reason: "Cable tension curve + stability demand"
+      reason: t('conversions.benchToCable.reason')
     },
     {
-      from: "Barbell Squat",
+      from: t('conversions.squatToBulgarian.from'),
       fromWeight: "140kg",
-      to: "Bulgarian Split Squat",
-      toWeight: "~63kg per leg (45% each)",
+      to: t('conversions.squatToBulgarian.to'),
+      toWeight: t('conversions.squatToBulgarian.toWeight'),
       multiplier: "~45%",
-      reason: "Unilateral + balance requirements"
+      reason: t('conversions.squatToBulgarian.reason')
     },
   ];
 
@@ -51,12 +54,12 @@ export function BiomechanicsDemo() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Biomechanical <span className="text-primary-600 dark:text-primary-400">Precision</span>
+            {t('title.part1')} <span className="text-primary-600 dark:text-primary-400">{t('title.part2')}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Exercise substitutions with automatic weight adjustments based on biomechanics.
+            {t('subtitle')}
             <br />
-            <span className="text-sm">No guesswork. Scientific load distribution.</span>
+            <span className="text-sm">{t('tagline')}</span>
           </p>
         </motion.div>
 
@@ -81,7 +84,7 @@ export function BiomechanicsDemo() {
                 <CardContent className="space-y-3">
                   {/* From */}
                   <div className="bg-muted rounded-md p-3">
-                    <div className="text-xs text-muted-foreground mb-1">FROM:</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t('conversionCard.from')}</div>
                     <div className="font-semibold">{conversion.from}</div>
                     <div className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
                       {conversion.fromWeight}
@@ -95,7 +98,7 @@ export function BiomechanicsDemo() {
 
                   {/* To */}
                   <div className="bg-background rounded-md p-3 border-2 border-primary-200 dark:border-primary-800">
-                    <div className="text-xs text-muted-foreground mb-1">TO:</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t('conversionCard.to')}</div>
                     <div className="font-semibold">{conversion.to}</div>
                     <div className="text-2xl font-bold text-primary-600 dark:text-primary-400 mt-1">
                       {conversion.toWeight}
@@ -105,7 +108,7 @@ export function BiomechanicsDemo() {
                   {/* Reason */}
                   <div className="pt-2 border-t">
                     <div className="text-xs text-muted-foreground">
-                      <span className="font-semibold">Why:</span> {conversion.reason}
+                      <span className="font-semibold">{t('conversionCard.why')}</span> {conversion.reason}
                     </div>
                   </div>
                 </CardContent>
@@ -123,13 +126,13 @@ export function BiomechanicsDemo() {
         >
           <Card className="border-2">
             <CardHeader>
-              <CardTitle className="text-lg">Movement Adapter - Weight Calculation</CardTitle>
-              <CardDescription>Biomechanical intelligence for exercise swaps · AI Agent</CardDescription>
+              <CardTitle className="text-lg">{t('codeExample.title')}</CardTitle>
+              <CardDescription>{t('codeExample.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
                 <div className="space-y-1">
-                  <div className="text-green-600 dark:text-green-400">{`// Input:`}</div>
+                  <div className="text-green-600 dark:text-green-400">{t('codeExample.code.inputComment')}</div>
                   <div className="text-muted-foreground">
                     original: <span className="text-primary-600 dark:text-primary-400">"Barbell Bench Press"</span>
                   </div>
@@ -140,15 +143,15 @@ export function BiomechanicsDemo() {
                     substitute: <span className="text-primary-600 dark:text-primary-400">"Dumbbell Bench Press"</span>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">{`// AI Processing:`}</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{t('codeExample.code.processingComment')}</div>
                   <div className="text-muted-foreground pl-2">
-                    <div>1. Detect equipment change: Barbell → Dumbbell</div>
-                    <div>2. Detect movement pattern: Horizontal Press (same)</div>
-                    <div>3. Apply biomechanical multiplier: 0.40-0.45</div>
-                    <div>4. Calculate per-hand load: 100kg × 0.425 = 42.5kg</div>
+                    <div>{t('codeExample.code.step1')}</div>
+                    <div>{t('codeExample.code.step2')}</div>
+                    <div>{t('codeExample.code.step3')}</div>
+                    <div>{t('codeExample.code.step4')}</div>
                   </div>
 
-                  <div className="text-green-600 dark:text-green-400 pt-3">{`// Output:`}</div>
+                  <div className="text-green-600 dark:text-green-400 pt-3">{t('codeExample.code.outputComment')}</div>
                   <div className="text-muted-foreground">{`{`}</div>
                   <div className="text-muted-foreground pl-2">
                     suggestedWeight: <span className="text-primary-600 dark:text-primary-400">42.5</span>,
@@ -167,9 +170,9 @@ export function BiomechanicsDemo() {
               </div>
 
               <div className="mt-4 flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md text-sm border border-blue-200 dark:border-blue-900">
-                <div className="text-blue-600 dark:text-blue-400 font-semibold shrink-0">Pro tip:</div>
+                <div className="text-blue-600 dark:text-blue-400 font-semibold shrink-0">{t('proTip.label')}</div>
                 <div className="text-blue-900 dark:text-blue-200">
-                  The system also validates if the substitution maintains workout intent. "Approved" means same stimulus-to-fatigue profile. "Caution" means different stimulus (with explanation).
+                  {t('proTip.text')}
                 </div>
               </div>
             </CardContent>

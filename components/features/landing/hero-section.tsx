@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 interface HeroSectionProps {
   isAuthenticated: boolean;
 }
 
 export function HeroSection({ isAuthenticated }: HeroSectionProps) {
+  const t = useTranslations('landing.hero');
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-geometric-pattern px-4 py-20">
       <div className="container max-w-6xl mx-auto">
@@ -33,10 +35,10 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                AI Coach
+                {t('title.aiCoach')}
               </span>
               <br />
-              That Reasons Like an Expert
+              {t('title.subtitle')}
             </h1>
           </motion.div>
 
@@ -47,7 +49,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            "What weight should I use next set?" · "Am I overtraining?" · "Is this exercise swap equivalent?"
+            {t('painPoints')}
           </motion.p>
 
           {/* Subheadline */}
@@ -57,10 +59,10 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            15 specialized AI agents. Real-time set-by-set progression. Learns your preferences automatically.
+            {t('description.main')}
             <br />
             <span className="text-sm md:text-base mt-2 inline-block">
-              Kuba Method & Mentzer HIT implemented with scientific fidelity.
+              {t('description.methods')}
             </span>
           </motion.p>
 
@@ -73,13 +75,13 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
           >
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
               <Sparkles className="inline-block w-4 h-4 mr-1" />
-              15 AI Agents
+              {t('stats.agents')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
-              1300+ Exercises
+              {t('stats.exercises')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
-              Kuba · Mentzer · FST-7 & More
+              {t('stats.methods')}
             </div>
           </motion.div>
 
@@ -92,7 +94,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
           >
             <Link href={isAuthenticated ? "/dashboard" : "/login"}>
               <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? "Go to Dashboard" : "Start Training"}
+                {isAuthenticated ? t('cta.dashboard') : t('cta.start')}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
@@ -103,7 +105,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
               }}
               className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
             >
-              See How It Works
+              {t('cta.seeHow')}
             </button>
           </motion.div>
 
@@ -114,9 +116,9 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            Powered by GPT-5 reasoning models. Pattern detection. Biomechanical weight adjustments.
+            {t('technical.powered')}
             <br />
-            Zero guesswork. Only progression.
+            {t('technical.promise')}
           </motion.p>
         </div>
       </div>

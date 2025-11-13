@@ -3,30 +3,33 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { BarChart3, AlertTriangle, TrendingDown } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function VolumeTrackingVisual() {
+  const t = useTranslations('landing.volumeTracking');
+
   const muscleGroups = [
-    { name: "Chest", current: 16, mev: 10, mav: 18, mrv: 22, status: "optimal" },
-    { name: "Back", current: 19, mev: 12, mav: 20, mrv: 25, status: "optimal" },
-    { name: "Quads", current: 14, mev: 10, mav: 16, mrv: 20, status: "optimal" },
-    { name: "Shoulders", current: 21, mev: 12, mav: 20, mrv: 24, status: "pushing" },
+    { name: t('muscles.chest'), current: 16, mev: 10, mav: 18, mrv: 22, status: "optimal" },
+    { name: t('muscles.back'), current: 19, mev: 12, mav: 20, mrv: 25, status: "optimal" },
+    { name: t('muscles.quads'), current: 14, mev: 10, mav: 16, mrv: 20, status: "optimal" },
+    { name: t('muscles.shoulders'), current: 21, mev: 12, mav: 20, mrv: 24, status: "pushing" },
   ];
 
   const deloadTriggers = [
     {
-      trigger: "3 sessions without progress",
-      example: "Bench press stuck at 100kg × 10 for 3 workouts",
-      action: "Auto-suggest deload week",
+      trigger: t('deloadTriggers.noProgress.trigger'),
+      example: t('deloadTriggers.noProgress.example'),
+      action: t('deloadTriggers.noProgress.action'),
     },
     {
-      trigger: "Mental readiness ≤ 2 consistently",
-      example: "User logs 2/5 readiness for 4+ sessions",
-      action: "Reduce volume by 30-40%",
+      trigger: t('deloadTriggers.lowReadiness.trigger'),
+      example: t('deloadTriggers.lowReadiness.example'),
+      action: t('deloadTriggers.lowReadiness.action'),
     },
     {
-      trigger: "Volume > MRV for 2+ weeks",
-      example: "Chest 23 sets/week (MRV: 22) for 2 consecutive weeks",
-      action: "Immediate deload recommended",
+      trigger: t('deloadTriggers.exceedMrv.trigger'),
+      example: t('deloadTriggers.exceedMrv.example'),
+      action: t('deloadTriggers.exceedMrv.action'),
     },
   ];
 
@@ -58,11 +61,11 @@ export function VolumeTrackingVisual() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Smart{" "}
-            <span className="text-primary-600 dark:text-primary-400">Volume Management</span>
+            {t('title.part1')}{" "}
+            <span className="text-primary-600 dark:text-primary-400">{t('title.part2')}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Never overtrain. Never undertrain. Automatic tracking vs scientific landmarks.
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -143,8 +146,8 @@ export function VolumeTrackingVisual() {
                       ? "bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-300"
                       : "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-300"
                   }`}>
-                    {muscle.status === "optimal" && "✓ Optimal zone - maximum growth stimulus"}
-                    {muscle.status === "pushing" && "⚠ Pushing hard - monitor recovery closely"}
+                    {muscle.status === "optimal" && t('status.optimal')}
+                    {muscle.status === "pushing" && t('status.pushing')}
                   </div>
                 </CardContent>
               </Card>
@@ -163,10 +166,10 @@ export function VolumeTrackingVisual() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                Automatic Deload Triggers
+                {t('deloadCard.title')}
               </CardTitle>
               <CardDescription>
-                System detects fatigue patterns and suggests deloads before you overtrain
+                {t('deloadCard.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -189,7 +192,7 @@ export function VolumeTrackingVisual() {
 
               <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-950/40 rounded-md text-sm border border-orange-300 dark:border-orange-800">
                 <p className="text-orange-900 dark:text-orange-200">
-                  <strong>Intelligent prevention:</strong> The system tracks progress stalls, mental readiness trends, and volume accumulation. When multiple biomarkers suggest fatigue, it recommends a deload before performance degrades.
+                  <strong>{t('intelligentPrevention.title')}</strong> {t('intelligentPrevention.description')}
                 </p>
               </div>
             </CardContent>
@@ -206,7 +209,7 @@ export function VolumeTrackingVisual() {
         >
           <div className="inline-block bg-background border-2 border-primary-200 dark:border-primary-800 rounded-lg p-4 max-w-3xl">
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">Excel can't do this.</span> Generic apps count sets but don't understand MEV/MAV/MRV. Arvo tracks scientifically validated volume landmarks per muscle group and warns you before overtraining.
+              <span className="font-semibold text-foreground">{t('comparisonNote.bold')}</span> {t('comparisonNote.text')}
             </p>
           </div>
         </motion.div>

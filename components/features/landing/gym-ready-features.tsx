@@ -3,41 +3,44 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { Smartphone, WifiOff, Save, Wrench } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 export function GymReadyFeatures() {
+  const t = useTranslations('landing.gymReady');
+
   const features = [
     {
       icon: Smartphone,
-      title: "Wake Lock",
-      description: "Screen stays on during workouts",
-      detail: "No more unlocking your phone between sets. Screen stays active with Wake Lock API.",
+      title: t('wakeLock.title'),
+      description: t('wakeLock.description'),
+      detail: t('wakeLock.detail'),
       color: "text-blue-600 dark:text-blue-400",
       bgColor: "bg-blue-50 dark:bg-blue-950/20",
       borderColor: "border-blue-200 dark:border-blue-900",
     },
     {
       icon: WifiOff,
-      title: "Offline Support",
-      description: "Zero internet required in gym",
-      detail: "All AI decisions run client-side. Full functionality without connectivity. Auto-sync when back online.",
+      title: t('offlineSupport.title'),
+      description: t('offlineSupport.description'),
+      detail: t('offlineSupport.detail'),
       color: "text-green-600 dark:text-green-400",
       bgColor: "bg-green-50 dark:bg-green-950/20",
       borderColor: "border-green-200 dark:border-green-900",
     },
     {
       icon: Save,
-      title: "Crash Recovery",
-      description: "Never lose a logged set",
-      detail: "localStorage persistence after every set. App crashes? Phone dies? Your workout is safe.",
+      title: t('crashRecovery.title'),
+      description: t('crashRecovery.description'),
+      detail: t('crashRecovery.detail'),
       color: "text-orange-600 dark:text-orange-400",
       bgColor: "bg-orange-50 dark:bg-orange-950/20",
       borderColor: "border-orange-200 dark:border-orange-900",
     },
     {
       icon: Wrench,
-      title: "Custom Equipment",
-      description: "Add your unique gym setup",
-      detail: "Got a specialty machine? Custom cable attachment? Add it once, AI suggests exercises for it forever.",
+      title: t('customEquipment.title'),
+      description: t('customEquipment.description'),
+      detail: t('customEquipment.detail'),
       color: "text-purple-600 dark:text-purple-400",
       bgColor: "bg-purple-50 dark:bg-purple-950/20",
       borderColor: "border-purple-200 dark:border-purple-900",
@@ -55,11 +58,11 @@ export function GymReadyFeatures() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Built for the{" "}
-            <span className="text-primary-600 dark:text-primary-400">Gym</span>
+            {t('title.part1')}{" "}
+            <span className="text-primary-600 dark:text-primary-400">{t('title.gym')}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Not another app that fails when you need it most. Designed for real training environments.
+            {t('subtitle')}
           </p>
         </motion.div>
 
@@ -104,9 +107,9 @@ export function GymReadyFeatures() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Save className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                Crash Recovery - localStorage Persistence
+                {t('codeExample.title')}
               </CardTitle>
-              <CardDescription>Every set is saved immediately. Zero data loss.</CardDescription>
+              <CardDescription>{t('codeExample.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted rounded-md p-4 font-mono text-sm overflow-x-auto">
@@ -135,20 +138,20 @@ export function GymReadyFeatures() {
 
                   <div className="text-green-600 dark:text-green-400 pt-3">{`// Result:`}</div>
                   <div className="text-muted-foreground">
-                    <span className="text-orange-600 dark:text-orange-400">✓</span> Phone battery dies mid-workout → Resume exactly where you left
+                    <span className="text-orange-600 dark:text-orange-400">✓</span> {t('codeExample.results.batteryDies')}
                   </div>
                   <div className="text-muted-foreground">
-                    <span className="text-orange-600 dark:text-orange-400">✓</span> App crashes during heavy set → No data lost
+                    <span className="text-orange-600 dark:text-orange-400">✓</span> {t('codeExample.results.appCrash')}
                   </div>
                   <div className="text-muted-foreground">
-                    <span className="text-orange-600 dark:text-orange-400">✓</span> Accidental swipe-close → Full recovery
+                    <span className="text-orange-600 dark:text-orange-400">✓</span> {t('codeExample.results.swipeClose')}
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-950/40 rounded-md text-sm border border-orange-300 dark:border-orange-800">
                 <p className="text-orange-900 dark:text-orange-200">
-                  <strong>Real-world scenario:</strong> You're mid-squat set, phone battery hits 1%, dies. Charge it, open app → "Resume workout from Set 3?" Everything restored.
+                  <strong>{t('codeExample.scenario.label')}</strong> {t('codeExample.scenario.text')}
                 </p>
               </div>
             </CardContent>
@@ -164,7 +167,7 @@ export function GymReadyFeatures() {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            These features aren't marketing bullet points. They're in production, battle-tested in real gyms with spotty WiFi and dying phones.
+            {t('footer')}
           </p>
         </motion.div>
       </div>

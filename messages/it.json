@@ -1225,5 +1225,565 @@
     "export": {
       "filename": "arvo-memories-{date}.json"
     }
+  },
+  "landing": {
+    "cta": {
+      "title": {
+        "part1": "Pronto ad Allenarti",
+        "part2": "Meglio?"
+      },
+      "subtitle": "Unisciti agli atleti che usano l'allenamento potenziato dall'AI. Completa il tuo primo workout generato dall'AI in pochi minuti.",
+      "features": {
+        "onboarding": "Onboarding di 5 minuti",
+        "instantGeneration": "Generazione workout istantanea",
+        "freeToStart": "Gratuito per iniziare"
+      },
+      "button": {
+        "startWorkout": "Inizia il Tuo Primo Workout",
+        "dashboard": "Vai alla Dashboard"
+      },
+      "technical": {
+        "noCreditCard": "Nessuna carta di credito richiesta.",
+        "magicLink": "Autenticazione passwordless con magic link.",
+        "privacyFirst": "I tuoi dati sono tuoi. Design privacy-first."
+      }
+    },
+    "footer": {
+      "brand": {
+        "tagline": "Allenamento parametrico potenziato dall'AI per atleti seri."
+      },
+      "product": {
+        "title": "Prodotto",
+        "login": "Login",
+        "features": "Funzionalità"
+      },
+      "legal": {
+        "title": "Legale",
+        "privacy": "Privacy Policy",
+        "terms": "Termini di Servizio"
+      },
+      "copyright": "© {year} Arvo. Costruito con precisione.",
+      "developer": {
+        "text": "Sviluppato da"
+      },
+      "powered": "Basato su GPT-5 · Next.js · Supabase"
+    },
+    "methodologies": {
+      "title": {
+        "part1": "Metodi di Allenamento con",
+        "part2": "Fedeltà Scientifica"
+      },
+      "subtitle": "Non interpretazioni generiche. Implementazioni metodologiche complete.",
+      "kubaMethod": {
+        "name": "Kuba Method",
+        "description": "Allenamento parametrico basato su evidenze",
+        "implementationDepth": "Profondità Implementazione",
+        "configLines": "{count} righe",
+        "configDescription": "di configurazione & regole metodologiche",
+        "corePrinciples": "Principi Fondamentali:",
+        "principles": {
+          "workingSets": "<mono>2 serie di lavoro</mono> per esercizio @ RIR 0-1",
+          "tempo": "Tempo: <mono>3-1-1-1</mono> (3s eccentrica, 1s pausa, 1s concentrica, 1s contrazione)",
+          "lengthenedBiased": "<mono>60%</mono> esercizi in allungamento",
+          "rest": "Riposo: <mono>150-180s</mono> composti, <mono>90-120s</mono> isolamento"
+        },
+        "volumeLandmarks": "Parametri Volume (serie/settimana):",
+        "volumeTable": {
+          "muscle": "Muscolo",
+          "mev": "MEV",
+          "mav": "MAV",
+          "mrv": "MRV",
+          "chest": "Petto",
+          "back": "Schiena",
+          "quads": "Quadricipiti"
+        },
+        "volumeAcronyms": "MEV: Volume Effettivo Minimo · MAV: Volume Adattivo Massimo · MRV: Volume Recuperabile Massimo",
+        "periodization": "Periodizzazione:",
+        "phases": {
+          "weeks1to3": "Settimane 1-3",
+          "accumulation": "Accumulo",
+          "weeks4to5": "Settimane 4-5",
+          "intensification": "Intensificazione",
+          "week6": "Settimana 6",
+          "deload": "Scarico"
+        }
+      },
+      "mentzerHIT": {
+        "name": "Mike Mentzer HIT",
+        "description": "Filosofia di allenamento ad alta intensità",
+        "implementationDepth": "Profondità Implementazione",
+        "configLines": "{count} righe",
+        "configDescription": "di configurazione & regole metodologiche",
+        "corePrinciples": "Principi Fondamentali:",
+        "principles": {
+          "sets": "<mono>1-2 serie</mono> per esercizio a cedimento assoluto",
+          "intensity": "Volume basso, <bold>intensità massima</bold>",
+          "recovery": "Recupero: <mono>4-7 giorni</mono> tra le sessioni",
+          "preExhaust": "Tecniche di pre-esaurimento"
+        },
+        "advancedTechniques": "Tecniche Avanzate:",
+        "techniques": {
+          "staticHolds": "Isometrie Statiche",
+          "staticHoldsValue": "Post-cedimento",
+          "forcedReps": "Ripetizioni Forzate",
+          "forcedRepsValue": "1-2 reps",
+          "restPause": "Rest-Pause",
+          "restPauseValue": "10s riposo",
+          "negativeEmphasis": "Enfasi Negative",
+          "negativeEmphasisValue": "4-6s eccentrica"
+        },
+        "philosophy": "Filosofia di Allenamento:",
+        "philosophyQuote": "\"Di più non è meglio. Meglio è meglio. Allenati con intensità assoluta, poi permetti il recupero completo per la crescita.\"",
+        "typicalSplit": "Split Tipica:",
+        "split": {
+          "workoutA": "Workout A",
+          "workoutAMuscles": "Petto, Schiena, Deltoidi",
+          "workoutB": "Workout B",
+          "workoutBMuscles": "Gambe, Braccia"
+        },
+        "frequency": "Frequenza: Ogni 4-7 giorni per workout"
+      },
+      "bottomNote": {
+        "bold": "Architettura Guidata dalla Conoscenza:",
+        "text": "Gli approcci di allenamento sono implementati come basi di conoscenza complete, non regole hardcoded. Gli agenti AI interrogano questi motori di conoscenza per prendere decisioni con completa fedeltà metodologica."
+      }
+    },
+    "hero": {
+      "title": {
+        "aiCoach": "AI Coach",
+        "subtitle": "Che Ragiona Come un Esperto"
+      },
+      "painPoints": "\"Che peso uso nella prossima serie?\" · \"Mi sto sovrallenando?\" · \"Questo esercizio alternativo è equivalente?\"",
+      "description": {
+        "main": "15 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
+        "methods": "Metodo Kuba & Mentzer HIT implementati con fedeltà scientifica."
+      },
+      "stats": {
+        "agents": "15 Agenti AI",
+        "exercises": "1300+ Esercizi",
+        "methods": "Kuba · Mentzer · FST-7 & Altro"
+      },
+      "cta": {
+        "start": "Inizia ad Allenarti",
+        "dashboard": "Vai alla Dashboard",
+        "seeHow": "Scopri Come Funziona"
+      },
+      "technical": {
+        "powered": "Basato su modelli di ragionamento GPT-5. Rilevamento di pattern. Aggiustamenti biomeccanici del peso.",
+        "promise": "Zero supposizioni. Solo progressione."
+      }
+    },
+    "aiShowcase": {
+      "title": {
+        "part1": "AI Che",
+        "part2": "Ragiona Davvero"
+      },
+      "subtitle": "Non solo suggerimenti casuali di esercizi. Vedi le vere decisioni AI con ragionamento completo.",
+      "exerciseArchitect": {
+        "title": "Exercise Architect",
+        "description": "Progetta il tuo allenamento usando ragionamento GPT-5 · Agente AI",
+        "inputContextLabel": "CONTESTO INPUT:",
+        "outputLabel": "OUTPUT RAGIONAMENTO AI:",
+        "selectedExercises": "Esercizi Selezionati:",
+        "insightChanges": "Modifiche Basate su Insight:",
+        "technicalCues": "Indicazioni Tecniche:",
+        "example": {
+          "reason1": "\"Colpisce il petto superiore debole mentre sei fresco\"",
+          "avoided": "✗ Dips (evitato)",
+          "avoidedReason": "Motivo: \"Avviso attivo per dolore alla spalla\"",
+          "substituted": "✓ Cable Flyes (sostituito)",
+          "substitutedReason": "Motivo: \"Alternativa rispettosa delle articolazioni per isolamento petto\"",
+          "cues": "[\"Braccia semi-piegate per tutta l'esecuzione\", \"Contrai nello stretch\"]"
+        },
+        "stats": {
+          "considers": "Considera: 8+ variabili",
+          "model": "Modello di ragionamento: GPT-5"
+        }
+      },
+      "loadNavigator": {
+        "title": "Load Navigator",
+        "description": "Naviga i tuoi carichi in tempo reale, serie per serie · Agente AI",
+        "previousSetLabel": "PERFORMANCE SERIE PRECEDENTE:",
+        "aiReasoning": "AI in ragionamento...",
+        "nextSetLabel": "SUGGERIMENTO PROSSIMA SERIE:",
+        "reasoningLabel": "Ragionamento:",
+        "technicalFocusLabel": "Focus Tecnico:",
+        "technicalFocus": "\"Discesa controllata, spinta esplosiva\"",
+        "example": {
+          "reps": "12 (massimo del range)",
+          "rir": "1 (vicino al cedimento)",
+          "mentalReadiness": "4/5 (buona)"
+        },
+        "reasoning": {
+          "point1": "✓ Raggiunto massimo del range ripetizioni (12) con RIR 1",
+          "point2": "✓ Prontezza mentale alta (4/5)",
+          "point3": "✓ Fase di accumulo → aumento peso",
+          "point4": "✓ Incremento: +2.5kg (standard per bilanciere)",
+          "point5": "✓ Reps target: 8 (minimo del range 8-12)"
+        },
+        "stats": {
+          "factors": "Fattori decisionali: 6+",
+          "response": "Risposta: <500ms"
+        }
+      },
+      "safetyFirst": {
+        "title": "Safety-First: Integrazione Insights",
+        "description": "Ogni agente AI legge gli insight attivi e si adatta automaticamente",
+        "detection": {
+          "title": "1. RILEVAMENTO"
+        },
+        "learning": {
+          "title": "2. APPRENDIMENTO"
+        },
+        "application": {
+          "title": "3. APPLICAZIONE",
+          "selector": "Suggerisce Cable Pushdown",
+          "progression": "Carico conservativo",
+          "substitution": "Valida alternative"
+        },
+        "footer": {
+          "bold": "Zero configurazione richiesta.",
+          "text": "Il sistema impara dal tuo comportamento e ti protegge automaticamente."
+        }
+      }
+    },
+    "notesIntelligence": {
+      "title": {
+        "yourNotesBecome": "Le Tue Note Diventano",
+        "intelligence": "Intelligenza"
+      },
+      "subtitle": {
+        "main": "Scrivi in modo naturale. L'AI estrae insight, preferenze e pattern automaticamente.",
+        "tagline": "Zero tag manuali. Solo feedback onesto."
+      },
+      "step1": {
+        "title": "1. Tu Scrivi",
+        "description": "Linguaggio naturale, a fine workout",
+        "exampleLabel": "// Nota post-workout:",
+        "exampleNote": "\"Oggi squat fantastico, potevo spingere più pesante. La spalla mi dà ancora fastidio sulla military press. Forse passo alla landmine press per un po'.\"",
+        "footer": "✍️ Solo il tuo feedback onesto, nessun formato strutturato richiesto"
+      },
+      "step2": {
+        "title": "2. L'AI Estrae",
+        "description": "Pattern Scout + NLP",
+        "code": {
+          "insightDetected": "// Insight rilevato:",
+          "memoryCreated": "// Memory creata:",
+          "alternativeSuggested": "// Alternativa suggerita:",
+          "patternValue": "Alta fiducia su Squat",
+          "reasonValue": "Alternativa rispettosa delle articolazioni"
+        }
+      },
+      "step3": {
+        "title": "3. Si Auto-Adatta",
+        "description": "Exercise Architect applica ciò che ha imparato",
+        "avoided": "Evitato per insight di dolore alla spalla",
+        "boosted": "Boost di fiducia → aumento progressivo del carico",
+        "suggested": "Suggerita come alternativa rispettosa delle articolazioni"
+      },
+      "realExample": {
+        "title": "Esempio Reale: Estrazione Multi-Entità",
+        "description": "Una nota, molteplici insight estratti simultaneamente",
+        "inputLabel": "NOTA INPUT:",
+        "inputNote": "\"Lombari tesi dopo gli stacchi, forse serve uno scarico la prossima settimana. I rematori ai cavi fantastici però, li preferisco decisamente ai rematori con bilanciere. Prontezza mentale bassa oggi (2/5), probabilmente ho sovrallenato le spalle questa settimana.\"",
+        "outputLabel": "ESTRAZIONE AI:",
+        "preferencePattern": "Rematori Cavi > Rematori Bilanciere",
+        "actionValue": "Monitora volume, suggerisci scarico",
+        "contextBold": "Preservazione del contesto:",
+        "contextText": "Timestamp, nomi esercizi, carico usato e RIR del workout vengono automaticamente allegati ad ogni insight. L'AI non si limita a leggere il testo—capisce il contesto del workout."
+      },
+      "footer": {
+        "noTaggingBold": "Nessun tag richiesto.",
+        "text": "Scrivi come se stessi messaggiando un coach: \"spalla fa male\", \"mi è piaciuto\", \"mi sentivo debole\". L'agente Pattern Scout gestisce estrazione, scoring della confidence e applicazione automatica. Tu scrivi solo in modo onesto."
+      }
+    },
+    "gymReady": {
+      "title": {
+        "part1": "Costruito per la",
+        "gym": "Palestra"
+      },
+      "subtitle": "Non un'altra app che fallisce quando ne hai più bisogno. Progettato per ambienti di allenamento reali.",
+      "wakeLock": {
+        "title": "Wake Lock",
+        "description": "Lo schermo resta acceso durante gli allenamenti",
+        "detail": "Mai più sbloccare il telefono tra le serie. Lo schermo resta attivo con Wake Lock API."
+      },
+      "offlineSupport": {
+        "title": "Supporto Offline",
+        "description": "Zero internet richiesto in palestra",
+        "detail": "Tutte le decisioni AI girano lato client. Funzionalità completa senza connettività. Sincronizzazione automatica quando sei online."
+      },
+      "crashRecovery": {
+        "title": "Recupero Crash",
+        "description": "Non perdi mai una serie registrata",
+        "detail": "Persistenza localStorage dopo ogni serie. L'app crasha? Il telefono si scarica? Il tuo allenamento è al sicuro."
+      },
+      "customEquipment": {
+        "title": "Attrezzatura Personalizzata",
+        "description": "Aggiungi la tua configurazione unica",
+        "detail": "Hai una macchina speciale? Attacco cavi personalizzato? Aggiungilo una volta, l'AI suggerirà esercizi per sempre."
+      },
+      "codeExample": {
+        "title": "Recupero Crash - Persistenza localStorage",
+        "subtitle": "Ogni serie viene salvata immediatamente. Zero perdita di dati.",
+        "results": {
+          "batteryDies": "Batteria telefono si scarica durante allenamento → Riprendi esattamente dove hai lasciato",
+          "appCrash": "App crasha durante serie pesante → Nessun dato perso",
+          "swipeClose": "Chiusura accidentale → Recupero completo"
+        },
+        "scenario": {
+          "label": "Scenario reale:",
+          "text": "Sei a metà serie di squat, batteria telefono all'1%, si scarica. Ricaricalo, apri app → \"Riprendere allenamento dalla Serie 3?\" Tutto ripristinato."
+        }
+      },
+      "footer": "Queste funzionalità non sono punti di marketing. Sono in produzione, testate sul campo in palestre reali con WiFi instabile e telefoni scarichi."
+    },
+    "comparison": {
+      "title": {
+        "part1": "Perché ",
+        "part2": "?"
+      },
+      "subtitle": "Nessuna promessa di marketing. Solo confronto feature per feature.",
+      "card": {
+        "title": "Confronto Funzionalità",
+        "description": "Arvo vs le alternative che probabilmente stai considerando"
+      },
+      "table": {
+        "headers": {
+          "feature": "Funzionalità",
+          "arvo": "Arvo",
+          "excel": "Excel",
+          "genericApps": "App Generiche",
+          "personalTrainer": "Personal Trainer"
+        }
+      },
+      "mobile": {
+        "apps": "App",
+        "trainer": "Trainer"
+      },
+      "features": {
+        "aiReasoning": "Ragionamento AI (GPT-5)",
+        "setBySetProgression": "Progressione serie per serie",
+        "patternLearning": "Apprendimento di pattern",
+        "naturalLanguageNotes": "Note in linguaggio naturale → insight AI",
+        "biomechanicalAdjustments": "Aggiustamenti biomeccanici",
+        "volumeTracking": "Tracciamento volume (MEV/MAV/MRV)",
+        "injuryPrevention": "Prevenzione infortuni",
+        "offlineSupport": "Supporto offline",
+        "alwaysAvailable": "Sempre disponibile",
+        "methodologyFidelity": {
+          "name": "Fedeltà metodologica",
+          "values": {
+            "arvo": "Kuba/Mentzer",
+            "excel": "Manuale",
+            "genericApps": "Generica",
+            "personalTrainer": "Variabile"
+          }
+        },
+        "cost": {
+          "name": "Costo",
+          "values": {
+            "arvo": "Gratis",
+            "excel": "Gratis",
+            "genericApps": "$10/mese",
+            "personalTrainer": "$100+/sessione"
+          }
+        }
+      },
+      "legend": {
+        "fullSupport": "Supporto completo",
+        "partialVaries": "Parziale/Variabile",
+        "notAvailable": "Non disponibile"
+      },
+      "bottomNote": {
+        "label": "La realtà:",
+        "text": "Excel ti dà pieno controllo ma zero intelligenza. Le app generiche tracciano le serie ma non capiscono la progressione. I PT sono ottimi ma costosi e non disponibili 24/7. Arvo combina ragionamento AI con disponibilità sempre attiva a costo zero."
+      }
+    },
+    "faq": {
+      "title": "Domande?",
+      "subtitle": "Le 6 domande che tutti fanno prima di provare una nuova app di allenamento.",
+      "questions": {
+        "offline": {
+          "question": "Funziona offline in palestra?",
+          "answer": "Sì, completamente. Tutte le decisioni AI vengono eseguite localmente con modelli in cache. Non serve internet durante gli allenamenti. I dati si sincronizzano automaticamente quando torni online. Wake Lock mantiene lo schermo acceso, così non devi mai sbloccare il telefono tra le serie."
+        },
+        "customEquipment": {
+          "question": "Posso aggiungere la mia attrezzatura personalizzata?",
+          "answer": "Assolutamente. Hai una macchina speciale nella tua palestra? Un attacco cavi personalizzato? Aggiungilo una volta con nome ed esercizi di esempio. L'AI suggerirà esercizi per la tua attrezzatura personalizzata nei prossimi allenamenti. Resta nel database attrezzature permanentemente."
+        },
+        "injury": {
+          "question": "E se mi infortunassi o avessi dolore?",
+          "answer": "Il sistema Insights rileva automaticamente i pattern. Registri dolore una volta sulla French Press? Lo annota. Due volte? Crea un insight con livello di gravità. Tre volte? Evita automaticamente quell'esercizio e suggerisce alternative. Ogni agente AI legge gli insight attivi e adatta le decisioni di conseguenza. Zero configurazione richiesta."
+        },
+        "learning": {
+          "question": "Come impara l'AI le mie preferenze?",
+          "answer": "In tre modi: 1) Rilevamento pattern (sostituisci l'Esercizio A con B 3+ volte → impara la preferenza), 2) Estrazione dalle note (scrivi 'mi è piaciuto questo esercizio' a fine allenamento → crea memoria positiva con NLP), 3) Segnali comportamentali (prontezza mentale costantemente alta su certi movimenti → boost di fiducia). Tutto automatico, zero tag manuali. Scrivi solo feedback onesto e l'agente Pattern Scout estrae gli insight."
+        },
+        "vsExcel": {
+          "question": "Come è diverso da un foglio Excel?",
+          "answer": "Excel ti dà controllo ma zero intelligenza. Calcoli manualmente il prossimo peso, tracci il volume, decidi quando scaricare. Arvo automatizza tutto con ragionamento AI: suggerimenti di progressione serie per serie in <500ms, tracciamento volume vs MEV/MAV/MRV, trigger automatici di scarico, aggiustamenti biomeccanici del peso per scambi esercizi, apprendimento pattern dalle tue preferenze. Excel è statico. Arvo si adatta."
+        },
+        "dataOwnership": {
+          "question": "I miei dati di allenamento sono miei? Posso esportarli?",
+          "answer": "100% tuoi. Esporta quando vuoi in JSON/CSV. Design privacy-first: niente vendita dati, niente analytics di terze parti che tracciano i tuoi allenamenti. La tua cronologia di allenamento ti appartiene. Backend Supabase con sicurezza a livello di riga. Possiedi completamente i tuoi dati."
+        },
+        "pricing": {
+          "question": "Quanto costa?",
+          "answer": "Gratuito per iniziare. Autenticazione passwordless con magic link, nessuna carta di credito richiesta. Le funzionalità principali (generazione allenamenti AI, tracciamento progressione, insight, attrezzatura personalizzata) sono disponibili immediatamente. L'obiettivo è rendere l'allenamento intelligente accessibile, non metterlo dietro paywall."
+        }
+      },
+      "cta": {
+        "text": "Hai ancora domande?",
+        "email": "support@arvo.guru"
+      }
+    },
+    "volumeTracking": {
+      "title": {
+        "part1": "Gestione",
+        "part2": "Intelligente del Volume"
+      },
+      "subtitle": "Mai sovrallenamento. Mai sottodimensionamento. Tracciamento automatico vs parametri scientifici.",
+      "muscles": {
+        "chest": "Petto",
+        "back": "Schiena",
+        "quads": "Quadricipiti",
+        "shoulders": "Spalle"
+      },
+      "status": {
+        "optimal": "✓ Zona ottimale - massimo stimolo di crescita",
+        "pushing": "⚠ Spingendo forte - monitora il recupero attentamente"
+      },
+      "deloadCard": {
+        "title": "Trigger Automatici di Scarico",
+        "description": "Il sistema rileva pattern di affaticamento e suggerisce scarichi prima del sovrallenamento"
+      },
+      "deloadTriggers": {
+        "noProgress": {
+          "trigger": "3 sessioni senza progressi",
+          "example": "Panca piana bloccata a 100kg × 10 per 3 allenamenti",
+          "action": "Auto-suggerisce settimana di scarico"
+        },
+        "lowReadiness": {
+          "trigger": "Prontezza mentale ≤ 2 costante",
+          "example": "L'utente registra prontezza 2/5 per 4+ sessioni",
+          "action": "Riduce volume del 30-40%"
+        },
+        "exceedMrv": {
+          "trigger": "Volume > MRV per 2+ settimane",
+          "example": "Petto 23 serie/settimana (MRV: 22) per 2 settimane consecutive",
+          "action": "Scarico immediato raccomandato"
+        }
+      },
+      "intelligentPrevention": {
+        "title": "Prevenzione intelligente:",
+        "description": "Il sistema traccia stalli di progresso, trend di prontezza mentale e accumulo di volume. Quando molteplici biomarker suggeriscono affaticamento, raccomanda uno scarico prima che la performance si degradi."
+      },
+      "comparisonNote": {
+        "bold": "Excel non può farlo.",
+        "text": "Le app generiche contano le serie ma non capiscono MEV/MAV/MRV. Arvo traccia parametri di volume scientificamente validati per gruppo muscolare e ti avvisa prima del sovrallenamento."
+      }
+    },
+    "biomechanics": {
+      "title": {
+        "part1": "Precisione",
+        "part2": "Biomeccanica"
+      },
+      "subtitle": "Sostituzioni di esercizi con aggiustamenti automatici del peso basati sulla biomeccanica.",
+      "tagline": "Zero supposizioni. Distribuzione scientifica del carico.",
+      "conversions": {
+        "benchToDumbbell": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Panca Piana con Manubri",
+          "toWeight": "40-45kg per mano",
+          "reason": "Distribuzione carico unilaterale + richiesta di stabilità"
+        },
+        "benchToMachine": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Chest Press alla Macchina",
+          "reason": "Traiettoria fissa riduce requisiti di stabilità"
+        },
+        "benchToCable": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Chest Press ai Cavi",
+          "reason": "Curva di tensione cavi + richiesta di stabilità"
+        },
+        "squatToBulgarian": {
+          "from": "Squat con Bilanciere",
+          "to": "Bulgarian Split Squat",
+          "toWeight": "~63kg per gamba (45% ciascuna)",
+          "reason": "Unilaterale + requisiti di equilibrio"
+        }
+      },
+      "conversionCard": {
+        "from": "DA:",
+        "to": "A:",
+        "why": "Perché:"
+      },
+      "codeExample": {
+        "title": "Movement Adapter - Calcolo Peso",
+        "description": "Intelligenza biomeccanica per scambi di esercizi · Agente AI",
+        "code": {
+          "inputComment": "// Input:",
+          "processingComment": "// Elaborazione AI:",
+          "outputComment": "// Output:",
+          "step1": "1. Rileva cambio attrezzatura: Bilanciere → Manubri",
+          "step2": "2. Rileva pattern movimento: Spinta Orizzontale (stesso)",
+          "step3": "3. Applica moltiplicatore biomeccanico: 0.40-0.45",
+          "step4": "4. Calcola carico per mano: 100kg × 0.425 = 42.5kg"
+        }
+      },
+      "proTip": {
+        "label": "Suggerimento:",
+        "text": "Il sistema valida anche se la sostituzione mantiene l'intento del workout. \"Approvato\" significa stesso profilo stimolo-affaticamento. \"Attenzione\" significa stimolo diverso (con spiegazione)."
+      }
+    }
+  },
+  "legal": {
+    "medicalDisclaimer": {
+      "title": "Disclaimer Medico",
+      "onboarding": {
+        "description": "Prima di generare il tuo primo allenamento AI, leggi attentamente queste importanti informazioni sulla sicurezza.",
+        "emphasis": "Gli allenamenti generati dall'AI sono strumenti educativi, non consigli medici o coaching professionale."
+      },
+      "consultProfessional": "Consulta sempre un professionista sanitario qualificato prima di iniziare qualsiasi programma di esercizio.",
+      "sections": {
+        "aiCannot": {
+          "title": "⚠️ L'AI Non Può:",
+          "items": [
+            "Fornire consigli medici, diagnosi o trattamenti",
+            "Sostituire professionisti sanitari o coach",
+            "Rilevare o prevenire infortuni",
+            "Tenere conto di condizioni mediche non dichiarate"
+          ]
+        },
+        "stopExercise": {
+          "title": "🚨 Interrompi l'Esercizio e Cerca Aiuto Medico Se Avverti:",
+          "items": [
+            "Dolore toracico, pressione o difficoltà respiratorie",
+            "Vertigini gravi o perdita di coscienza",
+            "Dolore articolare/muscolare acuto o persistente",
+            "Qualsiasi sintomo insolito o preoccupante"
+          ]
+        },
+        "responsibilities": {
+          "title": "✅ Le Tue Responsabilità:",
+          "items": [
+            "Ottenere il nulla osta medico prima di allenarti (se necessario)",
+            "Fornire informazioni accurate sulla tua salute e limitazioni",
+            "Utilizzare la forma e la tecnica corrette",
+            "Interrompere se avverti dolore, disagio o sintomi insoliti",
+            "Valutare criticamente le raccomandazioni dell'AI usando il tuo giudizio"
+          ]
+        },
+        "assumptionOfRisk": {
+          "title": "⚖️ Assunzione di Rischio:",
+          "description": "L'esercizio comporta rischi intrinseci tra cui stiramenti muscolari, lesioni articolari, eventi cardiovascolari e, in rari casi, lesioni gravi o morte. Utilizzando Arvo, assumi volontariamente tutti i rischi associati all'esercizio e all'allenamento fisico."
+        }
+      },
+      "readFullDisclaimer": "Leggi il disclaimer medico completo →",
+      "consent": "Ho letto e compreso questo disclaimer medico. Riconosco che Arvo non è un consiglio medico, che l'AI può commettere errori e che sono l'unico responsabile della mia sicurezza e salute. Accetto di consultare professionisti sanitari quando appropriato.",
+      "acceptButton": "Ho Capito e Accetto"
+    }
   }
 }
