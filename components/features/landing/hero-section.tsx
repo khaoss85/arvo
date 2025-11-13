@@ -79,7 +79,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
               1300+ Exercises
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-700 border border-primary-200 dark:border-primary-800">
-              362 Lines of Kuba Config
+              Kuba · Mentzer · FST-7 & More
             </div>
           </motion.div>
 
