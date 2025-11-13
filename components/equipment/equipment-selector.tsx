@@ -21,7 +21,7 @@ export function EquipmentSelector({
   onComplete,
   showContinueButton = true
 }: EquipmentSelectorProps) {
-  const t = useTranslations('onboarding.equipment.selector')
+  const t = useTranslations('onboarding.steps.equipment.selector')
   const [selectedEquipment, setSelectedEquipment] = useState<Set<string>>(
     new Set(initialSelection)
   )

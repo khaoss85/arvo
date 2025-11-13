@@ -24,7 +24,7 @@ const muscleGroupsCoordinates = [
 ] as const
 
 export function BodyMap({ selectedParts, onToggle }: BodyMapProps) {
-  const t = useTranslations('onboarding.weakPoints.bodyMap')
+  const t = useTranslations('onboarding.steps.weakPoints.bodyMap')
   const [view, setView] = useState<'front' | 'back'>('front')
 
   const visibleGroups = muscleGroupsCoordinates.filter(

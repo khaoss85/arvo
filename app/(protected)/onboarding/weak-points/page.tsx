@@ -9,7 +9,7 @@ import { BodyMap } from '@/components/features/onboarding/body-map'
 import { Button } from '@/components/ui/button'
 
 export default function WeakPointsPage() {
-  const t = useTranslations('onboarding.weakPoints')
+  const t = useTranslations('onboarding.steps.weakPoints')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [selectedParts, setSelectedParts] = useState<string[]>(data.weakPoints || [])

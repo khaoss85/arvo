@@ -8,7 +8,7 @@ import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { EquipmentSelector } from '@/components/equipment/equipment-selector'
 
 export default function EquipmentPreferencesPage() {
-  const t = useTranslations('onboarding.equipment')
+  const t = useTranslations('onboarding.steps.equipment')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
