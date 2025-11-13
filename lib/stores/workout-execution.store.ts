@@ -409,7 +409,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
                 mentalReadiness: setData.mentalReadiness,
                 loggedAt: new Date()
               }
-            ]
+            ],
+            // Clear AI suggestion to allow recalculation for next set
+            currentAISuggestion: null
           }
 
           set({

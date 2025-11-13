@@ -440,6 +440,27 @@ export async function calculateProgressionAction(userId: string, input: Progress
       preferredLanguage: profile?.preferred_language
     })
 
+    // Fetch active insights (includes proactive physical limitations from Settings)
+    const { data: activeInsights } = await supabase
+      .rpc('get_active_insights', {
+        p_user_id: userId,
+        p_min_relevance: 0.3
+      })
+
+    // Transform database results to agent-expected format (snake_case → camelCase)
+    const transformedInsights = (activeInsights || []).map((insight: any) => ({
+      id: insight.id,
+      type: insight.insight_type,
+      severity: insight.severity,
+      exerciseName: insight.exercise_name || undefined,
+      userNote: insight.user_note
+    }))
+
+    console.log('[calculateProgressionAction] Active insights fetched', {
+      insightCount: transformedInsights.length,
+      hasExerciseSpecific: transformedInsights.some(i => i.exerciseName)
+    })
+
     // Get user's preferred language
     const targetLanguage = await getUserLanguage(userId)
 
@@ -448,7 +469,8 @@ export async function calculateProgressionAction(userId: string, input: Progress
     const enrichedInput = {
       ...input,
       mesocycleWeek: profile?.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
+      mesocyclePhase: (profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
+      activeInsights: transformedInsights
     }
 
     console.log('[calculateProgressionAction] Calling ProgressionCalculator.suggestNextSet with enriched input')

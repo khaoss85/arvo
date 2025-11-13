@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConfirmDialog } from './confirm-dialog'
+import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
 
 interface SetLoggerProps {
   exercise: ExerciseExecution
@@ -42,9 +44,11 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
   // Determine if current set is warmup
   const warmupSetsCount = exercise.warmupSets?.length || 0
-  const isWarmup = setNumber <= warmupSetsCount
-  const currentWarmup = isWarmup ? exercise.warmupSets?.[setNumber - 1] : undefined
-  const workingSetNumber = isWarmup ? 0 : setNumber - warmupSetsCount
+  const warmupSetsSkipped = exercise.warmupSetsSkipped || 0
+  const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+  const isWarmup = setNumber <= remainingWarmupSets
+  const currentWarmup = isWarmup ? exercise.warmupSets?.[setNumber - 1 + warmupSetsSkipped] : undefined
+  const workingSetNumber = isWarmup ? 0 : setNumber - remainingWarmupSets
 
   // Get guidance for current working set
   const currentGuidance = !isWarmup && exercise.setGuidance?.find(g => g.setNumber === workingSetNumber)
@@ -85,6 +89,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [showMentalSelector, setShowMentalSelector] = useState(false)
   const [isLogging, setIsLogging] = useState(false)
   const [isSkipping, setIsSkipping] = useState(false)
+  const [showSkipWarmupDialog, setShowSkipWarmupDialog] = useState(false)
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -105,12 +110,13 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     }
   }
 
-  const handleSkipWarmup = async () => {
+  const handleSkipWarmup = () => {
     if (!isWarmup) return
+    setShowSkipWarmupDialog(true)
+  }
 
-    const confirmed = confirm(t('setLogger.skipWarmupConfirm', { count: warmupSetsCount }))
-    if (!confirmed) return
-
+  const confirmSkipWarmup = async () => {
+    setShowSkipWarmupDialog(false)
     setIsSkipping(true)
     try {
       await skipWarmupSets('user_manual')
@@ -134,7 +140,10 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
                 : 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
             }`}
           >
-            {isWarmup ? t('setLogger.warmup', { current: setNumber, total: warmupSetsCount }) : t('setLogger.workingSet', { current: workingSetNumber, total: exercise.targetSets })}
+            {isWarmup
+              ? `${t('setLogger.warmup', { current: setNumber, total: remainingWarmupSets })} • ${currentWarmup?.weightPercentage || 60}%`
+              : `${t('setLogger.workingSet', { current: workingSetNumber, total: exercise.targetSets })} • ${rirToIntensityPercent(rir)}%`
+            }
           </span>
         </div>
 
@@ -333,6 +342,18 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       >
         {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
       </Button>
+
+      {/* Skip Warmup Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showSkipWarmupDialog}
+        onClose={() => setShowSkipWarmupDialog(false)}
+        onConfirm={confirmSkipWarmup}
+        title={t('setLogger.skipWarmupTitle')}
+        message={t('setLogger.skipWarmupConfirm', { count: warmupSetsCount })}
+        confirmText={t('setLogger.confirmSkip')}
+        cancelText={tCommon('buttons.cancel')}
+        type="warning"
+      />
     </div>
   )
 }

@@ -77,6 +77,30 @@ export function recommendRestPeriod(
 }
 
 /**
+ * Convert RIR (Reps In Reserve) to approximate intensity percentage
+ * Uses aggressive bodybuilding-style mapping
+ *
+ * @param rir - Reps in reserve (0-5)
+ * @returns Approximate intensity percentage (0-100)
+ */
+export function rirToIntensityPercent(rir: number): number {
+  // Aggressive bodybuilding mapping
+  const rirMapping: Record<number, number> = {
+    0: 100, // Failure
+    1: 97,  // 1 rep left
+    2: 95,  // 2 reps left
+    3: 92,  // 3 reps left
+    4: 88,  // 4 reps left
+    5: 85   // 5 reps left
+  }
+
+  // Clamp RIR to valid range
+  const clampedRir = Math.max(0, Math.min(5, rir))
+
+  return rirMapping[clampedRir] ?? 80 // Fallback to 80% for higher RIR
+}
+
+/**
  * Validate set data
  */
 export function validateSetData(setData: SetData): {

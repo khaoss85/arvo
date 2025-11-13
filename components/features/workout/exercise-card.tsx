@@ -99,14 +99,16 @@ export function ExerciseCard({
   const [approachName, setApproachName] = useState<string | undefined>(undefined)
 
   const warmupSetsCount = exercise.warmupSets?.length || 0
-  const totalSets = warmupSetsCount + exercise.targetSets
+  const warmupSetsSkipped = exercise.warmupSetsSkipped || 0
+  const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+  const totalSets = remainingWarmupSets + exercise.targetSets
   const currentSetNumber = exercise.completedSets.length + 1
   const isLastSet = currentSetNumber > totalSets
   const lastCompletedSet = exercise.completedSets[exercise.completedSets.length - 1]
 
   // Progress tracking
-  const completedWarmupSets = Math.min(exercise.completedSets.length, warmupSetsCount)
-  const completedWorkingSets = Math.max(0, exercise.completedSets.length - warmupSetsCount)
+  const completedWarmupSets = Math.min(exercise.completedSets.length, remainingWarmupSets)
+  const completedWorkingSets = Math.max(0, exercise.completedSets.length - remainingWarmupSets)
 
   // Calculate warmup skip suggestion
   const warmupSkipSuggestion = workout ? shouldSuggestWarmupSkip(
@@ -337,6 +339,7 @@ export function ExerciseCard({
               mentalReadiness: lastCompletedSet.mentalReadiness
             },
             setNumber: currentSetNumber,
+            exerciseName: exercise.exerciseName,
             exerciseType: (exercise.exerciseName?.toLowerCase().includes('squat') ||
                           exercise.exerciseName?.toLowerCase().includes('deadlift') ||
                           exercise.exerciseName?.toLowerCase().includes('bench') ||
@@ -358,7 +361,20 @@ export function ExerciseCard({
         }
       )
     }
-  }, [lastCompletedSet, exercise.currentAISuggestion, isLastSet, currentSetNumber])
+  }, [
+    lastCompletedSet,
+    exercise.currentAISuggestion,
+    exercise.exerciseName,
+    isLastSet,
+    currentSetNumber,
+    getSuggestion,
+    userId,
+    approachId,
+    userExperienceYears,
+    userAge,
+    setAISuggestion,
+    setShowSuggestion
+  ])
 
   const handleValidateAddSet = async (): Promise<ModificationValidationOutput | null> => {
     if (!exercise || !userId || !allExercises || !workout) return null
@@ -607,9 +623,9 @@ export function ExerciseCard({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-300">
-                      {idx + 1 <= warmupSetsCount
-                        ? t('setLogger.warmup', { current: idx + 1, total: warmupSetsCount })
-                        : t('setLogger.workingSet', { current: idx + 1 - warmupSetsCount, total: exercise.targetSets })
+                      {idx + 1 <= remainingWarmupSets
+                        ? t('setLogger.warmup', { current: idx + 1, total: remainingWarmupSets })
+                        : t('setLogger.workingSet', { current: idx + 1 - remainingWarmupSets, total: exercise.targetSets })
                       }
                     </span>
                     {mentalReadiness && (
