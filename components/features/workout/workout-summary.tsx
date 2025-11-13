@@ -20,17 +20,18 @@ interface WorkoutSummaryProps {
 }
 
 // Mental readiness emoji mapping
-const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string; description: string }> = {
-  1: { emoji: '😫', label: 'Drained', description: 'Struggled mentally throughout' },
-  2: { emoji: '😕', label: 'Struggling', description: 'Lacked motivation' },
-  3: { emoji: '😐', label: 'Neutral', description: 'Average mental state' },
-  4: { emoji: '🙂', label: 'Engaged', description: 'Focused and present' },
-  5: { emoji: '🔥', label: 'Locked In', description: 'Peak mental flow state' },
+const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; labelKey: string; descriptionKey: string }> = {
+  1: { emoji: '😫', labelKey: 'drained', descriptionKey: 'mentalReadiness.descriptions.drained' },
+  2: { emoji: '😕', labelKey: 'struggling', descriptionKey: 'mentalReadiness.descriptions.struggling' },
+  3: { emoji: '😐', labelKey: 'neutral', descriptionKey: 'mentalReadiness.descriptions.neutral' },
+  4: { emoji: '🙂', labelKey: 'engaged', descriptionKey: 'mentalReadiness.descriptions.engaged' },
+  5: { emoji: '🔥', labelKey: 'lockedIn', descriptionKey: 'mentalReadiness.descriptions.lockedIn' },
 }
 
 export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const router = useRouter()
   const t = useTranslations('workout.summary')
+  const tMentalReadiness = useTranslations('workout.execution.mentalReadiness')
   const { reset, startedAt, exercises, workout, setOverallMentalReadiness, overallMentalReadiness } = useWorkoutExecutionStore()
   const { mutate: generateWorkout, isPending } = useGenerateWorkout()
   const [stats, setStats] = useState<{
@@ -90,7 +91,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
   const handleCompleteSummary = async () => {
     if (!mentalReadinessSelected || !stats) {
-      alert('Please select your mental state before completing the workout')
+      alert(t('mentalReadinessRequired'))
       return
     }
 
@@ -154,14 +155,14 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
       // Provide more specific error message
       const specificError = errorMessage.includes('not found')
-        ? 'Workout not found in database. Please refresh and try again.'
+        ? t('errors.workoutNotFound')
         : errorMessage.includes('permission') || errorMessage.includes('denied')
-        ? 'Database permission error. Please contact support.'
+        ? t('errors.databasePermission')
         : errorMessage.includes('split plan') || errorMessage.includes('cycle')
-        ? 'Failed to advance training cycle. Please try again.'
+        ? t('errors.failedToAdvanceCycle')
         : errorMessage.includes('network') || errorMessage.includes('fetch')
-        ? 'Network error. Check your connection and try again.'
-        : `Failed to complete workout: ${errorMessage}`
+        ? t('errors.networkError')
+        : `${t('errors.failedToCompleteWorkout')}: ${errorMessage}`
 
       alert(specificError)
     }
@@ -282,7 +283,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       console.log('[WorkoutSummary] Notes saved and insights parsed successfully')
     } catch (error) {
       console.error('[WorkoutSummary] Failed to save notes:', error)
-      alert('Failed to save notes. Please try again.')
+      alert(t('errors.failedToSaveNotes'))
     } finally {
       setSavingNotes(false)
     }
@@ -332,27 +333,30 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
             <p className="text-sm text-gray-400 mb-4 text-center">{t('mentalReadinessDescription')}</p>
 
             <div className="grid grid-cols-5 gap-3">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  onClick={() => setMentalReadinessSelected(value)}
-                  className={`h-24 rounded-lg font-medium transition-all flex flex-col items-center justify-center gap-2 ${
-                    mentalReadinessSelected === value
-                      ? 'bg-purple-600 text-white ring-2 ring-purple-400 shadow-lg scale-105'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:scale-102'
-                  }`}
-                  title={MENTAL_READINESS_EMOJIS[value].description}
-                >
-                  <span className="text-3xl">{MENTAL_READINESS_EMOJIS[value].emoji}</span>
-                  <span className="text-xs font-semibold">{MENTAL_READINESS_EMOJIS[value].label}</span>
-                  <span className="text-xs opacity-75">{value}</span>
-                </button>
-              ))}
+              {[1, 2, 3, 4, 5].map((value) => {
+                const config = MENTAL_READINESS_EMOJIS[value]
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setMentalReadinessSelected(value)}
+                    className={`h-24 rounded-lg font-medium transition-all flex flex-col items-center justify-center gap-2 ${
+                      mentalReadinessSelected === value
+                        ? 'bg-purple-600 text-white ring-2 ring-purple-400 shadow-lg scale-105'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:scale-102'
+                    }`}
+                    title={t(config.descriptionKey)}
+                  >
+                    <span className="text-3xl">{config.emoji}</span>
+                    <span className="text-xs font-semibold">{tMentalReadiness(config.labelKey)}</span>
+                    <span className="text-xs opacity-75">{value}</span>
+                  </button>
+                )
+              })}
             </div>
 
             {mentalReadinessSelected && (
               <p className="text-sm text-purple-300 mt-3 text-center">
-                {MENTAL_READINESS_EMOJIS[mentalReadinessSelected].description}
+                {t(MENTAL_READINESS_EMOJIS[mentalReadinessSelected].descriptionKey)}
               </p>
             )}
 
@@ -522,7 +526,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
               <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              AI will analyze your notes. For persistent pain, consult a medical professional.
+              {t('aiAnalysisDisclaimer')}
             </p>
           </div>
         )}

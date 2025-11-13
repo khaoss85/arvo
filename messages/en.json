@@ -204,7 +204,25 @@
       "backToDashboard": "Back to Dashboard",
       "mentalReadinessRequired": "Please select your mental state before completing the workout",
       "completeWorkout": "Complete Workout",
-      "completing": "Completing..."
+      "completing": "Completing...",
+      "aiAnalysisDisclaimer": "AI will analyze your notes. For persistent pain, consult a medical professional.",
+      "mentalReadiness": {
+        "descriptions": {
+          "drained": "Struggled mentally throughout",
+          "struggling": "Lacked motivation",
+          "neutral": "Average mental state",
+          "engaged": "Focused and present",
+          "lockedIn": "Peak mental flow state"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Workout not found in database. Please refresh and try again.",
+        "databasePermission": "Database permission error. Please contact support.",
+        "failedToAdvanceCycle": "Failed to advance training cycle. Please try again.",
+        "networkError": "Network error. Check your connection and try again.",
+        "failedToCompleteWorkout": "Failed to complete workout",
+        "failedToSaveNotes": "Failed to save notes. Please try again."
+      }
     },
     "execution": {
       "setLogger": "Set Logger",

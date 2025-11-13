@@ -204,7 +204,25 @@
       "backToDashboard": "Torna alla Dashboard",
       "mentalReadinessRequired": "Seleziona il tuo stato mentale prima di completare l'allenamento",
       "completeWorkout": "Completa Allenamento",
-      "completing": "Completamento..."
+      "completing": "Completamento...",
+      "aiAnalysisDisclaimer": "L'IA analizzerà le tue note. Per dolori persistenti, consulta un professionista medico.",
+      "mentalReadiness": {
+        "descriptions": {
+          "drained": "Ho faticato mentalmente durante tutto l'allenamento",
+          "struggling": "Mancanza di motivazione",
+          "neutral": "Stato mentale nella media",
+          "engaged": "Concentrato e presente",
+          "lockedIn": "Picco di concentrazione mentale"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Allenamento non trovato nel database. Aggiorna la pagina e riprova.",
+        "databasePermission": "Errore di permessi del database. Contatta il supporto.",
+        "failedToAdvanceCycle": "Impossibile avanzare il ciclo di allenamento. Riprova.",
+        "networkError": "Errore di rete. Controlla la connessione e riprova.",
+        "failedToCompleteWorkout": "Impossibile completare l'allenamento",
+        "failedToSaveNotes": "Impossibile salvare le note. Riprova."
+      }
     },
     "execution": {
       "setLogger": "Registra Serie",
