@@ -210,7 +210,7 @@ export function NotesIntelligence() {
               </div>
 
               <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-950/20 rounded-md text-sm border border-primary-200 dark:border-primary-800">
-                <p className="text-primary-900 dark:text-primary-200">
+                <p className="text-primary-900 dark:text-primary-100">
                   <strong>Context preservation:</strong> Timestamps, exercise names, load used, and RIR from the workout are automatically attached to each insight. The AI doesn't just parse text—it understands workout context.
                 </p>
               </div>

@@ -18,6 +18,7 @@
     --primary-700: 221 65% 39%;
     --primary-800: 221 62% 32%;
     --primary-900: 222 56% 27%;
+    --primary-950: 222 56% 20%;
 
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
@@ -45,6 +46,7 @@
     --primary-700: 221 93% 83%;
     --primary-800: 220 95% 92%;
     --primary-900: 220 100% 97%;
+    --primary-950: 220 100% 99%;
 
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 64%;
