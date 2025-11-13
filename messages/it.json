@@ -377,7 +377,9 @@
         "logging": "Registrazione...",
         "skipWarmup": "Salta riscaldamento",
         "skipping": "Saltando...",
-        "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro."
+        "skipWarmupTitle": "Saltare il Riscaldamento?",
+        "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro.",
+        "confirmSkip": "Salta alle Serie"
       },
       "progress": {
         "title": "Progresso Allenamento",
@@ -1098,7 +1100,38 @@
     "charts": "Grafici",
     "insights": "Insight AI",
     "history": "Cronologia",
-    "noData": "Nessun dato disponibile. Completa alcuni allenamenti per vedere i tuoi progressi!"
+    "noData": "Nessun dato disponibile. Completa alcuni allenamenti per vedere i tuoi progressi!",
+    "page": {
+      "title": "Progressi & Statistiche",
+      "subtitle": "Monitora i tuoi guadagni di forza e la costanza dell'allenamento",
+      "navigation": {
+        "backToDashboard": "Torna alla Dashboard",
+        "aiInsights": "Insight AI",
+        "settings": "Impostazioni"
+      },
+      "controls": {
+        "timeRangeLabel": "Intervallo Temporale"
+      },
+      "timeRanges": {
+        "lastWeek": "Ultima Settimana",
+        "lastMonth": "Ultimo Mese",
+        "last3Months": "Ultimi 3 Mesi",
+        "lastYear": "Ultimo Anno"
+      },
+      "charts": {
+        "strengthProgress": "Progresso di Forza",
+        "trainingVolume": "Volume di Allenamento"
+      },
+      "personalRecords": {
+        "title": "Record Personali"
+      },
+      "stats": {
+        "totalPRs": "PR Totali",
+        "topE1RM": "e1RM Massimo",
+        "totalVolume": "Volume Totale",
+        "workouts": "Allenamenti"
+      }
+    }
   },
   "api": {
     "workouts": {
@@ -1131,6 +1164,66 @@
         "failedToFetch": "Impossibile recuperare gli esercizi",
         "internalServerError": "Errore interno del server"
       }
+    }
+  },
+  "memory": {
+    "title": "Dashboard Memory",
+    "subtitle": "Cosa ha imparato Arvo su di te",
+    "loading": "Caricamento...",
+    "stats": {
+      "activeMemories": "Memory Attive",
+      "averageConfidence": "Confidence Media",
+      "activeInsights": "Insight Attivi"
+    },
+    "buttons": {
+      "refresh": "Aggiorna",
+      "export": "Esporta",
+      "refreshing": "Aggiornamento..."
+    },
+    "tabs": {
+      "overview": "Panoramica ({count})",
+      "preference": "Preferenze ({count})",
+      "limitation": "Limitazioni ({count})",
+      "pattern": "Pattern ({count})",
+      "strength": "Punti di Forza ({count})",
+      "equipment": "Attrezzatura ({count})"
+    },
+    "insights": {
+      "title": "Insight Attivi",
+      "relevance": "Rilevanza: {score}%",
+      "resolveButton": "Segna come risolto",
+      "resolveButtonAria": "Segna come risolto"
+    },
+    "memories": {
+      "title": "Tutte le Memory",
+      "titleFiltered": "Memory: {category}",
+      "confidence": "Confidence",
+      "confirmed": "Confermata {count}x",
+      "archiveButton": "Archivia",
+      "archiveButtonAria": "Archivia",
+      "moreExercises": "+{count}"
+    },
+    "empty": {
+      "noMemories": "Nessuna memory ancora. Continua ad allenarti!",
+      "noMemoriesFiltered": "Nessuna memory in \"{category}\"",
+      "noInsights": "Nessun insight attivo"
+    },
+    "categories": {
+      "preference": "Preferenze",
+      "pattern": "Pattern",
+      "limitation": "Limitazioni",
+      "strength": "Punti di Forza",
+      "equipment": "Attrezzatura",
+      "learned_behavior": "Comportamento Appreso"
+    },
+    "severity": {
+      "info": "Info",
+      "caution": "Attenzione",
+      "warning": "Avviso",
+      "critical": "Critico"
+    },
+    "export": {
+      "filename": "arvo-memories-{date}.json"
     }
   }
 }

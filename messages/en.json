@@ -377,7 +377,9 @@
         "logging": "Logging...",
         "skipWarmup": "Skip warmup",
         "skipping": "Skipping...",
-        "skipWarmupConfirm": "Skip all {count} warmup {count, plural, one {set} other {sets}}? You can go straight to your working sets."
+        "skipWarmupTitle": "Skip Warmup?",
+        "skipWarmupConfirm": "Skip all {count} warmup {count, plural, one {set} other {sets}}? You can go straight to your working sets.",
+        "confirmSkip": "Skip to Working Sets"
       },
       "progress": {
         "title": "Workout Progress",
@@ -1098,7 +1100,38 @@
     "charts": "Charts",
     "insights": "AI Insights",
     "history": "History",
-    "noData": "No data available yet. Complete some workouts to see your progress!"
+    "noData": "No data available yet. Complete some workouts to see your progress!",
+    "page": {
+      "title": "Progress & Analytics",
+      "subtitle": "Track your strength gains and training consistency",
+      "navigation": {
+        "backToDashboard": "Back to Dashboard",
+        "aiInsights": "AI Insights",
+        "settings": "Settings"
+      },
+      "controls": {
+        "timeRangeLabel": "Time Range"
+      },
+      "timeRanges": {
+        "lastWeek": "Last Week",
+        "lastMonth": "Last Month",
+        "last3Months": "Last 3 Months",
+        "lastYear": "Last Year"
+      },
+      "charts": {
+        "strengthProgress": "Strength Progress",
+        "trainingVolume": "Training Volume"
+      },
+      "personalRecords": {
+        "title": "Personal Records"
+      },
+      "stats": {
+        "totalPRs": "Total PRs",
+        "topE1RM": "Top e1RM",
+        "totalVolume": "Total Volume",
+        "workouts": "Workouts"
+      }
+    }
   },
   "api": {
     "workouts": {
@@ -1131,6 +1164,66 @@
         "failedToFetch": "Failed to fetch exercises",
         "internalServerError": "Internal server error"
       }
+    }
+  },
+  "memory": {
+    "title": "Memory Dashboard",
+    "subtitle": "What Arvo has learned about you",
+    "loading": "Loading...",
+    "stats": {
+      "activeMemories": "Active Memories",
+      "averageConfidence": "Average Confidence",
+      "activeInsights": "Active Insights"
+    },
+    "buttons": {
+      "refresh": "Refresh",
+      "export": "Export",
+      "refreshing": "Refreshing..."
+    },
+    "tabs": {
+      "overview": "Overview ({count})",
+      "preference": "Preference ({count})",
+      "limitation": "Limitation ({count})",
+      "pattern": "Pattern ({count})",
+      "strength": "Strength ({count})",
+      "equipment": "Equipment ({count})"
+    },
+    "insights": {
+      "title": "Active Insights",
+      "relevance": "Relevance: {score}%",
+      "resolveButton": "Mark as resolved",
+      "resolveButtonAria": "Mark as resolved"
+    },
+    "memories": {
+      "title": "All Memories",
+      "titleFiltered": "Memories: {category}",
+      "confidence": "Confidence",
+      "confirmed": "Confirmed {count}x",
+      "archiveButton": "Archive",
+      "archiveButtonAria": "Archive",
+      "moreExercises": "+{count}"
+    },
+    "empty": {
+      "noMemories": "No memories yet. Keep training!",
+      "noMemoriesFiltered": "No memories in \"{category}\"",
+      "noInsights": "No active insights"
+    },
+    "categories": {
+      "preference": "Preference",
+      "pattern": "Pattern",
+      "limitation": "Limitation",
+      "strength": "Strength",
+      "equipment": "Equipment",
+      "learned_behavior": "Learned Behavior"
+    },
+    "severity": {
+      "info": "Info",
+      "caution": "Caution",
+      "warning": "Warning",
+      "critical": "Critical"
+    },
+    "export": {
+      "filename": "arvo-memories-{date}.json"
     }
   }
 }

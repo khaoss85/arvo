@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { memoryService, type ActiveMemory } from '@/lib/services/memory.service'
 import { insightService, type ActiveInsight } from '@/lib/services/insight.service'
 import type { Database } from '@/lib/types/database.types'
@@ -45,6 +46,7 @@ interface MemoryDashboardClientProps {
 }
 
 export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
+  const t = useTranslations('memory')
   const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [memories, setMemories] = useState<ActiveMemory[]>([])
   const [insights, setInsights] = useState<ActiveInsight[]>([])
@@ -98,7 +100,8 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `arvo-memories-${new Date().toISOString().split('T')[0]}.json`
+      const date = new Date().toISOString().split('T')[0]
+      a.download = t('export.filename', { date })
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -135,6 +138,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <span className="ml-3 text-gray-400">{t('loading')}</span>
       </div>
     )
   }
@@ -147,9 +151,9 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Memory Dashboard</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>
             <p className="text-gray-400">
-              Cosa ha imparato Arvo su di te
+              {t('subtitle')}
             </p>
           </div>
           <div className="flex gap-2">
@@ -165,7 +169,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
               ) : (
                 <RefreshCw className="w-4 h-4" />
               )}
-              Aggiorna
+              {consolidating ? t('buttons.refreshing') : t('buttons.refresh')}
             </Button>
             <Button
               onClick={handleExport}
@@ -174,7 +178,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
               className="flex items-center gap-2"
             >
               <Download className="w-4 h-4" />
-              Esporta
+              {t('buttons.export')}
             </Button>
           </div>
         </div>
@@ -183,15 +187,15 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="text-2xl font-bold text-white mb-1">{memories.length}</div>
-            <div className="text-sm text-gray-400">Memories Attive</div>
+            <div className="text-sm text-gray-400">{t('stats.activeMemories')}</div>
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="text-2xl font-bold text-white mb-1">{getAverageConfidence()}%</div>
-            <div className="text-sm text-gray-400">Confidence Media</div>
+            <div className="text-sm text-gray-400">{t('stats.averageConfidence')}</div>
           </div>
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="text-2xl font-bold text-white mb-1">{insights.length}</div>
-            <div className="text-sm text-gray-400">Insights Attivi</div>
+            <div className="text-sm text-gray-400">{t('stats.activeInsights')}</div>
           </div>
         </div>
       </div>
@@ -208,7 +212,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
-            {tab === 'overview' ? `Overview (${memories.length})` : `${tab.charAt(0).toUpperCase() + tab.slice(1)} (${getCategoryCount(tab)})`}
+            {t(`tabs.${tab}`, { count: tab === 'overview' ? memories.length : getCategoryCount(tab) })}
           </button>
         ))}
       </div>
@@ -218,7 +222,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
         <div className="mb-6">
           <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-yellow-400" />
-            Insights Attivi
+            {t('insights.title')}
           </h2>
           <div className="space-y-3">
             {insights.map(insight => (
@@ -236,7 +240,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                     </div>
                     <p className="text-sm mb-2">{insight.user_note}</p>
                     <div className="flex items-center gap-4 text-xs opacity-75">
-                      <span>Relevance: {Math.round(insight.relevance_score * 100)}%</span>
+                      <span>{t('insights.relevance', { score: Math.round(insight.relevance_score * 100) })}</span>
                       <span>•</span>
                       <span>{new Date(insight.created_at).toLocaleDateString('it-IT')}</span>
                     </div>
@@ -244,7 +248,8 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                   <button
                     onClick={() => handleResolveInsight(insight.id)}
                     className="ml-4 p-2 hover:bg-white/10 rounded transition-colors"
-                    title="Segna come risolto"
+                    title={t('insights.resolveButtonAria')}
+                    aria-label={t('insights.resolveButtonAria')}
                   >
                     <CheckCircle className="w-5 h-5" />
                   </button>
@@ -259,7 +264,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <Brain className="w-5 h-5 text-purple-400" />
-          {activeTab === 'overview' ? 'Tutte le Memories' : `Memories: ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`}
+          {activeTab === 'overview' ? t('memories.title') : t('memories.titleFiltered', { category: t(`categories.${activeTab}`) })}
         </h2>
 
         {displayMemories.length === 0 ? (
@@ -267,8 +272,8 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
             <Brain className="w-12 h-12 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400">
               {activeTab === 'overview'
-                ? 'Nessuna memory ancora. Continua ad allenarti!'
-                : `Nessuna memory in "${activeTab}"`
+                ? t('empty.noMemories')
+                : t('empty.noMemoriesFiltered', { category: activeTab })
               }
             </p>
           </div>
@@ -292,7 +297,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                       {/* Confidence Bar */}
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                          <span>Confidence</span>
+                          <span>{t('memories.confidence')}</span>
                           <span className="font-semibold">{Math.round(memory.confidence_score * 100)}%</span>
                         </div>
                         <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
@@ -315,21 +320,22 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                           ))}
                           {memory.related_exercises.length > 3 && (
                             <span className="text-xs px-2 py-1 text-gray-500">
-                              +{memory.related_exercises.length - 3}
+                              {t('memories.moreExercises', { count: memory.related_exercises.length - 3 })}
                             </span>
                           )}
                         </div>
                       )}
                       {/* Footer */}
                       <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span>Confermata {memory.times_confirmed}x</span>
+                        <span>{t('memories.confirmed', { count: memory.times_confirmed })}</span>
                       </div>
                     </div>
                   </div>
                   <button
                     onClick={() => handleArchiveMemory(memory.id)}
                     className="ml-4 p-2 hover:bg-red-600/20 rounded transition-colors text-gray-400 hover:text-red-400"
-                    title="Archivia"
+                    title={t('memories.archiveButtonAria')}
+                    aria-label={t('memories.archiveButtonAria')}
                   >
                     <Archive className="w-5 h-5" />
                   </button>
