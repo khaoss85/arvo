@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { List } from 'lucide-react'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import type { Workout } from '@/lib/types/schemas'
@@ -18,6 +19,7 @@ interface WorkoutExecutionProps {
 }
 
 export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
+  const t = useTranslations('workout.execution')
   const {
     isActive,
     workoutId,
@@ -75,7 +77,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
-          <p className="text-gray-400">Loading workout...</p>
+          <p className="text-gray-400">{t('loadingWorkout')}</p>
         </div>
       </div>
     )
@@ -112,7 +114,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-4"></div>
-          <p className="text-gray-400">Loading workout...</p>
+          <p className="text-gray-400">{t('loadingWorkout')}</p>
         </div>
       </div>
     )

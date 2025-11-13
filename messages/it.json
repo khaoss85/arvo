@@ -342,6 +342,7 @@
       }
     },
     "execution": {
+      "loadingWorkout": "Caricamento allenamento...",
       "setLogger": "Registra Serie",
       "reps": "Reps",
       "weight": "Peso",
