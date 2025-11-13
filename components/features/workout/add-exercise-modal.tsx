@@ -9,6 +9,7 @@ import type { ExerciseAdditionInput, ExerciseAdditionOutput } from '@/lib/agents
 import { ExerciseValidationModal } from './exercise-validation-modal'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { useUIStore } from '@/lib/stores/ui.store'
+import { useTranslations } from 'next-intl'
 
 interface Exercise {
   id: string
@@ -65,6 +66,7 @@ export function AddExerciseModal({
   userId,
   currentWorkoutContext,
 }: AddExerciseModalProps) {
+  const t = useTranslations('workout.components.addExerciseModal')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -300,12 +302,12 @@ export function AddExerciseModal({
   }
 
   const categories = [
-    { id: 'all', label: 'All', icon: Dumbbell },
-    { id: 'chest', label: 'Chest', icon: Target },
-    { id: 'back', label: 'Back', icon: Target },
-    { id: 'legs', label: 'Legs', icon: Target },
-    { id: 'shoulders', label: 'Shoulders', icon: Target },
-    { id: 'arms', label: 'Arms', icon: Target },
+    { id: 'all', label: t('categories.all'), icon: Dumbbell },
+    { id: 'chest', label: t('categories.chest'), icon: Target },
+    { id: 'back', label: t('categories.back'), icon: Target },
+    { id: 'legs', label: t('categories.legs'), icon: Target },
+    { id: 'shoulders', label: t('categories.shoulders'), icon: Target },
+    { id: 'arms', label: t('categories.arms'), icon: Target },
   ]
 
   if (!isOpen) return null
@@ -315,11 +317,11 @@ export function AddExerciseModal({
       <div className="bg-gray-900 rounded-lg border border-gray-700 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Add Exercise</h2>
+          <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-800 rounded transition-colors"
-            aria-label="Close"
+            aria-label={t('closeAriaLabel')}
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -331,7 +333,7 @@ export function AddExerciseModal({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search exercises..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
@@ -368,13 +370,13 @@ export function AddExerciseModal({
           <div className="p-4 border-b border-gray-800 bg-blue-500/5">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-5 h-5 text-blue-400" />
-              <h3 className="text-sm font-semibold text-blue-400">AI Suggested Exercises</h3>
+              <h3 className="text-sm font-semibold text-blue-400">{t('aiSuggestions.title')}</h3>
             </div>
 
             {isLoadingSuggestions ? (
               <div className="flex items-center justify-center py-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                <span className="ml-3 text-sm text-gray-400">Analyzing your workout...</span>
+                <span className="ml-3 text-sm text-gray-400">{t('aiSuggestions.analyzing')}</span>
               </div>
             ) : aiSuggestions.length > 0 ? (
               <div className="space-y-2">
@@ -405,7 +407,7 @@ export function AddExerciseModal({
                               : 'bg-gray-500/20 text-gray-400'
                           }`}
                         >
-                          {suggestion.priority}
+                          {t(`priority.${suggestion.priority}`)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-400 leading-relaxed">
@@ -421,7 +423,7 @@ export function AddExerciseModal({
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-400">No suggestions available</p>
+              <p className="text-sm text-gray-400">{t('aiSuggestions.noSuggestions')}</p>
             )}
           </div>
         )}
@@ -434,8 +436,8 @@ export function AddExerciseModal({
             </div>
           ) : filteredExercises.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-400">No exercises found</p>
-              <p className="text-sm text-gray-500 mt-2">Try adjusting your search or category</p>
+              <p className="text-gray-400">{t('emptyState.title')}</p>
+              <p className="text-sm text-gray-500 mt-2">{t('emptyState.description')}</p>
             </div>
           ) : (
             <div className="grid gap-2">
@@ -456,8 +458,8 @@ export function AddExerciseModal({
                             setSelectedExerciseForAnimation(exercise)
                           }}
                           className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                          aria-label={`View ${exercise.name} animation`}
-                          title="Visualizza esercizio"
+                          aria-label={t('viewExerciseAria', { name: exercise.name })}
+                          title={t('viewExercise')}
                         >
                           <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
@@ -466,10 +468,10 @@ export function AddExerciseModal({
                     </div>
                     <div className="flex gap-2 mt-1 text-xs text-gray-400">
                       <span className="px-2 py-0.5 bg-gray-700 rounded">
-                        {exercise.bodyPart || 'General'}
+                        {exercise.bodyPart || t('bodyPartLabels.general')}
                       </span>
                       <span className="px-2 py-0.5 bg-gray-700 rounded">
-                        {exercise.equipment || 'Any'}
+                        {exercise.equipment || t('bodyPartLabels.any')}
                       </span>
                       {exercise.target && (
                         <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded">
@@ -487,7 +489,7 @@ export function AddExerciseModal({
         {/* Footer */}
         <div className="p-4 border-t border-gray-800">
           <p className="text-xs text-gray-500 text-center">
-            ESC to close • Select an exercise to add it to your workout
+            {t('footer')}
           </p>
         </div>
       </div>

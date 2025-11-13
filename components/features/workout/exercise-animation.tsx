@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 
@@ -15,6 +16,7 @@ export function ExerciseAnimation({
   exerciseName,
   className = '',
 }: ExerciseAnimationProps) {
+  const t = useTranslations('workout.components.exerciseAnimation')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,7 +36,7 @@ export function ExerciseAnimation({
 
     img.onerror = () => {
       console.error('[ExerciseAnimation] Failed to load GIF:', animationUrl)
-      setError('Failed to load animation')
+      setError(t('loadingFailed'))
       setIsLoading(false)
     }
 
@@ -70,7 +72,7 @@ export function ExerciseAnimation({
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center w-full h-full min-h-[200px] text-center px-4"
           >
-            <p className="text-gray-400 text-sm">Animazione non disponibile</p>
+            <p className="text-gray-400 text-sm">{t('notAvailable')}</p>
             <p className="text-gray-500 text-xs mt-2">{exerciseName}</p>
           </motion.div>
         )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft, Calendar, Clock, Dumbbell, Heart, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
@@ -13,17 +14,20 @@ interface WorkoutRecapProps {
   userId: string
 }
 
-// Mental readiness emoji mapping
-const MENTAL_READINESS_EMOJIS: Record<number, { emoji: string; label: string }> = {
-  1: { emoji: '😫', label: 'Drained' },
-  2: { emoji: '😕', label: 'Struggling' },
-  3: { emoji: '😐', label: 'Neutral' },
-  4: { emoji: '🙂', label: 'Engaged' },
-  5: { emoji: '🔥', label: 'Locked In' },
+// Mental readiness emoji mapping - labels will be translated
+const MENTAL_READINESS_EMOJIS: Record<number, string> = {
+  1: '😫',
+  2: '😕',
+  3: '😐',
+  4: '🙂',
+  5: '🔥',
 }
 
 export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps) {
   const router = useRouter()
+  const t = useTranslations('workout.components.workoutRecap')
+  const tExecution = useTranslations('workout.execution.mentalReadiness')
+
   const exercises = (workout.exercises as any[]) || []
   const workoutTypeIcon = workout.workout_type ? getWorkoutTypeIcon(workout.workout_type) : '💪'
   const mentalReadiness = workout.mental_readiness_overall || null
@@ -42,12 +46,12 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
         month: 'long',
         day: 'numeric',
       })
-    : 'Unknown date'
+    : t('stats.unknownDate')
 
   // Format duration
   const duration = workout.duration_seconds
     ? formatDuration(workout.duration_seconds)
-    : 'N/A'
+    : t('stats.na')
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -60,7 +64,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            {t('backToDashboard')}
           </Button>
 
           <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-6 text-white">
@@ -68,9 +72,9 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
               <span className="text-3xl">{workoutTypeIcon}</span>
               <div>
                 <h1 className="text-3xl font-bold">
-                  {workout.workout_name || workout.workout_type?.toUpperCase() || 'Workout'}
+                  {workout.workout_name || workout.workout_type?.toUpperCase() || t('workout')}
                 </h1>
-                <p className="text-green-100 text-sm">Completed Workout</p>
+                <p className="text-green-100 text-sm">{t('completedWorkout')}</p>
               </div>
             </div>
           </div>
@@ -82,7 +86,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
           <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
               <Calendar className="w-4 h-4" />
-              <span>Date</span>
+              <span>{t('stats.date')}</span>
             </div>
             <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {completedDate}
@@ -93,7 +97,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
           <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
               <Clock className="w-4 h-4" />
-              <span>Duration</span>
+              <span>{t('stats.duration')}</span>
             </div>
             <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{duration}</p>
           </div>
@@ -102,7 +106,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
           <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
               <TrendingUp className="w-4 h-4" />
-              <span>Volume</span>
+              <span>{t('stats.volume')}</span>
             </div>
             <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
               {totalVolume.toLocaleString()} kg
@@ -113,7 +117,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
           <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm mb-1">
               <Dumbbell className="w-4 h-4" />
-              <span>Total Sets</span>
+              <span>{t('stats.totalSets')}</span>
             </div>
             <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{totalSets}</p>
           </div>
@@ -124,15 +128,15 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700 mb-6">
             <div className="flex items-center gap-3">
               <Heart className="w-5 h-5 text-red-500" />
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Mental State</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{t('mentalState.title')}</h2>
             </div>
             <div className="mt-4 flex items-center gap-4">
-              <span className="text-5xl">{MENTAL_READINESS_EMOJIS[mentalReadiness]?.emoji}</span>
+              <span className="text-5xl">{MENTAL_READINESS_EMOJIS[mentalReadiness]}</span>
               <div>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {MENTAL_READINESS_EMOJIS[mentalReadiness]?.label}
+                  {tExecution(mentalReadiness === 1 ? 'drained' : mentalReadiness === 2 ? 'struggling' : mentalReadiness === 3 ? 'neutral' : mentalReadiness === 4 ? 'engaged' : 'lockedIn')}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Mental readiness: {mentalReadiness}/5</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('mentalState.readiness', { value: mentalReadiness })}</p>
               </div>
             </div>
           </div>
@@ -141,7 +145,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
         {/* Muscle Groups */}
         {workout.target_muscle_groups && workout.target_muscle_groups.length > 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Muscle Groups</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('muscleGroups.title')}</h2>
             <div className="flex flex-wrap gap-2">
               {workout.target_muscle_groups.map((group, idx) => (
                 <span
@@ -158,7 +162,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
         {/* Exercises */}
         <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700 mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Exercises ({exercises.length})
+            {t('exercises.titleWithCount', { count: exercises.length })}
           </h2>
           <div className="space-y-4">
             {exercises.map((exercise, idx) => {
@@ -172,10 +176,10 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                      {exercise.name || exercise.exerciseName || exercise.exercise_name || 'Exercise'}
+                      {exercise.name || exercise.exerciseName || exercise.exercise_name || t('exercises.title')}
                     </h3>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {setCount} {setCount === 1 ? 'set' : 'sets'}
+                      {setCount} {t('exercises.sets', { count: setCount })}
                     </span>
                   </div>
 
@@ -187,16 +191,16 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
                           key={setIdx}
                           className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
                         >
-                          <span className="font-medium w-16">Set {setIdx + 1}</span>
+                          <span className="font-medium w-16">{t('exercises.set', { number: setIdx + 1 })}</span>
                           <span className="w-20">
                             {set.weight || set.actualWeight || 0} kg
                           </span>
                           <span className="w-20">
-                            {set.reps || set.actualReps || 0} reps
+                            {set.reps || set.actualReps || 0} {t('exercises.reps')}
                           </span>
                           {set.rir !== undefined && set.rir !== null && (
                             <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">
-                              RIR: {set.rir}
+                              {t('exercises.rir', { value: set.rir })}
                             </span>
                           )}
                         </div>
@@ -212,7 +216,7 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
         {/* Notes */}
         {workout.notes && (
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 border border-gray-200 dark:border-gray-700 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Notes</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t('notes.title')}</h2>
             <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{workout.notes}</p>
           </div>
         )}
@@ -224,14 +228,14 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
             variant="outline"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            {t('backToDashboard')}
           </Button>
 
           <Button
             onClick={() => router.push('/progress')}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            View Progress
+            {t('buttons.viewProgress')}
             <TrendingUp className="w-4 h-4 ml-2" />
           </Button>
         </div>

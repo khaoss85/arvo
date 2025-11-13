@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from 'react'
+import { useTranslations } from 'next-intl'
 import { ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react'
 import { generateWorkoutRationaleAction } from '@/app/actions/ai-actions'
 import type { WorkoutRationaleInput, WorkoutRationaleOutput } from '@/lib/agents/workout-rationale.agent'
@@ -22,6 +23,7 @@ export interface WorkoutRationaleHandle {
 
 export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRationaleProps>(
   function WorkoutRationale({ workoutType, exercises, userId }, ref) {
+    const t = useTranslations('workout.components.workoutRationale')
     const [isExpanded, setIsExpanded] = useState(false)
     const [rationale, setRationale] = useState<WorkoutRationaleOutput | null>(null)
     const [loading, setLoading] = useState(false)
@@ -111,7 +113,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-purple-400" />
           <span className="text-sm font-medium text-gray-300">
-            Why these exercises?
+            {t('title')}
           </span>
         </div>
         {isExpanded ? (
@@ -131,7 +133,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
           {loading && (
             <div className="flex items-center justify-center py-4">
               <Loader2 className="w-5 h-5 animate-spin text-purple-400 mr-2" />
-              <span className="text-sm text-gray-400">Generating explanation...</span>
+              <span className="text-sm text-gray-400">{t('generatingExplanation')}</span>
             </div>
           )}
 
@@ -143,7 +145,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
                 onClick={loadRationale}
                 className="text-sm text-purple-400 hover:text-purple-300 underline mt-2"
               >
-                Try again
+                {t('tryAgain')}
               </button>
             </div>
           )}
@@ -154,7 +156,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
               {/* Overall Focus */}
               <div>
                 <h4 className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                  Workout Focus
+                  {t('workoutFocus')}
                 </h4>
                 <p className="text-xs text-gray-300 leading-snug">
                   {rationale.overallFocus}
@@ -165,7 +167,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
               {rationale.exerciseSequencing && (
                 <div>
                   <h4 className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                    Workout Flow
+                    {t('workoutFlow')}
                   </h4>
                   <p className="text-xs text-gray-300 leading-snug">
                     {rationale.exerciseSequencing}
@@ -177,7 +179,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
               {rationale.exerciseConnections && rationale.exerciseConnections.length > 0 && (
                 <div>
                   <h4 className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                    Exercise Flow
+                    {t('exerciseFlow')}
                   </h4>
                   <div className="space-y-1.5">
                     {rationale.exerciseConnections.map((conn, idx) => (
@@ -198,7 +200,7 @@ export const WorkoutRationale = forwardRef<WorkoutRationaleHandle, WorkoutRation
               {rationale.exerciseRationales.length > 0 && (
                 <div>
                   <h4 className="text-xs font-semibold text-gray-400 uppercase mb-1">
-                    Exercise Breakdown
+                    {t('exerciseBreakdown')}
                   </h4>
                   <ol className="space-y-1.5">
                     {rationale.exerciseRationales.map((exerciseRationale, index) => (

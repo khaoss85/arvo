@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { ExerciseSubstitution } from './exercise-substitution'
@@ -18,6 +19,7 @@ export function QuickAdjustments({
   userId,
   onClose
 }: QuickAdjustmentsProps) {
+  const t = useTranslations('workout.components.quickAdjustments')
   const { substituteExercise } = useWorkoutExecutionStore()
   const [showSubstitution, setShowSubstitution] = useState(false)
 
@@ -52,7 +54,7 @@ export function QuickAdjustments({
   const handleShorterRest = () => {
     // This would typically adjust rest periods
     // For now, just close the modal as rest is auto-regulated
-    alert('Rest periods are auto-regulated based on your breathing and readiness. Take rest as needed!')
+    alert(t('restPeriods.alertMessage'))
     onClose()
   }
 
@@ -79,7 +81,7 @@ export function QuickAdjustments({
       <div className="bg-gray-900 rounded-t-2xl sm:rounded-lg w-full sm:max-w-md">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Quick Actions</h2>
+            <h2 className="text-xl font-bold text-white">{t('title')}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white"
@@ -103,8 +105,8 @@ export function QuickAdjustments({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Equipment Busy</h3>
-                  <p className="text-sm text-gray-400">Find a similar exercise with available equipment</p>
+                  <h3 className="font-medium text-white mb-1">{t('equipmentBusy.title')}</h3>
+                  <p className="text-sm text-gray-400">{t('equipmentBusy.description')}</p>
                 </div>
               </div>
             </button>
@@ -121,8 +123,8 @@ export function QuickAdjustments({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Weight Too Heavy</h3>
-                  <p className="text-sm text-gray-400">Reduce target weight by 10%</p>
+                  <h3 className="font-medium text-white mb-1">{t('weightTooHeavy.title')}</h3>
+                  <p className="text-sm text-gray-400">{t('weightTooHeavy.description')}</p>
                 </div>
               </div>
             </button>
@@ -139,8 +141,8 @@ export function QuickAdjustments({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Weight Too Light</h3>
-                  <p className="text-sm text-gray-400">Increase target weight by 10%</p>
+                  <h3 className="font-medium text-white mb-1">{t('weightTooLight.title')}</h3>
+                  <p className="text-sm text-gray-400">{t('weightTooLight.description')}</p>
                 </div>
               </div>
             </button>
@@ -157,8 +159,8 @@ export function QuickAdjustments({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-white mb-1">Rest Periods</h3>
-                  <p className="text-sm text-gray-400">Info about auto-regulated rest</p>
+                  <h3 className="font-medium text-white mb-1">{t('restPeriods.title')}</h3>
+                  <p className="text-sm text-gray-400">{t('restPeriods.description')}</p>
                 </div>
               </div>
             </button>
@@ -170,7 +172,7 @@ export function QuickAdjustments({
               variant="outline"
               className="w-full border-gray-700 text-gray-300"
             >
-              Cancel
+              {t('cancelButton')}
             </Button>
           </div>
         </div>

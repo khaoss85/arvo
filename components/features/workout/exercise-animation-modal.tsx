@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
 import { ExerciseAnimation } from './exercise-animation'
 import { useEffect } from 'react'
@@ -18,6 +19,7 @@ export function ExerciseAnimationModal({
   exerciseName,
   animationUrl
 }: ExerciseAnimationModalProps) {
+  const t = useTranslations('workout.components.exerciseAnimationModal')
   // Lock body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -72,14 +74,14 @@ export function ExerciseAnimationModal({
                   {exerciseName}
                 </h3>
                 <p className="text-sm text-gray-400 mt-0.5">
-                  Visualizzazione esercizio
+                  {t('exerciseVisualization')}
                 </p>
               </div>
 
               <button
                 onClick={onClose}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
-                aria-label="Chiudi"
+                aria-label={t('closeAriaLabel')}
               >
                 <X className="w-5 h-5 text-gray-300" />
               </button>
@@ -100,10 +102,10 @@ export function ExerciseAnimationModal({
                       <span className="text-2xl">🎬</span>
                     </div>
                     <p className="text-gray-400 mb-2">
-                      Animazione non ancora disponibile
+                      {t('notYetAvailable')}
                     </p>
                     <p className="text-sm text-gray-500 max-w-xs">
-                      Stiamo ancora costruendo la libreria di animazioni. Torna presto!
+                      {t('buildingLibrary')}
                     </p>
                   </div>
                 )}

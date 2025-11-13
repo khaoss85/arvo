@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { AlertCircle, CheckCircle, AlertTriangle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -23,10 +24,12 @@ export function ConfirmDialog({
   onConfirm,
   title,
   message,
-  confirmText = 'Conferma',
-  cancelText = 'Annulla',
+  confirmText,
+  cancelText,
   type = 'confirm',
 }: ConfirmDialogProps) {
+  const t = useTranslations('workout.components.confirmDialog')
+  const tCommon = useTranslations('common.buttons')
   // Handle keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return
@@ -85,7 +88,7 @@ export function ConfirmDialog({
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Chiudi"
+            aria-label={t('closeAriaLabel')}
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -103,16 +106,16 @@ export function ConfirmDialog({
             variant="outline"
             className="flex-1"
           >
-            {isAlert ? 'Chiudi' : cancelText}
-            <span className="text-xs text-gray-500 ml-2">(ESC)</span>
+            {isAlert ? t('closeButtonText') : (cancelText || tCommon('cancel'))}
+            <span className="text-xs text-gray-500 ml-2">({t('escHint')})</span>
           </Button>
           {!isAlert && onConfirm && (
             <Button
               onClick={onConfirm}
               className={`flex-1 ${scheme.confirmBg} text-white`}
             >
-              {confirmText}
-              <span className="text-xs opacity-70 ml-2">(ENTER)</span>
+              {confirmText || tCommon('confirm')}
+              <span className="text-xs opacity-70 ml-2">({t('enterHint')})</span>
             </Button>
           )}
         </div>

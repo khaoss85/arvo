@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
@@ -48,6 +49,8 @@ export function ExerciseSubstitution({
   onRationaleInvalidate
 }: ExerciseSubstitutionProps) {
   const { substituteExercise } = useWorkoutExecutionStore()
+  const t = useTranslations('workout.components.exerciseSubstitution')
+
   const [suggestions, setSuggestions] = useState<SubstitutionSuggestion[]>([])
   const [reasoning, setReasoning] = useState<string>('')
   const [loading, setLoading] = useState(true)
@@ -96,12 +99,12 @@ export function ExerciseSubstitution({
         setSuggestions(result.data.suggestions)
         setReasoning(result.data.reasoning)
       } else {
-        setError(result.error || 'Failed to load suggestions')
+        setError(result.error || t('errors.failedToLoad'))
         setSuggestions([])
       }
     } catch (err) {
       console.error('Failed to load substitution suggestions:', err)
-      setError('An unexpected error occurred')
+      setError(t('errors.unexpectedError'))
       setSuggestions([])
     } finally {
       setLoading(false)
@@ -201,13 +204,13 @@ export function ExerciseSubstitution({
       if (result.success && result.data) {
         setCustomResult(result.data)
       } else if (!result.success) {
-        setCustomError(result.error || 'Failed to validate custom exercise')
+        setCustomError(result.error || t('customInput.error'))
       } else {
-        setCustomError('Failed to validate custom exercise')
+        setCustomError(t('customInput.error'))
       }
     } catch (err) {
       console.error('Failed to validate custom substitution:', err)
-      setCustomError('An unexpected error occurred')
+      setCustomError(t('errors.unexpectedError'))
     } finally {
       setCustomValidating(false)
     }
@@ -255,11 +258,11 @@ export function ExerciseSubstitution({
       <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Change Exercise</h2>
+          <h2 className="text-xl font-bold text-white">{t('title')}</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white"
-            aria-label="Close"
+            aria-label={t('closeAriaLabel')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -270,7 +273,7 @@ export function ExerciseSubstitution({
         <div className="p-4">
           {/* Current Exercise Info */}
           <div className="bg-gray-800 rounded-lg p-4 mb-4">
-            <h3 className="text-sm text-gray-400 mb-1">Current Exercise</h3>
+            <h3 className="text-sm text-gray-400 mb-1">{t('currentExercise.label')}</h3>
             <div className="flex items-center gap-2">
               {/* Play icon for current exercise */}
               {currentExercise.hasAnimation && (
@@ -283,8 +286,8 @@ export function ExerciseSubstitution({
                     })
                   }}
                   className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                  aria-label={`View ${currentExercise.exerciseName} animation`}
-                  title="Visualizza esercizio"
+                  aria-label={t('currentExercise.viewAnimationAria', { name: currentExercise.exerciseName })}
+                  title={t('currentExercise.viewAnimation')}
                 >
                   <PlayCircle className="w-5 h-5 text-gray-500 group-hover:text-blue-400 transition-colors" />
                 </button>
@@ -301,7 +304,7 @@ export function ExerciseSubstitution({
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-lg">🎯</span>
-                <h3 className="text-sm font-semibold text-gray-300">Suggest Your Own</h3>
+                <h3 className="text-sm font-semibold text-gray-300">{t('customInput.title')}</h3>
               </div>
 
               {/* Input or Result */}
@@ -316,7 +319,7 @@ export function ExerciseSubstitution({
                         handleValidateCustom()
                       }
                     }}
-                    placeholder="Type exercise name or describe what you want..."
+                    placeholder={t('customInput.placeholder')}
                     className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
                     disabled={customValidating}
                     autoComplete="off"
@@ -334,10 +337,10 @@ export function ExerciseSubstitution({
                     {customValidating ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Validating with AI...
+                        {t('customInput.validating')}
                       </>
                     ) : (
-                      'Validate with AI →'
+                      t('customInput.validateButton')
                     )}
                   </Button>
                 </>
@@ -358,9 +361,9 @@ export function ExerciseSubstitution({
                       </h4>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded border flex-shrink-0 ml-2 ${getValidationBadgeColor(customResult.validation)}`}>
-                      {customResult.validation === 'approved' && '✓ Good'}
-                      {customResult.validation === 'caution' && '⚠ Caution'}
-                      {customResult.validation === 'not_recommended' && '✗ Not recommended'}
+                      {customResult.validation === 'approved' && t('validation.approved')}
+                      {customResult.validation === 'caution' && t('validation.caution')}
+                      {customResult.validation === 'not_recommended' && t('validation.notRecommended')}
                     </span>
                   </div>
 
@@ -370,7 +373,7 @@ export function ExerciseSubstitution({
 
                   <div className="flex items-center justify-between text-xs mb-3">
                     <span className="text-blue-400 font-medium">
-                      → {customResult.exercise.targetWeight}kg
+                      {t('validation.targetWeight', { weight: customResult.exercise.targetWeight })}
                     </span>
                     <span className="text-gray-500">
                       {customResult.swapImpact}
@@ -394,14 +397,14 @@ export function ExerciseSubstitution({
                       variant="outline"
                       className="flex-1 border-gray-600 text-gray-300 min-h-[44px]"
                     >
-                      Edit
+                      {t('buttons.edit')}
                     </Button>
                     <Button
                       onClick={handleSelectCustom}
                       className="flex-1 bg-purple-600 hover:bg-purple-700 text-white min-h-[44px]"
                       disabled={customResult.validation === 'not_recommended'}
                     >
-                      Select →
+                      {t('buttons.select')}
                     </Button>
                   </div>
                 </div>
@@ -413,8 +416,8 @@ export function ExerciseSubstitution({
           {loading && (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-purple-500 mx-auto mb-3" />
-              <p className="text-gray-400">Finding smart alternatives...</p>
-              <p className="text-sm text-gray-500 mt-1">AI is analyzing your training context</p>
+              <p className="text-gray-400">{t('loading.findingAlternatives')}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('loading.analyzingContext')}</p>
             </div>
           )}
 
@@ -423,7 +426,7 @@ export function ExerciseSubstitution({
             <div className="text-center py-8">
               <p className="text-red-400 mb-2">{error}</p>
               <Button onClick={loadSuggestions} variant="outline" className="mt-2">
-                Try Again
+                {t('buttons.tryAgain')}
               </Button>
             </div>
           )}
@@ -441,7 +444,7 @@ export function ExerciseSubstitution({
               {/* AI Suggestions List */}
               <div className="space-y-3">
                 <h3 className="text-sm font-medium text-gray-400 mb-3">
-                  🤖 AI Suggestions ({suggestions.length})
+                  {t('suggestions.aiTitle', { count: suggestions.length })}
                 </h3>
                 {suggestions.map((suggestion, index) => (
                   <div
@@ -459,8 +462,8 @@ export function ExerciseSubstitution({
                             setAnimationModalExercise({ name: suggestion.exercise.name, url: null })
                           }}
                           className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group flex-shrink-0"
-                          aria-label={`View ${suggestion.exercise.name} animation`}
-                          title="Visualizza esercizio"
+                          aria-label={t('currentExercise.viewAnimationAria', { name: suggestion.exercise.name })}
+                          title={t('currentExercise.viewAnimation')}
                         >
                           <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
@@ -470,9 +473,9 @@ export function ExerciseSubstitution({
                         </h4>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded border flex-shrink-0 ml-2 ${getValidationBadgeColor(suggestion.validation)}`}>
-                        {suggestion.validation === 'approved' && '✓ Good'}
-                        {suggestion.validation === 'caution' && '⚠ Caution'}
-                        {suggestion.validation === 'not_recommended' && '✗ Not recommended'}
+                        {suggestion.validation === 'approved' && t('validation.approved')}
+                        {suggestion.validation === 'caution' && t('validation.caution')}
+                        {suggestion.validation === 'not_recommended' && t('validation.notRecommended')}
                       </span>
                     </div>
 
@@ -484,7 +487,7 @@ export function ExerciseSubstitution({
                     {/* Weight + Impact */}
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-blue-400 font-medium">
-                        → {suggestion.exercise.targetWeight}kg
+                        {t('validation.targetWeight', { weight: suggestion.exercise.targetWeight })}
                       </span>
                       <span className="text-gray-500">
                         {suggestion.swapImpact}
@@ -497,7 +500,7 @@ export function ExerciseSubstitution({
               {/* Fallback for no good options */}
               <div className="mt-4 text-center">
                 <p className="text-sm text-gray-500">
-                  None of these fit? <button className="text-blue-400 hover:text-blue-300 underline">Email Support</button>
+                  {t('suggestions.noGoodOptions')} <button className="text-blue-400 hover:text-blue-300 underline">{t('suggestions.emailSupport')}</button>
                 </p>
               </div>
             </>
@@ -511,7 +514,7 @@ export function ExerciseSubstitution({
                   {getValidationIcon(selectedSuggestion.validation)}
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-white mb-2">
-                      Swap to {selectedSuggestion.exercise.name}?
+                      {t('confirmation.swapTo', { name: selectedSuggestion.exercise.name })}
                     </h3>
                     <p className="text-sm text-gray-300 mb-3">
                       {selectedSuggestion.swapImpact}
@@ -524,7 +527,7 @@ export function ExerciseSubstitution({
                           <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
                           <div>
                             <p className="text-xs font-medium text-purple-300 uppercase tracking-wide mb-1">
-                              Impact on Workout
+                              {t('rationalePreview.impactTitle')}
                             </p>
                             <p className="text-sm text-purple-100 leading-snug">
                               {selectedSuggestion.rationalePreview.workoutIntegration}
@@ -536,13 +539,13 @@ export function ExerciseSubstitution({
 
                     <div className="space-y-1 text-sm">
                       <p className="text-gray-400">
-                        <span className="font-medium text-gray-300">Sets:</span> {selectedSuggestion.exercise.sets}
+                        <span className="font-medium text-gray-300">{t('confirmation.details.sets')}</span> {selectedSuggestion.exercise.sets}
                       </p>
                       <p className="text-gray-400">
-                        <span className="font-medium text-gray-300">Reps:</span> {selectedSuggestion.exercise.repRange[0]}-{selectedSuggestion.exercise.repRange[1]}
+                        <span className="font-medium text-gray-300">{t('confirmation.details.reps')}</span> {selectedSuggestion.exercise.repRange[0]}-{selectedSuggestion.exercise.repRange[1]}
                       </p>
                       <p className="text-gray-400">
-                        <span className="font-medium text-gray-300">Weight:</span> {currentExercise.targetWeight}kg → <span className="text-blue-400 font-semibold">{selectedSuggestion.exercise.targetWeight}kg</span>
+                        <span className="font-medium text-gray-300">{t('confirmation.details.weight')}</span> {t('confirmation.details.weightChange', { current: currentExercise.targetWeight, target: selectedSuggestion.exercise.targetWeight })}
                       </p>
                     </div>
                   </div>
@@ -555,13 +558,13 @@ export function ExerciseSubstitution({
                   variant="outline"
                   className="flex-1 border-gray-700 text-gray-300 min-h-[48px]"
                 >
-                  Back
+                  {t('buttons.back')}
                 </Button>
                 <Button
                   onClick={handleConfirmSwap}
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold min-h-[48px]"
                 >
-                  Confirm Swap
+                  {t('buttons.confirmSwap')}
                 </Button>
               </div>
             </div>
@@ -575,7 +578,7 @@ export function ExerciseSubstitution({
                 variant="outline"
                 className="w-full border-gray-700 text-gray-300 min-h-[48px]"
               >
-                Cancel
+                {t('buttons.cancel')}
               </Button>
             </div>
           )}

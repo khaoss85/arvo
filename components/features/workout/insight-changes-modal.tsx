@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Brain, AlertCircle, ArrowRight, CheckCircle, Settings, ExternalLink } from 'lucide-react'
@@ -28,14 +29,8 @@ const ACTION_ICONS: Record<string, React.ReactNode> = {
   adjusted: <Settings className="w-5 h-5 text-purple-400" />
 }
 
-const ACTION_LABELS: Record<string, string> = {
-  avoided: 'Evitato',
-  substituted: 'Sostituito',
-  preferred: 'Preferito',
-  adjusted: 'Adattato'
-}
-
 export function InsightChangesModal({ isOpen, onClose, changes }: InsightChangesModalProps) {
+  const t = useTranslations('workout.components.insightChanges')
   const router = useRouter()
 
   const handleViewMemories = () => {
@@ -49,13 +44,13 @@ export function InsightChangesModal({ isOpen, onClose, changes }: InsightChanges
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-white">
             <Brain className="w-7 h-7 text-purple-400" />
-            Modifiche Applicate al Workout
+            {t('title')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="mt-4">
           <p className="text-gray-300 mb-6">
-            Ho personalizzato il tuo workout in base a ciò che ho imparato su di te:
+            {t('description')}
           </p>
 
           <div className="space-y-4">
@@ -71,10 +66,10 @@ export function InsightChangesModal({ isOpen, onClose, changes }: InsightChanges
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-semibold text-purple-400 uppercase">
-                        {ACTION_LABELS[change.action]}
+                        {t(`actions.${change.action}`)}
                       </span>
                       <span className="text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-300">
-                        {change.source === 'insight' ? 'Insight' : 'Memory'}
+                        {t(`sourceLabels.${change.source}`)}
                       </span>
                     </div>
 
@@ -92,7 +87,7 @@ export function InsightChangesModal({ isOpen, onClose, changes }: InsightChanges
 
                     {/* Source title */}
                     <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>Basato su:</span>
+                      <span>{t('basedOn')}</span>
                       <span className="text-purple-400">{change.sourceTitle}</span>
                     </div>
                   </div>
@@ -110,14 +105,14 @@ export function InsightChangesModal({ isOpen, onClose, changes }: InsightChanges
               className="flex items-center gap-2 text-purple-400 hover:text-purple-300"
             >
               <Brain className="w-4 h-4" />
-              Vedi tutte le Memories
+              {t('viewAllMemories')}
               <ExternalLink className="w-3 h-3" />
             </Button>
             <Button
               onClick={onClose}
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
-              Ho capito
+              {t('understood')}
             </Button>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { X, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react'
 import type { ExerciseAdditionOutput } from '@/lib/agents/exercise-addition-validator.agent'
+import { useTranslations } from 'next-intl'
 
 interface ExerciseValidationModalProps {
   isOpen: boolean
@@ -28,6 +29,8 @@ export function ExerciseValidationModal({
   validation,
   exerciseName,
 }: ExerciseValidationModalProps) {
+  const t = useTranslations('workout.components.exerciseValidation')
+
   // Keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return
@@ -54,21 +57,21 @@ export function ExerciseValidationModal({
       border: 'border-green-500/30',
       text: 'text-green-400',
       icon: CheckCircle2,
-      title: 'Esercizio Approvato',
+      title: t('status.approved'),
     },
     caution: {
       bg: 'bg-yellow-500/10',
       border: 'border-yellow-500/30',
       text: 'text-yellow-400',
       icon: AlertTriangle,
-      title: 'Attenzione: Considera i Trade-Off',
+      title: t('status.caution'),
     },
     rejected: {
       bg: 'bg-red-500/10',
       border: 'border-red-500/30',
       text: 'text-red-400',
       icon: XCircle,
-      title: 'Esercizio Non Raccomandato',
+      title: t('status.rejected'),
     },
   }
 
@@ -95,7 +98,7 @@ export function ExerciseValidationModal({
             <button
               onClick={onClose}
               className="p-1 hover:bg-gray-800 rounded transition-colors"
-              aria-label="Chiudi"
+              aria-label={t('closeAriaLabel')}
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>
@@ -107,7 +110,7 @@ export function ExerciseValidationModal({
           {/* Reasoning */}
           <div>
             <h3 className="text-sm font-medium text-gray-300 mb-2">
-              Valutazione AI
+              {t('sections.aiEvaluation')}
             </h3>
             <p className="text-sm text-gray-200 leading-relaxed">
               {validation.reasoning}
@@ -118,7 +121,7 @@ export function ExerciseValidationModal({
           {validation.warnings && validation.warnings.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Avvertenze
+                {t('sections.warnings')}
               </h3>
               <div className="space-y-2">
                 {validation.warnings.map((warning, index) => {
@@ -138,7 +141,7 @@ export function ExerciseValidationModal({
                           {warning.type.replace(/_/g, ' ')}
                         </span>
                         <span className="text-xs px-1.5 py-0.5 rounded bg-black/20">
-                          {warning.severity}
+                          {t(`warningSeverity.${warning.severity}`)}
                         </span>
                       </div>
                       <p className="text-sm mt-1">{warning.message}</p>
@@ -155,7 +158,7 @@ export function ExerciseValidationModal({
             validation.suggestions.educationalNote) && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Suggerimenti
+                {t('sections.suggestions')}
               </h3>
               <div className="space-y-2">
                 {validation.suggestions.alternative && (
@@ -187,7 +190,7 @@ export function ExerciseValidationModal({
           {validation.workoutBalance && (
             <div>
               <h3 className="text-sm font-medium text-gray-300 mb-2">
-                Contesto Workout
+                {t('sections.workoutContext')}
               </h3>
               <div className="space-y-2 text-sm text-gray-400">
                 {validation.workoutBalance.muscleOverlap && (
@@ -219,8 +222,8 @@ export function ExerciseValidationModal({
             onClick={onClose}
             className="flex-1 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg font-medium transition-colors"
           >
-            {validation.validation === 'rejected' ? 'Chiudi' : 'Annulla'}
-            <span className="text-xs text-gray-500 ml-2">(ESC)</span>
+            {validation.validation === 'rejected' ? t('buttons.close') : t('buttons.cancel')}
+            <span className="text-xs text-gray-500 ml-2">({t('keyboardHints.esc')})</span>
           </button>
 
           {/* Only show Proceed button for approved/caution, not for rejected */}
@@ -234,9 +237,9 @@ export function ExerciseValidationModal({
               }`}
             >
               {validation.validation === 'approved'
-                ? 'Aggiungi Esercizio'
-                : 'Aggiungi Comunque'}
-              <span className="text-xs opacity-70 ml-2">(ENTER)</span>
+                ? t('buttons.addExercise')
+                : t('buttons.addAnyway')}
+              <span className="text-xs opacity-70 ml-2">({t('keyboardHints.enter')})</span>
             </button>
           )}
         </div>
@@ -245,8 +248,8 @@ export function ExerciseValidationModal({
         <div className="px-4 pb-3">
           <p className="text-xs text-gray-500 text-center">
             {validation.validation === 'rejected'
-              ? 'ESC per chiudere'
-              : 'ESC per annullare • ENTER per procedere'}
+              ? t('keyboardHints.closeOnly')
+              : t('keyboardHints.proceedOrCancel')}
           </p>
         </div>
       </div>
