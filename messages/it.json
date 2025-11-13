@@ -139,6 +139,40 @@
     }
   },
   "workout": {
+    "modals": {
+      "exitWorkout": {
+        "title": "Terminare la Sessione?",
+        "description": "I tuoi progressi sono stati salvati. Puoi riprendere questo allenamento in qualsiasi momento dalla dashboard.",
+        "savedNote": "Tutte le serie salvate automaticamente",
+        "exitButton": "Vai alla Dashboard",
+        "continueButton": "Continua Allenamento",
+        "closeAriaLabel": "Chiudi modale"
+      },
+      "addSet": {
+        "prompt": "Ti senti bene? Aggiungi un'altra serie",
+        "validating": "Validazione...",
+        "adding": "Aggiunta Serie...",
+        "addButton": "Aggiungi Serie Extra",
+        "addButtonInline": "Aggiungi Serie",
+        "currentSets": "Attuale: {count} {count, plural, one {serie} other {serie}}",
+        "errors": {
+          "hardLimit": "Non puoi aggiungere più serie",
+          "failed": "Impossibile aggiungere la serie. Riprova."
+        }
+      },
+      "addExercise": {
+        "prompt": "Vuoi aggiungere un altro esercizio?",
+        "opening": "Apertura...",
+        "addButton": "Aggiungi Esercizio Extra",
+        "addButtonAfter": "Aggiungi Esercizio Dopo Questo",
+        "addButtonEnd": "Aggiungi Esercizio alla Fine",
+        "currentExercises": "Attuale: {count} {count, plural, one {esercizio} other {esercizi}}",
+        "errors": {
+          "hardLimit": "Non puoi aggiungere più esercizi",
+          "failed": "Impossibile aggiungere l'esercizio. Riprova."
+        }
+      }
+    },
     "summary": {
       "title": "Riepilogo Allenamento",
       "workoutComplete": "Allenamento Completato!",

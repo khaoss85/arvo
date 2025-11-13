@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ModificationWarningModal } from './modification-warning-modal'
@@ -29,6 +30,7 @@ export function AddSetButton({
   onRequestValidation,
   exerciseName = 'Exercise',
 }: AddSetButtonProps) {
+  const t = useTranslations('workout.modals.addSet')
   const { addToast } = useUIStore()
   const [isAdding, setIsAdding] = useState(false)
   const [isValidating, setIsValidating] = useState(false)
@@ -82,9 +84,9 @@ export function AddSetButton({
       // Handle validation errors
       if (result && !result.success) {
         if (result.error === 'hard_limit') {
-          addToast(result.message || 'Non puoi aggiungere più serie', 'warning')
+          addToast(result.message || t('errors.hardLimit'), 'warning')
         } else {
-          addToast('Impossibile aggiungere la serie. Riprova.', 'error')
+          addToast(t('errors.failed'), 'error')
         }
         return
       }
@@ -95,7 +97,7 @@ export function AddSetButton({
       }
     } catch (error) {
       console.error('Failed to add set:', error)
-      addToast('Impossibile aggiungere la serie. Riprova.', 'error')
+      addToast(t('errors.failed'), 'error')
     } finally {
       setIsAdding(false)
     }
@@ -119,7 +121,7 @@ export function AddSetButton({
         <div className={`bg-gray-800/50 border border-gray-700 rounded-lg p-4 ${className}`}>
           <div className="text-center">
             <p className="text-sm text-gray-400 mb-3">
-              Feeling good? Add another set
+              {t('prompt')}
             </p>
             <Button
               onClick={handleClick}
@@ -129,22 +131,22 @@ export function AddSetButton({
               {isValidating ? (
                 <>
                   <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Validating...
+                  {t('validating')}
                 </>
               ) : isAdding ? (
                 <>
                   <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Adding Set...
+                  {t('adding')}
                 </>
               ) : (
                 <>
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Extra Set
+                  {t('addButton')}
                 </>
               )}
             </Button>
             <p className="text-xs text-gray-500 mt-2">
-              Current: {currentSets} {currentSets === 1 ? 'set' : 'sets'}
+              {t('currentSets', { count: currentSets })}
             </p>
           </div>
         </div>
@@ -175,17 +177,17 @@ export function AddSetButton({
         {isValidating ? (
           <>
             <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
-            Validating...
+            {t('validating')}
           </>
         ) : isAdding ? (
           <>
             <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
-            Adding...
+            {t('adding')}
           </>
         ) : (
           <>
             <Plus className="w-3 h-3" />
-            Add Set
+            {t('addButtonInline')}
           </>
         )}
       </button>

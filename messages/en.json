@@ -139,6 +139,40 @@
     }
   },
   "workout": {
+    "modals": {
+      "exitWorkout": {
+        "title": "End Workout Session?",
+        "description": "Your progress has been saved. You can resume this workout anytime from your dashboard.",
+        "savedNote": "All sets saved automatically",
+        "exitButton": "Exit to Dashboard",
+        "continueButton": "Continue Workout",
+        "closeAriaLabel": "Close modal"
+      },
+      "addSet": {
+        "prompt": "Feeling good? Add another set",
+        "validating": "Validating...",
+        "adding": "Adding Set...",
+        "addButton": "Add Extra Set",
+        "addButtonInline": "Add Set",
+        "currentSets": "Current: {count} {count, plural, one {set} other {sets}}",
+        "errors": {
+          "hardLimit": "Cannot add more sets",
+          "failed": "Failed to add set. Try again."
+        }
+      },
+      "addExercise": {
+        "prompt": "Want to add another exercise?",
+        "opening": "Opening...",
+        "addButton": "Add Extra Exercise",
+        "addButtonAfter": "Add Exercise After This",
+        "addButtonEnd": "Add Exercise at End",
+        "currentExercises": "Current: {count} {count, plural, one {exercise} other {exercises}}",
+        "errors": {
+          "hardLimit": "Cannot add more exercises",
+          "failed": "Failed to add exercise. Please try again."
+        }
+      }
+    },
     "summary": {
       "title": "Workout Summary",
       "workoutComplete": "Workout Complete!",

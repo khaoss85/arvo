@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useUIStore } from '@/lib/stores/ui.store'
@@ -25,6 +26,7 @@ export function AddExerciseButton({
   enableAIValidation = false,
   onRequestValidation,
 }: AddExerciseButtonProps) {
+  const t = useTranslations('workout.modals.addExercise')
   const [isAdding, setIsAdding] = useState(false)
   const { addToast } = useUIStore()
 
@@ -43,11 +45,11 @@ export function AddExerciseButton({
       if (result && !result.success) {
         if (result.error === 'hard_limit') {
           addToast(
-            result.message || 'Cannot add more exercises',
+            result.message || t('errors.hardLimit'),
             'warning'
           )
         } else {
-          addToast('Failed to add exercise. Please try again.', 'error')
+          addToast(t('errors.failed'), 'error')
         }
         return
       }
@@ -55,7 +57,7 @@ export function AddExerciseButton({
       // Success - modal will handle exercise selection
     } catch (error) {
       console.error('Failed to add exercise:', error)
-      addToast('Failed to add exercise. Please try again.', 'error')
+      addToast(t('errors.failed'), 'error')
     } finally {
       setIsAdding(false)
     }
@@ -68,7 +70,7 @@ export function AddExerciseButton({
       <div className={`bg-gray-800/50 border border-gray-700 rounded-lg p-4 ${className}`}>
         <div className="text-center">
           <p className="text-sm text-gray-400 mb-3">
-            Want to add another exercise?
+            {t('prompt')}
           </p>
           <Button
             onClick={handleClick}
@@ -78,17 +80,17 @@ export function AddExerciseButton({
             {isAdding ? (
               <>
                 <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Opening...
+                {t('opening')}
               </>
             ) : (
               <>
                 <Plus className="w-4 h-4 mr-2" />
-                Add Extra Exercise
+                {t('addButton')}
               </>
             )}
           </Button>
           <p className="text-xs text-gray-500 mt-2">
-            Current: {currentExerciseCount} {currentExerciseCount === 1 ? 'exercise' : 'exercises'}
+            {t('currentExercises', { count: currentExerciseCount })}
           </p>
         </div>
       </div>
@@ -105,12 +107,12 @@ export function AddExerciseButton({
       {isAdding ? (
         <>
           <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-green-400"></div>
-          Opening...
+          {t('opening')}
         </>
       ) : (
         <>
           <Plus className="w-3 h-3" />
-          Add Exercise {position === 'after' ? 'After This' : 'at End'}
+          {position === 'after' ? t('addButtonAfter') : t('addButtonEnd')}
         </>
       )}
     </button>

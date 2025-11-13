@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { LogOut, CheckCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -11,6 +12,8 @@ interface ExitWorkoutModalProps {
 }
 
 export function ExitWorkoutModal({ isOpen, onClose, onConfirm }: ExitWorkoutModalProps) {
+  const t = useTranslations('workout.modals.exitWorkout')
+
   // Handle keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return
@@ -39,13 +42,13 @@ export function ExitWorkoutModal({ isOpen, onClose, onConfirm }: ExitWorkoutModa
               <LogOut className="w-5 h-5 text-orange-400" />
             </div>
             <h2 className="text-xl font-bold text-white">
-              End Workout Session?
+              {t('title')}
             </h2>
           </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-            aria-label="Close modal"
+            aria-label={t('closeAriaLabel')}
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
@@ -54,12 +57,12 @@ export function ExitWorkoutModal({ isOpen, onClose, onConfirm }: ExitWorkoutModa
         {/* Body */}
         <div className="p-6 space-y-4">
           <p className="text-gray-400 leading-relaxed">
-            Your progress has been saved. You can resume this workout anytime from your dashboard.
+            {t('description')}
           </p>
 
           <div className="flex items-center gap-2 text-sm text-green-400 bg-green-950/20 border border-green-900/30 rounded-lg p-3">
             <CheckCircle className="w-4 h-4 flex-shrink-0" />
-            <span>All sets saved automatically</span>
+            <span>{t('savedNote')}</span>
           </div>
         </div>
 
@@ -70,14 +73,14 @@ export function ExitWorkoutModal({ isOpen, onClose, onConfirm }: ExitWorkoutModa
             variant="outline"
             className="flex-1 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
           >
-            Exit to Dashboard
+            {t('exitButton')}
           </Button>
           <Button
             onClick={onClose}
             autoFocus
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            Continue Workout
+            {t('continueButton')}
           </Button>
         </div>
       </div>
