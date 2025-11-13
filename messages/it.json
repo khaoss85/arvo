@@ -24,7 +24,9 @@
       "generic": "Qualcosa è andato storto. Riprova.",
       "network": "Errore di rete. Controlla la tua connessione.",
       "unauthorized": "Devi effettuare l'accesso per farlo.",
-      "notFound": "La risorsa richiesta non è stata trovata."
+      "notFound": "La risorsa richiesta non è stata trovata.",
+      "failedToLogSet": "Impossibile registrare la serie. Riprova.",
+      "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova."
     },
     "success": {
       "saved": "Salvato con successo!",

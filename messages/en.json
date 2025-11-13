@@ -24,7 +24,9 @@
       "generic": "Something went wrong. Please try again.",
       "network": "Network error. Please check your connection.",
       "unauthorized": "You need to be logged in to do this.",
-      "notFound": "The requested resource was not found."
+      "notFound": "The requested resource was not found.",
+      "failedToLogSet": "Failed to log set. Please try again.",
+      "failedToAddExercise": "Failed to add exercise. Please try again."
     },
     "success": {
       "saved": "Saved successfully!",

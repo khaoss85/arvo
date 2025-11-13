@@ -18,6 +18,7 @@ interface SetLoggerProps {
 
 export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const t = useTranslations('workout.execution')
+  const tCommon = useTranslations('common')
   const { logSet } = useWorkoutExecutionStore()
 
   // Mental readiness emoji mapping with translations
@@ -97,7 +98,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       await logSet({ weight, reps, rir, mentalReadiness })
     } catch (error) {
       console.error('Failed to log set:', error)
-      alert('Failed to log set. Please try again.')
+      alert(tCommon('errors.failedToLogSet'))
     } finally {
       setIsLogging(false)
     }

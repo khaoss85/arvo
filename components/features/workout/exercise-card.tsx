@@ -36,6 +36,7 @@ export function ExerciseCard({
   approachId
 }: ExerciseCardProps) {
   const t = useTranslations('workout.execution')
+  const tCommon = useTranslations('common')
   const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
@@ -341,7 +342,7 @@ export function ExerciseCard({
       const result = addExerciseToWorkout(exerciseIndex + 1, newExercise)
 
       if (!result.success) {
-        alert(result.message || 'Failed to add exercise.')
+        alert(result.message || tCommon('errors.failedToAddExercise'))
         return
       }
 
@@ -349,7 +350,7 @@ export function ExerciseCard({
       setIsAddExerciseModalOpen(false)
     } catch (error) {
       console.error('Error adding exercise:', error)
-      alert('Failed to add exercise. Please try again.')
+      alert(tCommon('errors.failedToAddExercise'))
     }
   }
 
