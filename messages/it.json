@@ -281,7 +281,47 @@
       },
       "strength": {
         "title": "Livello di Forza Base",
-        "description": "Aiutaci a capire i tuoi livelli di forza attuali"
+        "description": "Aggiungi i tuoi livelli di forza attuali per gli esercizi che conosci. Questo aiuta l'AI a impostare pesi di partenza appropriati.",
+        "optional": "Questo è opzionale - l'AI può stimare i pesi di partenza se salti questo passaggio.",
+        "backToEquipment": "Torna all'Attrezzatura",
+        "addExercise": {
+          "placeholder": "Aggiungi esercizio (es: Panca Piana, Squat, ecc.)",
+          "suggestedExercises": "Esercizi Suggeriti",
+          "addCustom": "Aggiungi \"{name}\" come esercizio personalizzato",
+          "typeToSearch": "Digita per cercare o aggiungere esercizio personalizzato"
+        },
+        "exercises": {
+          "bench_press": "Panca Piana",
+          "squat": "Squat",
+          "deadlift": "Stacco da Terra",
+          "overhead_press": "Military Press",
+          "hip_thrust": "Hip Thrust",
+          "barbell_row": "Rematore con Bilanciere",
+          "pull_ups": "Trazioni",
+          "front_squat": "Front Squat"
+        },
+        "emptyState": {
+          "title": "Nessun esercizio aggiunto",
+          "description": "Usa la casella di ricerca sopra per aggiungere il tuo primo esercizio"
+        },
+        "exerciseCard": {
+          "standard": "Standard",
+          "custom": "Personalizzato",
+          "remove": "Rimuovi esercizio",
+          "weightLabel": "Peso (kg)",
+          "weightPlaceholder": "80",
+          "repsLabel": "Ripetizioni",
+          "repsPlaceholder": "8",
+          "rirLabel": "RIR",
+          "rirPlaceholder": "1",
+          "validationError": "Compila tutti i campi per questo esercizio"
+        },
+        "tip": {
+          "label": "Suggerimento:",
+          "description": "RIR (Ripetizioni di Riserva) indica quante ripetizioni in più avresti potuto fare. Ad esempio, RIR 1 significa che ti sei fermato con 1 ripetizione nel serbatoio."
+        },
+        "skipButton": "Salta (l'AI stimerà)",
+        "continueButton": "Continua con {count} {count, plural, one {esercizio} other {esercizi}}"
       },
       "profile": {
         "title": "Il Tuo Profilo (Opzionale)",
@@ -327,8 +367,60 @@
         "skipProfile": "Salta Profilo"
       },
       "review": {
-        "title": "Rivedi e Conferma",
-        "description": "Rivedi le tue selezioni prima che generiamo il tuo programma"
+        "title": "Rivedi il Tuo Profilo",
+        "description": "Rivedi le tue selezioni qui sotto. L'AI userà queste informazioni per generare i tuoi allenamenti personalizzati.",
+        "completeSteps": "Completa prima i passaggi precedenti.",
+        "sections": {
+          "approach": "Approccio di Allenamento",
+          "split": "Suddivisione di Allenamento",
+          "profile": "Informazioni Personali",
+          "weakPoints": "Punti Deboli",
+          "equipment": "Attrezzatura Disponibile",
+          "strength": "Livello di Forza Base"
+        },
+        "labels": {
+          "edit": "Modifica",
+          "days": "{count} {count, plural, one {giorno} other {giorni}} alla settimana",
+          "years": "{count} {count, plural, one {anno} other {anni}}",
+          "exercises": "{count} {count, plural, one {esercizio} other {esercizi}}",
+          "items": "{count} {count, plural, one {elemento} other {elementi}}"
+        },
+        "profile": {
+          "name": "Nome",
+          "age": "Età",
+          "gender": "Genere",
+          "weight": "Peso",
+          "height": "Altezza",
+          "notProvided": "Non fornito"
+        },
+        "weakPoints": {
+          "none": "Nessuno selezionato",
+          "selected": "{count} {count, plural, one {gruppo muscolare} other {gruppi muscolari}} prioritizzati"
+        },
+        "equipment": {
+          "all": "Tutta l'attrezzatura disponibile",
+          "selected": "{count} {count, plural, one {tipo} other {tipi}} di attrezzatura"
+        },
+        "strength": {
+          "none": "Non fornito - l'AI stimerà",
+          "provided": "{count} {count, plural, one {esercizio} other {esercizi}} con dati di base"
+        },
+        "experience": {
+          "title": "Esperienza di Allenamento",
+          "estimated": "Stimato dai tuoi dati di forza",
+          "aiEstimate": "Stima AI",
+          "yourInput": "Il Tuo Input",
+          "editButton": "Modifica Esperienza",
+          "confirmButton": "Conferma",
+          "yearsLabel": "Anni di allenamento",
+          "levelLabel": "Livello di esperienza",
+          "placeholder": "es: 2.5"
+        },
+        "errors": {
+          "userNotFound": "Utente non trovato. Effettua nuovamente l'accesso.",
+          "completeSteps": "Completa tutti i passaggi richiesti."
+        },
+        "completeButton": "Completa Onboarding & Genera Allenamento"
       }
     }
   },

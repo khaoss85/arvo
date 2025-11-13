@@ -281,7 +281,47 @@
       },
       "strength": {
         "title": "Strength Baseline",
-        "description": "Help us understand your current strength levels"
+        "description": "Add your current strength levels for exercises you know. This helps the AI set appropriate starting weights.",
+        "optional": "This is optional - the AI can estimate starting weights if you skip this step.",
+        "backToEquipment": "Back to Equipment",
+        "addExercise": {
+          "placeholder": "Add exercise (e.g., Bench Press, Panca Piana, etc.)",
+          "suggestedExercises": "Suggested Exercises",
+          "addCustom": "Add \"{name}\" as custom exercise",
+          "typeToSearch": "Type to search or add custom exercise"
+        },
+        "exercises": {
+          "bench_press": "Bench Press",
+          "squat": "Squat",
+          "deadlift": "Deadlift",
+          "overhead_press": "Overhead Press",
+          "hip_thrust": "Hip Thrust",
+          "barbell_row": "Barbell Row",
+          "pull_ups": "Pull-ups",
+          "front_squat": "Front Squat"
+        },
+        "emptyState": {
+          "title": "No exercises added yet",
+          "description": "Use the search box above to add your first exercise"
+        },
+        "exerciseCard": {
+          "standard": "Standard",
+          "custom": "Custom",
+          "remove": "Remove exercise",
+          "weightLabel": "Weight (kg)",
+          "weightPlaceholder": "80",
+          "repsLabel": "Reps",
+          "repsPlaceholder": "8",
+          "rirLabel": "RIR",
+          "rirPlaceholder": "1",
+          "validationError": "Please fill in all fields for this exercise"
+        },
+        "tip": {
+          "label": "Tip:",
+          "description": "RIR (Reps in Reserve) indicates how many more reps you could have done. For example, RIR 1 means you stopped with 1 rep left in the tank."
+        },
+        "skipButton": "Skip (AI will estimate)",
+        "continueButton": "Continue with {count} {count, plural, one {exercise} other {exercises}}"
       },
       "profile": {
         "title": "Your Profile (Optional)",
@@ -327,8 +367,60 @@
         "skipProfile": "Skip Profile"
       },
       "review": {
-        "title": "Review & Confirm",
-        "description": "Review your selections before we generate your program"
+        "title": "Review Your Profile",
+        "description": "Review your selections below. The AI will use this information to generate your personalized workouts.",
+        "completeSteps": "Please complete the previous steps first.",
+        "sections": {
+          "approach": "Training Approach",
+          "split": "Training Split",
+          "profile": "Personal Information",
+          "weakPoints": "Weak Points",
+          "equipment": "Available Equipment",
+          "strength": "Strength Baseline"
+        },
+        "labels": {
+          "edit": "Edit",
+          "days": "{count} {count, plural, one {day} other {days}} per week",
+          "years": "{count} {count, plural, one {year} other {years}}",
+          "exercises": "{count} {count, plural, one {exercise} other {exercises}}",
+          "items": "{count} {count, plural, one {item} other {items}}"
+        },
+        "profile": {
+          "name": "Name",
+          "age": "Age",
+          "gender": "Gender",
+          "weight": "Weight",
+          "height": "Height",
+          "notProvided": "Not provided"
+        },
+        "weakPoints": {
+          "none": "None selected",
+          "selected": "{count} muscle {count, plural, one {group} other {groups}} prioritized"
+        },
+        "equipment": {
+          "all": "All equipment available",
+          "selected": "{count} equipment {count, plural, one {type} other {types}}"
+        },
+        "strength": {
+          "none": "Not provided - AI will estimate",
+          "provided": "{count} {count, plural, one {exercise} other {exercises}} with baseline data"
+        },
+        "experience": {
+          "title": "Training Experience",
+          "estimated": "Estimated from your strength data",
+          "aiEstimate": "AI Estimate",
+          "yourInput": "Your Input",
+          "editButton": "Edit Experience",
+          "confirmButton": "Confirm",
+          "yearsLabel": "Years of training",
+          "levelLabel": "Experience level",
+          "placeholder": "e.g., 2.5"
+        },
+        "errors": {
+          "userNotFound": "User not found. Please log in again.",
+          "completeSteps": "Please complete all required steps."
+        },
+        "completeButton": "Complete Onboarding & Generate Workout"
       }
     }
   },

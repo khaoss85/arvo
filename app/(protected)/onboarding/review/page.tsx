@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
@@ -18,6 +19,7 @@ import { MedicalDisclaimerModal } from '@/components/features/legal/medical-disc
 const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
 
 export default function ReviewPage() {
+  const t = useTranslations('onboarding.steps.review')
   const router = useRouter()
   const { user } = useAuthStore()
   const { data, setStep, setStepData, reset } = useOnboardingStore()
@@ -62,12 +64,12 @@ export default function ReviewPage() {
   const handleCompleteClick = () => {
     // Validate first
     if (!user) {
-      setError('User not found. Please log in again.')
+      setError(t('errors.userNotFound'))
       return
     }
 
     if (!data.approachId) {
-      setError('Please complete all required steps.')
+      setError(t('errors.completeSteps'))
       return
     }
 
@@ -126,7 +128,7 @@ export default function ReviewPage() {
     return (
       <div className="max-w-3xl mx-auto py-8">
         <p className="text-center text-gray-600 dark:text-gray-400">
-          Please complete the previous steps first.
+          {t('completeSteps')}
         </p>
       </div>
     )
@@ -134,16 +136,16 @@ export default function ReviewPage() {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-2">Review Your Profile</h1>
+      <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
-        Review your selections below. The AI will use this information to generate your personalized workouts.
+        {t('description')}
       </p>
 
       <div className="space-y-4">
         {/* Training Approach */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Training Approach</h3>
+            <h3 className="font-semibold">{t('sections.approach')}</h3>
             <Button
               variant="outline"
               size="sm"
@@ -163,7 +165,7 @@ export default function ReviewPage() {
         {/* Split Selection */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Training Split</h3>
+            <h3 className="font-semibold">{t('sections.split')}</h3>
             <Button
               variant="outline"
               size="sm"
@@ -241,7 +243,7 @@ export default function ReviewPage() {
         {/* Weak Points */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Weak Points</h3>
+            <h3 className="font-semibold">{t('sections.weakPoints')}</h3>
             <Button
               variant="outline"
               size="sm"
@@ -269,7 +271,7 @@ export default function ReviewPage() {
         {/* Available Equipment */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Available Equipment</h3>
+            <h3 className="font-semibold">{t('sections.equipment')}</h3>
             <Button
               variant="outline"
               size="sm"
@@ -297,7 +299,7 @@ export default function ReviewPage() {
         {/* Strength Baseline */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Strength Baseline</h3>
+            <h3 className="font-semibold">{t('sections.strength')}</h3>
             <Button
               variant="outline"
               size="sm"
@@ -513,7 +515,7 @@ export default function ReviewPage() {
             disabled={loading}
             className="px-8 py-3 text-lg"
           >
-            Complete Onboarding
+            { t('completeButton')}
           </Button>
         )}
       </div>
