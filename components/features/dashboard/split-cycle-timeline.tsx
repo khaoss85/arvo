@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { getSplitTimelineDataAction } from '@/app/actions/split-actions'
+import { getSplitTimelineDataAction, advanceSplitCycleAction } from '@/app/actions/split-actions'
 import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
 import { TimelineDayCard } from './timeline-day-card'
 
@@ -38,6 +38,18 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
       setLoading(false)
     }
   }, [userId])
+
+  const handleSkipRestDay = useCallback(async () => {
+    try {
+      const result = await advanceSplitCycleAction(userId)
+      if (result.success) {
+        // Reload timeline data to reflect the new current day
+        await loadTimelineData()
+      }
+    } catch (err) {
+      console.error('Failed to skip rest day:', err)
+    }
+  }, [userId, loadTimelineData])
 
   useEffect(() => {
     loadTimelineData()
@@ -164,6 +176,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
                   userId={userId}
                   onGenerateWorkout={onGenerateWorkout}
                   onRefreshTimeline={loadTimelineData}
+                  onSkipRestDay={handleSkipRestDay}
                 />
               </div>
             ))}

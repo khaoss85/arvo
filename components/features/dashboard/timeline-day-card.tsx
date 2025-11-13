@@ -7,7 +7,7 @@ import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-tim
 import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Play, Eye, Moon } from 'lucide-react'
+import { Sparkles, Play, Eye, Moon, ArrowRight } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
@@ -19,6 +19,7 @@ interface TimelineDayCardProps {
   userId: string
   onGenerateWorkout?: () => void
   onRefreshTimeline?: () => void
+  onSkipRestDay?: () => Promise<void>
 }
 
 // Status styling configuration
@@ -96,7 +97,7 @@ function VarianceIndicator({ variance }: { variance: VolumeComparison }) {
   )
 }
 
-export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorkout, onRefreshTimeline }: TimelineDayCardProps) {
+export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorkout, onRefreshTimeline, onSkipRestDay }: TimelineDayCardProps) {
   const t = useTranslations('dashboard.dayCard')
   const { day, status, session, completedWorkout, preGeneratedWorkout } = dayData
   const styles = STATUS_STYLES[status]
@@ -106,6 +107,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [insightChanges, setInsightChanges] = useState<InsightInfluencedChange[]>([])
   const [showChangesModal, setShowChangesModal] = useState(false)
   const [targetDayForGeneration, setTargetDayForGeneration] = useState<number | null>(null)
+  const [skipping, setSkipping] = useState(false)
   const { addToast } = useUIStore()
 
   // Handle generation for both current day and pre-generation
@@ -174,6 +176,16 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     }
   }
 
+  const handleSkipRestDay = async () => {
+    if (!onSkipRestDay) return
+    setSkipping(true)
+    try {
+      await onSkipRestDay()
+    } finally {
+      setSkipping(false)
+    }
+  }
+
   // Rest day layout
   if (!session || session.name === 'Rest') {
     return (
@@ -206,9 +218,22 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">
             {t('restDay')}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {t('recoveryEssential')}
           </p>
+
+          {/* Skip Rest Day Button (only when current day) */}
+          {isCurrentDay && onSkipRestDay && (
+            <Button
+              onClick={handleSkipRestDay}
+              disabled={skipping}
+              variant="outline"
+              className="mt-2 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
+            >
+              {skipping ? t('skippingRestDay') : t('skipRestDay')}
+              {!skipping && <ArrowRight className="w-4 h-4 ml-2" />}
+            </Button>
+          )}
         </div>
       </div>
     )

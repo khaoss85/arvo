@@ -131,7 +131,9 @@
       "draftStatus": "Bozza",
       "start": "Inizia",
       "actualPerformance": "Performance Effettiva:",
-      "actualSets": "{count} serie"
+      "actualSets": "{count} serie",
+      "skipRestDay": "Salta al Prossimo Allenamento",
+      "skippingRestDay": "Saltando..."
     },
     "generation": {
       "title": "Generazione Allenamento",

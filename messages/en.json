@@ -131,7 +131,9 @@
       "draftStatus": "Draft",
       "start": "Start",
       "actualPerformance": "Actual Performance:",
-      "actualSets": "{count} sets"
+      "actualSets": "{count} sets",
+      "skipRestDay": "Skip to Next Workout",
+      "skippingRestDay": "Skipping..."
     },
     "generation": {
       "title": "Generating Workout",
