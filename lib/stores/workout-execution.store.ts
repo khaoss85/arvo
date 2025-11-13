@@ -89,6 +89,7 @@ interface WorkoutExecutionState {
   logSet: (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => Promise<void>
   editSet: (exerciseIndex: number, setIndex: number, setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; notes?: string }) => Promise<void>
   deleteSet: (exerciseIndex: number, setIndex: number) => Promise<void>
+  skipWarmupSets: (reason?: string) => Promise<void>
 
   // Mental readiness tracking
   setOverallMentalReadiness: (value: number) => void
@@ -354,6 +355,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         // Save to database
         try {
+          // Determine if this is a warmup or working set
+          const isWarmupSet = currentExercise.completedSets.length < warmupSetsCount
+
           const createdSet = await SetLogService.create({
             workout_id: workoutId,
             exercise_id: currentExercise.exerciseId || null,
@@ -365,7 +369,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             reps_actual: setData.reps,
             rir_actual: setData.rir,
             mental_readiness: setData.mentalReadiness || null,
-            notes: null
+            notes: null,
+            set_type: isWarmupSet ? 'warmup' : 'working',
+            skipped: false,
+            skip_reason: null
           })
 
           // Update local state
@@ -516,6 +523,58 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           await get().saveProgress()
         } catch (error) {
           console.error('Failed to delete set:', error)
+          throw error
+        }
+      },
+
+      // Skip all warmup sets for current exercise
+      skipWarmupSets: async (reason?: string) => {
+        const { workoutId, exercises, currentExerciseIndex } = get()
+
+        if (!workoutId) {
+          throw new Error('No active workout')
+        }
+
+        const currentExercise = exercises[currentExerciseIndex]
+        if (!currentExercise) {
+          throw new Error('No current exercise')
+        }
+
+        const warmupSetsCount = currentExercise.warmupSets?.length || 0
+        if (warmupSetsCount === 0) {
+          throw new Error('No warmup sets to skip for this exercise')
+        }
+
+        // Check if any sets have already been completed
+        if (currentExercise.completedSets.length > 0) {
+          throw new Error('Cannot skip warmup after sets have been logged')
+        }
+
+        try {
+          // Log warmup sets as skipped in database
+          const skippedSetsData = currentExercise.warmupSets!.map((warmupSet, index) => ({
+            workout_id: workoutId,
+            exercise_id: currentExercise.exerciseId || undefined,
+            exercise_name: currentExercise.exerciseName,
+            set_number: index + 1,
+            set_type: 'warmup' as const,
+            skip_reason: reason || 'user_manual',
+          }))
+
+          await SetLogService.createSkippedSets(skippedSetsData)
+
+          // Note: We do NOT add these to completedSets
+          // This way, the set counter will start from 1 for working sets
+          // And the user can immediately start logging their first working set
+
+          set({
+            lastActivityAt: new Date()
+          })
+
+          // Save progress
+          await get().saveProgress()
+        } catch (error) {
+          console.error('Failed to skip warmup sets:', error)
           throw error
         }
       },

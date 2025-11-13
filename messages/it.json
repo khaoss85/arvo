@@ -26,7 +26,8 @@
       "unauthorized": "Devi effettuare l'accesso per farlo.",
       "notFound": "La risorsa richiesta non è stata trovata.",
       "failedToLogSet": "Impossibile registrare la serie. Riprova.",
-      "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova."
+      "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova.",
+      "failedToSkipWarmup": "Impossibile saltare il riscaldamento. Riprova."
     },
     "success": {
       "saved": "Salvato con successo!",
@@ -372,7 +373,10 @@
         "mentalDrainedOptional": "Ti senti mentalmente stanco? (opzionale)",
         "mentalState": "Stato mentale: {state}",
         "logSetButton": "Registra Serie",
-        "logging": "Registrazione..."
+        "logging": "Registrazione...",
+        "skipWarmup": "Salta riscaldamento",
+        "skipping": "Saltando...",
+        "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro."
       },
       "progress": {
         "title": "Progresso Allenamento",
@@ -453,6 +457,13 @@
       "userModificationBadge": {
         "compactTitle": "Hai aggiunto {count} {count, plural, one {serie extra} other {serie extra}} oltre la raccomandazione AI",
         "extraSetsAdded": "{count} {count, plural, one {serie extra aggiunta} other {serie extra aggiunte}}"
+      },
+      "warmupSkipPrompt": {
+        "title": "Saltare il Riscaldamento?",
+        "dismiss": "Ignora suggerimento",
+        "skipButton": "Salta {count} {count, plural, one {serie} other {serie}} di riscaldamento",
+        "performWarmup": "Esegui riscaldamento",
+        "skipping": "Saltando..."
       },
       "confirmDialog": {
         "closeAriaLabel": "Chiudi",

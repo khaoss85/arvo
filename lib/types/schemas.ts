@@ -204,6 +204,9 @@ export const setLogSchema = z.object({
   rir_actual: z.number().int().min(0).max(10).nullable(),
   mental_readiness: z.number().int().min(1).max(5).nullable(),
   notes: z.string().nullable(),
+  set_type: z.enum(["warmup", "working"]).nullable(),
+  skipped: z.boolean().default(false),
+  skip_reason: z.string().nullable(),
   created_at: z.string().nullable(),
 });
 

@@ -19,7 +19,7 @@ interface SetLoggerProps {
 export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
-  const { logSet } = useWorkoutExecutionStore()
+  const { logSet, skipWarmupSets } = useWorkoutExecutionStore()
 
   // Mental readiness emoji mapping with translations
   const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
@@ -84,6 +84,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [mentalReadiness, setMentalReadiness] = useState<number | undefined>(undefined)
   const [showMentalSelector, setShowMentalSelector] = useState(false)
   const [isLogging, setIsLogging] = useState(false)
+  const [isSkipping, setIsSkipping] = useState(false)
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -104,6 +105,23 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     }
   }
 
+  const handleSkipWarmup = async () => {
+    if (!isWarmup) return
+
+    const confirmed = confirm(t('setLogger.skipWarmupConfirm', { count: warmupSetsCount }))
+    if (!confirmed) return
+
+    setIsSkipping(true)
+    try {
+      await skipWarmupSets('user_manual')
+    } catch (error) {
+      console.error('Failed to skip warmup:', error)
+      alert(tCommon('errors.failedToSkipWarmup'))
+    } finally {
+      setIsSkipping(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Set Type Badge */}
@@ -119,6 +137,17 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
             {isWarmup ? t('setLogger.warmup', { current: setNumber, total: warmupSetsCount }) : t('setLogger.workingSet', { current: workingSetNumber, total: exercise.targetSets })}
           </span>
         </div>
+
+        {/* Manual Skip Link - Only show on first warmup set */}
+        {isWarmup && setNumber === 1 && warmupSetsCount > 0 && (
+          <button
+            onClick={handleSkipWarmup}
+            disabled={isSkipping || isLogging}
+            className="text-xs text-gray-400 hover:text-gray-300 underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isSkipping ? t('setLogger.skipping') : t('setLogger.skipWarmup')}
+          </button>
+        )}
 
         {/* Technical Focus for Warmup Set */}
         {currentWarmup?.technicalFocus && (

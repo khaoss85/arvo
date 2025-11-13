@@ -26,7 +26,8 @@
       "unauthorized": "You need to be logged in to do this.",
       "notFound": "The requested resource was not found.",
       "failedToLogSet": "Failed to log set. Please try again.",
-      "failedToAddExercise": "Failed to add exercise. Please try again."
+      "failedToAddExercise": "Failed to add exercise. Please try again.",
+      "failedToSkipWarmup": "Failed to skip warmup. Please try again."
     },
     "success": {
       "saved": "Saved successfully!",
@@ -372,7 +373,10 @@
         "mentalDrainedOptional": "Feeling mentally drained? (optional)",
         "mentalState": "Mental state: {state}",
         "logSetButton": "Log Set",
-        "logging": "Logging..."
+        "logging": "Logging...",
+        "skipWarmup": "Skip warmup",
+        "skipping": "Skipping...",
+        "skipWarmupConfirm": "Skip all {count} warmup {count, plural, one {set} other {sets}}? You can go straight to your working sets."
       },
       "progress": {
         "title": "Workout Progress",
@@ -453,6 +457,13 @@
       "userModificationBadge": {
         "compactTitle": "You added {count} extra {count, plural, one {set} other {sets}} beyond AI recommendation",
         "extraSetsAdded": "{count} extra {count, plural, one {set} other {sets}} added"
+      },
+      "warmupSkipPrompt": {
+        "title": "Skip Warmup?",
+        "dismiss": "Dismiss suggestion",
+        "skipButton": "Skip {count} warmup {count, plural, one {set} other {sets}}",
+        "performWarmup": "Perform warmup",
+        "skipping": "Skipping..."
       },
       "confirmDialog": {
         "closeAriaLabel": "Close",
