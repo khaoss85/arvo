@@ -381,10 +381,24 @@ This is your sustainable baseline - apply your approach as designed.
     // Build session context if provided (for split-based workouts)
     const sessionContext = input.sessionFocus || input.targetVolume || input.sessionPrinciples
       ? `
-=== SESSION CONTEXT ===
-${input.sessionFocus ? `Muscle Groups Focus: ${input.sessionFocus.join(', ')}` : ''}
-${input.targetVolume ? `Target Volume per Muscle: ${JSON.stringify(input.targetVolume, null, 2)}` : ''}
-${input.sessionPrinciples ? `Session Principles:\n${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
+=== 🎯 SESSION MUSCLE GROUP REQUIREMENTS ===
+${input.sessionFocus ? `
+⚠️ MANDATORY MUSCLE COVERAGE:
+You MUST include exercises that target ALL of the following muscle groups:
+${input.sessionFocus.map(m => `- ${m}`).join('\n')}
+
+EXECUTION RULES:
+• Each muscle group listed above requires AT LEAST 1 exercise
+• Distribute the exercises across the workout according to the approach's structure
+• For multi-phase approaches (e.g., Mountain Dog), assign muscles to appropriate phases
+• For technique-specific approaches (e.g., FST-7, Y3T), apply the technique while covering all muscles
+• If the approach has volume constraints that conflict, prioritize muscles in the order listed above
+` : ''}
+${input.targetVolume ? `Target Volume per Muscle (aim for ±20%):
+${JSON.stringify(input.targetVolume, null, 2)}` : ''}
+${input.sessionPrinciples ? `
+Session-Specific Principles:
+${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
 `
       : ''
 
@@ -441,10 +455,22 @@ IMPORTANT: Only create a new exercise name if the exercise is truly different fr
 ` : ''}
 
 **HIERARCHY OF CONSTRAINTS:**
-1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable - this defines the system)
-2. 🎯 Periodization phase (if approach supports periodization)
-3. 🍽️ Caloric phase (modulate within approach's framework)
-4. 🎨 Session focus and weak points (tactical adjustments)
+1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable - defines the methodology)
+   - This defines HOW to train (4 phases, 7 sets, week type, equipment preferences, etc.)
+   - Approach constraints are absolute and cannot be violated
+2. 🎯 SESSION MUSCLE GROUP COVERAGE (mandatory - ensures complete training)
+   - This defines WHAT muscles to train
+   - You MUST include at least 1 exercise for EACH muscle group in sessionFocus
+   - Distribute exercises across the approach's structure (phases, techniques, progressions)
+3. 📊 Periodization phase (if approach supports periodization)
+4. 🍽️ Caloric phase (modulate volume/intensity within approach framework)
+5. 👤 Weak points and user preferences (tactical adjustments)
+
+⚠️ CRITICAL: Approach + Session Focus are COMPLEMENTARY, not conflicting:
+- Approach methodology (priority #1) defines HOW to structure the workout
+- Session muscle coverage (priority #2) defines WHAT muscles to include
+- Apply the approach's methodology WHILE ensuring all session focus muscles are covered
+- If approach volume constraints make it impossible to adequately cover all muscles, prioritize them in the order given
 
 ⚠️ CONFLICT RESOLUTION RULE:
 If any guidance below conflicts with the approach philosophy or volume constraints, THE APPROACH WINS.
@@ -687,6 +713,63 @@ Required JSON structure:
         throw new Error(
           `🚨 CRITICAL: Exercises exceed per-exercise set limit of ${maxSetsPerExercise} sets. ` +
           `Approach: ${approach.name}. Violations: ${violations.map(v => `${v.name} (${v.sets} sets)`).join(', ')}`
+        )
+      }
+    }
+
+    // 🔒 SESSION FOCUS VALIDATION: AI-powered semantic validation
+    if (input.sessionFocus && input.sessionFocus.length > 0) {
+      // Collect all muscles covered by the generated exercises
+      const coveredMuscles: string[] = []
+      result.exercises.forEach(ex => {
+        if (ex.primaryMuscles) coveredMuscles.push(...ex.primaryMuscles)
+        if (ex.secondaryMuscles) coveredMuscles.push(...ex.secondaryMuscles)
+      })
+
+      // Import MUSCLE_GROUPS for reference taxonomy
+      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
+
+      // Use AI to validate coverage semantically
+      const validationPrompt = `You are an exercise physiology expert validating muscle group coverage.
+
+REFERENCE TAXONOMY (canonical muscle names):
+${JSON.stringify(MUSCLE_GROUPS, null, 2)}
+
+REQUIRED MUSCLE GROUPS TO TRAIN:
+${input.sessionFocus.map(key => `- ${key} (${MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS] || key})`).join('\n')}
+
+ACTUAL MUSCLES TRAINED (from generated exercises):
+${coveredMuscles.join(', ')}
+
+TASK: Determine if the actual muscles adequately cover ALL required muscle groups.
+
+RULES:
+- Consider anatomical equivalents (e.g., "latissimus dorsi" = "lats" = "back")
+- Specific muscles count toward general groups (e.g., "posterior deltoid" covers "rear_delts")
+- Accept plural/singular variants and synonyms
+- A muscle group is COVERED if ANY exercise targets it (primary or secondary)
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "valid": true or false,
+  "missing": ["canonical_key1", "canonical_key2"],
+  "reasoning": "brief explanation (max 50 words)"
+}`
+
+      interface MuscleValidationResult {
+        valid: boolean
+        missing: string[]
+        reasoning: string
+      }
+
+      const validation = await this.complete<MuscleValidationResult>(validationPrompt, targetLanguage)
+
+      if (!validation.valid) {
+        throw new Error(
+          `🚨 SESSION FOCUS VIOLATION: Missing exercises for ${validation.missing.join(', ')}.\n` +
+          `AI Analysis: ${validation.reasoning}\n` +
+          `Required: ${input.sessionFocus.join(', ')}\n` +
+          `Generated exercises: ${result.exercises.map(e => `${e.name} (${e.primaryMuscles?.join(', ')})`).join('; ')}`
         )
       }
     }

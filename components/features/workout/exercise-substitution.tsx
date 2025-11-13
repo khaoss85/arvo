@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle } from 'lucide-react'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { memoryService } from '@/lib/services/memory.service'
+import { AnimationService } from '@/lib/services/animation.service'
 
 /**
  * Extract equipment variant from exercise name
@@ -119,15 +120,35 @@ export function ExerciseSubstitution({
   const handleConfirmSwap = async () => {
     if (!selectedSuggestion) return
 
+    // Extract equipment variant from exercise name
+    const equipmentVariant = extractEquipmentVariant(selectedSuggestion.exercise.name)
+
+    // Fetch animation URL for the new exercise
+    const animationUrl = await AnimationService.getAnimationUrl({
+      name: selectedSuggestion.exercise.name,
+      canonicalPattern: selectedSuggestion.exercise.name,
+      equipmentVariant: equipmentVariant,
+    })
+
     // Create new exercise execution with substitution
     const newExercise: ExerciseExecution = {
       exerciseId: crypto.randomUUID(), // Temporary ID, will be replaced with actual DB ID
       exerciseName: selectedSuggestion.exercise.name,
+      equipmentVariant: equipmentVariant,
       targetSets: selectedSuggestion.exercise.sets,
       targetReps: selectedSuggestion.exercise.repRange,
       targetWeight: selectedSuggestion.exercise.targetWeight,
       completedSets: currentExercise.completedSets, // Preserve completed sets
-      currentAISuggestion: null
+      currentAISuggestion: null,
+      // Include animation data
+      animationUrl: animationUrl || undefined,
+      hasAnimation: !!animationUrl,
+      // Preserve important fields from original exercise
+      technicalCues: currentExercise.technicalCues,
+      restSeconds: currentExercise.restSeconds,
+      tempo: currentExercise.tempo,
+      warmupSets: currentExercise.warmupSets,
+      setGuidance: currentExercise.setGuidance,
     }
 
     // Create/update memory for substitution pattern

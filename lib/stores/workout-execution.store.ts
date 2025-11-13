@@ -161,7 +161,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
             const mapped = {
               exerciseId: ex.id || null,
-              exerciseName: ex.name,
+              exerciseName: ex.exerciseName || ex.name,
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,
@@ -244,7 +244,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
             return {
               exerciseId: ex.id || null,
-              exerciseName: ex.name,
+              exerciseName: ex.exerciseName || ex.name,
               targetSets: ex.sets || 2,
               targetReps: ex.repRange || [6, 10],
               targetWeight: ex.targetWeight || 0,

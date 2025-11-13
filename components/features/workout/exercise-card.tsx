@@ -247,10 +247,10 @@ export function ExerciseCard({
               mentalReadiness: lastCompletedSet.mentalReadiness
             },
             setNumber: currentSetNumber,
-            exerciseType: exercise.exerciseName.toLowerCase().includes('squat') ||
-                         exercise.exerciseName.toLowerCase().includes('deadlift') ||
-                         exercise.exerciseName.toLowerCase().includes('bench') ||
-                         exercise.exerciseName.toLowerCase().includes('press')
+            exerciseType: (exercise.exerciseName?.toLowerCase().includes('squat') ||
+                          exercise.exerciseName?.toLowerCase().includes('deadlift') ||
+                          exercise.exerciseName?.toLowerCase().includes('bench') ||
+                          exercise.exerciseName?.toLowerCase().includes('press'))
               ? 'compound'
               : 'isolation',
             approachId,
@@ -501,7 +501,12 @@ export function ExerciseCard({
                   className="flex items-center justify-between bg-gray-800 rounded p-3 group"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-300">{t('exercise.set', { number: idx + 1 })}</span>
+                    <span className="text-sm text-gray-300">
+                      {idx + 1 <= warmupSetsCount
+                        ? t('setLogger.warmup', { current: idx + 1, total: warmupSetsCount })
+                        : t('setLogger.workingSet', { current: idx + 1 - warmupSetsCount, total: exercise.targetSets })
+                      }
+                    </span>
                     {mentalReadiness && (
                       <span
                         className="text-lg"
@@ -588,13 +593,13 @@ export function ExerciseCard({
             {/* Status Badge */}
             {timerInfo && hasModified && (
               <div className={`mb-3 px-3 py-1.5 rounded-lg border ${statusColors?.border} ${statusColors?.bg} ${statusColors?.text} text-xs font-medium text-center`}>
-                {timerInfo.status === 'optimal' && t('restTimer.status.optimal')}
-                {timerInfo.status === 'acceptable' && t('restTimer.status.acceptable')}
-                {timerInfo.status === 'warning' && t('restTimer.status.warning')}
-                {timerInfo.status === 'critical' && t('restTimer.status.critical')}
+                {timerInfo.status === 'optimal' && t('exercise.restTimer.status.optimal')}
+                {timerInfo.status === 'acceptable' && t('exercise.restTimer.status.acceptable')}
+                {timerInfo.status === 'warning' && t('exercise.restTimer.status.warning')}
+                {timerInfo.status === 'critical' && t('exercise.restTimer.status.critical')}
                 {timerInfo.status === 'warning' || timerInfo.status === 'critical' ? (
                   <span className="block mt-1 opacity-80">
-                    {t('restTimer.recommendedRange', { min: Math.floor(timerInfo.min / 60), max: Math.floor(timerInfo.max / 60) })}
+                    {t('exercise.restTimer.recommendedRange', { min: Math.floor(timerInfo.min / 60), max: Math.floor(timerInfo.max / 60) })}
                   </span>
                 ) : null}
               </div>
@@ -627,7 +632,7 @@ export function ExerciseCard({
                     {restTimeRemaining > originalRestSeconds ? '+' : ''}{restTimeRemaining - originalRestSeconds}s
                   </span>
                 ) : (
-                  <span>{t('restTimer.original')}</span>
+                  <span>{t('exercise.restTimer.original')}</span>
                 )}
               </div>
 
@@ -769,12 +774,12 @@ export function ExerciseCard({
         onClose={() => setIsAddExerciseModalOpen(false)}
         onSelectExercise={handleSelectExercise}
         currentWorkoutType={workout?.workout_type || 'general'}
-        excludeExercises={allExercises.map(ex => ex.exerciseName.toLowerCase())}
+        excludeExercises={allExercises.filter(ex => ex.exerciseName).map(ex => ex.exerciseName.toLowerCase())}
         enableAISuggestions={true}
         enableAIValidation={true}
         userId={userId}
         currentWorkoutContext={{
-          existingExercises: allExercises.map(ex => {
+          existingExercises: allExercises.filter(ex => ex.exerciseName).map(ex => {
             const muscleGroups = extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant)
             return {
               name: ex.exerciseName,
