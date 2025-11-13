@@ -6,6 +6,7 @@ export const trainingApproachSchema = z.object({
   name: z.string().min(1, "Name is required"),
   creator: z.string().nullable(),
   philosophy: z.string().nullable(),
+  short_philosophy: z.string().nullable(),
   variables: z.record(z.string(), z.unknown()),
   progression_rules: z.record(z.string(), z.unknown()),
   exercise_rules: z.record(z.string(), z.unknown()),

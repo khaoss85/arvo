@@ -43,6 +43,7 @@ async function seedMentzerApproach() {
 The core belief is that muscle growth is stimulated by brief, infrequent, high-intensity workouts.
 Training beyond momentary muscular failure is essential for maximum growth stimulus.
 More is NOT better - adequate recovery between workouts is crucial for growth.`,
+    short_philosophy: 'High-intensity, low-volume training based on brief, infrequent workouts pushed to momentary muscular failure. The philosophy: maximum growth stimulus comes from intense effort, not volume. Recovery between workouts is crucial. More training is NOT better—quality and intensity trump quantity every time.',
 
     variables: {
       sets: {
@@ -454,6 +455,7 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
       .update({
         creator: mentzerApproach.creator,
         philosophy: mentzerApproach.philosophy,
+        short_philosophy: mentzerApproach.short_philosophy,
         variables: mentzerApproach.variables as any,
         progression_rules: mentzerApproach.progression as any,
         exercise_rules: mentzerApproach.exerciseSelection as any,
@@ -483,6 +485,7 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         name: mentzerApproach.name,
         creator: mentzerApproach.creator,
         philosophy: mentzerApproach.philosophy,
+        short_philosophy: mentzerApproach.short_philosophy,
         variables: mentzerApproach.variables as any,
         progression_rules: mentzerApproach.progression as any,
         exercise_rules: mentzerApproach.exerciseSelection as any,

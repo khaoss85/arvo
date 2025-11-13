@@ -21,6 +21,7 @@ const kubaApproach = {
   name: 'Kuba Method',
   creator: 'Jakub Sylvester-Cielen',
   philosophy: 'Quality over quantity, controlled eccentric, autoregulated rest',
+  short_philosophy: 'Quality-focused training emphasizing controlled eccentric movements and autoregulated rest periods. Built around a systematic 3-days-on, 1-day-off cycle with moderate volume. Prioritizes technical execution and mind-muscle connection over ego lifting. Designed for sustainable progression through meticulous form and intelligent recovery management.',
   variables: {
     setsPerExercise: {
       working: 2,

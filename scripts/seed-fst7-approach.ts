@@ -23,6 +23,7 @@ const fst7Approach = {
   name: 'FST-7 (Hany Rambod)',
   creator: 'Hany Rambod',
   philosophy: `Fascia Stretch Training - Seven (FST-7) is a training system designed to maximize muscle hypertrophy through extreme muscle pumping and fascia stretching. The core principle is that the fascia (connective tissue surrounding muscles) can limit muscle growth in individuals with naturally thick, rigid fascia. By performing 7 consecutive sets with short rest periods (30-45 seconds) on the final exercise for each muscle group, FST-7 creates an intense intramuscular pump that stretches the fascia from within, potentially creating more space for muscle growth. This method combines traditional heavy compound work for strength and density with high-volume pump work for fullness and roundness. The extreme metabolic stress and blood flow create a "napalm" effect on the target muscle, recruiting even the most stubborn muscle fibers. Used by multiple Mr. Olympia champions including Phil Heath, Jay Cutler, and Chris Bumstead.`,
+  short_philosophy: 'Fascia Stretch Training uses 7 consecutive sets with short rest on the final exercise per muscle group to create an extreme pump that stretches the fascia. Combines heavy compound work for strength with high-volume pump work for fullness. Used by multiple Mr. Olympia champions.',
 
   // Core training variables specific to FST-7
   variables: {
@@ -1114,6 +1115,7 @@ async function seedFST7() {
         .update({
           creator: fst7Approach.creator,
           philosophy: fst7Approach.philosophy,
+          short_philosophy: fst7Approach.short_philosophy,
           variables: fst7Approach.variables,
           progression_rules: fst7Approach.progression,
           exercise_rules: fst7Approach.exerciseSelection,
@@ -1139,6 +1141,7 @@ async function seedFST7() {
           name: fst7Approach.name,
           creator: fst7Approach.creator,
           philosophy: fst7Approach.philosophy,
+          short_philosophy: fst7Approach.short_philosophy,
           variables: fst7Approach.variables,
           progression_rules: fst7Approach.progression,
           exercise_rules: fst7Approach.exerciseSelection,

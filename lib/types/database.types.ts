@@ -222,6 +222,7 @@ export type Database = {
           name: string
           periodization: Json | null
           philosophy: string | null
+          short_philosophy: string | null
           progression_rules: Json
           rationales: Json | null
           rom_emphasis: Json | null
@@ -241,6 +242,7 @@ export type Database = {
           name: string
           periodization?: Json | null
           philosophy?: string | null
+          short_philosophy?: string | null
           progression_rules: Json
           rationales?: Json | null
           rom_emphasis?: Json | null
@@ -260,6 +262,7 @@ export type Database = {
           name?: string
           periodization?: Json | null
           philosophy?: string | null
+          short_philosophy?: string | null
           progression_rules?: Json
           rationales?: Json | null
           rom_emphasis?: Json | null

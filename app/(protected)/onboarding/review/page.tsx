@@ -20,6 +20,7 @@ const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
 
 export default function ReviewPage() {
   const t = useTranslations('onboarding.steps.review')
+  const tReview = useTranslations('onboarding.reviewPage')
   const router = useRouter()
   const { user } = useAuthStore()
   const { data, setStep, setStepData, reset } = useOnboardingStore()
@@ -151,13 +152,13 @@ export default function ReviewPage() {
               size="sm"
               onClick={() => handleEdit(1, '/onboarding/approach')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {approach && (
             <div>
               <p className="font-medium">{approach.name}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{approach.philosophy}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{approach.short_philosophy || approach.philosophy}</p>
             </div>
           )}
         </div>
@@ -171,72 +172,72 @@ export default function ReviewPage() {
               size="sm"
               onClick={() => handleEdit(2, '/onboarding/split')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {data.splitType && data.weeklyFrequency ? (
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Split Type:</span>
+                <span className="text-gray-600 dark:text-gray-400">{tReview('splitType')}</span>
                 <span className="font-medium capitalize">{data.splitType.replace(/_/g, ' ')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Training Frequency:</span>
-                <span className="font-medium">{data.weeklyFrequency} days/week</span>
+                <span className="text-gray-600 dark:text-gray-400">{tReview('trainingFrequency')}</span>
+                <span className="font-medium">{data.weeklyFrequency} {tReview('daysPerWeek')}</span>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">No split selected</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noSplitSelected')}</p>
           )}
         </div>
 
         {/* Profile */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">Profile</h3>
+            <h3 className="font-semibold">{tReview('profile')}</h3>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleEdit(3, '/onboarding/profile')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {data.firstName || data.gender || data.age || data.weight || data.height ? (
             <div className="space-y-1 text-sm">
               {data.firstName && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Name:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{tReview('profileLabels.name')}</span>
                   <span className="font-medium">{data.firstName}</span>
                 </div>
               )}
               {data.gender && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Gender:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{tReview('profileLabels.gender')}</span>
                   <span className="font-medium capitalize">{data.gender}</span>
                 </div>
               )}
               {data.age && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Age:</span>
-                  <span className="font-medium">{data.age} years</span>
+                  <span className="text-gray-600 dark:text-gray-400">{tReview('profileLabels.age')}</span>
+                  <span className="font-medium">{data.age} {tReview('profileLabels.years')}</span>
                 </div>
               )}
               {data.weight && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Weight:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{tReview('profileLabels.weight')}</span>
                   <span className="font-medium">{data.weight} kg</span>
                 </div>
               )}
               {data.height && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Height:</span>
+                  <span className="text-gray-600 dark:text-gray-400">{tReview('profileLabels.height')}</span>
                   <span className="font-medium">{data.height} cm</span>
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">No profile data provided</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noProfileData')}</p>
           )}
         </div>
 
@@ -249,7 +250,7 @@ export default function ReviewPage() {
               size="sm"
               onClick={() => handleEdit(4, '/onboarding/weak-points')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {data.weakPoints && data.weakPoints.length > 0 ? (
@@ -264,7 +265,7 @@ export default function ReviewPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">No weak points selected</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noWeakPoints')}</p>
           )}
         </div>
 
@@ -277,7 +278,7 @@ export default function ReviewPage() {
               size="sm"
               onClick={() => handleEdit(5, '/onboarding/equipment')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {data.availableEquipment && data.availableEquipment.length > 0 ? (
@@ -292,7 +293,7 @@ export default function ReviewPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">No equipment selected</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noEquipment')}</p>
           )}
         </div>
 
@@ -305,7 +306,7 @@ export default function ReviewPage() {
               size="sm"
               onClick={() => handleEdit(6, '/onboarding/strength')}
             >
-              Edit
+              {tReview('edit')}
             </Button>
           </div>
           {data.strengthBaseline && Object.keys(data.strengthBaseline).length > 0 ? (
@@ -323,16 +324,16 @@ export default function ReviewPage() {
                       <span className="font-medium">{displayName}:</span>
                       {isStandard ? (
                         <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
-                          Standard
+                          {tReview('strengthBaseline.standard')}
                         </span>
                       ) : (
                         <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded">
-                          Custom {liftType ? `(→ ${liftType})` : ''}
+                          {tReview('strengthBaseline.custom')} {liftType ? `(→ ${liftType})` : ''}
                         </span>
                       )}
                     </div>
                     <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                      {values.weight}kg × {values.reps} @ RIR {values.rir}
+                      {values.weight}kg × {values.reps} {tReview('strengthBaseline.at')} RIR {values.rir}
                     </span>
                   </div>
                 )
@@ -340,7 +341,7 @@ export default function ReviewPage() {
             </div>
           ) : (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              No strength baseline recorded (AI will estimate)
+              {tReview('strengthBaseline.noBaseline')}
             </p>
           )}
         </div>
@@ -349,14 +350,14 @@ export default function ReviewPage() {
         {experienceEstimate && (
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold">Training Experience Estimate</h3>
+              <h3 className="font-semibold">{tReview('strengthBaseline.experienceTitle')}</h3>
               {!isEditingExperience ? (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleEditExperience}
                 >
-                  Edit
+                  {tReview('edit')}
                 </Button>
               ) : (
                 <Button
@@ -364,7 +365,7 @@ export default function ReviewPage() {
                   size="sm"
                   onClick={handleConfirmExperience}
                 >
-                  Confirm
+                  {t('labels.confirm')}
                 </Button>
               )}
             </div>
@@ -375,12 +376,12 @@ export default function ReviewPage() {
                 <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-blue-800 dark:text-blue-300">
                   <p className="font-medium mb-1">
-                    Based on your strength baseline, you appear to be <strong className="capitalize">{experienceEstimate.level}</strong>
-                    {' '}with approximately <strong>{experienceEstimate.years} years</strong> of training experience.
+                    {tReview('strengthBaseline.basedOnStrength')} <strong className="capitalize">{experienceEstimate.level}</strong>
+                    {' '}{tReview('strengthBaseline.withApproximately')} <strong>{experienceEstimate.years} {tReview('profileLabels.years')}</strong> {tReview('strengthBaseline.ofExperience')}.
                   </p>
                   <p className="text-xs mt-1 opacity-90">
-                    Confidence: {experienceEstimate.confidence}%
-                    {experienceEstimate.confidence < 70 && ' (Consider providing bodyweight and more lifts for better accuracy)'}
+                    {tReview('strengthBaseline.confidence')} {experienceEstimate.confidence}%
+                    {experienceEstimate.confidence < 70 && ' ' + tReview('strengthBaseline.considerProviding')}
                   </p>
                 </div>
               </div>
@@ -402,7 +403,7 @@ export default function ReviewPage() {
             {experienceEstimate.breakdown.length > 0 && (
               <details className="mb-3 text-sm">
                 <summary className="cursor-pointer text-gray-700 dark:text-gray-300 font-medium hover:text-blue-600 dark:hover:text-blue-400">
-                  View lift-by-lift breakdown
+                  {tReview('strengthBaseline.viewBreakdown')}
                 </summary>
                 <div className="mt-2 space-y-2 pl-2">
                   {experienceEstimate.breakdown.map((lift, idx) => {
@@ -417,14 +418,14 @@ export default function ReviewPage() {
                           <span className="text-gray-700 dark:text-gray-300">{lift.liftName}</span>
                           {!isStandard && liftType && (
                             <span className="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded">
-                              Custom
+                              {tReview('strengthBaseline.custom')}
                             </span>
                           )}
                         </div>
                         <div className="flex items-center gap-3 text-xs">
                           <span className="text-gray-600 dark:text-gray-400">
-                            e1RM: {lift.e1RM}kg
-                            {lift.relativeStrength && ` (${lift.relativeStrength}x BW)`}
+                            {tReview('strengthBaseline.e1rm')} {lift.e1RM}kg
+                            {lift.relativeStrength && ` ${tReview('strengthBaseline.relativeStrength')}`}
                           </span>
                           <span className="capitalize px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded">
                             {lift.suggestedLevel}
@@ -441,7 +442,7 @@ export default function ReviewPage() {
             {isEditingExperience ? (
               <div className="mt-3">
                 <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Adjust your training experience (years):
+                  {tReview('strengthBaseline.adjustExperience')}
                 </label>
                 <Input
                   type="number"
@@ -450,10 +451,10 @@ export default function ReviewPage() {
                   value={customExperience || ''}
                   onChange={(e) => handleExperienceChange(e.target.value)}
                   className="w-full"
-                  placeholder="e.g., 2.5"
+                  placeholder={tReview('strengthBaseline.experiencePlaceholder')}
                 />
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  Disagree with the AI estimate? Feel free to adjust it based on your actual training history.
+                  {tReview('strengthBaseline.disagreeNote')}
                 </p>
               </div>
             ) : (
@@ -461,8 +462,8 @@ export default function ReviewPage() {
                 <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                 <span className="text-gray-700 dark:text-gray-300">
                   {data.confirmedExperience !== null && data.confirmedExperience !== undefined
-                    ? `Confirmed: ${data.confirmedExperience} years`
-                    : `Using AI estimate: ${experienceEstimate.years} years`}
+                    ? `${tReview('strengthBaseline.confirmed')} ${data.confirmedExperience} ${tReview('profileLabels.years')}`
+                    : `${tReview('strengthBaseline.usingEstimate')} ${experienceEstimate.years} ${tReview('profileLabels.years')}`}
                 </span>
               </div>
             )}
@@ -478,8 +479,7 @@ export default function ReviewPage() {
 
       <div className="mt-8 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
         <p className="text-sm text-blue-800 dark:text-blue-300">
-          <strong>What happens next:</strong> The AI will create your user profile and generate your first personalized workout
-          based on the {approach?.name || 'selected approach'} and your preferences. This may take a few moments.
+          <strong>{tReview('whatHappensNext.title')}</strong> {tReview('whatHappensNext.description')} {approach?.name || 'selected approach'} {tReview('whatHappensNext.andPreferences')}
         </p>
       </div>
 
@@ -526,7 +526,7 @@ export default function ReviewPage() {
         onAccept={handleMedicalDisclaimerAccept}
         onCancel={handleMedicalDisclaimerCancel}
         context="onboarding"
-        title="Medical Disclaimer - Please Read Carefully"
+        title={tReview('medicalDisclaimer')}
       />
     </div>
   )

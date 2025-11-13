@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Info } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { Card } from '@/components/ui/card'
 import { ApproachDetails } from './approach-details'
@@ -13,6 +14,7 @@ interface ApproachCardProps {
 }
 
 export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps) {
+  const t = useTranslations('onboarding.approachCard')
   const variables = approach.variables as any
   const progression = approach.progression_rules as any
   const [showDetails, setShowDetails] = useState(false)
@@ -37,7 +39,7 @@ export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps
           <h3 className="text-xl font-bold">{approach.name}</h3>
           {approach.creator && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              by {approach.creator}
+              {t('by')} {approach.creator}
             </p>
           )}
         </div>
@@ -66,29 +68,29 @@ export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps
         </div>
       </div>
 
-      {approach.philosophy && (
+      {(approach.short_philosophy || approach.philosophy) && (
         <p className="text-gray-700 dark:text-gray-300 mb-4">
-          {approach.philosophy}
+          {approach.short_philosophy || approach.philosophy}
         </p>
       )}
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Working Sets:</span>
+          <span className="text-gray-600 dark:text-gray-400">{t('workingSets')}</span>
           <span className="font-medium">{variables?.setsPerExercise?.working || 'N/A'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Rep Ranges (Compound):</span>
+          <span className="text-gray-600 dark:text-gray-400">{t('repRanges')}</span>
           <span className="font-medium">
             {variables?.repRanges?.compound?.join('-') || 'N/A'}
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">RIR Target:</span>
+          <span className="text-gray-600 dark:text-gray-400">{t('rirTarget')}</span>
           <span className="font-medium">{variables?.rirTarget?.normal || 'N/A'}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Progression:</span>
+          <span className="text-gray-600 dark:text-gray-400">{t('progression')}</span>
           <span className="font-medium capitalize">
             {progression?.priority?.replace('_', ' ') || 'N/A'}
           </span>
@@ -101,7 +103,7 @@ export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps
         className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-950 rounded-lg transition-colors"
       >
         <Info className="w-4 h-4" />
-        Learn More
+        {t('learnMore')}
       </button>
     </Card>
 
