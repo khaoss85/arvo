@@ -1,17 +1,19 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Progress } from '@/components/ui/progress'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-const PHASES = [
-  { id: 'profile', label: 'Loading profile', emoji: '👤' },
-  { id: 'split', label: 'Planning workout', emoji: '📋' },
-  { id: 'ai', label: 'AI selecting exercises', emoji: '🤖' },
-  { id: 'history', label: 'Analyzing history', emoji: '📊' },
-  { id: 'finalize', label: 'Finalizing', emoji: '✨' }
-]
+const PHASE_IDS = ['profile', 'split', 'ai', 'history', 'finalize'] as const
+const PHASE_EMOJIS: Record<typeof PHASE_IDS[number], string> = {
+  'profile': '👤',
+  'split': '📋',
+  'ai': '🤖',
+  'history': '📊',
+  'finalize': '✨'
+}
 
 interface InsightInfluencedChange {
   source: 'insight' | 'memory'
@@ -38,6 +40,8 @@ export function WorkoutGenerationProgress({
   onError,
   onCancel
 }: Props) {
+  const t = useTranslations('dashboard.generation')
+  const tPhases = useTranslations('dashboard.generation.phases')
   const [phase, setPhase] = useState('profile')
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('Starting...')
@@ -112,8 +116,8 @@ export function WorkoutGenerationProgress({
     }
   }, [userId, targetCycleDay])
 
-  const currentPhaseData = PHASES.find(p => p.id === phase) || PHASES[0]
-  const currentPhaseIndex = PHASES.findIndex(p => p.id === phase)
+  const currentPhaseEmoji = PHASE_EMOJIS[phase as typeof PHASE_IDS[number]] || PHASE_EMOJIS.profile
+  const currentPhaseIndex = PHASE_IDS.indexOf(phase as typeof PHASE_IDS[number])
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96
@@ -121,9 +125,9 @@ export function WorkoutGenerationProgress({
                     dark:border-gray-700 p-4 z-50 animate-in slide-in-from-bottom">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1">
-          <span className="text-2xl">{currentPhaseData.emoji}</span>
+          <span className="text-2xl">{currentPhaseEmoji}</span>
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm">Generating Workout</h3>
+            <h3 className="font-semibold text-sm">{t('title')}</h3>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{message}</p>
           </div>
         </div>
@@ -141,7 +145,7 @@ export function WorkoutGenerationProgress({
 
       <div className="flex items-center justify-between text-xs mb-2">
         <span className="text-gray-600 dark:text-gray-400">
-          Phase {currentPhaseIndex + 1} of {PHASES.length}
+          {t('phaseOf', { current: currentPhaseIndex + 1, total: PHASE_IDS.length })}
         </span>
         <span className="font-semibold text-purple-600 dark:text-purple-400">
           {progress}%
@@ -150,9 +154,9 @@ export function WorkoutGenerationProgress({
 
       {/* Phase indicators */}
       <div className="flex gap-1">
-        {PHASES.map((p, idx) => (
+        {PHASE_IDS.map((p, idx) => (
           <div
-            key={p.id}
+            key={p}
             className={`flex-1 h-1 rounded-full transition-all duration-300 ${
               idx <= currentPhaseIndex
                 ? 'bg-purple-600 dark:bg-purple-500'

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { getNextWorkoutPreviewAction, advanceSplitCycleAction } from '@/app/actions/split-actions'
 import {
@@ -26,6 +27,7 @@ interface NextWorkoutData {
 }
 
 export function SplitCycleView({ userId }: SplitCycleViewProps) {
+  const t = useTranslations('dashboard.splitCycle')
   const [data, setData] = useState<NextWorkoutData | null>(null)
   const [loading, setLoading] = useState(true)
   const [advancing, setAdvancing] = useState(false)
@@ -77,7 +79,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 rounded-lg p-6 text-white">
         <div className="flex items-center gap-3">
           <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-          <span>Loading split plan...</span>
+          <span>{t('loadingSplitPlan')}</span>
         </div>
       </div>
     )
@@ -95,7 +97,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold mb-1">Active Split Plan</h2>
+          <h2 className="text-2xl font-bold mb-1">{t('activeSplitPlan')}</h2>
           <p className="text-purple-100 dark:text-purple-200 text-sm">
             {data?.splitType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </p>
@@ -109,11 +111,11 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
           {advancing ? (
             <>
               <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-              Advancing...
+              {t('advancing')}
             </>
           ) : (
             <>
-              Skip to Next Day
+              {t('skipToNextDay')}
             </>
           )}
         </Button>
@@ -123,10 +125,10 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-purple-100 dark:text-purple-200">
-            Cycle Progress
+            {t('cycleProgress')}
           </span>
           <span className="text-sm font-bold">
-            Day {data?.cycleDay} of {data?.totalCycleDays}
+            {t('dayOf', { current: data?.cycleDay || 0, total: data?.totalCycleDays || 0 })}
           </span>
         </div>
         <div className="w-full bg-white/20 rounded-full h-3">
@@ -140,10 +142,10 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       {/* Next Workout Preview */}
       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">Next Workout</h3>
+          <h3 className="text-lg font-semibold">{t('nextWorkout')}</h3>
           {data?.variation && (
             <span className="px-3 py-1 bg-yellow-400 text-yellow-900 text-sm font-bold rounded-full">
-              Variation {data.variation}
+              {t('variation', { variation: data.variation })}
             </span>
           )}
         </div>
@@ -163,7 +165,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
         {data && data.focus.length > 0 && (
           <div className="mb-3">
             <p className="text-sm font-medium text-purple-100 dark:text-purple-200 mb-2">
-              Focus Areas:
+              {t('focusAreas')}
             </p>
             <div className="flex flex-wrap gap-2">
               {data.focus.map((muscle, idx) => (
@@ -182,7 +184,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
         {data && Object.keys(data.targetVolume).length > 0 && (
           <div className="mb-3">
             <p className="text-sm font-medium text-purple-100 dark:text-purple-200 mb-2">
-              Target Volume:
+              {t('targetVolume')}
             </p>
             <div className="grid grid-cols-2 gap-2 text-sm">
               {Object.entries(data.targetVolume).slice(0, 4).map(([muscle, sets]) => (
@@ -194,7 +196,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
             </div>
             {Object.keys(data.targetVolume).length > 4 && (
               <p className="text-xs text-purple-200 dark:text-purple-300 mt-1">
-                +{Object.keys(data.targetVolume).length - 4} more muscle groups
+                {t('moreMuscleGroups', { count: Object.keys(data.targetVolume).length - 4 })}
               </p>
             )}
           </div>
@@ -204,7 +206,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
         {data && data.principles.length > 0 && (
           <div>
             <p className="text-sm font-medium text-purple-100 dark:text-purple-200 mb-2">
-              Key Principles:
+              {t('keyPrinciples')}
             </p>
             <ul className="space-y-1">
               {data.principles.slice(0, 3).map((principle, idx) => (
@@ -220,7 +222,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
 
       {/* Helper Text */}
       <p className="mt-4 text-sm text-purple-100 dark:text-purple-200">
-        Click "Generate Today's Workout" below to create this session with AI-selected exercises.
+        {t('helperText')}
       </p>
     </div>
   )

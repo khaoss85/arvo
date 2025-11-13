@@ -62,11 +62,81 @@
     "recentActivity": "Recent Activity",
     "viewAllHistory": "View All History",
     "noWorkoutsMessage": "No completed workouts yet. Complete your first workout to see it here!",
+    "workoutsCompleted": "{count} {count, plural, one {workout} other {workouts}} completed",
     "sets": "{count} sets",
     "volume": "{value}kg",
     "startWorkout": "Start Workout",
     "resumeWorkout": "Resume Workout",
-    "generateWorkout": "Generate New Workout"
+    "generateWorkout": "Generate New Workout",
+    "splitCycle": {
+      "loadingSplitPlan": "Loading split plan...",
+      "activeSplitPlan": "Active Split Plan",
+      "skipToNextDay": "Skip to Next Day",
+      "advancing": "Advancing...",
+      "cycleProgress": "Cycle Progress",
+      "dayOf": "Day {current} of {total}",
+      "nextWorkout": "Next Workout",
+      "variation": "Variation {variation}",
+      "focusAreas": "Focus Areas:",
+      "targetVolume": "Target Volume:",
+      "moreMuscleGroups": "+{count} more muscle groups",
+      "keyPrinciples": "Key Principles:",
+      "helperText": "Click \"Generate Today's Workout\" below to create this session with AI-selected exercises."
+    },
+    "timeline": {
+      "loadingSplitTimeline": "Loading split timeline...",
+      "splitProgramming": "Split Programming",
+      "cycleProgress": "Cycle Progress",
+      "dayOf": "Day {current} of {total}",
+      "helperText": "Scroll to see your complete training cycle. Generate today's workout below to start your session.",
+      "legend": {
+        "completed": "Completed",
+        "current": "Current",
+        "preGenerated": "Pre-Generated",
+        "upcoming": "Upcoming",
+        "rest": "Rest"
+      }
+    },
+    "dayCard": {
+      "day": "Day {day}",
+      "rest": "Rest",
+      "today": "TODAY",
+      "inProgress": "In Progress",
+      "done": "Done",
+      "ready": "Ready",
+      "draft": "Draft",
+      "upcoming": "Upcoming",
+      "restDay": "Rest Day",
+      "recoveryEssential": "Recovery is essential for muscle growth",
+      "variation": "{variation}",
+      "targetVolume": "Target Volume:",
+      "moreMuscles": "+{count} more",
+      "generateTodaysWorkout": "Generate Today's Workout",
+      "generating": "Generating...",
+      "exercisesReady": "{count} {count, plural, one {Exercise} other {Exercises}} Ready",
+      "reviewed": "Reviewed",
+      "readyStatus": "Ready",
+      "review": "Review",
+      "startWorkout": "Start Workout",
+      "continueWorkout": "Continue Workout",
+      "preGenerateWorkout": "Pre-Generate Workout",
+      "exercisesPreGenerated": "{count} {count, plural, one {Exercise} other {Exercises}} Pre-Generated",
+      "draftStatus": "Draft",
+      "start": "Start",
+      "actualPerformance": "Actual Performance:",
+      "actualSets": "{count} sets"
+    },
+    "generation": {
+      "title": "Generating Workout",
+      "phases": {
+        "profile": "Loading profile",
+        "split": "Planning workout",
+        "ai": "AI selecting exercises",
+        "history": "Analyzing history",
+        "finalize": "Finalizing"
+      },
+      "phaseOf": "Phase {current} of {total}"
+    }
   },
   "workout": {
     "summary": {

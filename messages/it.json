@@ -62,11 +62,81 @@
     "recentActivity": "Attività Recente",
     "viewAllHistory": "Visualizza Tutta la Cronologia",
     "noWorkoutsMessage": "Nessun allenamento completato. Completa il tuo primo allenamento per vederlo qui!",
+    "workoutsCompleted": "{count} {count, plural, one {allenamento completato} other {allenamenti completati}}",
     "sets": "{count} serie",
     "volume": "{value}kg",
     "startWorkout": "Inizia Allenamento",
     "resumeWorkout": "Riprendi Allenamento",
-    "generateWorkout": "Genera Nuovo Allenamento"
+    "generateWorkout": "Genera Nuovo Allenamento",
+    "splitCycle": {
+      "loadingSplitPlan": "Caricamento piano split...",
+      "activeSplitPlan": "Piano Split Attivo",
+      "skipToNextDay": "Salta al Giorno Successivo",
+      "advancing": "Avanzamento...",
+      "cycleProgress": "Progresso del Ciclo",
+      "dayOf": "Giorno {current} di {total}",
+      "nextWorkout": "Prossimo Allenamento",
+      "variation": "Variazione {variation}",
+      "focusAreas": "Aree Focus:",
+      "targetVolume": "Volume Target:",
+      "moreMuscleGroups": "+{count} gruppi muscolari in più",
+      "keyPrinciples": "Principi Chiave:",
+      "helperText": "Clicca \"Genera l'Allenamento di Oggi\" qui sotto per creare questa sessione con esercizi selezionati dall'AI."
+    },
+    "timeline": {
+      "loadingSplitTimeline": "Caricamento timeline split...",
+      "splitProgramming": "Programmazione Split",
+      "cycleProgress": "Progresso del Ciclo",
+      "dayOf": "Giorno {current} di {total}",
+      "helperText": "Scorri per vedere il tuo ciclo di allenamento completo. Genera l'allenamento di oggi qui sotto per iniziare la sessione.",
+      "legend": {
+        "completed": "Completato",
+        "current": "Corrente",
+        "preGenerated": "Pre-Generato",
+        "upcoming": "Prossimi",
+        "rest": "Riposo"
+      }
+    },
+    "dayCard": {
+      "day": "Giorno {day}",
+      "rest": "Riposo",
+      "today": "OGGI",
+      "inProgress": "In Corso",
+      "done": "Fatto",
+      "ready": "Pronto",
+      "draft": "Bozza",
+      "upcoming": "Prossimo",
+      "restDay": "Giorno di Riposo",
+      "recoveryEssential": "Il recupero è essenziale per la crescita muscolare",
+      "variation": "{variation}",
+      "targetVolume": "Volume Target:",
+      "moreMuscles": "+{count} in più",
+      "generateTodaysWorkout": "Genera l'Allenamento di Oggi",
+      "generating": "Generazione...",
+      "exercisesReady": "{count} {count, plural, one {Esercizio Pronto} other {Esercizi Pronti}}",
+      "reviewed": "Revisionato",
+      "readyStatus": "Pronto",
+      "review": "Revisiona",
+      "startWorkout": "Inizia Allenamento",
+      "continueWorkout": "Continua Allenamento",
+      "preGenerateWorkout": "Pre-Genera Allenamento",
+      "exercisesPreGenerated": "{count} {count, plural, one {Esercizio Pre-Generato} other {Esercizi Pre-Generati}}",
+      "draftStatus": "Bozza",
+      "start": "Inizia",
+      "actualPerformance": "Performance Effettiva:",
+      "actualSets": "{count} serie"
+    },
+    "generation": {
+      "title": "Generazione Allenamento",
+      "phases": {
+        "profile": "Caricamento profilo",
+        "split": "Pianificazione allenamento",
+        "ai": "AI seleziona esercizi",
+        "history": "Analisi cronologia",
+        "finalize": "Finalizzazione"
+      },
+      "phaseOf": "Fase {current} di {total}"
+    }
   },
   "workout": {
     "summary": {

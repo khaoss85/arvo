@@ -70,7 +70,7 @@ export function DashboardClient({ user, workouts }: DashboardClientProps) {
           {completedWorkouts.length > 0 ? (
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
               <p className="text-gray-600 dark:text-gray-400">
-                {completedWorkouts.length} workouts completed
+                {t("workoutsCompleted", { count: completedWorkouts.length })}
               </p>
             </div>
           ) : (

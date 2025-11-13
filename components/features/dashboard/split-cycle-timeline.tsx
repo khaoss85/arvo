@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { getSplitTimelineDataAction } from '@/app/actions/split-actions'
 import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
 import { TimelineDayCard } from './timeline-day-card'
@@ -11,6 +12,8 @@ interface SplitCycleTimelineProps {
 }
 
 export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTimelineProps) {
+  const t = useTranslations('dashboard.timeline')
+  const tLegend = useTranslations('dashboard.timeline.legend')
   const [data, setData] = useState<SplitTimelineData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -85,7 +88,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 rounded-lg p-6 text-white">
         <div className="flex items-center gap-3">
           <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-          <span>Loading split timeline...</span>
+          <span>{t('loadingSplitTimeline')}</span>
         </div>
       </div>
     )
@@ -107,7 +110,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-700 dark:to-pink-700 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold mb-1">Split Programming</h2>
+            <h2 className="text-2xl font-bold mb-1">{t('splitProgramming')}</h2>
             <p className="text-purple-100 dark:text-purple-200 text-sm">
               {splitPlan.split_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </p>
@@ -118,10 +121,10 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-purple-100 dark:text-purple-200">
-              Cycle Progress
+              {t('cycleProgress')}
             </span>
             <span className="text-sm font-bold">
-              Day {currentCycleDay} of {splitPlan.cycle_days}
+              {t('dayOf', { current: currentCycleDay, total: splitPlan.cycle_days })}
             </span>
           </div>
           <div className="w-full bg-white/20 rounded-full h-3">
@@ -134,7 +137,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
 
         {/* Helper text */}
         <p className="text-sm text-purple-100 dark:text-purple-200">
-          Scroll to see your complete training cycle. Generate today&apos;s workout below to start your session.
+          {t('helperText')}
         </p>
       </div>
 
@@ -176,23 +179,23 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
       <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400 pt-2">
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-green-500"></span>
-          <span>Completed</span>
+          <span>{tLegend('completed')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-purple-600"></span>
-          <span>Current</span>
+          <span>{tLegend('current')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-          <span>Pre-Generated</span>
+          <span>{tLegend('preGenerated')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-gray-400"></span>
-          <span>Upcoming</span>
+          <span>{tLegend('upcoming')}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded-full bg-blue-400"></span>
-          <span>Rest</span>
+          <span>{tLegend('rest')}</span>
         </div>
       </div>
     </div>

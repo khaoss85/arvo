@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
 import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
@@ -96,6 +97,7 @@ function VarianceIndicator({ variance }: { variance: VolumeComparison }) {
 }
 
 export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorkout, onRefreshTimeline }: TimelineDayCardProps) {
+  const t = useTranslations('dashboard.dayCard')
   const { day, status, session, completedWorkout, preGeneratedWorkout } = dayData
   const styles = STATUS_STYLES[status]
   const router = useRouter()
@@ -185,14 +187,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            Day {day}
+            {t('day', { day })}
           </span>
           <span className={cn(
             'px-2 py-1 rounded-full text-xs font-bold',
             styles.badgeBg,
             styles.badgeText
           )}>
-            Rest {styles.icon}
+            {t('rest')} {styles.icon}
           </span>
         </div>
 
@@ -202,10 +204,10 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             <Moon className="w-12 h-12 text-blue-600 dark:text-blue-400" />
           </div>
           <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2">
-            Rest Day
+            {t('restDay')}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Recovery is essential for muscle growth
+            {t('recoveryEssential')}
           </p>
         </div>
       </div>
@@ -229,12 +231,12 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           'text-sm font-medium',
           isCurrentDay ? 'text-purple-700 dark:text-purple-300 font-bold' : 'text-gray-500 dark:text-gray-400'
         )}>
-          Day {day}
+          {t('day', { day })}
         </span>
         <div className="flex items-center gap-2">
           {session.variation && (
             <span className="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded">
-              {session.variation}
+              {t('variation', { variation: session.variation })}
             </span>
           )}
           <span className={cn(
@@ -244,14 +246,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             isCurrentDay && 'px-3 py-1.5 text-sm'
           )}>
             {status === 'current'
-              ? 'TODAY'
+              ? t('today')
               : status === 'in_progress'
-              ? 'In Progress'
+              ? t('inProgress')
               : status === 'completed'
-              ? 'Done'
+              ? t('done')
               : status === 'pre_generated'
-              ? (preGeneratedWorkout?.status === 'ready' ? 'Ready' : 'Draft')
-              : 'Upcoming'
+              ? (preGeneratedWorkout?.status === 'ready' ? t('ready') : t('draft'))
+              : t('upcoming')
             } {styles.icon}
           </span>
         </div>
@@ -273,7 +275,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       {/* Target Volume */}
       <div className="mb-3">
         <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">
-          Target Volume:
+          {t('targetVolume')}
         </p>
         <div className="space-y-1.5">
           {Object.entries(session.targetVolume).slice(0, 4).map(([muscle, sets]) => (
@@ -291,7 +293,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
           ))}
           {Object.keys(session.targetVolume).length > 4 && (
             <p className="text-xs text-gray-500 dark:text-gray-400 italic pl-2">
-              +{Object.keys(session.targetVolume).length - 4} more
+              {t('moreMuscles', { count: Object.keys(session.targetVolume).length - 4 })}
             </p>
           )}
         </div>
@@ -306,7 +308,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            {isGenerating ? 'Generating...' : 'Generate Today\'s Workout'}
+            {isGenerating ? t('generating') : t('generateTodaysWorkout')}
           </Button>
         </div>
       )}
@@ -316,7 +318,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800 space-y-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
-              {preGeneratedWorkout.exercises.length} Exercises Ready
+              {t('exercisesReady', { count: preGeneratedWorkout.exercises.length })}
             </span>
             <span className={cn(
               'px-2 py-0.5 rounded text-xs font-bold',
@@ -324,7 +326,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
                 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                 : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
             )}>
-              {preGeneratedWorkout.status === 'ready' ? 'Reviewed' : 'Ready'}
+              {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('readyStatus')}
             </span>
           </div>
           <div className="flex gap-2">
@@ -334,14 +336,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
               className="flex-1 border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
             >
               <Eye className="w-4 h-4 mr-2" />
-              Review
+              {t('review')}
             </Button>
             <Button
               onClick={handleStartWorkout}
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
             >
               <Play className="w-4 h-4 mr-2" />
-              Start Workout
+              {t('startWorkout')}
             </Button>
           </div>
         </div>
@@ -355,7 +357,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
           >
             <Play className="w-4 h-4 mr-2" />
-            Continue Workout
+            {t('continueWorkout')}
           </Button>
         </div>
       )}
@@ -370,7 +372,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            {isGenerating ? 'Generating...' : 'Pre-Generate Workout'}
+            {isGenerating ? t('generating') : t('preGenerateWorkout')}
           </Button>
         </div>
       )}
@@ -380,7 +382,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         <div className="mb-3 pt-3 border-t border-blue-200 dark:border-blue-700 space-y-2">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-              {preGeneratedWorkout.exercises.length} Exercises Pre-Generated
+              {t('exercisesPreGenerated', { count: preGeneratedWorkout.exercises.length })}
             </span>
             <span className={cn(
               'px-2 py-0.5 rounded text-xs font-bold',
@@ -388,7 +390,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
                 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                 : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
             )}>
-              {preGeneratedWorkout.status === 'ready' ? 'Reviewed' : 'Draft'}
+              {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('draftStatus')}
             </span>
           </div>
           <div className="flex gap-2">
@@ -398,7 +400,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
               className="flex-1 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
             >
               <Eye className="w-4 h-4 mr-2" />
-              Review
+              {t('review')}
             </Button>
             {isCurrentDay && (
               <Button
@@ -406,7 +408,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Play className="w-4 h-4 mr-2" />
-                Start
+                {t('start')}
               </Button>
             )}
           </div>
@@ -417,7 +419,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       {completedWorkout && completedWorkout.variance && (
         <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide">
-            Actual Performance:
+            {t('actualPerformance')}
           </p>
           <div className="space-y-1.5">
             {Object.entries(completedWorkout.variance).slice(0, 4).map(([muscle, variance]) => (
@@ -430,7 +432,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-gray-900 dark:text-gray-100">
-                    {variance.actual} sets
+                    {t('actualSets', { count: variance.actual })}
                   </span>
                   <VarianceIndicator variance={variance} />
                 </div>
