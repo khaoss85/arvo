@@ -58,7 +58,7 @@ Format your response as JSON with these keys:
   /**
    * Generate personalized training insights
    */
-  async generateInsights(userId: string, days: number = 30): Promise<InsightsOutput> {
+  async generateInsights(userId: string, days: number = 30, targetLanguage?: 'en' | 'it'): Promise<InsightsOutput> {
     try {
       // Gather analytics data
       const [profile, prs, volumeData, mentalReadinessData] = await Promise.all([
@@ -273,7 +273,7 @@ ${context.mentalReadiness.hasData && context.mentalReadiness.trend === 'declinin
 
 Provide insights in JSON format with keys: summary, strengths (array of 3), improvements (array of 3), recommendations (array of 3), nextFocus (string).`
 
-      const response = await this.complete<InsightsOutput>(prompt)
+      const response = await this.complete<InsightsOutput>(prompt, targetLanguage)
 
       // Add insights and memories data to output
       return {

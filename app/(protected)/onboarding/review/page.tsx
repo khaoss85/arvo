@@ -12,6 +12,7 @@ import type { TrainingApproach } from '@/lib/types/schemas'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
 import { getEquipmentLabel } from '@/lib/constants/equipment-taxonomy'
+import { MedicalDisclaimerModal } from '@/components/features/legal/medical-disclaimer-modal'
 
 // Standard lifts for badge identification
 const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
@@ -26,6 +27,7 @@ export default function ReviewPage() {
   const [experienceEstimate, setExperienceEstimate] = useState<ExperienceEstimate | null>(null)
   const [customExperience, setCustomExperience] = useState<number | null>(null)
   const [isEditingExperience, setIsEditingExperience] = useState(false)
+  const [showMedicalDisclaimer, setShowMedicalDisclaimer] = useState(false)
 
   useEffect(() => {
     setStep(7)
@@ -57,7 +59,8 @@ export default function ReviewPage() {
     }
   }
 
-  const handleComplete = () => {
+  const handleCompleteClick = () => {
+    // Validate first
     if (!user) {
       setError('User not found. Please log in again.')
       return
@@ -68,8 +71,19 @@ export default function ReviewPage() {
       return
     }
 
+    // Open medical disclaimer modal
+    setShowMedicalDisclaimer(true)
+  }
+
+  const handleMedicalDisclaimerAccept = () => {
+    // User accepted disclaimer, proceed with onboarding
+    setShowMedicalDisclaimer(false)
     setLoading(true)
     setError(null)
+  }
+
+  const handleMedicalDisclaimerCancel = () => {
+    setShowMedicalDisclaimer(false)
   }
 
   const handleGenerationComplete = () => {
@@ -495,7 +509,7 @@ export default function ReviewPage() {
           />
         ) : (
           <Button
-            onClick={handleComplete}
+            onClick={handleCompleteClick}
             disabled={loading}
             className="px-8 py-3 text-lg"
           >
@@ -503,6 +517,15 @@ export default function ReviewPage() {
           </Button>
         )}
       </div>
+
+      {/* Medical Disclaimer Modal */}
+      <MedicalDisclaimerModal
+        open={showMedicalDisclaimer}
+        onAccept={handleMedicalDisclaimerAccept}
+        onCancel={handleMedicalDisclaimerCancel}
+        context="onboarding"
+        title="Medical Disclaimer - Please Read Carefully"
+      />
     </div>
   )
 }

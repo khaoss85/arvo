@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { Metadata } from "next"
 import { getUser } from "@/lib/utils/auth.server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
+import { TrainingApproachService } from "@/lib/services/training-approach.service"
+import { SettingsClientWrapper } from "@/components/features/settings/settings-client-wrapper"
 import { SplitSelector } from "@/components/features/settings/split-selector"
 import { CaloricPhaseSelector } from "@/components/features/settings/caloric-phase-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
@@ -14,7 +15,6 @@ import { DeleteAccountSection } from "@/components/features/settings/delete-acco
 import { MethodDetails } from "@/components/features/settings/method-details"
 import { ApproachSwitcher } from "@/components/features/settings/approach-switcher"
 import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
-import { TrainingApproachService } from "@/lib/services/training-approach.service"
 import { Card } from "@/components/ui/card"
 
 export const metadata: Metadata = {
@@ -44,27 +44,7 @@ export default async function SettingsPage() {
     : null
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </Link>
-          <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Manage your training preferences and profile
-          </p>
-        </div>
-
-        {/* Settings Sections */}
-        <div className="space-y-8">
+    <SettingsClientWrapper userId={user.id}>
           {/* Split System Section */}
           <Card className="p-6">
             <SplitSelector
@@ -178,8 +158,6 @@ export default async function SettingsPage() {
               <DeleteAccountSection userId={user.id} userEmail={user.email} />
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </SettingsClientWrapper>
   )
 }

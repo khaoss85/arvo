@@ -35,10 +35,17 @@
   "auth": {
     "login": {
       "title": "Bentornato",
-      "subtitle": "Accedi al tuo account",
+      "subtitle": "Accedi con la tua email per continuare",
       "emailLabel": "Indirizzo email",
+      "emailPlaceholder": "tuoemail@example.com",
       "submitButton": "Continua con email",
-      "magicLinkSent": "Controlla la tua email per un link magico per accedere.",
+      "sendingButton": "Invio link magico...",
+      "magicLinkInfo": "Ti invieremo un link magico per accedere senza password",
+      "termsAndPrivacy": "Continuando, accetti i nostri Termini di Servizio e la Privacy Policy",
+      "checkEmailTitle": "Controlla la tua email",
+      "checkEmailMessage": "Abbiamo inviato un link magico a <email></email>",
+      "linkExpiryInfo": "Clicca il link nella tua email per accedere. Il link scadrà tra 1 ora.",
+      "tryAnotherEmail": "Prova un'altra email",
       "errors": {
         "invalidEmail": "Inserisci un indirizzo email valido.",
         "failed": "Invio del link magico fallito. Riprova."
@@ -48,8 +55,13 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Bentornato, {email}!",
+    "settings": "Impostazioni",
+    "viewProgress": "Visualizza Progressi",
     "recentActivity": "Attività Recente",
-    "noWorkouts": "Nessun allenamento completato",
+    "viewAllHistory": "Visualizza Tutta la Cronologia",
+    "noWorkoutsMessage": "Nessun allenamento completato. Completa il tuo primo allenamento per vederlo qui!",
+    "sets": "{count} serie",
+    "volume": "{value}kg",
     "startWorkout": "Inizia Allenamento",
     "resumeWorkout": "Riprendi Allenamento",
     "generateWorkout": "Genera Nuovo Allenamento"
@@ -141,6 +153,8 @@
   },
   "settings": {
     "title": "Impostazioni",
+    "subtitle": "Gestisci le tue preferenze di allenamento e profilo",
+    "backToDashboard": "Torna alla Dashboard",
     "profile": {
       "title": "Profilo",
       "email": "Email",

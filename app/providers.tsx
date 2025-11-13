@@ -11,6 +11,7 @@ import { useAuthStore } from "@/lib/stores/auth.store";
 import { useLocaleStore } from "@/lib/stores/locale.store";
 import { ExerciseDBService } from "@/lib/services/exercisedb.service";
 import { Toaster } from "@/components/ui/toast";
+import { HtmlLangWrapper } from "@/components/html-lang-wrapper";
 import { detectUserLocale } from "@/lib/utils/locale";
 import enMessages from "@/messages/en.json";
 import itMessages from "@/messages/it.json";
@@ -38,9 +39,34 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
+    // Sync user's preferred language from DB
+    const syncLanguageFromDB = async (userId: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('preferred_language')
+          .eq('user_id', userId)
+          .single();
+
+        if (!error && data?.preferred_language) {
+          const dbLanguage = data.preferred_language;
+          if ((dbLanguage === 'en' || dbLanguage === 'it') && dbLanguage !== locale) {
+            console.log('[Providers] Syncing language from DB:', dbLanguage);
+            setLocale(dbLanguage);
+          }
+        }
+      } catch (err) {
+        console.error('[Providers] Failed to sync language from DB:', err);
+      }
+    };
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      // Sync language from DB if user is logged in
+      if (session?.user) {
+        syncLanguageFromDB(session.user.id);
+      }
     });
 
     // Listen for auth changes
@@ -48,10 +74,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      // Sync language from DB on login
+      if (session?.user) {
+        syncLanguageFromDB(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, setLoading]);
+  }, [setUser, setLoading, locale, setLocale]);
 
   // Pre-initialize ExerciseDB cache on app load
   useEffect(() => {
@@ -68,6 +98,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <NextIntlClientProvider locale={locale} messages={messages[locale]}>
+        <HtmlLangWrapper />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

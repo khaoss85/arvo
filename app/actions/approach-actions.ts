@@ -6,6 +6,7 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import type { Tables } from '@/lib/types/database.types'
 
@@ -244,6 +245,7 @@ export async function switchTrainingApproachAction(
     if (options?.generateNewSplit && options?.splitType) {
       try {
         const splitPlanner = new SplitPlanner(supabase)
+        const targetLanguage = await getUserLanguage(userId)
 
         const splitInput: SplitPlannerInput = {
           userId,
@@ -257,7 +259,7 @@ export async function switchTrainingApproachAction(
           userGender: profile.gender as 'male' | 'female' | 'other' | null
         }
 
-        const splitPlanData = await splitPlanner.planSplit(splitInput)
+        const splitPlanData = await splitPlanner.planSplit(splitInput, targetLanguage)
 
         newSplitPlan = await SplitPlanService.createServer({
           user_id: userId,

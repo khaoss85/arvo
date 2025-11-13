@@ -35,10 +35,17 @@
   "auth": {
     "login": {
       "title": "Welcome back",
-      "subtitle": "Log in to your account",
+      "subtitle": "Sign in with your email to continue",
       "emailLabel": "Email address",
+      "emailPlaceholder": "you@example.com",
       "submitButton": "Continue with email",
-      "magicLinkSent": "Check your email for a magic link to sign in.",
+      "sendingButton": "Sending magic link...",
+      "magicLinkInfo": "We'll send you a magic link for a password-free sign in",
+      "termsAndPrivacy": "By continuing, you agree to our Terms of Service and Privacy Policy",
+      "checkEmailTitle": "Check your email",
+      "checkEmailMessage": "We sent a magic link to <email></email>",
+      "linkExpiryInfo": "Click the link in your email to sign in. The link will expire in 1 hour.",
+      "tryAnotherEmail": "Try another email",
       "errors": {
         "invalidEmail": "Please enter a valid email address.",
         "failed": "Failed to send magic link. Please try again."
@@ -48,8 +55,13 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome back, {email}!",
+    "settings": "Settings",
+    "viewProgress": "View Progress",
     "recentActivity": "Recent Activity",
-    "noWorkouts": "No completed workouts yet",
+    "viewAllHistory": "View All History",
+    "noWorkoutsMessage": "No completed workouts yet. Complete your first workout to see it here!",
+    "sets": "{count} sets",
+    "volume": "{value}kg",
     "startWorkout": "Start Workout",
     "resumeWorkout": "Resume Workout",
     "generateWorkout": "Generate New Workout"
@@ -141,6 +153,8 @@
   },
   "settings": {
     "title": "Settings",
+    "subtitle": "Manage your training preferences and profile",
+    "backToDashboard": "Back to Dashboard",
     "profile": {
       "title": "Profile",
       "email": "Email",

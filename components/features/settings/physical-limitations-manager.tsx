@@ -14,6 +14,7 @@ import {
   mapDatabaseSeverityToUser,
   type UserSeverity
 } from '@/lib/utils/limitation-helpers'
+import { MedicalDisclaimerModal } from '@/components/features/legal/medical-disclaimer-modal'
 
 interface ActiveLimitation {
   id: string
@@ -48,12 +49,16 @@ const SEVERITY_INFO: Record<UserSeverity, { color: string; icon: string; descrip
   }
 }
 
+const MEDICAL_DISCLAIMER_KEY = 'physical_limitations_disclaimer_accepted'
+
 export function PhysicalLimitationsManager({ userId }: { userId: string }) {
   const [limitations, setLimitations] = useState<ActiveLimitation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAdding, setIsAdding] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [showMedicalDisclaimer, setShowMedicalDisclaimer] = useState(false)
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
   // Form state
   const [newLimitation, setNewLimitation] = useState({
@@ -63,9 +68,12 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
     exerciseName: ''
   })
 
-  // Load limitations on mount
+  // Load limitations and disclaimer state on mount
   useEffect(() => {
     loadLimitations()
+    // Check if user has accepted disclaimer before
+    const accepted = localStorage.getItem(MEDICAL_DISCLAIMER_KEY) === 'true'
+    setDisclaimerAccepted(accepted)
   }, [])
 
   const loadLimitations = async () => {
@@ -130,6 +138,28 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
     }
   }
 
+  const handleReportIssueClick = () => {
+    // If disclaimer not accepted yet, show modal first
+    if (!disclaimerAccepted) {
+      setShowMedicalDisclaimer(true)
+    } else {
+      setIsAdding(true)
+    }
+  }
+
+  const handleMedicalDisclaimerAccept = () => {
+    // Save acceptance to localStorage
+    localStorage.setItem(MEDICAL_DISCLAIMER_KEY, 'true')
+    setDisclaimerAccepted(true)
+    setShowMedicalDisclaimer(false)
+    // Now show the form
+    setIsAdding(true)
+  }
+
+  const handleMedicalDisclaimerCancel = () => {
+    setShowMedicalDisclaimer(false)
+  }
+
   const SeverityBadge = ({ severity }: { severity: string }) => {
     const userSeverity = mapDatabaseSeverityToUser(severity)
     const info = SEVERITY_INFO[userSeverity]
@@ -172,7 +202,7 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
           </div>
         </div>
         {!isAdding && canAddMore && (
-          <Button onClick={() => setIsAdding(true)} variant="outline" size="sm">
+          <Button onClick={handleReportIssueClick} variant="outline" size="sm">
             <Plus className="w-4 h-4 mr-2" />
             Report Issue
           </Button>
@@ -368,6 +398,15 @@ export function PhysicalLimitationsManager({ userId }: { userId: string }) {
           </div>
         </div>
       )}
+
+      {/* Medical Disclaimer Modal */}
+      <MedicalDisclaimerModal
+        open={showMedicalDisclaimer}
+        onAccept={handleMedicalDisclaimerAccept}
+        onCancel={handleMedicalDisclaimerCancel}
+        context="injury_tracking"
+        title="Medical Disclaimer - Injury Tracking"
+      />
     </Card>
   )
 }

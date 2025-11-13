@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { SplitTimelineService } from '@/lib/services/split-timeline.service'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 
 /**
  * Generate a new split plan using AI
@@ -12,12 +13,13 @@ import { SplitTimelineService } from '@/lib/services/split-timeline.service'
 export async function generateSplitPlanAction(input: SplitPlannerInput) {
   try {
     const supabase = await getSupabaseServerClient()
+    const targetLanguage = await getUserLanguage(input.userId)
 
     // Use SplitPlanner agent with server client
     const splitPlanner = new SplitPlanner(supabase)
 
     // Generate split plan using AI
-    const splitPlanData = await splitPlanner.planSplit(input)
+    const splitPlanData = await splitPlanner.planSplit(input, targetLanguage)
 
     // Create split plan in database
     const splitPlan = await SplitPlanService.createServer({

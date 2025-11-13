@@ -2,6 +2,7 @@
 
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { InsightsGenerator } from '@/lib/agents/insights-generator.agent'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 import type { InsightsOutput } from '@/lib/agents/insights-generator.agent'
 
 export async function generateInsightsAction(
@@ -10,8 +11,9 @@ export async function generateInsightsAction(
 ): Promise<{ success: boolean; insights?: InsightsOutput; error?: string }> {
   try {
     const supabase = await getSupabaseServerClient()
+    const targetLanguage = await getUserLanguage(userId)
     const generator = new InsightsGenerator(supabase)
-    const insights = await generator.generateInsights(userId, days)
+    const insights = await generator.generateInsights(userId, days, targetLanguage)
 
     return {
       success: true,

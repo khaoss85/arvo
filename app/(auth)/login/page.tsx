@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { AuthService } from "@/lib/services/auth.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const t = useTranslations("auth.login");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -51,16 +53,18 @@ export default function LoginPage() {
                 <Logo size="sm" showTagline={false} animated={false} />
               </div>
               <div className="space-y-2 text-center">
-                <CardTitle className="text-2xl">Check your email</CardTitle>
+                <CardTitle className="text-2xl">{t("checkEmailTitle")}</CardTitle>
                 <CardDescription className="text-base">
-                  We sent a magic link to <strong>{email}</strong>
+                  {t.rich("checkEmailMessage", {
+                    email: (chunks) => <strong>{email}</strong>
+                  })}
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg bg-primary-50 dark:bg-primary-950/20 p-4 border border-primary-200 dark:border-primary-800">
                 <p className="text-sm text-foreground/80">
-                  Click the link in your email to sign in. The link will expire in 1 hour.
+                  {t("linkExpiryInfo")}
                 </p>
               </div>
             </CardContent>
@@ -73,7 +77,7 @@ export default function LoginPage() {
                 }}
                 className="w-full"
               >
-                Try another email
+                {t("tryAnotherEmail")}
               </Button>
             </CardFooter>
           </Card>
@@ -99,9 +103,9 @@ export default function LoginPage() {
         {/* Login card */}
         <Card className="backdrop-blur-sm bg-card/95 border-border/50 shadow-lg animate-fade-in-up animation-delay-200">
           <CardHeader className="space-y-2 pb-4">
-            <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+            <CardTitle className="text-2xl text-center">{t("title")}</CardTitle>
             <CardDescription className="text-center">
-              Sign in with your email to continue
+              {t("subtitle")}
             </CardDescription>
           </CardHeader>
 
@@ -112,12 +116,12 @@ export default function LoginPage() {
                   htmlFor="email"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Email address
+                  {t("emailLabel")}
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("emailPlaceholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -140,7 +144,7 @@ export default function LoginPage() {
 
               <div className="pt-2">
                 <p className="text-xs text-muted-foreground text-center">
-                  We&apos;ll send you a magic link for a password-free sign in
+                  {t("magicLinkInfo")}
                 </p>
               </div>
             </CardContent>
@@ -173,10 +177,10 @@ export default function LoginPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Sending magic link...
+                    {t("sendingButton")}
                   </span>
                 ) : (
-                  "Continue with email"
+                  t("submitButton")
                 )}
               </Button>
             </CardFooter>
@@ -185,7 +189,7 @@ export default function LoginPage() {
 
         {/* Footer note */}
         <p className="mt-6 text-center text-xs text-muted-foreground/60 animate-fade-in animation-delay-400">
-          By continuing, you agree to our Terms of Service and Privacy Policy
+          {t("termsAndPrivacy")}
         </p>
       </motion.div>
     </div>

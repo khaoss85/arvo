@@ -72,7 +72,7 @@ When creating splits:
 Always output valid JSON matching the exact structure specified.`
   }
 
-  async planSplit(input: SplitPlannerInput): Promise<SplitPlanOutput> {
+  async planSplit(input: SplitPlannerInput, targetLanguage?: 'en' | 'it'): Promise<SplitPlanOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'split_planning')
 
@@ -238,7 +238,7 @@ Output the split plan as JSON with this EXACT structure:
 }
 `
 
-    return await this.complete<SplitPlanOutput>(prompt)
+    return await this.complete<SplitPlanOutput>(prompt, targetLanguage)
   }
 
   private buildDemographicContext(input: SplitPlannerInput): string {
