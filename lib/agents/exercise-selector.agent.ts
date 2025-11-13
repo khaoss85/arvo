@@ -3,6 +3,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services/exercise-generation.service'
 import { findEquipmentById } from '@/lib/constants/equipment-taxonomy'
 import { AnimationService } from '@/lib/services/animation.service'
+import type { Locale } from '@/i18n'
 
 export interface ExerciseSelectionInput {
   workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
@@ -103,6 +104,186 @@ export interface ExerciseSelectionOutput {
   workoutRationale: string
   weakPointAddress: string
   insightInfluencedChanges?: InsightInfluencedChange[] // NEW: Track changes made due to insights/memories
+}
+
+/**
+ * Anatomical to Canonical Muscle Mapping
+ *
+ * Maps anatomically correct muscle names (which AI tends to generate)
+ * to canonical taxonomy keys used throughout the system.
+ *
+ * This ensures volume validation works even when AI uses Latin/anatomical names
+ * instead of the simplified canonical names (chest, shoulders, triceps, etc.)
+ */
+const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
+  // Canonical names (identity mappings to eliminate false positives)
+  'chest': 'chest',
+  'chest_upper': 'chest_upper',
+  'chest_lower': 'chest_lower',
+  'shoulders': 'shoulders',
+  'shoulders_front': 'shoulders_front',
+  'shoulders_side': 'shoulders_side',
+  'shoulders_rear': 'shoulders_rear',
+  'triceps': 'triceps',
+  'triceps_long': 'triceps_long',
+  'triceps_lateral': 'triceps_lateral',
+  'triceps_medial': 'triceps_medial',
+  'lats': 'lats',
+  'upper_back': 'upper_back',
+  'lower_back': 'lower_back',
+  'lowerback': 'lowerBack',
+  'traps': 'traps',
+  'biceps': 'biceps',
+  'forearms': 'forearms',
+  'quads': 'quads',
+  'hamstrings': 'hamstrings',
+  'glutes': 'glutes',
+  'calves': 'calves',
+  'abs': 'abs',
+  'obliques': 'obliques',
+  'serratus': 'serratus',
+  'adductors': 'adductors',
+  'abductors': 'abductors',
+  'hipflexors': 'hipFlexors',
+
+  // Chest variations
+  'pectoralis major': 'chest',
+  'pectoralis minor': 'chest',
+  'pectoralis': 'chest',
+  'pectorals': 'chest',
+  'pecs': 'chest',
+  'pec': 'chest',
+  'clavicular pectoralis': 'chest_upper',
+  'sternal pectoralis': 'chest_lower',
+  'upper chest': 'chest_upper',
+  'lower chest': 'chest_lower',
+
+  // Shoulders variations
+  'deltoid': 'shoulders',
+  'deltoids': 'shoulders',
+  'anterior deltoid': 'shoulders',
+  'lateral deltoid': 'shoulders',
+  'posterior deltoid': 'shoulders',
+  'front deltoid': 'shoulders',
+  'middle deltoid': 'shoulders',
+  'rear deltoid': 'shoulders',
+  'front delt': 'shoulders',
+  'side delt': 'shoulders',
+  'rear delt': 'shoulders',
+  'delts': 'shoulders',
+
+  // Triceps variations
+  'triceps brachii': 'triceps',
+  'tricep': 'triceps',
+  'long head triceps': 'triceps',
+  'lateral head triceps': 'triceps',
+  'medial head triceps': 'triceps',
+
+  // Back/Lats variations
+  'latissimus dorsi': 'lats',
+  'latissimus': 'lats',
+  'lat': 'lats',
+  'teres major': 'lats',
+  'rhomboids': 'upper_back',
+  'rhomboid': 'upper_back',
+  'upper back': 'upper_back',
+  'lower back': 'lowerBack',
+  'erector spinae': 'lowerBack',
+  'spinal erectors': 'lowerBack',
+
+  // Traps variations
+  'trapezius': 'traps',
+  'upper trapezius': 'traps',
+  'middle trapezius': 'traps',
+  'lower trapezius': 'traps',
+
+  // Biceps variations
+  'biceps brachii': 'biceps',
+  'bicep': 'biceps',
+  'brachialis': 'biceps',
+  'long head biceps': 'biceps',
+  'short head biceps': 'biceps',
+
+  // Forearms variations
+  'forearm': 'forearms',
+  'brachioradialis': 'forearms',
+  'wrist flexors': 'forearms',
+  'wrist extensors': 'forearms',
+
+  // Quads variations
+  'quadriceps': 'quads',
+  'quad': 'quads',
+  'quadricep': 'quads',
+  'rectus femoris': 'quads',
+  'vastus lateralis': 'quads',
+  'vastus medialis': 'quads',
+  'vastus intermedius': 'quads',
+
+  // Hamstrings variations
+  'hamstring': 'hamstrings',
+  'biceps femoris': 'hamstrings',
+  'semitendinosus': 'hamstrings',
+  'semimembranosus': 'hamstrings',
+
+  // Glutes variations
+  'gluteus maximus': 'glutes',
+  'gluteus medius': 'glutes',
+  'gluteus minimus': 'glutes',
+  'glute': 'glutes',
+  'gluteal': 'glutes',
+
+  // Calves variations
+  'gastrocnemius': 'calves',
+  'soleus': 'calves',
+  'calf': 'calves',
+
+  // Abs variations
+  'rectus abdominis': 'abs',
+  'abdominals': 'abs',
+  'abdominal': 'abs',
+  'core': 'abs',
+  'six pack': 'abs',
+
+  // Obliques variations
+  'oblique': 'obliques',
+  'obliqes': 'obliques', // common typo
+  'external obliques': 'obliques',
+  'internal obliques': 'obliques',
+  'external oblique': 'obliques',
+  'internal oblique': 'obliques',
+
+  // Serratus
+  'serratus anterior': 'serratus',
+
+  // Hip flexors
+  'iliopsoas': 'hipFlexors',
+  'hip flexor': 'hipFlexors',
+  'psoas': 'hipFlexors',
+  'iliacus': 'hipFlexors',
+
+  // Adductors
+  'adductor': 'adductors',
+  'adductor magnus': 'adductors',
+  'adductor longus': 'adductors',
+  'adductor brevis': 'adductors',
+  'gracilis': 'adductors',
+
+  // Abductors
+  'abductor': 'abductors',
+  'tensor fasciae latae': 'abductors',
+  'tfl': 'abductors',
+
+  // Rotator cuff (stabilizers)
+  'rotator cuff': 'shoulders',
+  'supraspinatus': 'shoulders',
+  'infraspinatus': 'shoulders',
+  'teres minor': 'shoulders',
+  'subscapularis': 'shoulders',
+
+  // Misc stabilizers
+  'scapular stabilizers': 'upper_back',
+  'scapular': 'upper_back',
+  'shoulder stabilizers': 'shoulders',
 }
 
 export class ExerciseSelector extends BaseAgent {
@@ -394,8 +575,14 @@ EXECUTION RULES:
 • For technique-specific approaches (e.g., FST-7, Y3T), apply the technique while covering all muscles
 • If the approach has volume constraints that conflict, prioritize muscles in the order listed above
 ` : ''}
-${input.targetVolume ? `Target Volume per Muscle (aim for ±20%):
-${JSON.stringify(input.targetVolume, null, 2)}` : ''}
+${input.targetVolume ? `
+⚠️ MANDATORY TARGET VOLUME (MUST match within ±20%):
+${JSON.stringify(input.targetVolume, null, 2)}
+
+CRITICAL RULE: You MUST generate exercises that result in these EXACT set counts per muscle group.
+Each muscle group must receive sets within 20% of its target. This is NON-NEGOTIABLE.
+Example: If target is 12 sets for chest, you must generate 10-14 sets (12 ± 20% = 9.6-14.4 → round to 10-14).
+` : ''}
 ${input.sessionPrinciples ? `
 Session-Specific Principles:
 ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
@@ -494,6 +681,29 @@ Do NOT rely on a pre-existing exercise database. Create exercise names that are:
 For each exercise, also provide:
 - primaryMuscles: array of primary muscles worked
 - secondaryMuscles: array of secondary muscles
+
+**🔴 CRITICAL: MUSCLE NAME REQUIREMENTS:**
+You MUST use these EXACT canonical muscle group keys (not anatomical Latin names):
+
+ALLOWED MUSCLE KEYS (use these ONLY):
+${JSON.stringify(['chest', 'chest_upper', 'chest_lower', 'shoulders', 'triceps', 'lats', 'upper_back', 'traps', 'biceps', 'forearms', 'quads', 'hamstrings', 'glutes', 'calves', 'abs', 'obliques', 'lowerBack', 'adductors', 'abductors', 'hipFlexors', 'serratus'], null, 2)}
+
+COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
+- "pectoralis major/minor" → use "chest"
+- "anterior/lateral/posterior deltoid" → use "shoulders"
+- "triceps brachii" → use "triceps"
+- "latissimus dorsi" → use "lats"
+- "biceps brachii" → use "biceps"
+- "rectus femoris/vastus" → use "quads"
+- "biceps femoris/semitendinosus" → use "hamstrings"
+- "gastrocnemius/soleus" → use "calves"
+- "gluteus maximus/medius" → use "glutes"
+- "rectus abdominis" → use "abs"
+
+✓ CORRECT: "primaryMuscles": ["chest", "shoulders"]
+✗ WRONG: "primaryMuscles": ["pectoralis major", "anterior deltoid"]
+✗ WRONG: "primaryMuscles": ["Chest", "Shoulders"]  (capitalization matters!)
+
 - movementPattern: the movement type (e.g., "horizontal_push", "vertical_pull", "squat", "hinge")
 - romEmphasis: "lengthened", "shortened", or "full_range"
 - unilateral: true if single-limb exercise
@@ -686,93 +896,16 @@ Required JSON structure:
 **REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
     `
 
-    const result = await this.complete<ExerciseSelectionOutput>(prompt, targetLanguage)
+    // 🔒 GENERATE WITH RETRY & VALIDATION: Use retry mechanism with validation feedback
+    const result = await this.completeWithRetry<ExerciseSelectionOutput>(
+      prompt,
+      (result) => this.validateExerciseSelection(result, input, approach, targetLanguage),
+      3,  // maxAttempts
+      targetLanguage
+    )
 
-    // 🔒 POST-GENERATION VALIDATION: Verify AI respected approach constraints
-    // This is a critical safety check to ensure no workout violates approach philosophy
-    const totalSets = result.exercises.reduce((sum, ex) => sum + ex.sets, 0)
-    const vars = approach.variables as any
-
-    // Check total sets limit (e.g., Heavy Duty: 6-8 sets MAXIMUM)
-    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
-    if (maxTotalSets && totalSets > maxTotalSets) {
-      throw new Error(
-        `🚨 CRITICAL: AI generated ${totalSets} total sets, exceeding approach limit of ${maxTotalSets}. ` +
-        `Approach: ${approach.name}. This violates the approach's core philosophy. ` +
-        `Exercises: ${result.exercises.map(e => `${e.name} (${e.sets} sets)`).join(', ')}`
-      )
-    }
-
-    // Check per-exercise sets limit (e.g., Heavy Duty: 1-2 sets per exercise)
-    const maxSetsPerExercise = vars?.setsPerExercise?.working
-      || (vars?.sets?.range ? vars.sets.range[1] : null)
-
-    if (maxSetsPerExercise) {
-      const violations = result.exercises.filter(ex => ex.sets > maxSetsPerExercise)
-      if (violations.length > 0) {
-        throw new Error(
-          `🚨 CRITICAL: Exercises exceed per-exercise set limit of ${maxSetsPerExercise} sets. ` +
-          `Approach: ${approach.name}. Violations: ${violations.map(v => `${v.name} (${v.sets} sets)`).join(', ')}`
-        )
-      }
-    }
-
-    // 🔒 SESSION FOCUS VALIDATION: AI-powered semantic validation
-    if (input.sessionFocus && input.sessionFocus.length > 0) {
-      // Collect all muscles covered by the generated exercises
-      const coveredMuscles: string[] = []
-      result.exercises.forEach(ex => {
-        if (ex.primaryMuscles) coveredMuscles.push(...ex.primaryMuscles)
-        if (ex.secondaryMuscles) coveredMuscles.push(...ex.secondaryMuscles)
-      })
-
-      // Import MUSCLE_GROUPS for reference taxonomy
-      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
-
-      // Use AI to validate coverage semantically
-      const validationPrompt = `You are an exercise physiology expert validating muscle group coverage.
-
-REFERENCE TAXONOMY (canonical muscle names):
-${JSON.stringify(MUSCLE_GROUPS, null, 2)}
-
-REQUIRED MUSCLE GROUPS TO TRAIN:
-${input.sessionFocus.map(key => `- ${key} (${MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS] || key})`).join('\n')}
-
-ACTUAL MUSCLES TRAINED (from generated exercises):
-${coveredMuscles.join(', ')}
-
-TASK: Determine if the actual muscles adequately cover ALL required muscle groups.
-
-RULES:
-- Consider anatomical equivalents (e.g., "latissimus dorsi" = "lats" = "back")
-- Specific muscles count toward general groups (e.g., "posterior deltoid" covers "rear_delts")
-- Accept plural/singular variants and synonyms
-- A muscle group is COVERED if ANY exercise targets it (primary or secondary)
-
-Return ONLY valid JSON (no markdown, no code blocks):
-{
-  "valid": true or false,
-  "missing": ["canonical_key1", "canonical_key2"],
-  "reasoning": "brief explanation (max 50 words)"
-}`
-
-      interface MuscleValidationResult {
-        valid: boolean
-        missing: string[]
-        reasoning: string
-      }
-
-      const validation = await this.complete<MuscleValidationResult>(validationPrompt, targetLanguage)
-
-      if (!validation.valid) {
-        throw new Error(
-          `🚨 SESSION FOCUS VIOLATION: Missing exercises for ${validation.missing.join(', ')}.\n` +
-          `AI Analysis: ${validation.reasoning}\n` +
-          `Required: ${input.sessionFocus.join(', ')}\n` +
-          `Generated exercises: ${result.exercises.map(e => `${e.name} (${e.primaryMuscles?.join(', ')})`).join('; ')}`
-        )
-      }
-    }
+    // Validation complete - if we reach here, the AI generated a valid workout
+    console.log('[ExerciseSelector] Workout generation successful with validation')
 
     // Ensure insightInfluencedChanges field exists (even if AI didn't include it)
     if (!result.insightInfluencedChanges) {
@@ -844,6 +977,311 @@ Return ONLY valid JSON (no markdown, no code blocks):
       .trim()
 
     return coreName
+  }
+
+  /**
+   * Normalize muscle names in exercises to canonical taxonomy
+   *
+   * Converts anatomical names (e.g., "pectoralis major") to canonical keys (e.g., "chest")
+   * using the ANATOMICAL_TO_CANONICAL mapping table.
+   *
+   * This ensures volume validation works correctly regardless of which naming convention
+   * the AI uses in its output.
+   *
+   * @param exercises - Array of exercises with potentially non-canonical muscle names
+   * @returns Same exercises with normalized muscle names
+   * @private
+   */
+  private normalizeExerciseMuscles(exercises: SelectedExercise[]): SelectedExercise[] {
+    const unknownMuscles = new Set<string>()
+    let totalNormalizations = 0
+
+    const normalized = exercises.map(ex => {
+      const normalizedPrimaryMuscles = ex.primaryMuscles?.map(muscle => {
+        const normalized = muscle.toLowerCase().trim().replace(/_/g, ' ')
+
+        // Try exact match first
+        if (ANATOMICAL_TO_CANONICAL[normalized]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[normalized]
+        }
+
+        // Try without plural
+        const withoutPlural = normalized.replace(/s$/, '')
+        if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        }
+
+        // Unknown muscle - track it
+        unknownMuscles.add(muscle)
+        return muscle
+      })
+
+      const normalizedSecondaryMuscles = ex.secondaryMuscles?.map(muscle => {
+        const normalized = muscle.toLowerCase().trim().replace(/_/g, ' ')
+
+        // Try exact match first
+        if (ANATOMICAL_TO_CANONICAL[normalized]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[normalized]
+        }
+
+        // Try without plural
+        const withoutPlural = normalized.replace(/s$/, '')
+        if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        }
+
+        // Unknown muscle - track it
+        unknownMuscles.add(muscle)
+        return muscle
+      })
+
+      return {
+        ...ex,
+        primaryMuscles: normalizedPrimaryMuscles,
+        secondaryMuscles: normalizedSecondaryMuscles
+      }
+    })
+
+    // Log normalization summary
+    console.log('📋 [EXERCISE_SELECTOR] Muscle normalization complete:', {
+      totalExercises: exercises.length,
+      totalNormalizations: totalNormalizations,
+      unknownMusclesCount: unknownMuscles.size,
+      unknownMuscles: unknownMuscles.size > 0 ? Array.from(unknownMuscles) : undefined,
+      timestamp: new Date().toISOString()
+    })
+
+    if (unknownMuscles.size > 0) {
+      console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscles detected during normalization:', {
+        muscles: Array.from(unknownMuscles),
+        hint: 'These muscles were not found in ANATOMICAL_TO_CANONICAL mapping. If they are anatomical names, consider adding them.',
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    return normalized
+  }
+
+  /**
+   * Validate exercise selection against all constraints and requirements
+   * Returns structured feedback for AI retry mechanism
+   * @private
+   */
+  private async validateExerciseSelection(
+    result: ExerciseSelectionOutput,
+    input: ExerciseSelectionInput,
+    approach: any,
+    targetLanguage: Locale = 'en'
+  ): Promise<{ valid: boolean; feedback: string }> {
+    // Debug: Log what AI actually generated
+    console.log('🔍 [VALIDATOR] AI generated exercises (before normalization):', JSON.stringify(result.exercises.map(ex => ({
+      name: ex.name,
+      sets: ex.sets,
+      primaryMuscles: ex.primaryMuscles,
+      secondaryMuscles: ex.secondaryMuscles
+    })), null, 2))
+
+    // ✨ NORMALIZE MUSCLE NAMES: Convert anatomical → canonical before validation
+    result.exercises = this.normalizeExerciseMuscles(result.exercises)
+
+    console.log('✅ [VALIDATOR] After normalization:', JSON.stringify(result.exercises.map(ex => ({
+      name: ex.name,
+      primaryMuscles: ex.primaryMuscles,
+      secondaryMuscles: ex.secondaryMuscles
+    })), null, 2))
+
+    const errors: string[] = []
+
+    // Validation 1: Total sets limit (approach constraint)
+    const totalSets = result.exercises.reduce((sum, ex) => sum + ex.sets, 0)
+    const vars = approach.variables as any
+    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
+
+    if (maxTotalSets && totalSets > maxTotalSets) {
+      errors.push(
+        `**TOTAL SETS VIOLATION**\n` +
+        `- You generated: ${totalSets} total sets\n` +
+        `- Approach limit: ${maxTotalSets} total sets (${approach.name})\n` +
+        `- Exceeds by: ${totalSets - maxTotalSets} sets\n` +
+        `- FIX: Either REDUCE sets per exercise OR REMOVE ${Math.ceil((totalSets - maxTotalSets) / 3)} exercise(s)\n` +
+        `- Current: ${result.exercises.map(e => `${e.name} (${e.sets} sets)`).join(', ')}`
+      )
+    }
+
+    // Validation 2: Per-exercise sets limit
+    const maxSetsPerExercise = vars?.setsPerExercise?.working ||
+                               (vars?.sets?.range ? vars.sets.range[1] : null)
+
+    if (maxSetsPerExercise) {
+      const violations = result.exercises.filter(ex => ex.sets > maxSetsPerExercise)
+      if (violations.length > 0) {
+        errors.push(
+          `**PER-EXERCISE SETS VIOLATION**\n` +
+          `- Approach limit: ${maxSetsPerExercise} sets per exercise maximum\n` +
+          `- Violations (${violations.length} exercises):\n` +
+          violations.map(v => `  * ${v.name}: ${v.sets} sets (exceeds by ${v.sets - maxSetsPerExercise})`).join('\n') + '\n' +
+          `- FIX: REDUCE sets for these exercises to max ${maxSetsPerExercise} sets each`
+        )
+      }
+    }
+
+    // Validation 3: Session focus coverage (AI semantic validation)
+    if (input.sessionFocus && input.sessionFocus.length > 0) {
+      const coveredMuscles: string[] = []
+      result.exercises.forEach(ex => {
+        if (ex.primaryMuscles) coveredMuscles.push(...ex.primaryMuscles)
+        if (ex.secondaryMuscles) coveredMuscles.push(...ex.secondaryMuscles)
+      })
+
+      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
+
+      const validationPrompt = `You are an exercise physiology expert validating muscle group coverage.
+
+REFERENCE TAXONOMY (canonical muscle names):
+${JSON.stringify(MUSCLE_GROUPS, null, 2)}
+
+REQUIRED MUSCLE GROUPS TO TRAIN:
+${input.sessionFocus.map(key => `- ${key} (${MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS] || key})`).join('\n')}
+
+ACTUAL MUSCLES TRAINED (from generated exercises):
+${coveredMuscles.join(', ')}
+
+TASK: Determine if the actual muscles adequately cover ALL required muscle groups.
+
+RULES:
+- Consider anatomical equivalents (e.g., "latissimus dorsi" = "lats" = "back")
+- Specific muscles count toward general groups (e.g., "posterior deltoid" covers "rear_delts")
+- Accept plural/singular variants and synonyms
+- A muscle group is COVERED if ANY exercise targets it (primary or secondary)
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "valid": true or false,
+  "missing": ["canonical_key1", "canonical_key2"],
+  "reasoning": "brief explanation (max 50 words)"
+}`
+
+      interface MuscleValidationResult {
+        valid: boolean
+        missing: string[]
+        reasoning: string
+      }
+
+      const validation = await this.complete<MuscleValidationResult>(validationPrompt, targetLanguage)
+
+      if (!validation.valid) {
+        errors.push(
+          `**SESSION FOCUS VIOLATION**\n` +
+          `- Required muscles: ${input.sessionFocus.join(', ')}\n` +
+          `- Missing coverage: ${validation.missing.join(', ')}\n` +
+          `- AI Analysis: ${validation.reasoning}\n` +
+          `- FIX: ADD at least one exercise targeting each missing muscle group`
+        )
+      }
+    }
+
+    // Validation 4: Target volume (±20% tolerance)
+    if (input.targetVolume && Object.keys(input.targetVolume).length > 0) {
+      const calculateMuscleVolume = (exercises: typeof result.exercises): Record<string, number> => {
+        const volume: Record<string, number> = {}
+        exercises.forEach(ex => {
+          ex.primaryMuscles?.forEach(muscle => {
+            const normalized = muscle.toLowerCase().trim()
+            volume[normalized] = (volume[normalized] || 0) + (ex.sets || 0)
+          })
+          ex.secondaryMuscles?.forEach(muscle => {
+            const normalized = muscle.toLowerCase().trim()
+            volume[normalized] = (volume[normalized] || 0) + (ex.sets || 0) * 0.5
+          })
+        })
+        return volume
+      }
+
+      const normalizeMuscleForVolume = (muscle: string): string => {
+        const normalized = muscle.toLowerCase().trim()
+          .replace(/_/g, ' ')  // Replace underscores with spaces first
+
+        // Check mapping table (exact match)
+        if (ANATOMICAL_TO_CANONICAL[normalized]) {
+          return ANATOMICAL_TO_CANONICAL[normalized]
+        }
+
+        // Check with plural removed (e.g., "deltoids" → "deltoid" → "shoulders")
+        const withoutPlural = normalized.replace(/s$/, '')
+        if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
+          return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        }
+
+        // Not in mapping - log for monitoring and return as-is (already normalized, canonical)
+        console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscle name encountered:', {
+          original: muscle,
+          normalized: normalized,
+          withoutPlural: withoutPlural,
+          returning: withoutPlural,
+          timestamp: new Date().toISOString(),
+          hint: 'Consider adding to ANATOMICAL_TO_CANONICAL mapping if this is an anatomical name'
+        })
+
+        return withoutPlural
+      }
+
+      const actualVolume = calculateMuscleVolume(result.exercises)
+      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
+      const violations: Array<{muscle: string; target: number; actual: number; suggestion: string}> = []
+      const targetTolerance = 0.20
+
+      for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
+        const muscleName = MUSCLE_GROUPS[muscleKey as keyof typeof MUSCLE_GROUPS] || muscleKey
+        const normalizedTarget = normalizeMuscleForVolume(muscleKey)
+        let actualSets = 0
+
+        for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
+          const normalizedActual = normalizeMuscleForVolume(actualMuscle)
+          if (normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)) {
+            actualSets += sets
+          }
+        }
+
+        const minAllowed = Math.floor(targetSets * (1 - targetTolerance))
+        const maxAllowed = Math.ceil(targetSets * (1 + targetTolerance))
+
+        if (actualSets < minAllowed || actualSets > maxAllowed) {
+          const suggestion = actualSets < minAllowed
+            ? `ADD ${(minAllowed - actualSets).toFixed(0)} more sets for ${muscleKey}`
+            : `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from ${muscleKey}`
+
+          violations.push({
+            muscle: `${muscleKey} (${muscleName})`,
+            target: targetSets,
+            actual: actualSets,
+            suggestion
+          })
+        }
+      }
+
+      if (violations.length > 0) {
+        errors.push(
+          `**TARGET VOLUME VIOLATION** (±20% tolerance)\n` +
+          `- Violations (${violations.length} muscle groups):\n` +
+          violations.map(v =>
+            `  * ${v.muscle}: target ${v.target} sets, got ${v.actual.toFixed(1)} sets\n` +
+            `    FIX: ${v.suggestion}`
+          ).join('\n')
+        )
+      }
+    }
+
+    // Return validation result
+    return {
+      valid: errors.length === 0,
+      feedback: errors.length > 0
+        ? `❌ VALIDATION FAILED - ${errors.length} ERROR(S) FOUND:\n\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n\n')}`
+        : ''
+    }
   }
 
   /**

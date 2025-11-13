@@ -2,13 +2,21 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Medical Disclaimer | Arvo",
-  description: "Important medical disclaimer for Arvo - AI workout programming is not medical advice",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("medicalDisclaimer");
+
+  return {
+    title: `${t("title")} | Arvo`,
+    description: t("metaDescription"),
+  };
+}
 
 export default function MedicalDisclaimerPage() {
+  const t = useTranslations("medicalDisclaimer");
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto px-4 py-12">
@@ -17,20 +25,20 @@ export default function MedicalDisclaimerPage() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("backToHome")}
             </Button>
           </Link>
           <div className="flex items-start gap-4 mb-4">
             <AlertTriangle className="w-12 h-12 text-orange-600 dark:text-orange-400 shrink-0" />
             <div>
-              <h1 className="text-4xl font-bold mb-2">Medical Disclaimer</h1>
+              <h1 className="text-4xl font-bold mb-2">{t("title")}</h1>
               <p className="text-muted-foreground text-lg">
-                Important safety information - Please read carefully
+                {t("page.subtitle")}
               </p>
             </div>
           </div>
           <p className="text-muted-foreground">
-            Last updated: November 12, 2024
+            {t("lastUpdated")}
           </p>
         </div>
 
@@ -39,310 +47,352 @@ export default function MedicalDisclaimerPage() {
           <section className="mb-8 p-6 bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg">
             <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
               <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              Critical Notice
+              {t("page.criticalNotice.title")}
             </h3>
             <p className="mb-3 font-semibold text-lg">
-              Arvo is NOT a medical device, healthcare provider, or substitute for professional medical advice.
+              {t("page.criticalNotice.paragraph1")}
             </p>
             <p className="mb-0">
-              Always consult with a qualified healthcare professional before starting any exercise program, especially if you have pre-existing health conditions or concerns.
+              {t("page.criticalNotice.paragraph2")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">1. Not Medical Advice</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.notMedicalAdvice.title")}</h2>
             <p className="mb-4">
-              The information, recommendations, and AI-generated workout programs provided by Arvo are for <strong>informational and educational purposes only</strong>. They do NOT constitute:
+              {t.rich("page.notMedicalAdvice.intro", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Medical advice, diagnosis, or treatment</li>
-              <li>Physical therapy or rehabilitation guidance</li>
-              <li>Nutritional or dietary counseling</li>
-              <li>Professional coaching or personal training</li>
-              <li>Healthcare services of any kind</li>
+              <li>{t("page.notMedicalAdvice.items.medical")}</li>
+              <li>{t("page.notMedicalAdvice.items.physicalTherapy")}</li>
+              <li>{t("page.notMedicalAdvice.items.nutritional")}</li>
+              <li>{t("page.notMedicalAdvice.items.coaching")}</li>
+              <li>{t("page.notMedicalAdvice.items.healthcare")}</li>
             </ul>
             <p className="mb-4 font-semibold text-orange-600 dark:text-orange-400">
-              Arvo cannot and does not replace the expertise of qualified healthcare professionals, physical therapists, or certified personal trainers.
+              {t("page.notMedicalAdvice.warning")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">2. AI Limitations</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.aiLimitations.title")}</h2>
             <p className="mb-4">
-              Arvo uses artificial intelligence (AI) to generate workout recommendations. You must understand that:
+              {t("page.aiLimitations.intro")}
             </p>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">AI Cannot:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.aiLimitations.aiCannot.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li><strong>Assess your medical condition:</strong> AI cannot diagnose injuries, illnesses, or health problems</li>
-              <li><strong>Detect contraindications:</strong> AI may not know about medications, conditions, or risk factors that make exercise dangerous for you</li>
-              <li><strong>Replace clinical judgment:</strong> AI lacks the nuanced understanding of a medical professional</li>
-              <li><strong>Monitor you in real-time:</strong> AI cannot observe your form, fatigue, or distress during exercise</li>
-              <li><strong>Account for unreported conditions:</strong> AI only knows what you explicitly tell it</li>
-              <li><strong>Guarantee safety:</strong> AI recommendations may be inappropriate or dangerous for your specific situation</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.assessMedical", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.detectContraindications", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.replaceClinical", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.monitorRealtime", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.accountUnreported", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.aiLimitations.aiCannot.guaranteeSafety", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
             </ul>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">AI Can Make Mistakes:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.aiLimitations.aiMistakes.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Suggest exercises that are unsafe for you</li>
-              <li>Recommend inappropriate weights or volumes</li>
-              <li>Misinterpret your feedback or pain reports</li>
-              <li>Generate workouts that cause injury or overtraining</li>
-              <li>Provide incorrect technical cues or form instructions</li>
+              <li>{t("page.aiLimitations.aiMistakes.unsafeExercises")}</li>
+              <li>{t("page.aiLimitations.aiMistakes.inappropriateWeights")}</li>
+              <li>{t("page.aiLimitations.aiMistakes.misinterpretPain")}</li>
+              <li>{t("page.aiLimitations.aiMistakes.causeInjury")}</li>
+              <li>{t("page.aiLimitations.aiMistakes.incorrectCues")}</li>
             </ul>
 
             <p className="mb-4 font-semibold">
-              YOU are responsible for critically evaluating all AI recommendations and using your own judgment.
+              {t("page.aiLimitations.responsibility")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">3. When to Consult a Healthcare Professional</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.whenConsult.title")}</h2>
             <p className="mb-4 font-semibold">
-              You MUST consult a qualified healthcare professional BEFORE using Arvo if you:
+              {t("page.whenConsult.intro")}
             </p>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Have Any of These Conditions:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.whenConsult.conditions.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Heart disease, cardiovascular conditions, or high blood pressure</li>
-              <li>Respiratory problems (asthma, COPD, etc.)</li>
-              <li>Diabetes or blood sugar regulation issues</li>
-              <li>Joint problems, arthritis, or orthopedic conditions</li>
-              <li>Chronic pain or previous injuries</li>
-              <li>Neurological disorders</li>
-              <li>Pregnancy or recent childbirth</li>
-              <li>Obesity or severe deconditioning</li>
-              <li>Recent surgery or hospitalization</li>
-              <li>Any other chronic or acute medical condition</li>
+              <li>{t("page.whenConsult.conditions.heart")}</li>
+              <li>{t("page.whenConsult.conditions.respiratory")}</li>
+              <li>{t("page.whenConsult.conditions.diabetes")}</li>
+              <li>{t("page.whenConsult.conditions.joint")}</li>
+              <li>{t("page.whenConsult.conditions.chronicPain")}</li>
+              <li>{t("page.whenConsult.conditions.neurological")}</li>
+              <li>{t("page.whenConsult.conditions.pregnancy")}</li>
+              <li>{t("page.whenConsult.conditions.obesity")}</li>
+              <li>{t("page.whenConsult.conditions.surgery")}</li>
+              <li>{t("page.whenConsult.conditions.other")}</li>
             </ul>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Are Taking Medications That May Affect Exercise:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.whenConsult.medications.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Blood thinners or anticoagulants</li>
-              <li>Beta-blockers or blood pressure medications</li>
-              <li>Insulin or diabetes medications</li>
-              <li>Corticosteroids or anti-inflammatory drugs</li>
-              <li>Any medication that affects heart rate, blood pressure, or physical performance</li>
+              <li>{t("page.whenConsult.medications.bloodThinners")}</li>
+              <li>{t("page.whenConsult.medications.betaBlockers")}</li>
+              <li>{t("page.whenConsult.medications.insulin")}</li>
+              <li>{t("page.whenConsult.medications.corticosteroids")}</li>
+              <li>{t("page.whenConsult.medications.performance")}</li>
             </ul>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Are Over 40 and Sedentary:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.whenConsult.over40.title")}</h3>
             <p className="mb-4">
-              If you are over 40 years old and have been inactive for several months, get medical clearance before starting intense exercise.
+              {t("page.whenConsult.over40.description")}
             </p>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Have Family History Of:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.whenConsult.familyHistory.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Heart disease or sudden cardiac death</li>
-              <li>Stroke or aneurysm</li>
-              <li>Inherited conditions affecting exercise safety</li>
+              <li>{t("page.whenConsult.familyHistory.heartDisease")}</li>
+              <li>{t("page.whenConsult.familyHistory.stroke")}</li>
+              <li>{t("page.whenConsult.familyHistory.inherited")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">4. Stop Exercise and Seek Medical Help If You Experience:</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.stopAndSeek.title")}</h2>
             <div className="p-4 bg-red-50 dark:bg-red-950/20 border-2 border-red-200 dark:border-red-900 rounded-lg mb-4">
               <p className="mb-3 font-semibold text-red-700 dark:text-red-300">
-                STOP IMMEDIATELY and seek emergency medical care if you experience:
+                {t("page.stopAndSeek.emergencyIntro")}
               </p>
               <ul className="list-disc pl-6 space-y-2 text-red-700 dark:text-red-300">
-                <li>Chest pain, pressure, or tightness</li>
-                <li>Severe shortness of breath</li>
-                <li>Dizziness, lightheadedness, or fainting</li>
-                <li>Irregular or rapid heartbeat</li>
-                <li>Severe nausea or vomiting</li>
-                <li>Blurred vision or loss of consciousness</li>
-                <li>Numbness or tingling in extremities</li>
+                <li>{t("page.stopAndSeek.emergency.chestPain")}</li>
+                <li>{t("page.stopAndSeek.emergency.breathShortness")}</li>
+                <li>{t("page.stopAndSeek.emergency.dizziness")}</li>
+                <li>{t("page.stopAndSeek.emergency.irregularHeart")}</li>
+                <li>{t("page.stopAndSeek.emergency.nausea")}</li>
+                <li>{t("page.stopAndSeek.emergency.blurredVision")}</li>
+                <li>{t("page.stopAndSeek.emergency.numbness")}</li>
               </ul>
             </div>
 
             <p className="mb-4">
-              Also consult a healthcare professional for:
+              {t("page.stopAndSeek.consultFor")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Joint pain that persists beyond normal muscle soreness</li>
-              <li>Sharp or stabbing pain during or after exercise</li>
-              <li>Swelling, bruising, or visible deformity</li>
-              <li>Persistent numbness or weakness</li>
-              <li>Pain that worsens over time or doesn't improve with rest</li>
-              <li>Any symptom that concerns you</li>
+              <li>{t("page.stopAndSeek.warning.jointPain")}</li>
+              <li>{t("page.stopAndSeek.warning.sharpPain")}</li>
+              <li>{t("page.stopAndSeek.warning.swelling")}</li>
+              <li>{t("page.stopAndSeek.warning.persistentNumbness")}</li>
+              <li>{t("page.stopAndSeek.warning.worseningPain")}</li>
+              <li>{t("page.stopAndSeek.warning.anyConcern")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">5. Pain and Injury Tracking Limitations</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.painTracking.title")}</h2>
             <p className="mb-4 font-semibold text-orange-600 dark:text-orange-400">
-              Arvo's pain and injury tracking features are NOT diagnostic tools.
+              {t("page.painTracking.warning")}
             </p>
             <p className="mb-4">
-              When you report pain or limitations:
+              {t("page.painTracking.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>AI will attempt to avoid exercises that caused pain</li>
-              <li>AI may suggest alternative exercises</li>
-              <li>AI CANNOT diagnose the cause of your pain</li>
-              <li>AI CANNOT determine if exercise is safe for you</li>
-              <li>AI CANNOT provide medical treatment recommendations</li>
+              <li>{t("page.painTracking.items.avoid")}</li>
+              <li>{t("page.painTracking.items.suggest")}</li>
+              <li>{t("page.painTracking.items.cannotDiagnose")}</li>
+              <li>{t("page.painTracking.items.cannotDetermine")}</li>
+              <li>{t("page.painTracking.items.cannotProvide")}</li>
             </ul>
             <p className="mb-4 font-semibold">
-              If you experience pain, consult a qualified healthcare professional (doctor, physical therapist, sports medicine specialist) for proper diagnosis and treatment.
+              {t("page.painTracking.conclusion")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">6. Exercise Risks</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.exerciseRisks.title")}</h2>
             <p className="mb-4">
-              Exercise and physical training carry inherent risks, including but not limited to:
+              {t("page.exerciseRisks.intro")}
             </p>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Common Risks:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.exerciseRisks.common.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Muscle strains, pulls, and tears</li>
-              <li>Ligament and tendon injuries</li>
-              <li>Joint sprains and dislocations</li>
-              <li>Bruising and contusions</li>
-              <li>Delayed onset muscle soreness (DOMS)</li>
-              <li>Fatigue and overtraining</li>
+              <li>{t("page.exerciseRisks.common.strains")}</li>
+              <li>{t("page.exerciseRisks.common.ligament")}</li>
+              <li>{t("page.exerciseRisks.common.sprains")}</li>
+              <li>{t("page.exerciseRisks.common.bruising")}</li>
+              <li>{t("page.exerciseRisks.common.doms")}</li>
+              <li>{t("page.exerciseRisks.common.fatigue")}</li>
             </ul>
 
-            <h3 className="text-xl font-semibold mb-3 mt-6">Serious Risks:</h3>
+            <h3 className="text-xl font-semibold mb-3 mt-6">{t("page.exerciseRisks.serious.title")}</h3>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Fractures and broken bones</li>
-              <li>Herniated discs or spinal injuries</li>
-              <li>Rhabdomyolysis (severe muscle breakdown)</li>
-              <li>Heat exhaustion or heat stroke</li>
-              <li>Cardiovascular events (heart attack, stroke)</li>
-              <li>Severe injury requiring surgery</li>
-              <li>Permanent disability or death</li>
+              <li>{t("page.exerciseRisks.serious.fractures")}</li>
+              <li>{t("page.exerciseRisks.serious.herniatedDiscs")}</li>
+              <li>{t("page.exerciseRisks.serious.rhabdomyolysis")}</li>
+              <li>{t("page.exerciseRisks.serious.heatStroke")}</li>
+              <li>{t("page.exerciseRisks.serious.cardiovascular")}</li>
+              <li>{t("page.exerciseRisks.serious.surgery")}</li>
+              <li>{t("page.exerciseRisks.serious.death")}</li>
             </ul>
 
             <p className="mb-4 font-semibold">
-              By using Arvo, you acknowledge these risks and voluntarily assume them.
+              {t("page.exerciseRisks.acknowledgment")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">7. Your Responsibilities</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.yourResponsibilities.title")}</h2>
             <p className="mb-4">
-              You are solely responsible for:
+              {t("page.yourResponsibilities.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li><strong>Medical clearance:</strong> Obtaining approval from your doctor before exercising</li>
-              <li><strong>Honest disclosure:</strong> Providing accurate information about your health, limitations, and injuries</li>
-              <li><strong>Exercise judgment:</strong> Evaluating whether AI recommendations are appropriate for you</li>
-              <li><strong>Proper technique:</strong> Learning and using correct form (consider hiring a qualified coach)</li>
-              <li><strong>Safe environment:</strong> Training in a safe space with proper equipment</li>
-              <li><strong>Progressive overload:</strong> Increasing intensity gradually and listening to your body</li>
-              <li><strong>Rest and recovery:</strong> Taking adequate rest days and addressing fatigue</li>
-              <li><strong>Seeking help:</strong> Consulting professionals when needed</li>
+              <li>{t.rich("page.yourResponsibilities.items.medicalClearance", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.honestDisclosure", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.exerciseJudgment", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.properTechnique", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.safeEnvironment", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.progressiveOverload", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.restRecovery", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
+              <li>{t.rich("page.yourResponsibilities.items.seekingHelp", {
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">8. No Professional Relationship</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.noProfessionalRelationship.title")}</h2>
             <p className="mb-4">
-              Use of Arvo does NOT create a doctor-patient, therapist-client, or coach-athlete relationship. We do not have a duty of care toward you.
+              {t("page.noProfessionalRelationship.paragraph1")}
             </p>
             <p className="mb-4">
-              You should not rely on Arvo as your sole source of fitness guidance. Consider working with:
+              {t("page.noProfessionalRelationship.paragraph2")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>A certified personal trainer (for technique and programming)</li>
-              <li>A sports medicine doctor (for injury prevention and management)</li>
-              <li>A physical therapist (for rehabilitation)</li>
-              <li>A registered dietitian (for nutrition)</li>
+              <li>{t("page.noProfessionalRelationship.professionals.trainer")}</li>
+              <li>{t("page.noProfessionalRelationship.professionals.doctor")}</li>
+              <li>{t("page.noProfessionalRelationship.professionals.therapist")}</li>
+              <li>{t("page.noProfessionalRelationship.professionals.dietitian")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">9. Disclaimer of Warranties</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.disclaimerWarranties.title")}</h2>
             <p className="mb-4 font-semibold">
-              ARVO IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED.
+              {t("page.disclaimerWarranties.warning")}
             </p>
             <p className="mb-4">
-              We do not warrant that:
+              {t("page.disclaimerWarranties.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>The Service will meet your fitness goals</li>
-              <li>AI recommendations are accurate, complete, or suitable for you</li>
-              <li>Use of the Service will prevent injuries</li>
-              <li>The Service is error-free or uninterrupted</li>
-              <li>Defects will be corrected</li>
+              <li>{t("page.disclaimerWarranties.items.goals")}</li>
+              <li>{t("page.disclaimerWarranties.items.accurate")}</li>
+              <li>{t("page.disclaimerWarranties.items.prevent")}</li>
+              <li>{t("page.disclaimerWarranties.items.errorFree")}</li>
+              <li>{t("page.disclaimerWarranties.items.corrected")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.limitationLiability.title")}</h2>
             <p className="mb-4 font-semibold">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE ARE NOT LIABLE FOR ANY INJURIES, ILLNESSES, OR DAMAGES RESULTING FROM YOUR USE OF ARVO.
+              {t("page.limitationLiability.warning")}
             </p>
             <p className="mb-4">
-              This includes but is not limited to:
+              {t("page.limitationLiability.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Injuries sustained while following AI-generated workouts</li>
-              <li>Overtraining, burnout, or performance decline</li>
-              <li>Aggravation of pre-existing conditions</li>
-              <li>Medical expenses or loss of income</li>
-              <li>Any damages arising from AI errors or recommendations</li>
+              <li>{t("page.limitationLiability.items.injuries")}</li>
+              <li>{t("page.limitationLiability.items.overtraining")}</li>
+              <li>{t("page.limitationLiability.items.aggravation")}</li>
+              <li>{t("page.limitationLiability.items.expenses")}</li>
+              <li>{t("page.limitationLiability.items.aiErrors")}</li>
             </ul>
             <p className="mb-4">
-              See our <Link href="/terms" className="text-primary-600 dark:text-primary-400 hover:underline">Terms of Service</Link> for complete liability limitations.
+              {t.rich("page.limitationLiability.seeTerms", {
+                link: (chunks) => (
+                  <Link href="/terms" className="text-primary-600 dark:text-primary-400 hover:underline">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">11. Use Common Sense</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.commonSense.title")}</h2>
             <p className="mb-4">
-              Exercise requires judgment and common sense:
+              {t("page.commonSense.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>If something feels wrong, STOP</li>
-              <li>If a weight feels too heavy, use less weight</li>
-              <li>If you're unsure about form, learn proper technique first</li>
-              <li>If you're sick, injured, or exhausted, REST</li>
-              <li>If AI suggests something that seems dangerous, DON'T DO IT</li>
+              <li>{t("page.commonSense.items.feelsWrong")}</li>
+              <li>{t("page.commonSense.items.tooHeavy")}</li>
+              <li>{t("page.commonSense.items.unsureForm")}</li>
+              <li>{t("page.commonSense.items.sickInjured")}</li>
+              <li>{t("page.commonSense.items.dangerous")}</li>
             </ul>
             <p className="mb-4 font-semibold">
-              Your safety is YOUR responsibility. AI cannot keep you safe—only you can.
+              {t("page.commonSense.conclusion")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">12. Acknowledgment</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.acknowledgment.title")}</h2>
             <p className="mb-4">
-              By using Arvo, you acknowledge that you have read, understood, and agree to this Medical Disclaimer. You accept full responsibility for your health and safety while using the Service.
+              {t("page.acknowledgment.paragraph1")}
             </p>
             <p className="mb-4">
-              If you do not accept these terms, do not use Arvo.
+              {t("page.acknowledgment.paragraph2")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">13. Contact Information</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("page.contactInfo.title")}</h2>
             <p className="mb-4">
-              For questions about this disclaimer:
+              {t("page.contactInfo.intro")}
             </p>
             <p className="mb-4">
-              Email: legal@aetha.inc<br />
-              Website: <a href="https://aetha.inc" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">https://aetha.inc</a>
+              {t("page.contactInfo.email")}<br />
+              {t.rich("page.contactInfo.website", {
+                link: (chunks) => (
+                  <a href="https://aetha.inc" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">
+                    {chunks}
+                  </a>
+                ),
+              })}
             </p>
           </section>
 
           <section className="p-6 bg-blue-50 dark:bg-blue-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-3">Summary</h3>
+            <h3 className="text-xl font-semibold mb-3">{t("page.summary.title")}</h3>
             <p className="mb-2 font-semibold">
-              In the simplest terms:
+              {t("page.summary.intro")}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Arvo is a tool, not a doctor or coach</li>
-              <li>AI can make mistakes—use your judgment</li>
-              <li>Get medical clearance before exercising</li>
-              <li>Stop if you feel pain or distress</li>
-              <li>You assume all risks of exercise</li>
-              <li>We are not liable for injuries</li>
+              <li>{t("page.summary.items.tool")}</li>
+              <li>{t("page.summary.items.mistakes")}</li>
+              <li>{t("page.summary.items.clearance")}</li>
+              <li>{t("page.summary.items.stop")}</li>
+              <li>{t("page.summary.items.assume")}</li>
+              <li>{t("page.summary.items.notLiable")}</li>
             </ul>
             <p className="mt-4 font-semibold text-blue-700 dark:text-blue-300">
-              Exercise smart. Stay safe. Consult professionals when in doubt.
+              {t("page.summary.conclusion")}
             </p>
           </section>
         </div>

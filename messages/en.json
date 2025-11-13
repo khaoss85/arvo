@@ -2143,8 +2143,540 @@
     }
   },
   "legal": {
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: November 12, 2024",
+      "backToHome": "Back to Home",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "paragraph1": "By accessing and using Arvo (\"the Service\"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use the Service.",
+          "paragraph2": "Arvo is operated by aetha.inc. These terms apply to all users of the Service."
+        },
+        "description": {
+          "title": "2. Description of Service",
+          "intro": "Arvo is an AI-powered workout programming application that provides:",
+          "features": {
+            "personalized": "Personalized workout generation using artificial intelligence",
+            "exercise": "Exercise selection and progression recommendations",
+            "tracking": "Workout tracking and performance analytics",
+            "methodology": "Training methodology implementation (e.g., Kuba Method, Mentzer HIT)",
+            "insights": "Insight extraction from workout notes",
+            "substitution": "Exercise substitution suggestions"
+          },
+          "important": "IMPORTANT: The Service is for informational and educational purposes only. It is NOT medical advice, physical therapy, or professional coaching."
+        },
+        "medical": {
+          "title": "3. Medical Disclaimer",
+          "warning": "Arvo does not provide medical advice. Always consult with a qualified healthcare professional before starting any exercise program.",
+          "aiLimitations": "The AI-generated recommendations are based on general fitness principles and your input data. They cannot:",
+          "limitations": {
+            "medical": "Replace professional medical advice, diagnosis, or treatment",
+            "assess": "Assess your specific health conditions or risk factors",
+            "detect": "Detect or prevent injuries",
+            "account": "Account for undisclosed medical conditions"
+          },
+          "consultIf": "You should consult a healthcare professional if you experience:",
+          "symptoms": {
+            "pain": "Persistent pain, discomfort, or unusual symptoms",
+            "cardiovascular": "Cardiovascular concerns (chest pain, dizziness, shortness of breath)",
+            "injury": "Joint or muscle injuries",
+            "doubt": "Any doubt about your ability to safely perform an exercise"
+          },
+          "fullDisclaimer": "For complete medical disclaimer, see"
+        },
+        "risk": {
+          "title": "4. Assumption of Risk",
+          "intro": "Physical exercise involves inherent risks, including but not limited to:",
+          "risks": {
+            "strains": "Muscle strains, sprains, and tears",
+            "joint": "Joint injuries",
+            "cardiovascular": "Cardiovascular events",
+            "equipment": "Equipment-related injuries",
+            "serious": "Accidents resulting in serious injury or death"
+          },
+          "acknowledgment": "BY USING THIS SERVICE, YOU VOLUNTARILY ASSUME ALL RISKS associated with exercise and physical training. You acknowledge that you are solely responsible for:",
+          "responsibilities": {
+            "fitness": "Determining whether you are fit enough to perform suggested exercises",
+            "form": "Using proper form and technique",
+            "weights": "Selecting appropriate weights and intensity",
+            "environment": "Exercising in a safe environment",
+            "stopping": "Stopping exercise if you feel pain, discomfort, or unusual symptoms"
+          }
+        },
+        "ai": {
+          "title": "5. AI-Generated Content Limitations",
+          "intro": "Arvo uses artificial intelligence (AI) models to generate workout recommendations. You acknowledge and agree that:",
+          "limitations": {
+            "algorithmic": "AI recommendations are algorithmic outputs, not expert human judgment",
+            "errors": "AI may make errors, suggest inappropriate exercises, or miscalculate loads",
+            "context": "AI cannot fully understand context, nuance, or individual circumstances",
+            "evaluation": "AI recommendations should be critically evaluated before implementation",
+            "validation": "You are responsible for validating AI suggestions against your own knowledge and judgment"
+          },
+          "disclaimer": "We continuously improve our AI systems, but we cannot guarantee accuracy, completeness, or suitability of AI-generated content for your specific needs."
+        },
+        "userResponsibilities": {
+          "title": "6. User Responsibilities",
+          "intro": "You agree to:",
+          "items": {
+            "accurate": "Provide accurate and complete information about your fitness level, limitations, and health status",
+            "update": "Update your profile if your circumstances change (e.g., new injury, illness)",
+            "comply": "Use the Service in accordance with these Terms",
+            "noMisuse": "Not misuse or attempt to manipulate the AI systems",
+            "noShare": "Not share your account credentials with others",
+            "laws": "Comply with all applicable laws and regulations"
+          }
+        },
+        "privacy": {
+          "title": "7. Privacy and Data Collection",
+          "intro": "Your privacy is important to us. By using Arvo, you agree to our collection and use of your data as described in our",
+          "privacyPolicy": "Privacy Policy",
+          "dataCollected": "We collect health-related data including:",
+          "types": {
+            "measurements": "Physical measurements (weight, height, age)",
+            "performance": "Workout performance data (sets, reps, weights, RIR)",
+            "pain": "Pain and injury reports",
+            "notes": "Workout notes and feedback",
+            "preferences": "Exercise preferences and patterns"
+          },
+          "usage": "This data is used to personalize your experience and improve AI recommendations. We do not sell your personal data to third parties."
+        },
+        "liability": {
+          "title": "8. Limitation of Liability",
+          "warning": "TO THE MAXIMUM EXTENT PERMITTED BY LAW, AETHA.INC AND ITS AFFILIATES SHALL NOT BE LIABLE FOR ANY:",
+          "items": {
+            "injuries": "Injuries, illnesses, or deaths resulting from use of the Service",
+            "indirect": "Indirect, incidental, special, or consequential damages",
+            "loss": "Loss of profits, data, or business opportunities",
+            "aiErrors": "Damages arising from AI errors, inaccuracies, or omissions",
+            "reliance": "Damages arising from reliance on Service content"
+          },
+          "cap": "Our total liability to you for any claims arising from use of the Service shall not exceed the amount you paid for the Service in the 12 months preceding the claim, or €100, whichever is less."
+        },
+        "indemnification": {
+          "title": "9. Indemnification",
+          "text": "You agree to indemnify, defend, and hold harmless aetha.inc, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from:",
+          "items": {
+            "use": "Your use of the Service",
+            "violation": "Your violation of these Terms",
+            "thirdParty": "Your violation of any third-party rights",
+            "injuries": "Any injuries or damages resulting from your exercise activities"
+          }
+        },
+        "age": {
+          "title": "10. Age Restrictions",
+          "minimum": "You must be at least 14 years old to use Arvo. Users under 18 should use the Service under parental supervision and with parental consent.",
+          "guardian": "If you are under 18, your parent or legal guardian must review and accept these Terms on your behalf."
+        },
+        "intellectual": {
+          "title": "11. Intellectual Property",
+          "ownership": "All content, features, and functionality of the Service (including but not limited to text, graphics, logos, AI algorithms, and software) are owned by aetha.inc and are protected by international copyright, trademark, and other intellectual property laws.",
+          "restrictions": "You may not copy, modify, distribute, sell, or reverse-engineer any part of the Service without our explicit written permission."
+        },
+        "attribution": {
+          "title": "12. Training Methodology Attribution",
+          "methodology": "Arvo implements training methodologies including the \"Kuba Method\" developed by Kuba Walczak. These methodologies are used with permission or under applicable licensing agreements.",
+          "acknowledgment": "Users acknowledge that these methodologies are educational implementations and may differ from direct coaching by the original authors."
+        },
+        "modifications": {
+          "title": "13. Service Modifications and Termination",
+          "intro": "We reserve the right to:",
+          "rights": {
+            "modify": "Modify or discontinue the Service at any time",
+            "pricing": "Change pricing or features",
+            "suspend": "Suspend or terminate your account for violations of these Terms",
+            "update": "Update these Terms (we will notify you of material changes)"
+          }
+        },
+        "governing": {
+          "title": "14. Governing Law",
+          "text": "These Terms are governed by the laws of Italy and the European Union. Any disputes shall be resolved in the courts of [Your Jurisdiction]."
+        },
+        "contact": {
+          "title": "15. Contact Information",
+          "intro": "If you have questions about these Terms, please contact us at:",
+          "email": "Email:",
+          "website": "Website:"
+        },
+        "summary": {
+          "title": "Summary (Not Legally Binding)",
+          "intro": "In simple terms:",
+          "points": {
+            "tool": "Arvo is a fitness tool, not medical advice",
+            "risks": "Exercise has risks - you assume them by using the Service",
+            "ai": "AI can make mistakes - use critical judgment",
+            "liability": "We're not liable for injuries",
+            "age": "You must be 14+ to use Arvo",
+            "privacy": "We respect your privacy (see Privacy Policy)"
+          }
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "metaDescription": "Privacy Policy for Arvo - How we collect, use, and protect your data",
+      "lastUpdated": "Last updated: November 12, 2024",
+      "backToHome": "Back to Home",
+      "intro": {
+        "title": "Your Privacy Matters",
+        "paragraph1": "Arvo is committed to protecting your privacy. This policy explains how we collect, use, store, and protect your personal information, including health data.",
+        "paragraph2": "We comply with the General Data Protection Regulation (GDPR) and applicable data protection laws."
+      },
+      "sections": {
+        "informationCollect": {
+          "title": "1. Information We Collect",
+          "account": {
+            "title": "1.1 Account Information",
+            "intro": "When you create an account, we collect:",
+            "items": {
+              "email": "Email address (for authentication and communication)",
+              "timestamp": "Account creation timestamp",
+              "activity": "Login activity and session data"
+            }
+          },
+          "health": {
+            "title": "1.2 Health and Fitness Data (Special Category Data)",
+            "important": "IMPORTANT: Under GDPR Article 9, health data is \"special category\" personal data requiring explicit consent and extra protection.",
+            "intro": "We collect the following health-related data:",
+            "items": {
+              "measurements": {
+                "label": "Physical measurements:",
+                "value": "Age, weight, height, gender"
+              },
+              "fitness": {
+                "label": "Fitness profile:",
+                "value": "Training experience level, available equipment, training frequency"
+              },
+              "performance": {
+                "label": "Workout performance:",
+                "value": "Exercises performed, sets, reps, weights used, RIR (Reps In Reserve), rest times"
+              },
+              "pain": {
+                "label": "Pain and injury data:",
+                "value": "Reported limitations, pain locations, severity, affected exercises"
+              },
+              "notes": {
+                "label": "Workout notes:",
+                "value": "Free-text feedback including subjective feelings, fatigue, discomfort"
+              },
+              "readiness": {
+                "label": "Mental readiness:",
+                "value": "Self-reported readiness scores"
+              },
+              "composition": {
+                "label": "Body composition:",
+                "value": "(if provided) body fat percentage, muscle mass"
+              },
+              "caloric": {
+                "label": "Caloric phase:",
+                "value": "Bulk, maintenance, or cut status"
+              }
+            }
+          },
+          "usage": {
+            "title": "1.3 Usage Data",
+            "intro": "We automatically collect:",
+            "items": {
+              "device": "Device information (browser, operating system, screen size)",
+              "ip": "IP address (anonymized)",
+              "pages": "Pages visited and features used",
+              "errors": "Error logs and performance metrics",
+              "ai": "AI interaction patterns (e.g., workouts generated, exercises selected)"
+            }
+          },
+          "thirdParty": {
+            "title": "1.4 Data from Third-Party Services",
+            "intro": "We use:",
+            "items": {
+              "supabase": "Authentication and database hosting",
+              "ai": "AI model providers for workout generation (data anonymized)",
+              "vercel": "Hosting and analytics"
+            }
+          }
+        },
+        "howWeUse": {
+          "title": "2. How We Use Your Data",
+          "primary": {
+            "title": "2.1 Primary Purposes",
+            "items": {
+              "workout": {
+                "label": "Workout generation:",
+                "value": "AI uses your profile, history, and limitations to create personalized workouts"
+              },
+              "exercise": {
+                "label": "Exercise recommendations:",
+                "value": "Selecting exercises based on equipment, experience, and preferences"
+              },
+              "progression": {
+                "label": "Progression tracking:",
+                "value": "Calculating appropriate weight/rep progressions based on performance"
+              },
+              "insights": {
+                "label": "Insight extraction:",
+                "value": "AI analyzes workout notes to detect patterns, preferences, and potential issues"
+              },
+              "safety": {
+                "label": "Safety features:",
+                "value": "Avoiding exercises that caused pain or injury"
+              },
+              "volume": {
+                "label": "Volume management:",
+                "value": "Tracking weekly volume to prevent overtraining"
+              }
+            }
+          },
+          "improvement": {
+            "title": "2.2 Service Improvement",
+            "items": {
+              "algorithms": "Improving AI algorithms and recommendation accuracy",
+              "debugging": "Debugging errors and fixing bugs",
+              "behavior": "Understanding user behavior to enhance UX",
+              "features": "Developing new features based on usage patterns"
+            }
+          },
+          "communication": {
+            "title": "2.3 Communication",
+            "items": {
+              "auth": "Sending authentication emails (magic links)",
+              "updates": "Service updates and security notifications",
+              "support": "Responding to support requests",
+              "marketing": "Marketing communications (only with your explicit consent)"
+            }
+          },
+          "legal": {
+            "title": "2.4 Legal Obligations",
+            "items": {
+              "compliance": "Complying with legal requirements (e.g., tax, law enforcement)",
+              "rights": "Protecting our rights and property",
+              "fraud": "Preventing fraud and abuse"
+            }
+          }
+        },
+        "legalBasis": {
+          "title": "3. Legal Basis for Processing (GDPR)",
+          "intro": "We process your data based on:",
+          "items": {
+            "consent": {
+              "label": "Explicit consent (Article 9):",
+              "value": "For health data collection and AI processing"
+            },
+            "contract": {
+              "label": "Contract performance:",
+              "value": "To provide the Service you signed up for"
+            },
+            "interests": {
+              "label": "Legitimate interests:",
+              "value": "Service improvement, fraud prevention, security"
+            },
+            "obligations": {
+              "label": "Legal obligations:",
+              "value": "Compliance with laws and regulations"
+            }
+          },
+          "withdrawal": "You can withdraw your consent at any time by contacting us or deleting your account."
+        },
+        "storage": {
+          "title": "4. Data Storage and Security",
+          "where": {
+            "title": "4.1 Where We Store Data",
+            "items": {
+              "database": {
+                "label": "Primary database:",
+                "value": "Supabase (PostgreSQL) hosted in EU data centers"
+              },
+              "client": {
+                "label": "Client-side storage:",
+                "value": "localStorage (workouts in progress, drafts)"
+              },
+              "backups": {
+                "label": "Backups:",
+                "value": "Encrypted backups stored in EU"
+              }
+            }
+          },
+          "security": {
+            "title": "4.2 Security Measures",
+            "items": {
+              "transit": "Encryption in transit (HTTPS/TLS)",
+              "rest": "Encryption at rest for sensitive data",
+              "rls": "Row-level security (RLS) in database",
+              "access": "Access controls and authentication",
+              "audits": "Regular security audits",
+              "anonymization": "Anonymization of data sent to AI providers"
+            }
+          },
+          "retention": {
+            "title": "4.3 Data Retention",
+            "intro": "We retain your data:",
+            "items": {
+              "active": {
+                "label": "Active accounts:",
+                "value": "As long as your account exists"
+              },
+              "deleted": {
+                "label": "Deleted accounts:",
+                "value": "30 days (to allow recovery), then permanently deleted"
+              },
+              "backups": {
+                "label": "Backups:",
+                "value": "Up to 90 days in encrypted backups"
+              },
+              "analytics": {
+                "label": "Anonymized analytics:",
+                "value": "Indefinitely (cannot be linked back to you)"
+              }
+            }
+          }
+        },
+        "sharing": {
+          "title": "5. Data Sharing and Third Parties",
+          "noSell": {
+            "title": "5.1 We DO NOT Sell Your Data",
+            "text": "We do not sell, rent, or trade your personal data to third parties for marketing purposes."
+          },
+          "providers": {
+            "title": "5.2 Service Providers",
+            "intro": "We share data with trusted service providers who help us operate:",
+            "items": {
+              "supabase": "Database and authentication (GDPR-compliant, EU-hosted)",
+              "ai": "AI models (data anonymized, no PII sent)",
+              "vercel": "Hosting and CDN (GDPR-compliant)"
+            },
+            "compliance": "All service providers are bound by data processing agreements (DPAs) and comply with GDPR."
+          },
+          "aiProcessing": {
+            "title": "5.3 AI Model Processing",
+            "intro": "When generating workouts, we send anonymized data to AI providers (Anthropic, OpenAI). This data:",
+            "items": {
+              "noPii": "Does NOT include your name, email, or other identifying information",
+              "workoutOnly": "Includes only workout-relevant data (exercise history, preferences, limitations)",
+              "noTraining": "Is not used to train AI models (per provider agreements)",
+              "noStorage": "Is not stored by AI providers beyond processing time"
+            }
+          },
+          "legalRequirements": {
+            "title": "5.4 Legal Requirements",
+            "intro": "We may disclose your data if required by:",
+            "items": {
+              "enforcement": "Law enforcement or government authorities",
+              "court": "Court orders or legal processes",
+              "protection": "Protection of our rights, safety, or property",
+              "prevention": "Prevention of fraud or illegal activities"
+            }
+          }
+        },
+        "rights": {
+          "title": "6. Your Rights (GDPR)",
+          "intro": "You have the right to:",
+          "items": {
+            "access": {
+              "label": "Access:",
+              "value": "Request a copy of all personal data we hold about you"
+            },
+            "rectification": {
+              "label": "Rectification:",
+              "value": "Correct inaccurate or incomplete data"
+            },
+            "erasure": {
+              "label": "Erasure (\"Right to be forgotten\"):",
+              "value": "Request deletion of your data"
+            },
+            "portability": {
+              "label": "Data portability:",
+              "value": "Receive your data in a structured, machine-readable format"
+            },
+            "restriction": {
+              "label": "Restriction:",
+              "value": "Limit how we process your data"
+            },
+            "objection": {
+              "label": "Objection:",
+              "value": "Object to processing based on legitimate interests"
+            },
+            "withdraw": {
+              "label": "Withdraw consent:",
+              "value": "Revoke consent for health data processing at any time"
+            },
+            "complaint": {
+              "label": "Lodge a complaint:",
+              "value": "File a complaint with a data protection authority"
+            }
+          },
+          "contact": "To exercise these rights, contact us at privacy@aetha.inc or use the settings page when available."
+        },
+        "cookies": {
+          "title": "7. Cookies and Tracking",
+          "intro": "We use minimal cookies and tracking:",
+          "essential": {
+            "title": "7.1 Essential Cookies",
+            "items": {
+              "auth": "Authentication tokens (to keep you logged in)",
+              "session": "Session management",
+              "security": "Security and fraud prevention"
+            }
+          },
+          "analytics": {
+            "title": "7.2 Analytics Cookies (Optional)",
+            "items": {
+              "vercel": "Vercel Analytics (anonymized usage statistics)",
+              "errors": "Error tracking (to fix bugs)"
+            },
+            "disable": "You can disable analytics cookies through your browser settings."
+          }
+        },
+        "children": {
+          "title": "8. Children's Privacy",
+          "paragraph1": "Arvo is intended for users aged 14 and older. Users under 18 should use the Service under parental supervision.",
+          "paragraph2": "We do not knowingly collect data from children under 14. If you believe we have collected such data, please contact us immediately, and we will delete it."
+        },
+        "international": {
+          "title": "9. International Data Transfers",
+          "intro": "Your data is primarily stored and processed within the European Union. If data is transferred outside the EU (e.g., to AI providers in the US), we ensure adequate safeguards such as:",
+          "items": {
+            "scc": "Standard Contractual Clauses (SCCs)",
+            "anonymization": "Data anonymization",
+            "agreements": "GDPR-compliant data processing agreements"
+          }
+        },
+        "changes": {
+          "title": "10. Changes to This Policy",
+          "intro": "We may update this Privacy Policy to reflect changes in our practices or legal requirements. We will:",
+          "items": {
+            "notify": "Notify you of material changes via email or in-app notification",
+            "update": "Update the \"Last updated\" date at the top",
+            "consent": "Obtain your consent if required by law"
+          },
+          "continued": "Continued use of the Service after changes constitutes acceptance of the updated policy."
+        },
+        "contact": {
+          "title": "11. Contact Us",
+          "intro": "For privacy-related questions, data access requests, or to exercise your rights:",
+          "dataProtection": "Data Protection Contact:",
+          "email": "Email:",
+          "website": "Website:",
+          "euRep": "EU Representative (if applicable):",
+          "euRepInfo": "[To be determined if needed based on your business structure]"
+        }
+      },
+      "summary": {
+        "title": "Summary (Not Legally Binding)",
+        "intro": "In simple terms:",
+        "points": {
+          "healthData": "We collect health data to personalize your workouts (with your consent)",
+          "noSell": "We DO NOT sell your data",
+          "secure": "Data is stored securely in EU data centers",
+          "anonymized": "AI providers receive anonymized data only",
+          "access": "You can access, export, or delete your data anytime",
+          "gdpr": "We comply with GDPR and take privacy seriously"
+        }
+      }
+    },
     "medicalDisclaimer": {
       "title": "Medical Disclaimer",
+      "metaDescription": "Important medical disclaimer for Arvo - AI workout programming is not medical advice",
+      "lastUpdated": "Last updated: November 12, 2024",
+      "backToHome": "Back to Home",
       "onboarding": {
         "description": "Before we generate your first AI-powered workout, please read this important safety information.",
         "emphasis": "AI-generated workouts are educational tools, not medical advice or professional coaching."
@@ -2186,7 +2718,229 @@
       },
       "readFullDisclaimer": "Read full medical disclaimer →",
       "consent": "I have read and understood this medical disclaimer. I acknowledge that Arvo is not medical advice, that AI can make mistakes, and that I am solely responsible for my safety and health. I agree to consult healthcare professionals when appropriate.",
-      "acceptButton": "I Understand and Accept"
+      "acceptButton": "I Understand and Accept",
+      "page": {
+        "subtitle": "Important safety information - Please read carefully",
+        "criticalNotice": {
+          "title": "Critical Notice",
+          "paragraph1": "Arvo is NOT a medical device, healthcare provider, or substitute for professional medical advice.",
+          "paragraph2": "Always consult with a qualified healthcare professional before starting any exercise program, especially if you have pre-existing health conditions or concerns."
+        },
+        "notMedicalAdvice": {
+          "title": "1. Not Medical Advice",
+          "intro": "The information, recommendations, and AI-generated workout programs provided by Arvo are for {strong}informational and educational purposes only{/strong}. They do NOT constitute:",
+          "items": {
+            "medical": "Medical advice, diagnosis, or treatment",
+            "physicalTherapy": "Physical therapy or rehabilitation guidance",
+            "nutritional": "Nutritional or dietary counseling",
+            "coaching": "Professional coaching or personal training",
+            "healthcare": "Healthcare services of any kind"
+          },
+          "warning": "Arvo cannot and does not replace the expertise of qualified healthcare professionals, physical therapists, or certified personal trainers."
+        },
+        "aiLimitations": {
+          "title": "2. AI Limitations",
+          "intro": "Arvo uses artificial intelligence (AI) to generate workout recommendations. You must understand that:",
+          "aiCannot": {
+            "title": "AI Cannot:",
+            "assessMedical": "{strong}Assess your medical condition:{/strong} AI cannot diagnose injuries, illnesses, or health problems",
+            "detectContraindications": "{strong}Detect contraindications:{/strong} AI may not know about medications, conditions, or risk factors that make exercise dangerous for you",
+            "replaceClinical": "{strong}Replace clinical judgment:{/strong} AI lacks the nuanced understanding of a medical professional",
+            "monitorRealtime": "{strong}Monitor you in real-time:{/strong} AI cannot observe your form, fatigue, or distress during exercise",
+            "accountUnreported": "{strong}Account for unreported conditions:{/strong} AI only knows what you explicitly tell it",
+            "guaranteeSafety": "{strong}Guarantee safety:{/strong} AI recommendations may be inappropriate or dangerous for your specific situation"
+          },
+          "aiMistakes": {
+            "title": "AI Can Make Mistakes:",
+            "unsafeExercises": "Suggest exercises that are unsafe for you",
+            "inappropriateWeights": "Recommend inappropriate weights or volumes",
+            "misinterpretPain": "Misinterpret your feedback or pain reports",
+            "causeInjury": "Generate workouts that cause injury or overtraining",
+            "incorrectCues": "Provide incorrect technical cues or form instructions"
+          },
+          "responsibility": "YOU are responsible for critically evaluating all AI recommendations and using your own judgment."
+        },
+        "whenConsult": {
+          "title": "3. When to Consult a Healthcare Professional",
+          "intro": "You MUST consult a qualified healthcare professional BEFORE using Arvo if you:",
+          "conditions": {
+            "title": "Have Any of These Conditions:",
+            "heart": "Heart disease, cardiovascular conditions, or high blood pressure",
+            "respiratory": "Respiratory problems (asthma, COPD, etc.)",
+            "diabetes": "Diabetes or blood sugar regulation issues",
+            "joint": "Joint problems, arthritis, or orthopedic conditions",
+            "chronicPain": "Chronic pain or previous injuries",
+            "neurological": "Neurological disorders",
+            "pregnancy": "Pregnancy or recent childbirth",
+            "obesity": "Obesity or severe deconditioning",
+            "surgery": "Recent surgery or hospitalization",
+            "other": "Any other chronic or acute medical condition"
+          },
+          "medications": {
+            "title": "Are Taking Medications That May Affect Exercise:",
+            "bloodThinners": "Blood thinners or anticoagulants",
+            "betaBlockers": "Beta-blockers or blood pressure medications",
+            "insulin": "Insulin or diabetes medications",
+            "corticosteroids": "Corticosteroids or anti-inflammatory drugs",
+            "performance": "Any medication that affects heart rate, blood pressure, or physical performance"
+          },
+          "over40": {
+            "title": "Are Over 40 and Sedentary:",
+            "description": "If you are over 40 years old and have been inactive for several months, get medical clearance before starting intense exercise."
+          },
+          "familyHistory": {
+            "title": "Have Family History Of:",
+            "heartDisease": "Heart disease or sudden cardiac death",
+            "stroke": "Stroke or aneurysm",
+            "inherited": "Inherited conditions affecting exercise safety"
+          }
+        },
+        "stopAndSeek": {
+          "title": "4. Stop Exercise and Seek Medical Help If You Experience:",
+          "emergencyIntro": "STOP IMMEDIATELY and seek emergency medical care if you experience:",
+          "emergency": {
+            "chestPain": "Chest pain, pressure, or tightness",
+            "breathShortness": "Severe shortness of breath",
+            "dizziness": "Dizziness, lightheadedness, or fainting",
+            "irregularHeart": "Irregular or rapid heartbeat",
+            "nausea": "Severe nausea or vomiting",
+            "blurredVision": "Blurred vision or loss of consciousness",
+            "numbness": "Numbness or tingling in extremities"
+          },
+          "consultFor": "Also consult a healthcare professional for:",
+          "warning": {
+            "jointPain": "Joint pain that persists beyond normal muscle soreness",
+            "sharpPain": "Sharp or stabbing pain during or after exercise",
+            "swelling": "Swelling, bruising, or visible deformity",
+            "persistentNumbness": "Persistent numbness or weakness",
+            "worseningPain": "Pain that worsens over time or doesn't improve with rest",
+            "anyConcern": "Any symptom that concerns you"
+          }
+        },
+        "painTracking": {
+          "title": "5. Pain and Injury Tracking Limitations",
+          "warning": "Arvo's pain and injury tracking features are NOT diagnostic tools.",
+          "intro": "When you report pain or limitations:",
+          "items": {
+            "avoid": "AI will attempt to avoid exercises that caused pain",
+            "suggest": "AI may suggest alternative exercises",
+            "cannotDiagnose": "AI CANNOT diagnose the cause of your pain",
+            "cannotDetermine": "AI CANNOT determine if exercise is safe for you",
+            "cannotProvide": "AI CANNOT provide medical treatment recommendations"
+          },
+          "conclusion": "If you experience pain, consult a qualified healthcare professional (doctor, physical therapist, sports medicine specialist) for proper diagnosis and treatment."
+        },
+        "exerciseRisks": {
+          "title": "6. Exercise Risks",
+          "intro": "Exercise and physical training carry inherent risks, including but not limited to:",
+          "common": {
+            "title": "Common Risks:",
+            "strains": "Muscle strains, pulls, and tears",
+            "ligament": "Ligament and tendon injuries",
+            "sprains": "Joint sprains and dislocations",
+            "bruising": "Bruising and contusions",
+            "doms": "Delayed onset muscle soreness (DOMS)",
+            "fatigue": "Fatigue and overtraining"
+          },
+          "serious": {
+            "title": "Serious Risks:",
+            "fractures": "Fractures and broken bones",
+            "herniatedDiscs": "Herniated discs or spinal injuries",
+            "rhabdomyolysis": "Rhabdomyolysis (severe muscle breakdown)",
+            "heatStroke": "Heat exhaustion or heat stroke",
+            "cardiovascular": "Cardiovascular events (heart attack, stroke)",
+            "surgery": "Severe injury requiring surgery",
+            "death": "Permanent disability or death"
+          },
+          "acknowledgment": "By using Arvo, you acknowledge these risks and voluntarily assume them."
+        },
+        "yourResponsibilities": {
+          "title": "7. Your Responsibilities",
+          "intro": "You are solely responsible for:",
+          "items": {
+            "medicalClearance": "{strong}Medical clearance:{/strong} Obtaining approval from your doctor before exercising",
+            "honestDisclosure": "{strong}Honest disclosure:{/strong} Providing accurate information about your health, limitations, and injuries",
+            "exerciseJudgment": "{strong}Exercise judgment:{/strong} Evaluating whether AI recommendations are appropriate for you",
+            "properTechnique": "{strong}Proper technique:{/strong} Learning and using correct form (consider hiring a qualified coach)",
+            "safeEnvironment": "{strong}Safe environment:{/strong} Training in a safe space with proper equipment",
+            "progressiveOverload": "{strong}Progressive overload:{/strong} Increasing intensity gradually and listening to your body",
+            "restRecovery": "{strong}Rest and recovery:{/strong} Taking adequate rest days and addressing fatigue",
+            "seekingHelp": "{strong}Seeking help:{/strong} Consulting professionals when needed"
+          }
+        },
+        "noProfessionalRelationship": {
+          "title": "8. No Professional Relationship",
+          "paragraph1": "Use of Arvo does NOT create a doctor-patient, therapist-client, or coach-athlete relationship. We do not have a duty of care toward you.",
+          "paragraph2": "You should not rely on Arvo as your sole source of fitness guidance. Consider working with:",
+          "professionals": {
+            "trainer": "A certified personal trainer (for technique and programming)",
+            "doctor": "A sports medicine doctor (for injury prevention and management)",
+            "therapist": "A physical therapist (for rehabilitation)",
+            "dietitian": "A registered dietitian (for nutrition)"
+          }
+        },
+        "disclaimerWarranties": {
+          "title": "9. Disclaimer of Warranties",
+          "warning": "ARVO IS PROVIDED \"AS IS\" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED.",
+          "intro": "We do not warrant that:",
+          "items": {
+            "goals": "The Service will meet your fitness goals",
+            "accurate": "AI recommendations are accurate, complete, or suitable for you",
+            "prevent": "Use of the Service will prevent injuries",
+            "errorFree": "The Service is error-free or uninterrupted",
+            "corrected": "Defects will be corrected"
+          }
+        },
+        "limitationLiability": {
+          "title": "10. Limitation of Liability",
+          "warning": "TO THE MAXIMUM EXTENT PERMITTED BY LAW, WE ARE NOT LIABLE FOR ANY INJURIES, ILLNESSES, OR DAMAGES RESULTING FROM YOUR USE OF ARVO.",
+          "intro": "This includes but is not limited to:",
+          "items": {
+            "injuries": "Injuries sustained while following AI-generated workouts",
+            "overtraining": "Overtraining, burnout, or performance decline",
+            "aggravation": "Aggravation of pre-existing conditions",
+            "expenses": "Medical expenses or loss of income",
+            "aiErrors": "Any damages arising from AI errors or recommendations"
+          },
+          "seeTerms": "See our {link}Terms of Service{/link} for complete liability limitations."
+        },
+        "commonSense": {
+          "title": "11. Use Common Sense",
+          "intro": "Exercise requires judgment and common sense:",
+          "items": {
+            "feelsWrong": "If something feels wrong, STOP",
+            "tooHeavy": "If a weight feels too heavy, use less weight",
+            "unsureForm": "If you're unsure about form, learn proper technique first",
+            "sickInjured": "If you're sick, injured, or exhausted, REST",
+            "dangerous": "If AI suggests something that seems dangerous, DON'T DO IT"
+          },
+          "conclusion": "Your safety is YOUR responsibility. AI cannot keep you safe—only you can."
+        },
+        "acknowledgment": {
+          "title": "12. Acknowledgment",
+          "paragraph1": "By using Arvo, you acknowledge that you have read, understood, and agree to this Medical Disclaimer. You accept full responsibility for your health and safety while using the Service.",
+          "paragraph2": "If you do not accept these terms, do not use Arvo."
+        },
+        "contactInfo": {
+          "title": "13. Contact Information",
+          "intro": "For questions about this disclaimer:",
+          "email": "Email: legal@aetha.inc",
+          "website": "Website: {link}https://aetha.inc{/link}"
+        },
+        "summary": {
+          "title": "Summary",
+          "intro": "In the simplest terms:",
+          "items": {
+            "tool": "Arvo is a tool, not a doctor or coach",
+            "mistakes": "AI can make mistakes—use your judgment",
+            "clearance": "Get medical clearance before exercising",
+            "stop": "Stop if you feel pain or distress",
+            "assume": "You assume all risks of exercise",
+            "notLiable": "We are not liable for injuries"
+          },
+          "conclusion": "Exercise smart. Stay safe. Consult professionals when in doubt."
+        }
+      }
     }
   }
 }

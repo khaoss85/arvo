@@ -2143,8 +2143,540 @@
     }
   },
   "legal": {
+    "terms": {
+      "title": "Termini di Servizio",
+      "lastUpdated": "Ultimo aggiornamento: 12 novembre 2024",
+      "backToHome": "Torna alla Home",
+      "sections": {
+        "acceptance": {
+          "title": "1. Accettazione dei Termini",
+          "paragraph1": "Accedendo e utilizzando Arvo (\"il Servizio\"), accetti e ti impegni a rispettare i termini e le disposizioni del presente accordo. Se non accetti i presenti Termini di Servizio, ti preghiamo di non utilizzare il Servizio.",
+          "paragraph2": "Arvo è gestito da aetha.inc. I presenti termini si applicano a tutti gli utenti del Servizio."
+        },
+        "description": {
+          "title": "2. Descrizione del Servizio",
+          "intro": "Arvo è un'applicazione di programmazione degli allenamenti basata sull'intelligenza artificiale che fornisce:",
+          "features": {
+            "personalized": "Generazione personalizzata di allenamenti utilizzando l'intelligenza artificiale",
+            "exercise": "Selezione degli esercizi e raccomandazioni sulla progressione",
+            "tracking": "Monitoraggio degli allenamenti e analisi delle prestazioni",
+            "methodology": "Implementazione di metodologie di allenamento (es. Kuba Method, Mentzer HIT)",
+            "insights": "Estrazione di insight dalle note degli allenamenti",
+            "substitution": "Suggerimenti per la sostituzione degli esercizi"
+          },
+          "important": "IMPORTANTE: Il Servizio ha scopo puramente informativo ed educativo. NON costituisce consulenza medica, fisioterapia o coaching professionale."
+        },
+        "medical": {
+          "title": "3. Disclaimer Medico",
+          "warning": "Arvo non fornisce consulenza medica. Consulta sempre un professionista sanitario qualificato prima di iniziare qualsiasi programma di esercizio.",
+          "aiLimitations": "Le raccomandazioni generate dall'AI si basano su principi generali di fitness e sui tuoi dati inseriti. Non possono:",
+          "limitations": {
+            "medical": "Sostituire la consulenza medica professionale, la diagnosi o il trattamento",
+            "assess": "Valutare le tue specifiche condizioni di salute o fattori di rischio",
+            "detect": "Rilevare o prevenire infortuni",
+            "account": "Tenere conto di condizioni mediche non dichiarate"
+          },
+          "consultIf": "Dovresti consultare un professionista sanitario se avverti:",
+          "symptoms": {
+            "pain": "Dolore persistente, disagio o sintomi insoliti",
+            "cardiovascular": "Problemi cardiovascolari (dolore toracico, vertigini, mancanza di respiro)",
+            "injury": "Lesioni articolari o muscolari",
+            "doubt": "Qualsiasi dubbio sulla tua capacità di eseguire un esercizio in sicurezza"
+          },
+          "fullDisclaimer": "Per il disclaimer medico completo, consultare"
+        },
+        "risk": {
+          "title": "4. Assunzione di Rischio",
+          "intro": "L'esercizio fisico comporta rischi intrinseci, tra cui ma non limitati a:",
+          "risks": {
+            "strains": "Stiramenti, distorsioni e strappi muscolari",
+            "joint": "Lesioni articolari",
+            "cardiovascular": "Eventi cardiovascolari",
+            "equipment": "Lesioni legate all'attrezzatura",
+            "serious": "Incidenti che possono causare lesioni gravi o morte"
+          },
+          "acknowledgment": "UTILIZZANDO QUESTO SERVIZIO, ASSUMI VOLONTARIAMENTE TUTTI I RISCHI associati all'esercizio e all'allenamento fisico. Riconosci di essere l'unico responsabile di:",
+          "responsibilities": {
+            "fitness": "Determinare se sei sufficientemente in forma per eseguire gli esercizi suggeriti",
+            "form": "Utilizzare la forma e la tecnica corrette",
+            "weights": "Selezionare pesi e intensità appropriati",
+            "environment": "Allenarti in un ambiente sicuro",
+            "stopping": "Interrompere l'esercizio se avverti dolore, disagio o sintomi insoliti"
+          }
+        },
+        "ai": {
+          "title": "5. Limitazioni dei Contenuti Generati dall'AI",
+          "intro": "Arvo utilizza modelli di intelligenza artificiale (AI) per generare raccomandazioni sugli allenamenti. Riconosci e accetti che:",
+          "limitations": {
+            "algorithmic": "Le raccomandazioni dell'AI sono output algoritmici, non giudizi umani esperti",
+            "errors": "L'AI può commettere errori, suggerire esercizi inappropriati o calcolare carichi errati",
+            "context": "L'AI non può comprendere appieno il contesto, le sfumature o le circostanze individuali",
+            "evaluation": "Le raccomandazioni dell'AI devono essere valutate criticamente prima dell'implementazione",
+            "validation": "Sei responsabile della convalida dei suggerimenti dell'AI rispetto alle tue conoscenze e al tuo giudizio"
+          },
+          "disclaimer": "Miglioriamo continuamente i nostri sistemi AI, ma non possiamo garantire l'accuratezza, la completezza o l'idoneità dei contenuti generati dall'AI per le tue esigenze specifiche."
+        },
+        "userResponsibilities": {
+          "title": "6. Responsabilità dell'Utente",
+          "intro": "Ti impegni a:",
+          "items": {
+            "accurate": "Fornire informazioni accurate e complete sul tuo livello di fitness, limitazioni e stato di salute",
+            "update": "Aggiornare il tuo profilo se le tue circostanze cambiano (es. nuovo infortunio, malattia)",
+            "comply": "Utilizzare il Servizio in conformità con i presenti Termini",
+            "noMisuse": "Non abusare o tentare di manipolare i sistemi AI",
+            "noShare": "Non condividere le tue credenziali di accesso con altri",
+            "laws": "Rispettare tutte le leggi e i regolamenti applicabili"
+          }
+        },
+        "privacy": {
+          "title": "7. Privacy e Raccolta Dati",
+          "intro": "La tua privacy è importante per noi. Utilizzando Arvo, accetti la nostra raccolta e utilizzo dei tuoi dati come descritto nella nostra",
+          "privacyPolicy": "Privacy Policy",
+          "dataCollected": "Raccogliamo dati relativi alla salute tra cui:",
+          "types": {
+            "measurements": "Misurazioni fisiche (peso, altezza, età)",
+            "performance": "Dati sulle prestazioni degli allenamenti (serie, ripetizioni, pesi, RIR)",
+            "pain": "Segnalazioni di dolore e infortuni",
+            "notes": "Note e feedback sugli allenamenti",
+            "preferences": "Preferenze ed abitudini sugli esercizi"
+          },
+          "usage": "Questi dati vengono utilizzati per personalizzare la tua esperienza e migliorare le raccomandazioni dell'AI. Non vendiamo i tuoi dati personali a terze parti."
+        },
+        "liability": {
+          "title": "8. Limitazione di Responsabilità",
+          "warning": "NELLA MASSIMA MISURA CONSENTITA DALLA LEGGE, AETHA.INC E LE SUE AFFILIATE NON SARANNO RESPONSABILI PER:",
+          "items": {
+            "injuries": "Infortuni, malattie o decessi derivanti dall'uso del Servizio",
+            "indirect": "Danni indiretti, incidentali, speciali o consequenziali",
+            "loss": "Perdita di profitti, dati o opportunità commerciali",
+            "aiErrors": "Danni derivanti da errori, imprecisioni o omissioni dell'AI",
+            "reliance": "Danni derivanti dall'affidamento sui contenuti del Servizio"
+          },
+          "cap": "La nostra responsabilità totale nei tuoi confronti per qualsiasi reclamo derivante dall'uso del Servizio non supererà l'importo da te pagato per il Servizio nei 12 mesi precedenti il reclamo, o €100, a seconda di quale sia inferiore."
+        },
+        "indemnification": {
+          "title": "9. Manleva",
+          "text": "Accetti di manlevare, difendere e tenere indenne aetha.inc, i suoi funzionari, direttori, dipendenti e agenti da qualsiasi reclamo, danno, perdita, responsabilità e spesa (incluse le spese legali) derivanti da:",
+          "items": {
+            "use": "Il tuo utilizzo del Servizio",
+            "violation": "La tua violazione dei presenti Termini",
+            "thirdParty": "La tua violazione di diritti di terze parti",
+            "injuries": "Qualsiasi infortunio o danno derivante dalle tue attività di esercizio"
+          }
+        },
+        "age": {
+          "title": "10. Restrizioni di Età",
+          "minimum": "Devi avere almeno 14 anni per utilizzare Arvo. Gli utenti di età inferiore a 18 anni devono utilizzare il Servizio sotto la supervisione e con il consenso dei genitori.",
+          "guardian": "Se hai meno di 18 anni, il tuo genitore o tutore legale deve rivedere e accettare i presenti Termini per tuo conto."
+        },
+        "intellectual": {
+          "title": "11. Proprietà Intellettuale",
+          "ownership": "Tutti i contenuti, le funzionalità e le funzioni del Servizio (inclusi ma non limitati a testo, grafica, loghi, algoritmi AI e software) sono di proprietà di aetha.inc e sono protetti da leggi internazionali su copyright, marchi e altre proprietà intellettuali.",
+          "restrictions": "Non puoi copiare, modificare, distribuire, vendere o decodificare alcuna parte del Servizio senza il nostro esplicito permesso scritto."
+        },
+        "attribution": {
+          "title": "12. Attribuzione Metodologia di Allenamento",
+          "methodology": "Arvo implementa metodologie di allenamento tra cui il \"Kuba Method\" sviluppato da Kuba Walczak. Queste metodologie sono utilizzate con il permesso o secondo accordi di licenza applicabili.",
+          "acknowledgment": "Gli utenti riconoscono che queste metodologie sono implementazioni educative e possono differire dal coaching diretto da parte degli autori originali."
+        },
+        "modifications": {
+          "title": "13. Modifiche e Cessazione del Servizio",
+          "intro": "Ci riserviamo il diritto di:",
+          "rights": {
+            "modify": "Modificare o interrompere il Servizio in qualsiasi momento",
+            "pricing": "Modificare i prezzi o le funzionalità",
+            "suspend": "Sospendere o terminare il tuo account per violazioni dei presenti Termini",
+            "update": "Aggiornare i presenti Termini (ti informeremo di modifiche sostanziali)"
+          }
+        },
+        "governing": {
+          "title": "14. Legge Applicabile",
+          "text": "I presenti Termini sono disciplinati dalle leggi dell'Italia e dell'Unione Europea. Eventuali controversie saranno risolte presso i tribunali di [Vostra Giurisdizione]."
+        },
+        "contact": {
+          "title": "15. Informazioni di Contatto",
+          "intro": "Se hai domande sui presenti Termini, ti preghiamo di contattarci all'indirizzo:",
+          "email": "Email:",
+          "website": "Sito web:"
+        },
+        "summary": {
+          "title": "Riepilogo (Non Vincolante Legalmente)",
+          "intro": "In parole semplici:",
+          "points": {
+            "tool": "Arvo è uno strumento per il fitness, non una consulenza medica",
+            "risks": "L'esercizio comporta rischi - li assumi utilizzando il Servizio",
+            "ai": "L'AI può commettere errori - usa il senso critico",
+            "liability": "Non siamo responsabili per infortuni",
+            "age": "Devi avere almeno 14 anni per usare Arvo",
+            "privacy": "Rispettiamo la tua privacy (vedi Privacy Policy)"
+          }
+        }
+      }
+    },
+    "privacy": {
+      "title": "Informativa sulla Privacy",
+      "metaDescription": "Informativa sulla Privacy di Arvo - Come raccogliamo, utilizziamo e proteggiamo i tuoi dati",
+      "lastUpdated": "Ultimo aggiornamento: 12 novembre 2024",
+      "backToHome": "Torna alla Home",
+      "intro": {
+        "title": "La Tua Privacy È Importante",
+        "paragraph1": "Arvo si impegna a proteggere la tua privacy. Questa informativa spiega come raccogliamo, utilizziamo, conserviamo e proteggiamo i tuoi dati personali, inclusi i dati sanitari.",
+        "paragraph2": "Siamo conformi al Regolamento Generale sulla Protezione dei Dati (GDPR) e alle leggi applicabili in materia di protezione dei dati."
+      },
+      "sections": {
+        "informationCollect": {
+          "title": "1. Informazioni che Raccogliamo",
+          "account": {
+            "title": "1.1 Informazioni dell'Account",
+            "intro": "Quando crei un account, raccogliamo:",
+            "items": {
+              "email": "Indirizzo email (per autenticazione e comunicazioni)",
+              "timestamp": "Timestamp di creazione dell'account",
+              "activity": "Attività di accesso e dati di sessione"
+            }
+          },
+          "health": {
+            "title": "1.2 Dati Sanitari e di Fitness (Categorie Particolari di Dati)",
+            "important": "IMPORTANTE: Ai sensi dell'Articolo 9 del GDPR, i dati sanitari sono \"categorie particolari di dati personali\" che richiedono consenso esplicito e protezione aggiuntiva.",
+            "intro": "Raccogliamo i seguenti dati relativi alla salute:",
+            "items": {
+              "measurements": {
+                "label": "Misurazioni fisiche:",
+                "value": "Età, peso, altezza, sesso"
+              },
+              "fitness": {
+                "label": "Profilo fitness:",
+                "value": "Livello di esperienza nell'allenamento, attrezzatura disponibile, frequenza di allenamento"
+              },
+              "performance": {
+                "label": "Prestazioni negli allenamenti:",
+                "value": "Esercizi eseguiti, serie, ripetizioni, pesi utilizzati, RIR (Ripetizioni in Riserva), tempi di recupero"
+              },
+              "pain": {
+                "label": "Dati su dolore e infortuni:",
+                "value": "Limitazioni segnalate, localizzazione del dolore, gravità, esercizi interessati"
+              },
+              "notes": {
+                "label": "Note sugli allenamenti:",
+                "value": "Feedback in formato libero inclusi sensazioni soggettive, affaticamento, disagio"
+              },
+              "readiness": {
+                "label": "Preparazione mentale:",
+                "value": "Punteggi di preparazione auto-riportati"
+              },
+              "composition": {
+                "label": "Composizione corporea:",
+                "value": "(se fornita) percentuale di grasso corporeo, massa muscolare"
+              },
+              "caloric": {
+                "label": "Fase calorica:",
+                "value": "Stato di massa, mantenimento o definizione"
+              }
+            }
+          },
+          "usage": {
+            "title": "1.3 Dati di Utilizzo",
+            "intro": "Raccogliamo automaticamente:",
+            "items": {
+              "device": "Informazioni sul dispositivo (browser, sistema operativo, dimensioni dello schermo)",
+              "ip": "Indirizzo IP (anonimizzato)",
+              "pages": "Pagine visitate e funzionalità utilizzate",
+              "errors": "Log degli errori e metriche di performance",
+              "ai": "Modelli di interazione con l'AI (es. allenamenti generati, esercizi selezionati)"
+            }
+          },
+          "thirdParty": {
+            "title": "1.4 Dati da Servizi di Terze Parti",
+            "intro": "Utilizziamo:",
+            "items": {
+              "supabase": "Autenticazione e hosting del database",
+              "ai": "Fornitori di modelli AI per la generazione di allenamenti (dati anonimizzati)",
+              "vercel": "Hosting e analytics"
+            }
+          }
+        },
+        "howWeUse": {
+          "title": "2. Come Utilizziamo i Tuoi Dati",
+          "primary": {
+            "title": "2.1 Finalità Principali",
+            "items": {
+              "workout": {
+                "label": "Generazione di allenamenti:",
+                "value": "L'AI utilizza il tuo profilo, lo storico e le limitazioni per creare allenamenti personalizzati"
+              },
+              "exercise": {
+                "label": "Raccomandazioni di esercizi:",
+                "value": "Selezione di esercizi in base ad attrezzatura, esperienza e preferenze"
+              },
+              "progression": {
+                "label": "Tracciamento della progressione:",
+                "value": "Calcolo di progressioni appropriate di peso/ripetizioni in base alle prestazioni"
+              },
+              "insights": {
+                "label": "Estrazione di insights:",
+                "value": "L'AI analizza le note degli allenamenti per rilevare pattern, preferenze e potenziali problemi"
+              },
+              "safety": {
+                "label": "Funzionalità di sicurezza:",
+                "value": "Evitare esercizi che hanno causato dolore o infortuni"
+              },
+              "volume": {
+                "label": "Gestione del volume:",
+                "value": "Tracciamento del volume settimanale per prevenire il sovrallenamento"
+              }
+            }
+          },
+          "improvement": {
+            "title": "2.2 Miglioramento del Servizio",
+            "items": {
+              "algorithms": "Migliorare gli algoritmi AI e l'accuratezza delle raccomandazioni",
+              "debugging": "Debug degli errori e correzione di bug",
+              "behavior": "Comprendere il comportamento degli utenti per migliorare l'UX",
+              "features": "Sviluppare nuove funzionalità basate sui modelli di utilizzo"
+            }
+          },
+          "communication": {
+            "title": "2.3 Comunicazione",
+            "items": {
+              "auth": "Invio di email di autenticazione (link magici)",
+              "updates": "Aggiornamenti del servizio e notifiche di sicurezza",
+              "support": "Rispondere alle richieste di supporto",
+              "marketing": "Comunicazioni di marketing (solo con il tuo consenso esplicito)"
+            }
+          },
+          "legal": {
+            "title": "2.4 Obblighi Legali",
+            "items": {
+              "compliance": "Rispettare i requisiti legali (es. fiscali, forze dell'ordine)",
+              "rights": "Proteggere i nostri diritti e proprietà",
+              "fraud": "Prevenire frodi e abusi"
+            }
+          }
+        },
+        "legalBasis": {
+          "title": "3. Base Giuridica del Trattamento (GDPR)",
+          "intro": "Trattiamo i tuoi dati sulla base di:",
+          "items": {
+            "consent": {
+              "label": "Consenso esplicito (Articolo 9):",
+              "value": "Per la raccolta di dati sanitari e il trattamento tramite AI"
+            },
+            "contract": {
+              "label": "Esecuzione del contratto:",
+              "value": "Per fornire il Servizio per cui ti sei registrato"
+            },
+            "interests": {
+              "label": "Interessi legittimi:",
+              "value": "Miglioramento del servizio, prevenzione delle frodi, sicurezza"
+            },
+            "obligations": {
+              "label": "Obblighi legali:",
+              "value": "Conformità a leggi e regolamenti"
+            }
+          },
+          "withdrawal": "Puoi revocare il tuo consenso in qualsiasi momento contattandoci o eliminando il tuo account."
+        },
+        "storage": {
+          "title": "4. Conservazione e Sicurezza dei Dati",
+          "where": {
+            "title": "4.1 Dove Conserviamo i Dati",
+            "items": {
+              "database": {
+                "label": "Database principale:",
+                "value": "Supabase (PostgreSQL) ospitato in data center UE"
+              },
+              "client": {
+                "label": "Archiviazione lato client:",
+                "value": "localStorage (allenamenti in corso, bozze)"
+              },
+              "backups": {
+                "label": "Backup:",
+                "value": "Backup crittografati conservati nell'UE"
+              }
+            }
+          },
+          "security": {
+            "title": "4.2 Misure di Sicurezza",
+            "items": {
+              "transit": "Crittografia in transito (HTTPS/TLS)",
+              "rest": "Crittografia a riposo per dati sensibili",
+              "rls": "Sicurezza a livello di riga (RLS) nel database",
+              "access": "Controlli di accesso e autenticazione",
+              "audits": "Audit di sicurezza regolari",
+              "anonymization": "Anonimizzazione dei dati inviati ai fornitori di AI"
+            }
+          },
+          "retention": {
+            "title": "4.3 Conservazione dei Dati",
+            "intro": "Conserviamo i tuoi dati:",
+            "items": {
+              "active": {
+                "label": "Account attivi:",
+                "value": "Finché il tuo account esiste"
+              },
+              "deleted": {
+                "label": "Account eliminati:",
+                "value": "30 giorni (per consentire il recupero), poi eliminati definitivamente"
+              },
+              "backups": {
+                "label": "Backup:",
+                "value": "Fino a 90 giorni in backup crittografati"
+              },
+              "analytics": {
+                "label": "Analytics anonimizzati:",
+                "value": "Indefinitamente (non ricollegabili a te)"
+              }
+            }
+          }
+        },
+        "sharing": {
+          "title": "5. Condivisione dei Dati e Terze Parti",
+          "noSell": {
+            "title": "5.1 NON Vendiamo i Tuoi Dati",
+            "text": "Non vendiamo, affittiamo o scambiamo i tuoi dati personali a terze parti per scopi di marketing."
+          },
+          "providers": {
+            "title": "5.2 Fornitori di Servizi",
+            "intro": "Condividiamo i dati con fornitori di servizi affidabili che ci aiutano a operare:",
+            "items": {
+              "supabase": "Database e autenticazione (conforme GDPR, ospitato nell'UE)",
+              "ai": "Modelli AI (dati anonimizzati, nessun dato personale inviato)",
+              "vercel": "Hosting e CDN (conforme GDPR)"
+            },
+            "compliance": "Tutti i fornitori di servizi sono vincolati da accordi sul trattamento dei dati (DPA) e sono conformi al GDPR."
+          },
+          "aiProcessing": {
+            "title": "5.3 Trattamento tramite Modelli AI",
+            "intro": "Durante la generazione di allenamenti, inviamo dati anonimizzati ai fornitori di AI (Anthropic, OpenAI). Questi dati:",
+            "items": {
+              "noPii": "NON includono il tuo nome, email o altre informazioni identificative",
+              "workoutOnly": "Includono solo dati rilevanti per l'allenamento (storico esercizi, preferenze, limitazioni)",
+              "noTraining": "Non vengono utilizzati per addestrare modelli AI (secondo gli accordi con i fornitori)",
+              "noStorage": "Non vengono conservati dai fornitori AI oltre il tempo di elaborazione"
+            }
+          },
+          "legalRequirements": {
+            "title": "5.4 Requisiti Legali",
+            "intro": "Potremmo divulgare i tuoi dati se richiesto da:",
+            "items": {
+              "enforcement": "Forze dell'ordine o autorità governative",
+              "court": "Ordinanze del tribunale o procedimenti legali",
+              "protection": "Protezione dei nostri diritti, sicurezza o proprietà",
+              "prevention": "Prevenzione di frodi o attività illegali"
+            }
+          }
+        },
+        "rights": {
+          "title": "6. I Tuoi Diritti (GDPR)",
+          "intro": "Hai il diritto di:",
+          "items": {
+            "access": {
+              "label": "Accesso:",
+              "value": "Richiedere una copia di tutti i dati personali in nostro possesso su di te"
+            },
+            "rectification": {
+              "label": "Rettifica:",
+              "value": "Correggere dati inesatti o incompleti"
+            },
+            "erasure": {
+              "label": "Cancellazione (\"Diritto all'oblio\"):",
+              "value": "Richiedere la cancellazione dei tuoi dati"
+            },
+            "portability": {
+              "label": "Portabilità dei dati:",
+              "value": "Ricevere i tuoi dati in un formato strutturato e leggibile meccanicamente"
+            },
+            "restriction": {
+              "label": "Limitazione:",
+              "value": "Limitare il modo in cui trattiamo i tuoi dati"
+            },
+            "objection": {
+              "label": "Opposizione:",
+              "value": "Opporti al trattamento basato su interessi legittimi"
+            },
+            "withdraw": {
+              "label": "Revoca del consenso:",
+              "value": "Revocare il consenso per il trattamento dei dati sanitari in qualsiasi momento"
+            },
+            "complaint": {
+              "label": "Presentare un reclamo:",
+              "value": "Presentare un reclamo presso un'autorità di protezione dei dati"
+            }
+          },
+          "contact": "Per esercitare questi diritti, contattaci a privacy@aetha.inc o utilizza la pagina delle impostazioni quando disponibile."
+        },
+        "cookies": {
+          "title": "7. Cookie e Tracciamento",
+          "intro": "Utilizziamo cookie e tracciamento minimi:",
+          "essential": {
+            "title": "7.1 Cookie Essenziali",
+            "items": {
+              "auth": "Token di autenticazione (per mantenerti connesso)",
+              "session": "Gestione delle sessioni",
+              "security": "Sicurezza e prevenzione delle frodi"
+            }
+          },
+          "analytics": {
+            "title": "7.2 Cookie di Analytics (Opzionali)",
+            "items": {
+              "vercel": "Vercel Analytics (statistiche di utilizzo anonimizzate)",
+              "errors": "Tracciamento degli errori (per correggere bug)"
+            },
+            "disable": "Puoi disabilitare i cookie di analytics tramite le impostazioni del tuo browser."
+          }
+        },
+        "children": {
+          "title": "8. Privacy dei Minori",
+          "paragraph1": "Arvo è destinato a utenti di età pari o superiore a 14 anni. Gli utenti di età inferiore a 18 anni dovrebbero utilizzare il Servizio sotto supervisione parentale.",
+          "paragraph2": "Non raccogliamo consapevolmente dati da minori di 14 anni. Se ritieni che abbiamo raccolto tali dati, contattaci immediatamente e li elimineremo."
+        },
+        "international": {
+          "title": "9. Trasferimenti Internazionali di Dati",
+          "intro": "I tuoi dati sono principalmente conservati ed elaborati all'interno dell'Unione Europea. Se i dati vengono trasferiti al di fuori dell'UE (ad es., ai fornitori di AI negli Stati Uniti), garantiamo misure di salvaguardia adeguate quali:",
+          "items": {
+            "scc": "Clausole Contrattuali Standard (SCC)",
+            "anonymization": "Anonimizzazione dei dati",
+            "agreements": "Accordi sul trattamento dei dati conformi al GDPR"
+          }
+        },
+        "changes": {
+          "title": "10. Modifiche a Questa Informativa",
+          "intro": "Potremmo aggiornare questa Informativa sulla Privacy per riflettere cambiamenti nelle nostre pratiche o requisiti legali. Provvederemo a:",
+          "items": {
+            "notify": "Notificarti di modifiche sostanziali via email o notifica in-app",
+            "update": "Aggiornare la data \"Ultimo aggiornamento\" in alto",
+            "consent": "Ottenere il tuo consenso se richiesto dalla legge"
+          },
+          "continued": "L'uso continuato del Servizio dopo le modifiche costituisce accettazione dell'informativa aggiornata."
+        },
+        "contact": {
+          "title": "11. Contattaci",
+          "intro": "Per domande relative alla privacy, richieste di accesso ai dati o per esercitare i tuoi diritti:",
+          "dataProtection": "Contatto per la Protezione dei Dati:",
+          "email": "Email:",
+          "website": "Sito web:",
+          "euRep": "Rappresentante nell'UE (se applicabile):",
+          "euRepInfo": "[Da determinare se necessario in base alla struttura aziendale]"
+        }
+      },
+      "summary": {
+        "title": "Riepilogo (Non Vincolante Legalmente)",
+        "intro": "In termini semplici:",
+        "points": {
+          "healthData": "Raccogliamo dati sanitari per personalizzare i tuoi allenamenti (con il tuo consenso)",
+          "noSell": "NON vendiamo i tuoi dati",
+          "secure": "I dati sono conservati in modo sicuro in data center UE",
+          "anonymized": "I fornitori di AI ricevono solo dati anonimizzati",
+          "access": "Puoi accedere, esportare o eliminare i tuoi dati in qualsiasi momento",
+          "gdpr": "Siamo conformi al GDPR e prendiamo sul serio la privacy"
+        }
+      }
+    },
     "medicalDisclaimer": {
       "title": "Disclaimer Medico",
+      "metaDescription": "Importante disclaimer medico per Arvo - la programmazione degli allenamenti AI non costituisce consulenza medica",
+      "lastUpdated": "Ultimo aggiornamento: 12 novembre 2024",
+      "backToHome": "Torna alla Home",
       "onboarding": {
         "description": "Prima di generare il tuo primo allenamento AI, leggi attentamente queste importanti informazioni sulla sicurezza.",
         "emphasis": "Gli allenamenti generati dall'AI sono strumenti educativi, non consigli medici o coaching professionale."
@@ -2186,7 +2718,229 @@
       },
       "readFullDisclaimer": "Leggi il disclaimer medico completo →",
       "consent": "Ho letto e compreso questo disclaimer medico. Riconosco che Arvo non è un consiglio medico, che l'AI può commettere errori e che sono l'unico responsabile della mia sicurezza e salute. Accetto di consultare professionisti sanitari quando appropriato.",
-      "acceptButton": "Ho Capito e Accetto"
+      "acceptButton": "Ho Capito e Accetto",
+      "page": {
+        "subtitle": "Importanti informazioni sulla sicurezza - Si prega di leggere attentamente",
+        "criticalNotice": {
+          "title": "Avviso Critico",
+          "paragraph1": "Arvo NON è un dispositivo medico, un professionista sanitario o un sostituto della consulenza medica professionale.",
+          "paragraph2": "Consulta sempre un professionista sanitario qualificato prima di iniziare qualsiasi programma di esercizio, specialmente se hai condizioni di salute preesistenti o preoccupazioni."
+        },
+        "notMedicalAdvice": {
+          "title": "1. Non Costituisce Consulenza Medica",
+          "intro": "Le informazioni, raccomandazioni e programmi di allenamento generati dall'AI forniti da Arvo sono destinati {strong}esclusivamente a scopo informativo ed educativo{/strong}. NON costituiscono:",
+          "items": {
+            "medical": "Consulenza medica, diagnosi o trattamento",
+            "physicalTherapy": "Fisioterapia o orientamento riabilitativo",
+            "nutritional": "Consulenza nutrizionale o dietetica",
+            "coaching": "Coaching professionale o personal training",
+            "healthcare": "Servizi sanitari di qualsiasi tipo"
+          },
+          "warning": "Arvo non può e non sostituisce l'esperienza di professionisti sanitari qualificati, fisioterapisti o personal trainer certificati."
+        },
+        "aiLimitations": {
+          "title": "2. Limitazioni dell'Intelligenza Artificiale",
+          "intro": "Arvo utilizza l'intelligenza artificiale (AI) per generare raccomandazioni sugli allenamenti. Devi comprendere che:",
+          "aiCannot": {
+            "title": "L'AI Non Può:",
+            "assessMedical": "{strong}Valutare le tue condizioni mediche:{/strong} L'AI non può diagnosticare infortuni, malattie o problemi di salute",
+            "detectContraindications": "{strong}Rilevare controindicazioni:{/strong} L'AI potrebbe non essere a conoscenza di farmaci, condizioni o fattori di rischio che rendono l'esercizio pericoloso per te",
+            "replaceClinical": "{strong}Sostituire il giudizio clinico:{/strong} L'AI non possiede la comprensione sfumata di un professionista medico",
+            "monitorRealtime": "{strong}Monitorarti in tempo reale:{/strong} L'AI non può osservare la tua forma, affaticamento o disagio durante l'esercizio",
+            "accountUnreported": "{strong}Tenere conto di condizioni non dichiarate:{/strong} L'AI conosce solo ciò che le comunichi esplicitamente",
+            "guaranteeSafety": "{strong}Garantire la sicurezza:{/strong} Le raccomandazioni dell'AI potrebbero essere inappropriate o pericolose per la tua situazione specifica"
+          },
+          "aiMistakes": {
+            "title": "L'AI Può Commettere Errori:",
+            "unsafeExercises": "Suggerire esercizi non sicuri per te",
+            "inappropriateWeights": "Raccomandare pesi o volumi inappropriati",
+            "misinterpretPain": "Interpretare male i tuoi feedback o segnalazioni di dolore",
+            "causeInjury": "Generare allenamenti che causano infortuni o sovrallenamento",
+            "incorrectCues": "Fornire indicazioni tecniche o istruzioni sulla forma errate"
+          },
+          "responsibility": "SEI TU responsabile della valutazione critica di tutte le raccomandazioni dell'AI e dell'uso del tuo giudizio personale."
+        },
+        "whenConsult": {
+          "title": "3. Quando Consultare un Professionista Sanitario",
+          "intro": "DEVI consultare un professionista sanitario qualificato PRIMA di utilizzare Arvo se:",
+          "conditions": {
+            "title": "Hai Una di Queste Condizioni:",
+            "heart": "Malattie cardiache, condizioni cardiovascolari o ipertensione",
+            "respiratory": "Problemi respiratori (asma, BPCO, ecc.)",
+            "diabetes": "Diabete o problemi di regolazione della glicemia",
+            "joint": "Problemi articolari, artrite o condizioni ortopediche",
+            "chronicPain": "Dolore cronico o infortuni pregressi",
+            "neurological": "Disturbi neurologici",
+            "pregnancy": "Gravidanza o parto recente",
+            "obesity": "Obesità o grave decondizionamento",
+            "surgery": "Intervento chirurgico o ospedalizzazione recente",
+            "other": "Qualsiasi altra condizione medica cronica o acuta"
+          },
+          "medications": {
+            "title": "Stai Assumendo Farmaci Che Possono Influenzare l'Esercizio:",
+            "bloodThinners": "Anticoagulanti o fluidificanti del sangue",
+            "betaBlockers": "Beta-bloccanti o farmaci per la pressione sanguigna",
+            "insulin": "Insulina o farmaci per il diabete",
+            "corticosteroids": "Corticosteroidi o farmaci antinfiammatori",
+            "performance": "Qualsiasi farmaco che influenzi la frequenza cardiaca, la pressione sanguigna o le prestazioni fisiche"
+          },
+          "over40": {
+            "title": "Hai Più di 40 Anni e Sei Sedentario:",
+            "description": "Se hai più di 40 anni e sei stato inattivo per diversi mesi, ottieni il nulla osta medico prima di iniziare un esercizio intenso."
+          },
+          "familyHistory": {
+            "title": "Hai Una Storia Familiare Di:",
+            "heartDisease": "Malattie cardiache o morte cardiaca improvvisa",
+            "stroke": "Ictus o aneurisma",
+            "inherited": "Condizioni ereditarie che influenzano la sicurezza dell'esercizio"
+          }
+        },
+        "stopAndSeek": {
+          "title": "4. Interrompi l'Esercizio e Cerca Assistenza Medica Se Avverti:",
+          "emergencyIntro": "INTERROMPI IMMEDIATAMENTE e ricerca assistenza medica di emergenza se avverti:",
+          "emergency": {
+            "chestPain": "Dolore toracico, pressione o oppressione",
+            "breathShortness": "Grave mancanza di respiro",
+            "dizziness": "Vertigini, stordimento o svenimento",
+            "irregularHeart": "Battito cardiaco irregolare o rapido",
+            "nausea": "Nausea o vomito gravi",
+            "blurredVision": "Visione offuscata o perdita di coscienza",
+            "numbness": "Intorpidimento o formicolio alle estremità"
+          },
+          "consultFor": "Consulta anche un professionista sanitario per:",
+          "warning": {
+            "jointPain": "Dolore articolare che persiste oltre il normale indolenzimento muscolare",
+            "sharpPain": "Dolore acuto o lancinante durante o dopo l'esercizio",
+            "swelling": "Gonfiore, lividi o deformità visibile",
+            "persistentNumbness": "Intorpidimento o debolezza persistenti",
+            "worseningPain": "Dolore che peggiora nel tempo o non migliora con il riposo",
+            "anyConcern": "Qualsiasi sintomo che ti preoccupi"
+          }
+        },
+        "painTracking": {
+          "title": "5. Limitazioni del Monitoraggio del Dolore e degli Infortuni",
+          "warning": "Le funzionalità di monitoraggio del dolore e degli infortuni di Arvo NON sono strumenti diagnostici.",
+          "intro": "Quando segnali dolore o limitazioni:",
+          "items": {
+            "avoid": "L'AI tenterà di evitare gli esercizi che hanno causato dolore",
+            "suggest": "L'AI potrebbe suggerire esercizi alternativi",
+            "cannotDiagnose": "L'AI NON PUÒ diagnosticare la causa del tuo dolore",
+            "cannotDetermine": "L'AI NON PUÒ determinare se l'esercizio è sicuro per te",
+            "cannotProvide": "L'AI NON PUÒ fornire raccomandazioni per il trattamento medico"
+          },
+          "conclusion": "Se avverti dolore, consulta un professionista sanitario qualificato (medico, fisioterapista, specialista in medicina dello sport) per una diagnosi e un trattamento adeguati."
+        },
+        "exerciseRisks": {
+          "title": "6. Rischi dell'Esercizio Fisico",
+          "intro": "L'esercizio fisico e l'allenamento comportano rischi intrinseci, tra cui ma non limitati a:",
+          "common": {
+            "title": "Rischi Comuni:",
+            "strains": "Stiramenti, strappi e lacerazioni muscolari",
+            "ligament": "Lesioni ai legamenti e ai tendini",
+            "sprains": "Distorsioni e lussazioni articolari",
+            "bruising": "Contusioni ed ecchimosi",
+            "doms": "Indolenzimento muscolare a insorgenza ritardata (DOMS)",
+            "fatigue": "Affaticamento e sovrallenamento"
+          },
+          "serious": {
+            "title": "Rischi Gravi:",
+            "fractures": "Fratture e ossa rotte",
+            "herniatedDiscs": "Ernie discali o lesioni spinali",
+            "rhabdomyolysis": "Rabdomiolisi (grave rottura muscolare)",
+            "heatStroke": "Esaurimento da calore o colpo di calore",
+            "cardiovascular": "Eventi cardiovascolari (infarto, ictus)",
+            "surgery": "Lesioni gravi che richiedono intervento chirurgico",
+            "death": "Disabilità permanente o morte"
+          },
+          "acknowledgment": "Utilizzando Arvo, riconosci questi rischi e li assumi volontariamente."
+        },
+        "yourResponsibilities": {
+          "title": "7. Le Tue Responsabilità",
+          "intro": "Sei l'unico responsabile di:",
+          "items": {
+            "medicalClearance": "{strong}Nulla osta medico:{/strong} Ottenere l'approvazione del tuo medico prima di allenarti",
+            "honestDisclosure": "{strong}Dichiarazione onesta:{/strong} Fornire informazioni accurate sulla tua salute, limitazioni e infortuni",
+            "exerciseJudgment": "{strong}Giudizio nell'esercizio:{/strong} Valutare se le raccomandazioni dell'AI sono appropriate per te",
+            "properTechnique": "{strong}Tecnica corretta:{/strong} Apprendere e utilizzare la forma corretta (considera di assumere un allenatore qualificato)",
+            "safeEnvironment": "{strong}Ambiente sicuro:{/strong} Allenarti in uno spazio sicuro con attrezzature adeguate",
+            "progressiveOverload": "{strong}Sovraccarico progressivo:{/strong} Aumentare gradualmente l'intensità e ascoltare il tuo corpo",
+            "restRecovery": "{strong}Riposo e recupero:{/strong} Prenderti giorni di riposo adeguati e affrontare l'affaticamento",
+            "seekingHelp": "{strong}Chiedere aiuto:{/strong} Consultare professionisti quando necessario"
+          }
+        },
+        "noProfessionalRelationship": {
+          "title": "8. Nessun Rapporto Professionale",
+          "paragraph1": "L'uso di Arvo NON crea un rapporto medico-paziente, terapista-cliente o allenatore-atleta. Non abbiamo un obbligo di diligenza nei tuoi confronti.",
+          "paragraph2": "Non dovresti fare affidamento su Arvo come unica fonte di orientamento per il fitness. Considera di lavorare con:",
+          "professionals": {
+            "trainer": "Un personal trainer certificato (per tecnica e programmazione)",
+            "doctor": "Un medico dello sport (per prevenzione e gestione degli infortuni)",
+            "therapist": "Un fisioterapista (per la riabilitazione)",
+            "dietitian": "Un dietista registrato (per la nutrizione)"
+          }
+        },
+        "disclaimerWarranties": {
+          "title": "9. Esclusione di Garanzie",
+          "warning": "ARVO È FORNITO \"COSÌ COM'È\" SENZA GARANZIE DI ALCUN TIPO, ESPLICITE O IMPLICITE.",
+          "intro": "Non garantiamo che:",
+          "items": {
+            "goals": "Il Servizio raggiunga i tuoi obiettivi di fitness",
+            "accurate": "Le raccomandazioni dell'AI siano accurate, complete o adatte a te",
+            "prevent": "L'uso del Servizio prevenga gli infortuni",
+            "errorFree": "Il Servizio sia privo di errori o ininterrotto",
+            "corrected": "I difetti vengano corretti"
+          }
+        },
+        "limitationLiability": {
+          "title": "10. Limitazione di Responsabilità",
+          "warning": "NELLA MASSIMA MISURA CONSENTITA DALLA LEGGE, NON SIAMO RESPONSABILI PER INFORTUNI, MALATTIE O DANNI DERIVANTI DAL TUO USO DI ARVO.",
+          "intro": "Ciò include ma non è limitato a:",
+          "items": {
+            "injuries": "Infortuni subiti seguendo allenamenti generati dall'AI",
+            "overtraining": "Sovrallenamento, burnout o declino delle prestazioni",
+            "aggravation": "Aggravamento di condizioni preesistenti",
+            "expenses": "Spese mediche o perdita di reddito",
+            "aiErrors": "Qualsiasi danno derivante da errori o raccomandazioni dell'AI"
+          },
+          "seeTerms": "Consulta i nostri {link}Termini di Servizio{/link} per le limitazioni complete di responsabilità."
+        },
+        "commonSense": {
+          "title": "11. Usa il Buon Senso",
+          "intro": "L'esercizio richiede giudizio e buon senso:",
+          "items": {
+            "feelsWrong": "Se qualcosa non va bene, FERMATI",
+            "tooHeavy": "Se un peso è troppo pesante, usa meno peso",
+            "unsureForm": "Se non sei sicuro della forma, impara prima la tecnica corretta",
+            "sickInjured": "Se sei malato, infortunato o esausto, RIPOSA",
+            "dangerous": "Se l'AI suggerisce qualcosa che sembra pericoloso, NON FARLO"
+          },
+          "conclusion": "La tua sicurezza è TUA responsabilità. L'AI non può proteggerti—solo tu puoi farlo."
+        },
+        "acknowledgment": {
+          "title": "12. Riconoscimento",
+          "paragraph1": "Utilizzando Arvo, riconosci di aver letto, compreso e accettato questo Disclaimer Medico. Accetti la piena responsabilità per la tua salute e sicurezza durante l'utilizzo del Servizio.",
+          "paragraph2": "Se non accetti questi termini, non utilizzare Arvo."
+        },
+        "contactInfo": {
+          "title": "13. Informazioni di Contatto",
+          "intro": "Per domande su questo disclaimer:",
+          "email": "Email: legal@aetha.inc",
+          "website": "Sito web: {link}https://aetha.inc{/link}"
+        },
+        "summary": {
+          "title": "Riepilogo",
+          "intro": "In termini semplici:",
+          "items": {
+            "tool": "Arvo è uno strumento, non un medico o un allenatore",
+            "mistakes": "L'AI può commettere errori—usa il tuo giudizio",
+            "clearance": "Ottieni il nulla osta medico prima di allenarti",
+            "stop": "Fermati se avverti dolore o disagio",
+            "assume": "Assumi tutti i rischi dell'esercizio",
+            "notLiable": "Non siamo responsabili per gli infortuni"
+          },
+          "conclusion": "Allenati con intelligenza. Resta al sicuro. Consulta professionisti in caso di dubbio."
+        }
+      }
     }
   }
 }

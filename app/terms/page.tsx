@@ -2,13 +2,21 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Terms of Service | Arvo",
-  description: "Terms of Service for Arvo - AI-powered workout programming",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("legal.terms");
+
+  return {
+    title: `${t("title")} | Arvo`,
+    description: t("sections.description.intro"),
+  };
+}
 
 export default function TermsOfServicePage() {
+  const t = useTranslations("legal.terms");
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto px-4 py-12">
@@ -17,250 +25,250 @@ export default function TermsOfServicePage() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
+              {t("backToHome")}
             </Button>
           </Link>
-          <h1 className="text-4xl font-bold mb-2">Terms of Service</h1>
+          <h1 className="text-4xl font-bold mb-2">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Last updated: November 12, 2024
+            {t("lastUpdated")}
           </p>
         </div>
 
         {/* Content */}
         <div className="prose prose-neutral dark:prose-invert max-w-none">
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.acceptance.title")}</h2>
             <p className="mb-4">
-              By accessing and using Arvo ("the Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these Terms of Service, please do not use the Service.
+              {t("sections.acceptance.paragraph1")}
             </p>
             <p className="mb-4">
-              Arvo is operated by aetha.inc. These terms apply to all users of the Service.
+              {t("sections.acceptance.paragraph2")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.description.title")}</h2>
             <p className="mb-4">
-              Arvo is an AI-powered workout programming application that provides:
+              {t("sections.description.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Personalized workout generation using artificial intelligence</li>
-              <li>Exercise selection and progression recommendations</li>
-              <li>Workout tracking and performance analytics</li>
-              <li>Training methodology implementation (e.g., Kuba Method, Mentzer HIT)</li>
-              <li>Insight extraction from workout notes</li>
-              <li>Exercise substitution suggestions</li>
+              <li>{t("sections.description.features.personalized")}</li>
+              <li>{t("sections.description.features.exercise")}</li>
+              <li>{t("sections.description.features.tracking")}</li>
+              <li>{t("sections.description.features.methodology")}</li>
+              <li>{t("sections.description.features.insights")}</li>
+              <li>{t("sections.description.features.substitution")}</li>
             </ul>
             <p className="mb-4 font-semibold text-orange-600 dark:text-orange-400">
-              IMPORTANT: The Service is for informational and educational purposes only. It is NOT medical advice, physical therapy, or professional coaching.
+              {t("sections.description.important")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">3. Medical Disclaimer</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.medical.title")}</h2>
             <p className="mb-4 font-semibold">
-              Arvo does not provide medical advice. Always consult with a qualified healthcare professional before starting any exercise program.
+              {t("sections.medical.warning")}
             </p>
             <p className="mb-4">
-              The AI-generated recommendations are based on general fitness principles and your input data. They cannot:
-            </p>
-            <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Replace professional medical advice, diagnosis, or treatment</li>
-              <li>Assess your specific health conditions or risk factors</li>
-              <li>Detect or prevent injuries</li>
-              <li>Account for undisclosed medical conditions</li>
-            </ul>
-            <p className="mb-4">
-              You should consult a healthcare professional if you experience:
+              {t("sections.medical.aiLimitations")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Persistent pain, discomfort, or unusual symptoms</li>
-              <li>Cardiovascular concerns (chest pain, dizziness, shortness of breath)</li>
-              <li>Joint or muscle injuries</li>
-              <li>Any doubt about your ability to safely perform an exercise</li>
+              <li>{t("sections.medical.limitations.medical")}</li>
+              <li>{t("sections.medical.limitations.assess")}</li>
+              <li>{t("sections.medical.limitations.detect")}</li>
+              <li>{t("sections.medical.limitations.account")}</li>
             </ul>
             <p className="mb-4">
-              For complete medical disclaimer, see <Link href="/medical-disclaimer" className="text-primary-600 dark:text-primary-400 hover:underline">/medical-disclaimer</Link>.
+              {t("sections.medical.consultIf")}
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>{t("sections.medical.symptoms.pain")}</li>
+              <li>{t("sections.medical.symptoms.cardiovascular")}</li>
+              <li>{t("sections.medical.symptoms.injury")}</li>
+              <li>{t("sections.medical.symptoms.doubt")}</li>
+            </ul>
+            <p className="mb-4">
+              {t("sections.medical.fullDisclaimer")} <Link href="/medical-disclaimer" className="text-primary-600 dark:text-primary-400 hover:underline">/medical-disclaimer</Link>.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">4. Assumption of Risk</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.risk.title")}</h2>
             <p className="mb-4">
-              Physical exercise involves inherent risks, including but not limited to:
+              {t("sections.risk.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Muscle strains, sprains, and tears</li>
-              <li>Joint injuries</li>
-              <li>Cardiovascular events</li>
-              <li>Equipment-related injuries</li>
-              <li>Accidents resulting in serious injury or death</li>
+              <li>{t("sections.risk.risks.strains")}</li>
+              <li>{t("sections.risk.risks.joint")}</li>
+              <li>{t("sections.risk.risks.cardiovascular")}</li>
+              <li>{t("sections.risk.risks.equipment")}</li>
+              <li>{t("sections.risk.risks.serious")}</li>
             </ul>
             <p className="mb-4 font-semibold">
-              BY USING THIS SERVICE, YOU VOLUNTARILY ASSUME ALL RISKS associated with exercise and physical training. You acknowledge that you are solely responsible for:
+              {t("sections.risk.acknowledgment")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Determining whether you are fit enough to perform suggested exercises</li>
-              <li>Using proper form and technique</li>
-              <li>Selecting appropriate weights and intensity</li>
-              <li>Exercising in a safe environment</li>
-              <li>Stopping exercise if you feel pain, discomfort, or unusual symptoms</li>
+              <li>{t("sections.risk.responsibilities.fitness")}</li>
+              <li>{t("sections.risk.responsibilities.form")}</li>
+              <li>{t("sections.risk.responsibilities.weights")}</li>
+              <li>{t("sections.risk.responsibilities.environment")}</li>
+              <li>{t("sections.risk.responsibilities.stopping")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">5. AI-Generated Content Limitations</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.ai.title")}</h2>
             <p className="mb-4">
-              Arvo uses artificial intelligence (AI) models to generate workout recommendations. You acknowledge and agree that:
+              {t("sections.ai.intro")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>AI recommendations are algorithmic outputs, not expert human judgment</li>
-              <li>AI may make errors, suggest inappropriate exercises, or miscalculate loads</li>
-              <li>AI cannot fully understand context, nuance, or individual circumstances</li>
-              <li>AI recommendations should be critically evaluated before implementation</li>
-              <li>You are responsible for validating AI suggestions against your own knowledge and judgment</li>
+              <li>{t("sections.ai.limitations.algorithmic")}</li>
+              <li>{t("sections.ai.limitations.errors")}</li>
+              <li>{t("sections.ai.limitations.context")}</li>
+              <li>{t("sections.ai.limitations.evaluation")}</li>
+              <li>{t("sections.ai.limitations.validation")}</li>
             </ul>
             <p className="mb-4">
-              We continuously improve our AI systems, but we cannot guarantee accuracy, completeness, or suitability of AI-generated content for your specific needs.
+              {t("sections.ai.disclaimer")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">6. User Responsibilities</h2>
-            <p className="mb-4">You agree to:</p>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.userResponsibilities.title")}</h2>
+            <p className="mb-4">{t("sections.userResponsibilities.intro")}</p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Provide accurate and complete information about your fitness level, limitations, and health status</li>
-              <li>Update your profile if your circumstances change (e.g., new injury, illness)</li>
-              <li>Use the Service in accordance with these Terms</li>
-              <li>Not misuse or attempt to manipulate the AI systems</li>
-              <li>Not share your account credentials with others</li>
-              <li>Comply with all applicable laws and regulations</li>
+              <li>{t("sections.userResponsibilities.items.accurate")}</li>
+              <li>{t("sections.userResponsibilities.items.update")}</li>
+              <li>{t("sections.userResponsibilities.items.comply")}</li>
+              <li>{t("sections.userResponsibilities.items.noMisuse")}</li>
+              <li>{t("sections.userResponsibilities.items.noShare")}</li>
+              <li>{t("sections.userResponsibilities.items.laws")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">7. Privacy and Data Collection</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.privacy.title")}</h2>
             <p className="mb-4">
-              Your privacy is important to us. By using Arvo, you agree to our collection and use of your data as described in our <Link href="/privacy" className="text-primary-600 dark:text-primary-400 hover:underline">Privacy Policy</Link>.
+              {t("sections.privacy.intro")} <Link href="/privacy" className="text-primary-600 dark:text-primary-400 hover:underline">{t("sections.privacy.privacyPolicy")}</Link>.
             </p>
             <p className="mb-4">
-              We collect health-related data including:
+              {t("sections.privacy.dataCollected")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Physical measurements (weight, height, age)</li>
-              <li>Workout performance data (sets, reps, weights, RIR)</li>
-              <li>Pain and injury reports</li>
-              <li>Workout notes and feedback</li>
-              <li>Exercise preferences and patterns</li>
+              <li>{t("sections.privacy.types.measurements")}</li>
+              <li>{t("sections.privacy.types.performance")}</li>
+              <li>{t("sections.privacy.types.pain")}</li>
+              <li>{t("sections.privacy.types.notes")}</li>
+              <li>{t("sections.privacy.types.preferences")}</li>
             </ul>
             <p className="mb-4">
-              This data is used to personalize your experience and improve AI recommendations. We do not sell your personal data to third parties.
+              {t("sections.privacy.usage")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">8. Limitation of Liability</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.liability.title")}</h2>
             <p className="mb-4 font-semibold">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, AETHA.INC AND ITS AFFILIATES SHALL NOT BE LIABLE FOR ANY:
+              {t("sections.liability.warning")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Injuries, illnesses, or deaths resulting from use of the Service</li>
-              <li>Indirect, incidental, special, or consequential damages</li>
-              <li>Loss of profits, data, or business opportunities</li>
-              <li>Damages arising from AI errors, inaccuracies, or omissions</li>
-              <li>Damages arising from reliance on Service content</li>
+              <li>{t("sections.liability.items.injuries")}</li>
+              <li>{t("sections.liability.items.indirect")}</li>
+              <li>{t("sections.liability.items.loss")}</li>
+              <li>{t("sections.liability.items.aiErrors")}</li>
+              <li>{t("sections.liability.items.reliance")}</li>
             </ul>
             <p className="mb-4">
-              Our total liability to you for any claims arising from use of the Service shall not exceed the amount you paid for the Service in the 12 months preceding the claim, or €100, whichever is less.
+              {t("sections.liability.cap")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">9. Indemnification</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.indemnification.title")}</h2>
             <p className="mb-4">
-              You agree to indemnify, defend, and hold harmless aetha.inc, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses (including legal fees) arising from:
+              {t("sections.indemnification.text")}
             </p>
             <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Your use of the Service</li>
-              <li>Your violation of these Terms</li>
-              <li>Your violation of any third-party rights</li>
-              <li>Any injuries or damages resulting from your exercise activities</li>
-            </ul>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">10. Age Restrictions</h2>
-            <p className="mb-4">
-              You must be at least 14 years old to use Arvo. Users under 18 should use the Service under parental supervision and with parental consent.
-            </p>
-            <p className="mb-4">
-              If you are under 18, your parent or legal guardian must review and accept these Terms on your behalf.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">11. Intellectual Property</h2>
-            <p className="mb-4">
-              All content, features, and functionality of the Service (including but not limited to text, graphics, logos, AI algorithms, and software) are owned by aetha.inc and are protected by international copyright, trademark, and other intellectual property laws.
-            </p>
-            <p className="mb-4">
-              You may not copy, modify, distribute, sell, or reverse-engineer any part of the Service without our explicit written permission.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">12. Training Methodology Attribution</h2>
-            <p className="mb-4">
-              Arvo implements training methodologies including the "Kuba Method" developed by Kuba Walczak. These methodologies are used with permission or under applicable licensing agreements.
-            </p>
-            <p className="mb-4">
-              Users acknowledge that these methodologies are educational implementations and may differ from direct coaching by the original authors.
-            </p>
-          </section>
-
-          <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">13. Service Modifications and Termination</h2>
-            <p className="mb-4">
-              We reserve the right to:
-            </p>
-            <ul className="list-disc pl-6 mb-4 space-y-2">
-              <li>Modify or discontinue the Service at any time</li>
-              <li>Change pricing or features</li>
-              <li>Suspend or terminate your account for violations of these Terms</li>
-              <li>Update these Terms (we will notify you of material changes)</li>
+              <li>{t("sections.indemnification.items.use")}</li>
+              <li>{t("sections.indemnification.items.violation")}</li>
+              <li>{t("sections.indemnification.items.thirdParty")}</li>
+              <li>{t("sections.indemnification.items.injuries")}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">14. Governing Law</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.age.title")}</h2>
             <p className="mb-4">
-              These Terms are governed by the laws of Italy and the European Union. Any disputes shall be resolved in the courts of [Your Jurisdiction].
+              {t("sections.age.minimum")}
+            </p>
+            <p className="mb-4">
+              {t("sections.age.guardian")}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">15. Contact Information</h2>
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.intellectual.title")}</h2>
             <p className="mb-4">
-              If you have questions about these Terms, please contact us at:
+              {t("sections.intellectual.ownership")}
             </p>
             <p className="mb-4">
-              Email: legal@aetha.inc<br />
-              Website: <a href="https://aetha.inc" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">https://aetha.inc</a>
+              {t("sections.intellectual.restrictions")}
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.attribution.title")}</h2>
+            <p className="mb-4">
+              {t("sections.attribution.methodology")}
+            </p>
+            <p className="mb-4">
+              {t("sections.attribution.acknowledgment")}
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.modifications.title")}</h2>
+            <p className="mb-4">
+              {t("sections.modifications.intro")}
+            </p>
+            <ul className="list-disc pl-6 mb-4 space-y-2">
+              <li>{t("sections.modifications.rights.modify")}</li>
+              <li>{t("sections.modifications.rights.pricing")}</li>
+              <li>{t("sections.modifications.rights.suspend")}</li>
+              <li>{t("sections.modifications.rights.update")}</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.governing.title")}</h2>
+            <p className="mb-4">
+              {t("sections.governing.text")}
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">{t("sections.contact.title")}</h2>
+            <p className="mb-4">
+              {t("sections.contact.intro")}
+            </p>
+            <p className="mb-4">
+              {t("sections.contact.email")} legal@aetha.inc<br />
+              {t("sections.contact.website")} <a href="https://aetha.inc" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">https://aetha.inc</a>
             </p>
           </section>
 
           <section className="mb-8 p-6 bg-orange-50 dark:bg-orange-950/20 border-2 border-orange-200 dark:border-orange-800 rounded-lg">
-            <h3 className="text-xl font-semibold mb-3">Summary (Not Legally Binding)</h3>
+            <h3 className="text-xl font-semibold mb-3">{t("sections.summary.title")}</h3>
             <p className="mb-2">
-              In simple terms:
+              {t("sections.summary.intro")}
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>Arvo is a fitness tool, not medical advice</li>
-              <li>Exercise has risks - you assume them by using the Service</li>
-              <li>AI can make mistakes - use critical judgment</li>
-              <li>We're not liable for injuries</li>
-              <li>You must be 14+ to use Arvo</li>
-              <li>We respect your privacy (see Privacy Policy)</li>
+              <li>{t("sections.summary.points.tool")}</li>
+              <li>{t("sections.summary.points.risks")}</li>
+              <li>{t("sections.summary.points.ai")}</li>
+              <li>{t("sections.summary.points.liability")}</li>
+              <li>{t("sections.summary.points.age")}</li>
+              <li>{t("sections.summary.points.privacy")}</li>
             </ul>
           </section>
         </div>
