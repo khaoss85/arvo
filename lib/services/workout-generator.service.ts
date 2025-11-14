@@ -45,7 +45,7 @@ export class WorkoutGeneratorService {
     // Get server Supabase client for server-side operations
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
     const supabase = await getSupabaseServerClient()
-    const exerciseSelector = new ExerciseSelector(supabase)
+    const exerciseSelector = new ExerciseSelector(supabase, 'medium')
 
     // Get user profile
     const profile = await UserProfileService.getByUserIdServer(userId)
@@ -471,6 +471,7 @@ export class WorkoutGeneratorService {
       if (name.includes('bench')) return Math.round(bodyweight * 0.5 * genderMultiplier)
       if (name.includes('squat')) return Math.round(bodyweight * 0.6 * genderMultiplier)
       if (name.includes('deadlift')) return Math.round(bodyweight * 0.8 * genderMultiplier)
+      if (name.includes('leg') && name.includes('press')) return Math.round(bodyweight * 0.7 * genderMultiplier) // Leg press similar to squat
       if (name.includes('row')) return Math.round(bodyweight * 0.4 * genderMultiplier)
       if (name.includes('press') && name.includes('shoulder')) return Math.round(bodyweight * 0.3 * genderMultiplier)
     }
@@ -481,6 +482,7 @@ export class WorkoutGeneratorService {
     if (name.includes('bench')) return Math.round(40 * genderMultiplier)
     if (name.includes('squat')) return Math.round(50 * genderMultiplier)
     if (name.includes('deadlift')) return Math.round(60 * genderMultiplier)
+    if (name.includes('leg') && name.includes('press')) return Math.round(70 * genderMultiplier) // Leg press is a heavy compound movement
     if (name.includes('row')) return Math.round(30 * genderMultiplier)
     if (name.includes('press') && name.includes('shoulder')) return Math.round(20 * genderMultiplier)
     if (name.includes('curl')) return Math.round(15 * genderMultiplier)

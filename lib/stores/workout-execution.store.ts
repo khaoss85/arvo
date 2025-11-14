@@ -226,10 +226,18 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           (workout.exercises as any[] || []).map(async (ex) => {
             const exerciseSets = sets.filter((s) => {
               const exId = ex.id || null
-              // Match by ID (if available) OR by name (case-insensitive, trimmed)
               const exerciseName = getExerciseName(ex)
               const nameMatch = s.exercise_name?.toLowerCase().trim() === exerciseName.toLowerCase().trim()
-              return s.exercise_id === exId || nameMatch
+
+              // Priority-based matching to prevent cross-contamination:
+              // 1. If exercise has ID: match ONLY by ID (ignore name)
+              if (exId) {
+                return s.exercise_id === exId
+              }
+
+              // 2. If exercise has no ID: match by name ONLY if set also has no exercise_id
+              // This prevents exercises without IDs from picking up sets from exercises with IDs
+              return !s.exercise_id && nameMatch
             })
 
             // Filter out skipped sets - they should NOT be in completedSets
@@ -412,6 +420,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             ],
             // Clear AI suggestion to allow recalculation for next set
             currentAISuggestion: null
+          }
+
+          // Dynamically update targetWeight if actual performance significantly exceeds prediction
+          // This ensures warmup calculations adapt to real user strength
+          if (!isWarmupSet && setData.weight > currentExercise.targetWeight * 1.2) {
+            updatedExercises[currentExerciseIndex].targetWeight = setData.weight
           }
 
           set({

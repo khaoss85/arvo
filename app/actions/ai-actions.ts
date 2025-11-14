@@ -12,6 +12,7 @@ import { WorkoutRationaleAgent } from '@/lib/agents/workout-rationale.agent'
 import { WorkoutModificationValidator } from '@/lib/agents/workout-modification-validator.agent'
 import { ExerciseAdditionValidator, type ExerciseAdditionInput } from '@/lib/agents/exercise-addition-validator.agent'
 import { ExerciseSuggester, type ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
+import { EquipmentValidator } from '@/lib/agents/equipment-validator.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
 import {
   getNextWorkoutType,
@@ -128,7 +129,7 @@ async function generateWorkoutWithServerClient(
   const language = targetLanguage || await getUserLanguage(userId)
 
   // Pass server client to ExerciseSelector for database access
-  const exerciseSelector = new ExerciseSelector(supabase)
+  const exerciseSelector = new ExerciseSelector(supabase, 'medium')
 
   // Get user profile (already created above, but we need to fetch it for weak points and equipment)
   const { data: profile, error: profileError } = await supabase
@@ -352,6 +353,7 @@ function estimateInitialWeight(exerciseName: string): number {
   if (name.includes('bench')) return 40
   if (name.includes('squat')) return 50
   if (name.includes('deadlift')) return 60
+  if (name.includes('leg') && name.includes('press')) return 70 // Leg press is a heavy compound movement
   if (name.includes('row')) return 30
   if (name.includes('press') && name.includes('shoulder')) return 20
   if (name.includes('curl')) return 15
@@ -825,13 +827,20 @@ export async function updateAvailableEquipmentAction(
 
 /**
  * Server action to validate custom equipment name using AI
+ * Supports both text input and photo recognition
  * Returns validation result without saving to database
  */
 export async function validateCustomEquipmentAction(
   userId: string,
-  equipmentName: string
+  equipmentName?: string,
+  imageBase64?: string
 ) {
   try {
+    // Validate inputs
+    if (!equipmentName && !imageBase64) {
+      throw new Error('Either equipment name or image must be provided')
+    }
+
     const supabase = await getSupabaseServerClient()
 
     // Get user's current equipment
@@ -853,18 +862,34 @@ export async function validateCustomEquipmentAction(
     }
 
     // Initialize validator
-    const { EquipmentValidator } = await import('@/lib/agents/equipment-validator.agent')
     const validator = new EquipmentValidator(supabase)
 
-    // Validate equipment
+    let finalEquipmentName = equipmentName
+
+    // If image is provided, extract equipment name using Vision API
+    if (imageBase64) {
+      console.log('[validateCustomEquipmentAction] Extracting equipment name from image')
+      finalEquipmentName = await validator.extractNameFromImage(imageBase64)
+      console.log('[validateCustomEquipmentAction] Detected equipment:', finalEquipmentName)
+
+      // Check if extraction failed
+      if (!finalEquipmentName || finalEquipmentName === 'Unknown Equipment') {
+        return {
+          success: false,
+          error: 'Could not identify gym equipment in the image. Please try again with a clearer photo or enter the equipment name manually.'
+        }
+      }
+    }
+
+    // Validate equipment (same flow for both text and photo input)
     const result = await validator.validateEquipment({
-      equipmentName,
+      equipmentName: finalEquipmentName!,
       existingEquipment: profile.available_equipment || [],
       customEquipment: (profile.custom_equipment as Array<{ id: string; name: string }>) || [],
       userId
     })
 
-    return { success: true, result }
+    return { success: true, result, detectedName: imageBase64 ? finalEquipmentName : undefined }
   } catch (error) {
     console.error('Server action - Validate custom equipment error:', error)
     return {
@@ -1491,6 +1516,37 @@ export async function suggestExerciseAdditionAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to suggest exercises'
+    }
+  }
+}
+
+/**
+ * Server action to extract equipment name from photo
+ * Uses Vision API to identify gym equipment in uploaded image
+ * Used for photo-based exercise substitution
+ */
+export async function extractEquipmentNameFromImageAction(
+  imageBase64: string
+): Promise<{ success: true; detectedName: string } | { success: false; error: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const validator = new EquipmentValidator(supabase)
+
+    const detectedName = await validator.extractNameFromImage(imageBase64)
+
+    if (!detectedName || detectedName === 'Unknown Equipment') {
+      return {
+        success: false,
+        error: 'Could not identify gym equipment. Try a clearer photo or enter the name manually.'
+      }
+    }
+
+    return { success: true, detectedName }
+  } catch (error) {
+    console.error('Server action - Extract equipment name from image error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to process image'
     }
   }
 }

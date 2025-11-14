@@ -53,6 +53,22 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   // Get guidance for current working set
   const currentGuidance = !isWarmup && exercise.setGuidance?.find(g => g.setNumber === workingSetNumber)
 
+  // Get effective target weight from actual performance or target
+  const getEffectiveTargetWeight = useCallback(() => {
+    // Filter to get only working sets (exclude warmups)
+    const workingSets = exercise.completedSets.filter((_, idx) => {
+      return idx >= remainingWarmupSets
+    })
+
+    // If we have working sets logged, use the max weight from those
+    if (workingSets.length > 0) {
+      return Math.max(...workingSets.map(s => s.weight))
+    }
+
+    // Otherwise use the target weight
+    return exercise.targetWeight || 0
+  }, [exercise.completedSets, exercise.targetWeight, remainingWarmupSets])
+
   // Initialize state based on warmup vs working set
   const getInitialWeight = useCallback(() => {
     if (currentWarmup) {
@@ -60,15 +76,16 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       if (currentWarmup.weight !== undefined) {
         return currentWarmup.weight
       }
-      // Calculate from percentage if targetWeight is available
-      if (currentWarmup.weightPercentage !== undefined && exercise.targetWeight) {
+      // Calculate from percentage using effective target (adapts to actual performance)
+      if (currentWarmup.weightPercentage !== undefined) {
+        const effectiveTarget = getEffectiveTargetWeight()
         // Round to nearest 0.5kg (standard barbell increment)
-        return Math.round((exercise.targetWeight * currentWarmup.weightPercentage / 100) * 2) / 2
+        return Math.round((effectiveTarget * currentWarmup.weightPercentage / 100) * 2) / 2
       }
     }
     if (suggestion) return suggestion.weight
     return exercise.targetWeight || 0
-  }, [currentWarmup, suggestion, exercise.targetWeight])
+  }, [currentWarmup, suggestion, exercise.targetWeight, getEffectiveTargetWeight])
 
   const getInitialReps = useCallback(() => {
     if (currentWarmup) return currentWarmup.reps ?? 8
