@@ -711,6 +711,12 @@
           "unexpectedError": "An unexpected error occurred"
         }
       }
+    },
+    "splitReference": {
+      "dayOfCycle": "Day {current} of {total}",
+      "volumeComparison": "Volume Comparison",
+      "actual": "Actual",
+      "target": "Target"
     }
   },
   "onboarding": {
@@ -1171,6 +1177,16 @@
           "name": "Full Body",
           "description": "Full body workout each session, ideal for beginners or those training 2-3 times per week",
           "schedule": "Full Body"
+        },
+        "bro_split": {
+          "name": "Bro Split",
+          "description": "5-day split: dedicated days for chest, back, shoulders, arms, and legs with A/B variations",
+          "schedule": "C, B, S, A, L"
+        },
+        "weak_point_focus": {
+          "name": "Weak Point Focus",
+          "description": "Specialization split emphasizing a target muscle 3-4x per cycle",
+          "schedule": "Variable"
         }
       }
     },

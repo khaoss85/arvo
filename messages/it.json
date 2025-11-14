@@ -711,6 +711,12 @@
           "unexpectedError": "Si è verificato un errore imprevisto"
         }
       }
+    },
+    "splitReference": {
+      "dayOfCycle": "Giorno {current} di {total}",
+      "volumeComparison": "Confronto Volumi",
+      "actual": "Effettivo",
+      "target": "Target"
     }
   },
   "onboarding": {
@@ -1171,6 +1177,16 @@
           "name": "Full Body",
           "description": "Allenamento total body ogni sessione, ideale per principianti o chi si allena 2-3 volte a settimana",
           "schedule": "Full Body"
+        },
+        "bro_split": {
+          "name": "Bro Split",
+          "description": "Split a 5 giorni: giorni dedicati per petto, schiena, spalle, braccia e gambe con variazioni A/B",
+          "schedule": "P, S, Sp, Br, G"
+        },
+        "weak_point_focus": {
+          "name": "Focus Punto Debole",
+          "description": "Split di specializzazione che enfatizza un muscolo target 3-4 volte per ciclo",
+          "schedule": "Variabile"
         }
       }
     },
