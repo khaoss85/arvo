@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { getSplitTimelineDataAction, advanceSplitCycleAction } from '@/app/actions/split-actions'
 import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
 import { TimelineDayCard } from './timeline-day-card'
+import { useUIStore } from '@/lib/stores/ui.store'
 
 interface SplitCycleTimelineProps {
   userId: string
@@ -18,6 +19,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { addToast } = useUIStore()
 
   const loadTimelineData = useCallback(async () => {
     setLoading(true)
@@ -40,16 +42,38 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
   }, [userId])
 
   const handleSkipRestDay = useCallback(async () => {
+    console.log('[SplitCycleTimeline] handleSkipRestDay - Starting...')
     try {
       const result = await advanceSplitCycleAction(userId)
+      console.log('[SplitCycleTimeline] handleSkipRestDay - Result:', result)
+
       if (result.success) {
+        const nextDay = result.data?.nextDay
+        // Show success toast
+        addToast(
+          nextDay
+            ? `✓ Passato al Giorno ${nextDay}`
+            : '✓ Avanzato al prossimo giorno',
+          'success'
+        )
         // Reload timeline data to reflect the new current day
         await loadTimelineData()
+      } else {
+        // Show error toast with specific message
+        console.error('[SplitCycleTimeline] handleSkipRestDay - Operation failed:', result.error)
+        addToast(
+          `✗ Impossibile saltare il giorno di riposo: ${result.error || 'Errore sconosciuto'}`,
+          'error'
+        )
       }
     } catch (err) {
-      console.error('Failed to skip rest day:', err)
+      console.error('[SplitCycleTimeline] handleSkipRestDay - Exception:', err)
+      addToast(
+        `✗ Errore inaspettato: ${err instanceof Error ? err.message : 'Errore sconosciuto'}`,
+        'error'
+      )
     }
-  }, [userId, loadTimelineData])
+  }, [userId, loadTimelineData, addToast])
 
   useEffect(() => {
     loadTimelineData()

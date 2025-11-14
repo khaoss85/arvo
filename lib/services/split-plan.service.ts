@@ -194,24 +194,43 @@ export class SplitPlanService {
   static async advanceCycle(userId: string): Promise<number> {
     const supabase = getSupabaseBrowserClient();
 
+    console.log('[SplitPlanService] advanceCycle - Starting for userId:', userId);
+
     // Get current state
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
       .select("current_cycle_day, active_split_plan_id")
       .eq("user_id", userId)
       .single();
 
+    if (profileError) {
+      console.error('[SplitPlanService] advanceCycle - Failed to fetch profile:', profileError);
+      throw new Error(`Failed to fetch user profile: ${profileError.message}`);
+    }
+
     if (!profile?.active_split_plan_id) {
+      console.error('[SplitPlanService] advanceCycle - No active split plan found');
       throw new Error("No active split plan found");
     }
 
-    const { data: splitPlan } = await supabase
+    console.log('[SplitPlanService] advanceCycle - Current state:', {
+      currentDay: profile.current_cycle_day,
+      activeSplitPlanId: profile.active_split_plan_id
+    });
+
+    const { data: splitPlan, error: planError } = await supabase
       .from("split_plans")
       .select("cycle_days")
       .eq("id", profile.active_split_plan_id)
       .single();
 
+    if (planError) {
+      console.error('[SplitPlanService] advanceCycle - Failed to fetch split plan:', planError);
+      throw new Error(`Failed to fetch split plan: ${planError.message}`);
+    }
+
     if (!splitPlan) {
+      console.error('[SplitPlanService] advanceCycle - Split plan not found');
       throw new Error("Split plan not found");
     }
 
@@ -219,16 +238,25 @@ export class SplitPlanService {
     const currentDay = profile.current_cycle_day || 1;
     const nextDay = currentDay >= splitPlan.cycle_days ? 1 : currentDay + 1;
 
+    console.log('[SplitPlanService] advanceCycle - Advancing:', {
+      from: currentDay,
+      to: nextDay,
+      totalCycleDays: splitPlan.cycle_days,
+      wrappedAround: nextDay === 1
+    });
+
     // Update user profile
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from("user_profiles")
       .update({ current_cycle_day: nextDay })
       .eq("user_id", userId);
 
-    if (error) {
-      throw new Error(`Failed to advance cycle: ${error.message}`);
+    if (updateError) {
+      console.error('[SplitPlanService] advanceCycle - Failed to update profile:', updateError);
+      throw new Error(`Failed to advance cycle: ${updateError.message}`);
     }
 
+    console.log('[SplitPlanService] advanceCycle - Successfully advanced to day:', nextDay);
     return nextDay;
   }
 

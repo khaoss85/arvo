@@ -7,7 +7,7 @@ import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-tim
 import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
-import { Sparkles, Play, Eye, Moon, ArrowRight } from 'lucide-react'
+import { Sparkles, Play, Eye, Moon, ArrowRight, Loader2 } from 'lucide-react'
 import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
@@ -177,10 +177,17 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   }
 
   const handleSkipRestDay = async () => {
-    if (!onSkipRestDay) return
+    if (!onSkipRestDay) {
+      console.warn('[TimelineDayCard] handleSkipRestDay - onSkipRestDay callback is missing')
+      return
+    }
+    console.log('[TimelineDayCard] handleSkipRestDay - Starting...')
     setSkipping(true)
     try {
       await onSkipRestDay()
+      console.log('[TimelineDayCard] handleSkipRestDay - Completed successfully')
+    } catch (error) {
+      console.error('[TimelineDayCard] handleSkipRestDay - Error:', error)
     } finally {
       setSkipping(false)
     }
@@ -230,8 +237,17 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
               variant="outline"
               className="mt-2 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
             >
-              {skipping ? t('skippingRestDay') : t('skipRestDay')}
-              {!skipping && <ArrowRight className="w-4 h-4 ml-2" />}
+              {skipping ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('skippingRestDay')}
+                </>
+              ) : (
+                <>
+                  {t('skipRestDay')}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
             </Button>
           )}
         </div>
