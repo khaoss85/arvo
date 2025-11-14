@@ -146,6 +146,22 @@
       "skipRestDay": "Skip to Next Workout",
       "skippingRestDay": "Skipping..."
     },
+    "volumeProgress": {
+      "title": "Volume Progress",
+      "description": "Sets completed per muscle group in this cycle",
+      "footer": "Progress is automatically updated after each completed workout",
+      "summary": "Summary",
+      "cycleProgress": "Current Cycle Progress",
+      "moreGroups": "more groups",
+      "detailsTitle": "Complete Volume Details",
+      "detailsDescription": "Detailed progress for all muscle groups in the current cycle",
+      "completed": "Completed",
+      "nearCompletion": "Near completion",
+      "onTrack": "On track",
+      "needsWork": "Needs work",
+      "remaining": "remaining",
+      "targetReached": "Target reached!"
+    },
     "generation": {
       "title": "Generating Workout",
       "phases": {
@@ -715,6 +731,7 @@
     "splitReference": {
       "dayOfCycle": "Day {current} of {total}",
       "volumeComparison": "Volume Comparison",
+      "volumeExplanation": "Direct (primary) + indirect (secondary) sets",
       "actual": "Actual",
       "target": "Target"
     }

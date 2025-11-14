@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { getUser } from "@/lib/utils/auth.server";
 import { UserProfileService } from "@/lib/services/user-profile.service";
 import { WorkoutService } from "@/lib/services/workout.service";
+import { getVolumeProgressAction } from "@/lib/actions/volume-progress-actions";
 import { DashboardClient } from "@/components/features/dashboard/dashboard-client";
 
 export const metadata: Metadata = {
@@ -26,5 +27,9 @@ export default async function DashboardPage() {
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
 
-  return <DashboardClient user={user} workouts={workouts} />;
+  // Get volume progress data
+  const volumeProgressResult = await getVolumeProgressAction(user.id);
+  const volumeProgress = volumeProgressResult.success && volumeProgressResult.data ? volumeProgressResult.data : [];
+
+  return <DashboardClient user={user} workouts={workouts} volumeProgress={volumeProgress} />;
 }

@@ -146,6 +146,22 @@
       "skipRestDay": "Salta al Prossimo Allenamento",
       "skippingRestDay": "Saltando..."
     },
+    "volumeProgress": {
+      "title": "Progresso Volume",
+      "description": "Sets completati per gruppo muscolare in questo ciclo",
+      "footer": "Il progresso viene aggiornato automaticamente ad ogni allenamento completato",
+      "summary": "Riepilogo",
+      "cycleProgress": "Progresso Ciclo Corrente",
+      "moreGroups": "gruppi in più",
+      "detailsTitle": "Dettagli Volume Completo",
+      "detailsDescription": "Progresso dettagliato per tutti i gruppi muscolari nel ciclo corrente",
+      "completed": "Completato",
+      "nearCompletion": "Quasi completato",
+      "onTrack": "In linea",
+      "needsWork": "Da migliorare",
+      "remaining": "rimanenti",
+      "targetReached": "Obiettivo raggiunto!"
+    },
     "generation": {
       "title": "Generazione Allenamento",
       "phases": {
@@ -715,6 +731,7 @@
     "splitReference": {
       "dayOfCycle": "Giorno {current} di {total}",
       "volumeComparison": "Confronto Volumi",
+      "volumeExplanation": "Set diretti (primari) + indiretti (secondari)",
       "actual": "Effettivo",
       "target": "Target"
     }

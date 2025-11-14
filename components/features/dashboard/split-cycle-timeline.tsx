@@ -4,15 +4,18 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { getSplitTimelineDataAction, advanceSplitCycleAction } from '@/app/actions/split-actions'
 import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
+import type { MuscleVolumeProgress } from '@/lib/actions/volume-progress-actions'
 import { TimelineDayCard } from './timeline-day-card'
+import { VolumeSummaryTimelineCard } from './volume-summary-timeline-card'
 import { useUIStore } from '@/lib/stores/ui.store'
 
 interface SplitCycleTimelineProps {
   userId: string
   onGenerateWorkout?: () => void
+  volumeProgress?: MuscleVolumeProgress[]
 }
 
-export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTimelineProps) {
+export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }: SplitCycleTimelineProps) {
   const t = useTranslations('dashboard.timeline')
   const tLegend = useTranslations('dashboard.timeline.legend')
   const [data, setData] = useState<SplitTimelineData | null>(null)
@@ -204,6 +207,13 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout }: SplitCycleTime
                 />
               </div>
             ))}
+
+            {/* Volume Progress Summary Card */}
+            {volumeProgress && volumeProgress.length > 0 && (
+              <div style={{ scrollSnapAlign: 'center' }}>
+                <VolumeSummaryTimelineCard progressData={volumeProgress} />
+              </div>
+            )}
           </div>
         </div>
 

@@ -4,13 +4,15 @@ import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { SplitCycleTimeline } from "./split-cycle-timeline"
 import type { User } from "@supabase/supabase-js"
+import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
 
 interface DashboardClientProps {
   user: User
   workouts: any[]
+  volumeProgress: MuscleVolumeProgress[]
 }
 
-export function DashboardClient({ user, workouts }: DashboardClientProps) {
+export function DashboardClient({ user, workouts, volumeProgress }: DashboardClientProps) {
   const t = useTranslations("dashboard")
   const completedWorkouts = workouts.filter(w => w.completed).slice(0, 6)
 
@@ -50,7 +52,7 @@ export function DashboardClient({ user, workouts }: DashboardClientProps) {
         </div>
 
         <div className="mb-8">
-          <SplitCycleTimeline userId={user.id} />
+          <SplitCycleTimeline userId={user.id} volumeProgress={volumeProgress} />
         </div>
 
         <section aria-labelledby="recent-activity-heading">
