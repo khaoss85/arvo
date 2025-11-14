@@ -177,8 +177,41 @@ Design a complete training split plan that:
    - Target MAV (Maximum Adaptive Volume) from approach landmarks
    - Distribute volume evenly across sessions training that muscle
    - Ensure weak points receive adequate volume
+   - **CRITICAL**: Only include muscle groups with MORE THAN 0 sets. Never include muscle groups that are not trained (0 sets) in targetVolume, frequencyMap, or volumeDistribution
 
 5. **Weekly Schedule Example**: Provide a clear example of how to map the cycle to calendar days
+
+**🔴 CRITICAL: MUSCLE NAME REQUIREMENTS:**
+You MUST use these EXACT canonical muscle group keys (not anatomical Latin names):
+
+ALLOWED MUSCLE KEYS (use these ONLY in focus, targetVolume, frequencyMap, volumeDistribution):
+${JSON.stringify([
+  'chest', 'chest_upper', 'chest_lower',
+  'shoulders', 'shoulders_front', 'shoulders_side', 'shoulders_rear',
+  'triceps', 'triceps_long', 'triceps_lateral', 'triceps_medial',
+  'lats', 'upper_back', 'lower_back', 'traps',
+  'biceps', 'forearms',
+  'quads', 'hamstrings', 'glutes', 'calves',
+  'abs', 'obliques'
+], null, 2)}
+
+COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
+- "pectoralis major/minor" → use "chest"
+- "anterior/lateral/posterior deltoid" → use "shoulders" (or shoulders_front/side/rear if specific)
+- "triceps brachii" → use "triceps"
+- "biceps brachii" → use "biceps"
+- "latissimus dorsi" → use "lats"
+- "trapezius" → use "traps"
+- "rectus abdominis" → use "abs"
+- "gluteus maximus/medius" → use "glutes"
+- "quadriceps femoris" → use "quads"
+- "gastrocnemius/soleus" → use "calves"
+
+✓ CORRECT: "focus": ["chest", "shoulders", "triceps"]
+✗ WRONG: "focus": ["pectoralis major", "anterior deltoid", "triceps brachii"]
+
+✓ CORRECT: "targetVolume": {"chest": 6, "shoulders": 4, "triceps": 3}
+✗ WRONG: "targetVolume": {"pectoralis major": 6, "deltoids": 4}
 
 IMPORTANT CONSIDERATIONS:
 ${input.experienceYears && input.experienceYears < 2 ? `
@@ -236,6 +269,8 @@ Output the split plan as JSON with this EXACT structure:
   "rationale": <string explaining the split design>,
   "weeklyScheduleExample": [<day-by-day schedule strings>]
 }
+
+**⚠️ REMINDER**: Do NOT include muscle groups with 0 sets in targetVolume, frequencyMap, or volumeDistribution. Only include muscles that are actually being trained (sets > 0).
 `
 
     return await this.complete<SplitPlanOutput>(prompt, targetLanguage)
