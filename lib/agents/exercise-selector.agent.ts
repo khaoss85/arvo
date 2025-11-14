@@ -6,7 +6,7 @@ import { AnimationService } from '@/lib/services/animation.service'
 import type { Locale } from '@/i18n'
 
 export interface ExerciseSelectionInput {
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'chest' | 'back' | 'shoulders' | 'arms'
   weakPoints: string[]
   equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment
   availableEquipment?: string[] // New multiselect equipment array

@@ -22,7 +22,7 @@ export async function generateSplitPlanAction(input: SplitPlannerInput) {
     const splitPlanData = await splitPlanner.planSplit(input, targetLanguage)
 
     // Create split plan in database
-    const splitPlan = await SplitPlanService.createServer({
+    const splitPlanBase = {
       user_id: input.userId,
       approach_id: input.approachId,
       split_type: input.splitType,
@@ -31,7 +31,19 @@ export async function generateSplitPlanAction(input: SplitPlannerInput) {
       frequency_map: splitPlanData.frequencyMap as any,
       volume_distribution: splitPlanData.volumeDistribution as any,
       active: true,
-    })
+    }
+
+    // Add specialization fields for weak_point_focus splits
+    const splitPlanData_final = input.splitType === 'weak_point_focus' && input.specializationMuscle
+      ? {
+          ...splitPlanBase,
+          specialization_muscle: input.specializationMuscle,
+          specialization_frequency: splitPlanData.frequencyMap?.[input.specializationMuscle] || 3,
+          specialization_volume_multiplier: 1.5,
+        }
+      : splitPlanBase
+
+    const splitPlan = await SplitPlanService.createServer(splitPlanData_final)
 
     return {
       success: true,

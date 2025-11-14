@@ -4,10 +4,11 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 export interface SplitPlannerInput {
   userId: string
   approachId: string
-  splitType: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
+  splitType: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus'
   weeklyFrequency: number // How many days per week user can train
   weakPoints: string[]
   equipmentAvailable: string[]
+  specializationMuscle?: string | null // For weak_point_focus: target muscle to emphasize
   // User demographics for personalization
   experienceYears?: number | null
   userAge?: number | null
@@ -21,8 +22,8 @@ export interface SplitPlannerInput {
 
 export interface SessionDefinition {
   day: number // Position in cycle (1 to cycle_days)
-  name: string // e.g., "Push A", "Pull B", "Legs A"
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body'
+  name: string // e.g., "Push A", "Pull B", "Legs A", "Chest A", "Back B"
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'chest' | 'back' | 'shoulders' | 'arms'
   variation: 'A' | 'B'
   focus: string[] // Muscle groups emphasized, e.g., ["chest", "shoulders", "triceps"]
   targetVolume: Record<string, number> // Sets per muscle group in this session
@@ -160,11 +161,16 @@ Design a complete training split plan that:
    - For PPL with 6 days/week: use 8-day cycle (3 on, 1 off, repeat) with A/B variations
    - For PPL with 3 days/week: use simple 3-day cycle without variations
    - For Upper/Lower: typically 4-day cycle
+   - For Bro Split: use 10-day cycle (5 workout types: chest, back, shoulders, arms, legs × 2 variations A/B)
+   - For Weak Point Focus: use frequency-based cycle (typically 7-8 days) with ${input.specializationMuscle || 'target muscle'} trained 3-4× per cycle
    - Determine optimal cycle length based on frequency
 
 2. **Sessions**: Create detailed session definitions for each day in the cycle
-   - Assign workout type (push/pull/legs/upper/lower)
+   - Assign workout type (push/pull/legs/upper/lower/chest/back/shoulders/arms for bro split)
    - Assign A or B variation (alternate for variety)
+   - For Bro Split Variation A: focus on strength & compound movements
+   - For Bro Split Variation B: focus on hypertrophy & isolation movements
+   - For Weak Point Focus: ensure ${input.specializationMuscle || 'target muscle'} appears 3-4× with increased volume (1.5× normal)
    - Define muscle group focus for each session
    - Set target volume (sets) per muscle group per session
    - Include 2-3 key principles from the approach for each session

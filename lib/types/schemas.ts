@@ -43,6 +43,7 @@ export const userProfileSchema = z.object({
   available_equipment: z.array(z.string()).nullable().optional(),
   custom_equipment: z.array(z.any()).nullable().optional(), // Custom equipment added by user
   preferred_split: z.string().nullable(),
+  preferred_specialization_muscle: z.string().nullable().optional(), // Preferred muscle for weak_point_focus splits
   // Split planning fields
   active_split_plan_id: z.string().uuid().nullable(),
   current_cycle_day: z.number().int().min(1).nullable(),
@@ -72,11 +73,14 @@ export const splitPlanSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   approach_id: z.string().uuid().nullable(),
-  split_type: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom']),
+  split_type: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom', 'bro_split', 'weak_point_focus']),
   cycle_days: z.number().int().min(1), // e.g., 8 for Kuba's 3 on 1 off cycle
   sessions: z.array(z.record(z.string(), z.unknown())), // Array of SessionDefinition objects
   frequency_map: z.record(z.string(), z.number()), // muscle group -> frequency per week
   volume_distribution: z.record(z.string(), z.number()), // muscle group -> total sets in cycle
+  specialization_muscle: z.string().nullable().optional(), // Target muscle for weak_point_focus split
+  specialization_frequency: z.number().int().min(1).nullable().optional(), // Times per cycle
+  specialization_volume_multiplier: z.number().min(1.0).max(3.0).nullable().optional(), // Volume multiplier (e.g., 1.5 = 50% more)
   active: z.boolean().nullable(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
@@ -172,7 +176,7 @@ export const workoutSchema = z.object({
   total_volume: z.number().min(0).nullable(),
   total_sets: z.number().int().min(0).nullable(),
   notes: z.string().nullable(),
-  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body']).nullable(),
+  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms']).nullable(),
   workout_name: z.string().nullable(),
   target_muscle_groups: z.array(z.string()).nullable(),
   split_type: z.string().nullable(),

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
-type SplitType = 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
+type SplitType = 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus'
 
 interface SplitOption {
   type: SplitType
@@ -17,7 +17,9 @@ const SPLIT_OPTIONS: SplitOption[] = [
   { type: 'push_pull_legs', icon: '💪' },
   { type: 'upper_lower', icon: '⚖️' },
   { type: 'full_body', icon: '🔥' },
-  { type: 'custom', icon: '🎯' }
+  { type: 'bro_split', icon: '🦾' },
+  { type: 'weak_point_focus', icon: '🎯' },
+  { type: 'custom', icon: '⚙️' }
 ]
 
 export default function SplitSelectionPage() {

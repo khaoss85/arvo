@@ -41,6 +41,17 @@
       "confirmDelete": "Confirm Delete"
     }
   },
+  "components": {
+    "ui": {
+      "progressPhases": {
+        "profile": "Loading profile",
+        "split": "Planning workout",
+        "ai": "AI selecting exercises",
+        "optimization": "Optimizing workout",
+        "finalize": "Finalizing"
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "Welcome back",
@@ -882,6 +893,16 @@
             "name": "Custom Split",
             "description": "Let the AI create a customized split based on your preferences and training approach.",
             "frequency": "Variable"
+          },
+          "bro_split": {
+            "name": "Bro Split",
+            "description": "Classic bodybuilding split with dedicated days for chest, back, shoulders, arms, and legs. Each body part trained with A/B variations for optimal development.",
+            "frequency": "5-6 days/week"
+          },
+          "weak_point_focus": {
+            "name": "Weak Point Focus",
+            "description": "Specialized split emphasizing a target muscle group 3-4 times per cycle with increased frequency and volume for rapid improvement.",
+            "frequency": "4-6 days/week"
           }
         },
         "frequencyLabel": "How many days per week can you train?",
@@ -918,6 +939,30 @@
           "front": "Front",
           "back": "Back",
           "selectedWeakPoints": "Selected weak points: {count}/3",
+          "limitReachedMessage": "Perfect! Focusing on fewer muscles gives better results.",
+          "whyMaxThree": {
+            "title": "Why maximum 3?",
+            "expandButton": "Show explanation",
+            "collapseButton": "Hide explanation",
+            "principles": {
+              "point1": {
+                "title": "If everything is a priority, nothing is",
+                "description": "Trying to improve too many muscle groups at once spreads your recovery capacity thin and slows progress everywhere."
+              },
+              "point2": {
+                "title": "Effective prioritization requires specific resources",
+                "description": "Each weak point needs increased frequency (2x/week vs 1x) and volume (+30-50% sets). You can only sustain this for 1-3 muscle groups."
+              },
+              "point3": {
+                "title": "Recovery determines results",
+                "description": "Your nervous system and recovery capacity are limited. Focusing on 1-3 weak points allows proper progression while maintaining other muscle groups."
+              },
+              "point4": {
+                "title": "Rotate priorities across mesocycles",
+                "description": "Work on 1-3 weak points per mesocycle (6-8 weeks), then rotate. Over time you'll address everything systematically."
+              }
+            }
+          },
           "muscles": {
             "chest_upper": "Upper Chest",
             "chest_lower": "Lower Chest",
@@ -1246,6 +1291,30 @@
       "maxWeakPointsError": "Maximum 3 weak points allowed",
       "updateSuccess": "Weak points updated successfully!",
       "updateError": "Failed to update weak points",
+      "limitReachedMessage": "Perfect! Focusing on fewer muscles gives better results.",
+      "whyMaxThree": {
+        "title": "Why maximum 3?",
+        "expandButton": "Show explanation",
+        "collapseButton": "Hide explanation",
+        "principles": {
+          "point1": {
+            "title": "If everything is a priority, nothing is",
+            "description": "Trying to improve too many muscle groups at once spreads your recovery capacity thin and slows progress everywhere."
+          },
+          "point2": {
+            "title": "Effective prioritization requires specific resources",
+            "description": "Each weak point needs increased frequency (2x/week vs 1x) and volume (+30-50% sets). You can only sustain this for 1-3 muscle groups."
+          },
+          "point3": {
+            "title": "Recovery determines results",
+            "description": "Your nervous system and recovery capacity are limited. Focusing on 1-3 weak points allows proper progression while maintaining other muscle groups."
+          },
+          "point4": {
+            "title": "Rotate priorities across mesocycles",
+            "description": "Work on 1-3 weak points per mesocycle (6-8 weeks), then rotate. Over time you'll address everything systematically."
+          }
+        }
+      },
       "muscles": {
         "chestUpper": "Upper Chest",
         "chestLower": "Lower Chest",
@@ -1546,6 +1615,15 @@
         "totalVolume": "Total Volume",
         "workouts": "Workouts"
       }
+    },
+    "ui": {
+      "progressPhases": {
+        "profile": "Loading profile",
+        "split": "Planning workout",
+        "ai": "AI selecting exercises",
+        "optimization": "Optimizing workout",
+        "finalize": "Finalizing"
+      }
     }
   },
   "api": {
@@ -1567,12 +1645,40 @@
           "unauthorized": "Unauthorized",
           "failedToGenerate": "Failed to generate workout",
           "internalServerError": "Internal server error",
-          "cannotGeneratePastDay": "Cannot generate workout for past cycle day. Current: {current}, Target: {target}"
+          "cannotGeneratePastDay": "Cannot generate workout for past cycle day. Current: {current}, Target: {target}",
+          "timeout": "AI generation timed out. The service may be overloaded. Please try again in a moment.",
+          "exerciseSelectionFailed": "Failed to select exercises for your workout. Please try again or contact support if the issue persists.",
+          "splitPlanningFailed": "Failed to plan your training split. Please try again or contact support if the issue persists.",
+          "validationFailed": "Generated workout did not meet quality standards. Please try again - the AI will attempt to improve the result."
+        },
+        "polling": {
+          "generating": "Generating workout...",
+          "stillGenerating": "Still generating...",
+          "almostThere": "Almost there..."
         }
       },
       "errors": {
         "workoutNotFound": "Workout not found",
         "failedToFetch": "Failed to fetch workout"
+      }
+    },
+    "onboarding": {
+      "complete": {
+        "progress": {
+          "starting": "Starting...",
+          "creatingProfile": "Creating your profile",
+          "profileCreated": "Profile created",
+          "planningWorkout": "Planning your workout",
+          "analyzingApproach": "Analyzing training approach",
+          "generatingSplit": "Generating training split plan",
+          "splitCreated": "Split plan created",
+          "finalizingSetup": "Finalizing your setup",
+          "setupComplete": "Setup complete!"
+        },
+        "errors": {
+          "unauthorized": "Unauthorized",
+          "failedToCreate": "Failed to complete onboarding"
+        }
       }
     },
     "exercises": {

@@ -41,6 +41,17 @@
       "confirmDelete": "Conferma Eliminazione"
     }
   },
+  "components": {
+    "ui": {
+      "progressPhases": {
+        "profile": "Caricamento profilo",
+        "split": "Pianificazione allenamento",
+        "ai": "Selezione esercizi con AI",
+        "optimization": "Ottimizzazione allenamento",
+        "finalize": "Finalizzazione"
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "Bentornato",
@@ -882,6 +893,16 @@
             "name": "Suddivisione Personalizzata",
             "description": "Lascia che l'AI crei una suddivisione personalizzata basata sulle tue preferenze e approccio di allenamento.",
             "frequency": "Variabile"
+          },
+          "bro_split": {
+            "name": "Bro Split",
+            "description": "Classica suddivisione bodybuilding con giorni dedicati per petto, schiena, spalle, braccia e gambe. Ogni parte del corpo allenata con variazioni A/B per sviluppo ottimale.",
+            "frequency": "5-6 giorni/settimana"
+          },
+          "weak_point_focus": {
+            "name": "Focus Punto Debole",
+            "description": "Suddivisione specializzata che enfatizza un gruppo muscolare target 3-4 volte per ciclo con frequenza e volume aumentati per miglioramento rapido.",
+            "frequency": "4-6 giorni/settimana"
           }
         },
         "frequencyLabel": "Quanti giorni alla settimana puoi allenarti?",
@@ -918,6 +939,30 @@
           "front": "Frontale",
           "back": "Posteriore",
           "selectedWeakPoints": "Punti deboli selezionati: {count}/3",
+          "limitReachedMessage": "Perfetto! Concentrarsi su pochi muscoli dà risultati migliori.",
+          "whyMaxThree": {
+            "title": "Perché massimo 3?",
+            "expandButton": "Mostra spiegazione",
+            "collapseButton": "Nascondi spiegazione",
+            "principles": {
+              "point1": {
+                "title": "Se tutto è prioritario, niente è prioritario",
+                "description": "Cercare di migliorare troppi gruppi muscolari contemporaneamente disperde la tua capacità di recupero e rallenta i progressi ovunque."
+              },
+              "point2": {
+                "title": "La prioritizzazione efficace richiede risorse specifiche",
+                "description": "Ogni punto debole necessita di maggiore frequenza (2x/settimana vs 1x) e volume (+30-50% serie). Puoi sostenere questo solo per 1-3 gruppi muscolari."
+              },
+              "point3": {
+                "title": "Il recupero determina i risultati",
+                "description": "Il tuo sistema nervoso e la capacità di recupero sono limitati. Concentrarsi su 1-3 punti deboli permette una progressione adeguata mantenendo gli altri gruppi muscolari."
+              },
+              "point4": {
+                "title": "Ruota le priorità tra i mesocicli",
+                "description": "Lavora su 1-3 punti deboli per mesociclo (6-8 settimane), poi ruota. Nel tempo affronterai tutto sistematicamente."
+              }
+            }
+          },
           "muscles": {
             "chest_upper": "Petto Superiore",
             "chest_lower": "Petto Inferiore",
@@ -1246,6 +1291,30 @@
       "maxWeakPointsError": "Massimo 3 punti deboli consentiti",
       "updateSuccess": "Punti deboli aggiornati con successo!",
       "updateError": "Impossibile aggiornare i punti deboli",
+      "limitReachedMessage": "Perfetto! Concentrarsi su pochi muscoli dà risultati migliori.",
+      "whyMaxThree": {
+        "title": "Perché massimo 3?",
+        "expandButton": "Mostra spiegazione",
+        "collapseButton": "Nascondi spiegazione",
+        "principles": {
+          "point1": {
+            "title": "Se tutto è prioritario, niente è prioritario",
+            "description": "Cercare di migliorare troppi gruppi muscolari contemporaneamente disperde la tua capacità di recupero e rallenta i progressi ovunque."
+          },
+          "point2": {
+            "title": "La prioritizzazione efficace richiede risorse specifiche",
+            "description": "Ogni punto debole necessita di maggiore frequenza (2x/settimana vs 1x) e volume (+30-50% serie). Puoi sostenere questo solo per 1-3 gruppi muscolari."
+          },
+          "point3": {
+            "title": "Il recupero determina i risultati",
+            "description": "Il tuo sistema nervoso e la capacità di recupero sono limitati. Concentrarsi su 1-3 punti deboli permette una progressione adeguata mantenendo gli altri gruppi muscolari."
+          },
+          "point4": {
+            "title": "Ruota le priorità tra i mesocicli",
+            "description": "Lavora su 1-3 punti deboli per mesociclo (6-8 settimane), poi ruota. Nel tempo affronterai tutto sistematicamente."
+          }
+        }
+      },
       "muscles": {
         "chestUpper": "Petto Alto",
         "chestLower": "Petto Basso",
@@ -1546,6 +1615,15 @@
         "totalVolume": "Volume Totale",
         "workouts": "Allenamenti"
       }
+    },
+    "ui": {
+      "progressPhases": {
+        "profile": "Caricamento profilo",
+        "split": "Pianificazione allenamento",
+        "ai": "AI in selezione esercizi",
+        "optimization": "Ottimizzazione allenamento",
+        "finalize": "Finalizzazione"
+      }
     }
   },
   "api": {
@@ -1569,12 +1647,38 @@
           "internalServerError": "Errore interno del server",
           "timeout": "Timeout durante la generazione. L'AI sta impiegando più tempo del previsto. Riprova tra poco.",
           "exerciseSelectionFailed": "Impossibile selezionare gli esercizi. L'AI non è riuscita a generare un allenamento valido dopo diversi tentativi. Riprova tra poco.",
+          "splitPlanningFailed": "Impossibile pianificare la tua split di allenamento. Riprova o contatta il supporto se il problema persiste.",
+          "validationFailed": "L'allenamento generato non ha soddisfatto gli standard di qualità. Riprova - l'AI tenterà di migliorare il risultato.",
           "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}"
+        },
+        "polling": {
+          "generating": "Generazione allenamento in corso...",
+          "stillGenerating": "Generazione ancora in corso...",
+          "almostThere": "Quasi pronto..."
         }
       },
       "errors": {
         "workoutNotFound": "Allenamento non trovato",
         "failedToFetch": "Impossibile recuperare l'allenamento"
+      }
+    },
+    "onboarding": {
+      "complete": {
+        "progress": {
+          "starting": "Avvio...",
+          "creatingProfile": "Creazione del tuo profilo",
+          "profileCreated": "Profilo creato",
+          "planningWorkout": "Pianificazione dell'allenamento",
+          "analyzingApproach": "Analisi dell'approccio di allenamento",
+          "generatingSplit": "Generazione del piano split",
+          "splitCreated": "Piano split creato",
+          "finalizingSetup": "Finalizzazione della configurazione",
+          "setupComplete": "Configurazione completata!"
+        },
+        "errors": {
+          "unauthorized": "Non autorizzato",
+          "failedToCreate": "Impossibile completare l'onboarding"
+        }
       }
     },
     "exercises": {

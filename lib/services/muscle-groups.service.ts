@@ -250,6 +250,10 @@ export function generateWorkoutName(
     upper: 'Upper Body',
     lower: 'Lower Body',
     full_body: 'Full Body',
+    chest: 'Petto',
+    back: 'Schiena',
+    shoulders: 'Spalle',
+    arms: 'Braccia',
   }
 
   const baseName = typeNames[workoutType] || 'Allenamento'
@@ -292,6 +296,20 @@ export function getNextWorkoutType(
       return 'full_body'
     }
 
+    case 'bro_split': {
+      const sequence: WorkoutType[] = ['chest', 'back', 'shoulders', 'arms', 'legs']
+      if (!lastWorkoutType) return 'chest'
+      const currentIndex = sequence.indexOf(lastWorkoutType)
+      if (currentIndex === -1) return 'chest'
+      return sequence[(currentIndex + 1) % sequence.length]
+    }
+
+    case 'weak_point_focus': {
+      // Weak point focus uses custom session ordering defined in split plan
+      // Fallback to full_body if called without split plan context
+      return 'full_body'
+    }
+
     case 'custom':
     default: {
       // For custom splits, default to push_pull_legs rotation
@@ -315,6 +333,10 @@ export function getWorkoutTypeColor(workoutType: WorkoutType): string {
     upper: 'orange',
     lower: 'purple',
     full_body: 'yellow',
+    chest: 'red',
+    back: 'blue',
+    shoulders: 'orange',
+    arms: 'purple',
   }
 
   return colors[workoutType] || 'gray'
@@ -331,6 +353,10 @@ export function getWorkoutTypeIcon(workoutType: WorkoutType): string {
     upper: '⬆️',
     lower: '⬇️',
     full_body: '🔥',
+    chest: '🦾',
+    back: '🔙',
+    shoulders: '💥',
+    arms: '💪',
   }
 
   return icons[workoutType] || '💪'

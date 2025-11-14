@@ -53,57 +53,6 @@ export type Database = {
         }
         Relationships: []
       }
-      caloric_phase_history: {
-        Row: {
-          avg_weight_change: number | null
-          caloric_intake_kcal: number | null
-          created_at: string | null
-          duration_weeks: number | null
-          ended_at: string | null
-          id: string
-          is_active: boolean
-          notes: string | null
-          phase: string
-          started_at: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          avg_weight_change?: number | null
-          caloric_intake_kcal?: number | null
-          created_at?: string | null
-          ended_at?: string | null
-          id?: string
-          is_active?: boolean
-          notes?: string | null
-          phase: string
-          started_at?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          avg_weight_change?: number | null
-          caloric_intake_kcal?: number | null
-          created_at?: string | null
-          ended_at?: string | null
-          id?: string
-          is_active?: boolean
-          notes?: string | null
-          phase?: string
-          started_at?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "caloric_phase_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       sets_log: {
         Row: {
           created_at: string | null
@@ -116,6 +65,9 @@ export type Database = {
           reps_target: number | null
           rir_actual: number | null
           set_number: number | null
+          set_type: string | null
+          skip_reason: string | null
+          skipped: boolean
           weight_actual: number | null
           weight_target: number | null
           workout_id: string | null
@@ -131,6 +83,9 @@ export type Database = {
           reps_target?: number | null
           rir_actual?: number | null
           set_number?: number | null
+          set_type?: string | null
+          skip_reason?: string | null
+          skipped?: boolean
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null
@@ -146,6 +101,9 @@ export type Database = {
           reps_target?: number | null
           rir_actual?: number | null
           set_number?: number | null
+          set_type?: string | null
+          skip_reason?: string | null
+          skipped?: boolean
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null
@@ -169,6 +127,9 @@ export type Database = {
           frequency_map: Json
           id: string
           sessions: Json
+          specialization_frequency: number | null
+          specialization_muscle: string | null
+          specialization_volume_multiplier: number | null
           split_type: Database["public"]["Enums"]["split_type"]
           updated_at: string | null
           user_id: string
@@ -182,6 +143,9 @@ export type Database = {
           frequency_map: Json
           id?: string
           sessions: Json
+          specialization_frequency?: number | null
+          specialization_muscle?: string | null
+          specialization_volume_multiplier?: number | null
           split_type: Database["public"]["Enums"]["split_type"]
           updated_at?: string | null
           user_id: string
@@ -195,6 +159,9 @@ export type Database = {
           frequency_map?: Json
           id?: string
           sessions?: Json
+          specialization_frequency?: number | null
+          specialization_muscle?: string | null
+          specialization_volume_multiplier?: number | null
           split_type?: Database["public"]["Enums"]["split_type"]
           updated_at?: string | null
           user_id?: string
@@ -222,10 +189,11 @@ export type Database = {
           name: string
           periodization: Json | null
           philosophy: string | null
-          short_philosophy: string | null
           progression_rules: Json
           rationales: Json | null
+          rest_timer_guidelines: Json | null
           rom_emphasis: Json | null
+          short_philosophy: string | null
           split_variations: Json | null
           stimulus_to_fatigue: Json | null
           variables: Json
@@ -242,10 +210,11 @@ export type Database = {
           name: string
           periodization?: Json | null
           philosophy?: string | null
-          short_philosophy?: string | null
           progression_rules: Json
           rationales?: Json | null
+          rest_timer_guidelines?: Json | null
           rom_emphasis?: Json | null
+          short_philosophy?: string | null
           split_variations?: Json | null
           stimulus_to_fatigue?: Json | null
           variables: Json
@@ -262,10 +231,11 @@ export type Database = {
           name?: string
           periodization?: Json | null
           philosophy?: string | null
-          short_philosophy?: string | null
           progression_rules?: Json
           rationales?: Json | null
+          rest_timer_guidelines?: Json | null
           rom_emphasis?: Json | null
+          short_philosophy?: string | null
           split_variations?: Json | null
           stimulus_to_fatigue?: Json | null
           variables?: Json
@@ -402,9 +372,6 @@ export type Database = {
           age: number | null
           approach_id: string | null
           available_equipment: string[] | null
-          caloric_intake_kcal: number | null
-          caloric_phase: string | null
-          caloric_phase_start_date: string | null
           created_at: string | null
           current_cycle_day: number | null
           current_mesocycle_week: number | null
@@ -416,7 +383,8 @@ export type Database = {
           height: number | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
-          preferred_language: string | null
+          preferred_language: string
+          preferred_specialization_muscle: string | null
           preferred_split: string | null
           strength_baseline: Json | null
           updated_at: string | null
@@ -429,9 +397,6 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
-          caloric_intake_kcal?: number | null
-          caloric_phase?: string | null
-          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
@@ -443,7 +408,8 @@ export type Database = {
           height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
-          preferred_language?: string | null
+          preferred_language?: string
+          preferred_specialization_muscle?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
@@ -456,9 +422,6 @@ export type Database = {
           age?: number | null
           approach_id?: string | null
           available_equipment?: string[] | null
-          caloric_intake_kcal?: number | null
-          caloric_phase?: string | null
-          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_mesocycle_week?: number | null
@@ -470,7 +433,8 @@ export type Database = {
           height?: number | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
-          preferred_language?: string | null
+          preferred_language?: string
+          preferred_specialization_muscle?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
           updated_at?: string | null
@@ -520,6 +484,42 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_generation_metrics: {
+        Row: {
+          completed_at: string | null
+          context: Json | null
+          created_at: string
+          duration_ms: number | null
+          id: string
+          request_id: string
+          started_at: string
+          success: boolean | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          request_id: string
+          started_at?: string
+          success?: boolean | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          request_id?: string
+          started_at?: string
+          success?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       workout_insights: {
         Row: {
           created_at: string
@@ -538,7 +538,7 @@ export type Database = {
           updated_at: string
           user_id: string
           user_note: string
-          workout_id: string
+          workout_id: string | null
         }
         Insert: {
           created_at?: string
@@ -557,7 +557,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           user_note: string
-          workout_id: string
+          workout_id?: string | null
         }
         Update: {
           created_at?: string
@@ -576,7 +576,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           user_note?: string
-          workout_id?: string
+          workout_id?: string | null
         }
         Relationships: [
           {
@@ -735,9 +735,25 @@ export type Database = {
       update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {
-      split_type: "push_pull_legs" | "upper_lower" | "full_body" | "custom"
+      split_type:
+        | "push_pull_legs"
+        | "upper_lower"
+        | "full_body"
+        | "custom"
+        | "bro_split"
+        | "weak_point_focus"
       workout_status: "draft" | "ready" | "in_progress" | "completed"
-      workout_type: "push" | "pull" | "legs" | "upper" | "lower" | "full_body"
+      workout_type:
+        | "push"
+        | "pull"
+        | "legs"
+        | "upper"
+        | "lower"
+        | "full_body"
+        | "chest"
+        | "back"
+        | "shoulders"
+        | "arms"
       workout_variation: "A" | "B"
     }
     CompositeTypes: {
@@ -866,9 +882,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      split_type: ["push_pull_legs", "upper_lower", "full_body", "custom"],
+      split_type: [
+        "push_pull_legs",
+        "upper_lower",
+        "full_body",
+        "custom",
+        "bro_split",
+        "weak_point_focus",
+      ],
       workout_status: ["draft", "ready", "in_progress", "completed"],
-      workout_type: ["push", "pull", "legs", "upper", "lower", "full_body"],
+      workout_type: [
+        "push",
+        "pull",
+        "legs",
+        "upper",
+        "lower",
+        "full_body",
+        "chest",
+        "back",
+        "shoulders",
+        "arms",
+      ],
       workout_variation: ["A", "B"],
     },
   },

@@ -24,6 +24,14 @@ const SPLIT_OPTIONS: SplitOption[] = [
     type: 'full_body',
     days: 1,
   },
+  {
+    type: 'bro_split',
+    days: 5,
+  },
+  {
+    type: 'weak_point_focus',
+    days: 4,
+  },
 ]
 
 interface SplitSelectorProps {
