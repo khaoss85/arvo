@@ -86,6 +86,29 @@
     "startWorkout": "Inizia Allenamento",
     "resumeWorkout": "Riprendi Allenamento",
     "generateWorkout": "Genera Nuovo Allenamento",
+    "workoutCard": {
+      "unnamedWorkout": "Allenamento Senza Nome",
+      "kg": "kg",
+      "sets": "serie",
+      "viewRecap": "Vedi Riepilogo",
+      "push": "Push",
+      "pull": "Pull",
+      "legs": "Gambe",
+      "upper": "Parte Superiore",
+      "lower": "Parte Inferiore",
+      "full_body": "Total Body",
+      "chest": "Petto",
+      "back": "Schiena",
+      "shoulders": "Spalle",
+      "arms": "Braccia",
+      "mentalReadiness": {
+        "1": "Esausto",
+        "2": "Stanco",
+        "3": "Ok",
+        "4": "Bene",
+        "5": "Incredibile"
+      }
+    },
     "splitCycle": {
       "loadingSplitPlan": "Caricamento piano split...",
       "activeSplitPlan": "Piano Split Attivo",
@@ -661,6 +684,11 @@
         },
         "notes": {
           "title": "Note"
+        },
+        "modifications": {
+          "title": "Modifiche Allenamento",
+          "setsSkipped": "{count, plural, one {{count} serie saltata} other {{count} serie saltate}} ({warmup} riscaldamento, {working} lavoro)",
+          "exercisesSubstituted": "{count, plural, one {{count} esercizio sostituito} other {{count} esercizi sostituiti}}"
         },
         "buttons": {
           "viewProgress": "Visualizza Progressi"

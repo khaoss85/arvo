@@ -13,6 +13,17 @@ interface WorkoutRecapProps {
   workout: Workout
   totalVolume: number
   userId: string
+  modifications?: {
+    warmupSetsSkipped: number
+    workingSetsSkipped: number
+    totalSetsSkipped: number
+    exercisesSubstituted: number
+    substitutions: Array<{
+      originalExercise: string
+      newExercise: string
+      reason: string | null
+    }>
+  }
 }
 
 // Mental readiness emoji mapping - labels will be translated
@@ -24,7 +35,7 @@ const MENTAL_READINESS_EMOJIS: Record<number, string> = {
   5: '🔥',
 }
 
-export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps) {
+export function WorkoutRecap({ workout, totalVolume, userId, modifications }: WorkoutRecapProps) {
   const router = useRouter()
   const t = useTranslations('workout.components.workoutRecap')
   const tExecution = useTranslations('workout.execution.mentalReadiness')
@@ -123,6 +134,53 @@ export function WorkoutRecap({ workout, totalVolume, userId }: WorkoutRecapProps
             <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{totalSets}</p>
           </div>
         </div>
+
+        {/* Workout Modifications */}
+        {(() => {
+          try {
+            // Defensive checks for modifications data
+            if (!modifications) return null
+
+            const hasSkippedSets = typeof modifications.totalSetsSkipped === 'number' && modifications.totalSetsSkipped > 0
+            const hasSubstitutions = typeof modifications.exercisesSubstituted === 'number' && modifications.exercisesSubstituted > 0
+
+            if (!hasSkippedSets && !hasSubstitutions) return null
+
+            return (
+              <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800 mb-6">
+                <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-3">
+                  {t('modifications.title')}
+                </h3>
+                <div className="space-y-2">
+                  {hasSkippedSets && (
+                    <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+                      <span className="text-base">⚠️</span>
+                      <span>
+                        {t('modifications.setsSkipped', {
+                          count: modifications.totalSetsSkipped,
+                          warmup: modifications.warmupSetsSkipped || 0,
+                          working: modifications.workingSetsSkipped || 0
+                        })}
+                      </span>
+                    </div>
+                  )}
+                  {hasSubstitutions && (
+                    <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+                      <span className="text-base">🔄</span>
+                      <span>
+                        {t('modifications.exercisesSubstituted', { count: modifications.exercisesSubstituted })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          } catch (error) {
+            // Gracefully fail - don't show modifications section if there's an error
+            console.error('[WorkoutRecap] Error rendering modifications:', error)
+            return null
+          }
+        })()}
 
         {/* Mental Readiness */}
         {mentalReadiness && (

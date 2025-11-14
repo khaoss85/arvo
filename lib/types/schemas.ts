@@ -212,6 +212,9 @@ export const setLogSchema = z.object({
   set_type: z.enum(["warmup", "working"]).nullable(),
   skipped: z.boolean().default(false),
   skip_reason: z.string().nullable(),
+  // Exercise substitution tracking
+  original_exercise_name: z.string().nullable(),
+  substitution_reason: z.string().nullable(),
   created_at: z.string().nullable(),
 });
 

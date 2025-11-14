@@ -86,6 +86,29 @@
     "startWorkout": "Start Workout",
     "resumeWorkout": "Resume Workout",
     "generateWorkout": "Generate New Workout",
+    "workoutCard": {
+      "unnamedWorkout": "Unnamed Workout",
+      "kg": "kg",
+      "sets": "sets",
+      "viewRecap": "View Recap",
+      "push": "Push",
+      "pull": "Pull",
+      "legs": "Legs",
+      "upper": "Upper Body",
+      "lower": "Lower Body",
+      "full_body": "Full Body",
+      "chest": "Chest",
+      "back": "Back",
+      "shoulders": "Shoulders",
+      "arms": "Arms",
+      "mentalReadiness": {
+        "1": "Exhausted",
+        "2": "Tired",
+        "3": "Okay",
+        "4": "Great",
+        "5": "Incredible"
+      }
+    },
     "splitCycle": {
       "loadingSplitPlan": "Loading split plan...",
       "activeSplitPlan": "Active Split Plan",
@@ -661,6 +684,11 @@
         },
         "notes": {
           "title": "Notes"
+        },
+        "modifications": {
+          "title": "Workout Modifications",
+          "setsSkipped": "{count, plural, one {{count} set skipped} other {{count} sets skipped}} ({warmup} warmup, {working} working)",
+          "exercisesSubstituted": "{count, plural, one {{count} exercise substituted} other {{count} exercises substituted}}"
         },
         "buttons": {
           "viewProgress": "View Progress"

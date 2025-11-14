@@ -60,6 +60,10 @@ export interface ExerciseExecution {
     userOverride: boolean // User proceeded despite warnings
     modifiedAt: string // ISO timestamp
   }
+
+  // Exercise substitution tracking
+  originalExerciseName?: string // If this exercise was substituted, stores the original exercise name
+  substitutionReason?: string // Reason for substitution (e.g., "equipment_unavailable", "injury", "user_preference")
 }
 
 interface WorkoutExecutionState {
@@ -400,7 +404,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             notes: null,
             set_type: isWarmupSet ? 'warmup' : 'working',
             skipped: false,
-            skip_reason: null
+            skip_reason: null,
+            // Track exercise substitution if applicable
+            original_exercise_name: currentExercise.originalExerciseName || null,
+            substitution_reason: currentExercise.substitutionReason || null
           })
 
           // Update local state
@@ -480,6 +487,9 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             rir_actual: setData.rir,
             mental_readiness: setData.mentalReadiness || null,
             notes: setData.notes || null,
+            // Preserve exercise substitution tracking if applicable
+            original_exercise_name: exercise.originalExerciseName || null,
+            substitution_reason: exercise.substitutionReason || null,
           })
 
           // Update local state

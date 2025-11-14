@@ -287,6 +287,9 @@ export function ExerciseSubstitution({
       tempo: currentExercise.tempo,
       warmupSets: currentExercise.warmupSets,
       setGuidance: currentExercise.setGuidance,
+      // Track substitution for workout recap
+      originalExerciseName: currentExercise.exerciseName,
+      substitutionReason: 'user_preference', // Default reason, could be made configurable in future
     }
 
     // Create/update memory for substitution pattern

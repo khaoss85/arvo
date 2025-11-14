@@ -32,11 +32,16 @@ export default async function WorkoutRecapPage({ params }: { params: { id: strin
   // Calculate workout volume
   const totalVolume = await SetLogService.calculateWorkoutVolume(params.id)
 
+  // Get workout modifications (skipped sets + exercise substitutions)
+  // Using server-side method for SSR compatibility
+  const modifications = await SetLogService.getWorkoutModificationsServer(params.id)
+
   return (
     <WorkoutRecap
       workout={workout}
       totalVolume={totalVolume}
       userId={user.id}
+      modifications={modifications}
     />
   )
 }

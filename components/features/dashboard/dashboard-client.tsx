@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { SplitCycleTimeline } from "./split-cycle-timeline"
+import { RecentWorkoutCard } from "./recent-workout-card"
 import type { User } from "@supabase/supabase-js"
 import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
 
@@ -14,7 +15,11 @@ interface DashboardClientProps {
 
 export function DashboardClient({ user, workouts, volumeProgress }: DashboardClientProps) {
   const t = useTranslations("dashboard")
-  const completedWorkouts = workouts.filter(w => w.completed).slice(0, 6)
+  // Get the 5 most recent completed workouts, ordered by completion date
+  const completedWorkouts = workouts
+    .filter(w => w.completed && w.completed_at)
+    .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
+    .slice(0, 5)
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -70,10 +75,10 @@ export function DashboardClient({ user, workouts, volumeProgress }: DashboardCli
           </div>
 
           {completedWorkouts.length > 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-              <p className="text-gray-600 dark:text-gray-400">
-                {t("workoutsCompleted", { count: completedWorkouts.length })}
-              </p>
+            <div className="space-y-3">
+              {completedWorkouts.map((workout) => (
+                <RecentWorkoutCard key={workout.id} workout={workout} />
+              ))}
             </div>
           ) : (
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">

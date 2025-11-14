@@ -409,4 +409,197 @@ export class SetLogService {
       bySetType,
     };
   }
+
+  /**
+   * Get workout modifications summary (skipped sets + exercise substitutions)
+   * This provides a compact view of all modifications made during the workout
+   * @client-side
+   */
+  static async getWorkoutModifications(workoutId: string): Promise<{
+    warmupSetsSkipped: number;
+    workingSetsSkipped: number;
+    totalSetsSkipped: number;
+    exercisesSubstituted: number;
+    substitutions: Array<{
+      originalExercise: string;
+      newExercise: string;
+      reason: string | null;
+    }>;
+  }> {
+    try {
+      const supabase = getSupabaseBrowserClient();
+
+      // Get all sets for this workout
+      const { data: sets, error } = await supabase
+        .from("sets_log")
+        .select("*")
+        .eq("workout_id", workoutId);
+
+      if (error) {
+        console.error('[SetLogService] Failed to fetch workout modifications:', error);
+        // Return default values on error
+        return {
+          warmupSetsSkipped: 0,
+          workingSetsSkipped: 0,
+          totalSetsSkipped: 0,
+          exercisesSubstituted: 0,
+          substitutions: [],
+        };
+      }
+
+    if (!sets) {
+      return {
+        warmupSetsSkipped: 0,
+        workingSetsSkipped: 0,
+        totalSetsSkipped: 0,
+        exercisesSubstituted: 0,
+        substitutions: [],
+      };
+    }
+
+    // Count skipped sets by type
+    const skippedSets = sets.filter((set) => set.skipped);
+    const warmupSetsSkipped = skippedSets.filter((set) => set.set_type === "warmup").length;
+    const workingSetsSkipped = skippedSets.filter((set) => set.set_type === "working").length;
+
+    // Find exercise substitutions
+    // Group by new exercise name to avoid duplicates (multiple sets of same substituted exercise)
+    const substitutionMap = new Map<string, {
+      originalExercise: string;
+      newExercise: string;
+      reason: string | null;
+    }>();
+
+    sets.forEach((set) => {
+      if (set.original_exercise_name) {
+        // This exercise was substituted
+        const key = set.exercise_name; // Use new exercise name as key
+        if (!substitutionMap.has(key)) {
+          substitutionMap.set(key, {
+            originalExercise: set.original_exercise_name,
+            newExercise: set.exercise_name,
+            reason: set.substitution_reason,
+          });
+        }
+      }
+    });
+
+      const substitutions = Array.from(substitutionMap.values());
+
+      return {
+        warmupSetsSkipped,
+        workingSetsSkipped,
+        totalSetsSkipped: skippedSets.length,
+        exercisesSubstituted: substitutions.length,
+        substitutions,
+      };
+    } catch (error) {
+      console.error('[SetLogService] Error in getWorkoutModifications:', error);
+      // Return default values on exception
+      return {
+        warmupSetsSkipped: 0,
+        workingSetsSkipped: 0,
+        totalSetsSkipped: 0,
+        exercisesSubstituted: 0,
+        substitutions: [],
+      };
+    }
+  }
+
+  /**
+   * Get workout modifications summary (server-side version)
+   * This provides a compact view of all modifications made during the workout
+   * @server-side
+   */
+  static async getWorkoutModificationsServer(workoutId: string): Promise<{
+    warmupSetsSkipped: number;
+    workingSetsSkipped: number;
+    totalSetsSkipped: number;
+    exercisesSubstituted: number;
+    substitutions: Array<{
+      originalExercise: string;
+      newExercise: string;
+      reason: string | null;
+    }>;
+  }> {
+    try {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      const supabase = await getSupabaseServerClient();
+
+      // Get all sets for this workout
+      const { data: sets, error } = await supabase
+        .from("sets_log")
+        .select("*")
+        .eq("workout_id", workoutId);
+
+      if (error) {
+        console.error('[SetLogService] Failed to fetch workout modifications:', error);
+        // Return default values on error
+        return {
+          warmupSetsSkipped: 0,
+          workingSetsSkipped: 0,
+          totalSetsSkipped: 0,
+          exercisesSubstituted: 0,
+          substitutions: [],
+        };
+      }
+
+      if (!sets) {
+        return {
+          warmupSetsSkipped: 0,
+          workingSetsSkipped: 0,
+          totalSetsSkipped: 0,
+          exercisesSubstituted: 0,
+          substitutions: [],
+        };
+      }
+
+      // Count skipped sets by type
+      const skippedSets = sets.filter((set) => set.skipped);
+      const warmupSetsSkipped = skippedSets.filter((set) => set.set_type === "warmup").length;
+      const workingSetsSkipped = skippedSets.filter((set) => set.set_type === "working").length;
+
+      // Find exercise substitutions
+      // Group by new exercise name to avoid duplicates (multiple sets of same substituted exercise)
+      const substitutionMap = new Map<string, {
+        originalExercise: string;
+        newExercise: string;
+        reason: string | null;
+      }>();
+
+      sets.forEach((set) => {
+        if (set.original_exercise_name) {
+          // This exercise was substituted
+          const key = set.exercise_name; // Use new exercise name as key
+          if (!substitutionMap.has(key)) {
+            substitutionMap.set(key, {
+              originalExercise: set.original_exercise_name,
+              newExercise: set.exercise_name,
+              reason: set.substitution_reason,
+            });
+          }
+        }
+      });
+
+      const substitutions = Array.from(substitutionMap.values());
+
+      return {
+        warmupSetsSkipped,
+        workingSetsSkipped,
+        totalSetsSkipped: skippedSets.length,
+        exercisesSubstituted: substitutions.length,
+        substitutions,
+      };
+    } catch (error) {
+      console.error('[SetLogService] Error in getWorkoutModificationsServer:', error);
+      // Return default values on exception
+      return {
+        warmupSetsSkipped: 0,
+        workingSetsSkipped: 0,
+        totalSetsSkipped: 0,
+        exercisesSubstituted: 0,
+        substitutions: [],
+      };
+    }
+  }
 }
