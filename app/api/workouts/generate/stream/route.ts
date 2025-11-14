@@ -4,6 +4,7 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
+import { GenerationCache } from '@/lib/services/generation-cache'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest) {
 
     const userId = user.id
     const locale = await getUserLanguage(userId)
-    const { targetCycleDay } = await request.json()
+    const body = await request.json()
+    const { targetCycleDay, generationRequestId } = body
 
     // Get translations for progress messages and errors
     const tProgress = await getTranslations({ locale, namespace: 'api.workouts.generate.progress' })
@@ -42,76 +44,182 @@ export async function POST(request: NextRequest) {
             controller.enqueue(encoder.encode(`data: ${data}\n\n`))
           }
 
-          // Phase 1: Starting
-          sendProgress('profile', 5, tProgress('starting'))
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // Check cache for previous interrupted generation (idempotency + reconnection)
+          if (generationRequestId) {
+            const cached = GenerationCache.get(generationRequestId)
 
-          // Phase 2: Loading profile
-          sendProgress('profile', 15, tProgress('loadingProfile'))
-
-          // Phase 3: Planning workout
-          sendProgress('split', 25, tProgress('planningWorkout'))
-          await new Promise(resolve => setTimeout(resolve, 200))
-
-          // Phase 4: AI selecting exercises (longest phase)
-          sendProgress('ai', 35, tProgress('aiAnalyzing'))
-          await new Promise(resolve => setTimeout(resolve, 500))
-          sendProgress('ai', 50, tProgress('aiSelecting'))
-          await new Promise(resolve => setTimeout(resolve, 500))
-          sendProgress('ai', 65, tProgress('optimizingSelection'))
-
-          // Determine if we're generating for current day or future day
-          let result
-          if (targetCycleDay) {
-            // Get user's current cycle day to determine which method to use
-            const profile = await UserProfileService.getByUserIdServer(userId)
-            const currentCycleDay = profile?.current_cycle_day || 1
-
-            if (targetCycleDay === currentCycleDay) {
-              // Current day: use generateWorkout with status='ready'
-              result = await WorkoutGeneratorService.generateWorkout(userId, {
-                targetCycleDay,
-                status: 'ready'
-              })
-            } else if (targetCycleDay > currentCycleDay) {
-              // Future day: use generateDraftWorkout
-              result = await WorkoutGeneratorService.generateDraftWorkout(
-                userId,
-                targetCycleDay
-              )
-            } else {
-              throw new Error(tErrors('cannotGeneratePastDay', { current: currentCycleDay, target: targetCycleDay }))
+            if (cached?.status === 'complete') {
+              // Previous generation completed while client was disconnected
+              console.log(`[WorkoutGenerate] Returning cached result: ${generationRequestId}`)
+              sendProgress('complete', 100, tProgress('workoutReady'))
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                phase: 'complete',
+                workout: cached.workout,
+                insightInfluencedChanges: cached.insightInfluencedChanges
+              })}\n\n`))
+              controller.close()
+              return
             }
-          } else {
-            // No targetCycleDay specified: generate for current day
-            result = await WorkoutGeneratorService.generateWorkout(userId, {
-              status: 'ready'
-            })
+
+            // Mark as started (for polling fallback)
+            GenerationCache.start(generationRequestId)
           }
 
-          // Phase 5: Analyzing history
-          sendProgress('history', 80, tProgress('analyzingHistory'))
-          await new Promise(resolve => setTimeout(resolve, 300))
+          // Multi-phase non-linear progress algorithm
+          // Provides natural-feeling progression that matches user expectations
+          const getProgressConfig = (current: number): { step: number; interval: number; phase: string; message: string } => {
+            if (current < 20) {
+              // Phase 1: FAST initial feedback (0-20%)
+              return { step: 5, interval: 600, phase: 'profile', message: tProgress('loadingProfile') }
+            } else if (current < 45) {
+              // Phase 2: MEDIUM momentum building (20-45%)
+              return { step: 4, interval: 2000, phase: 'split', message: tProgress('planningWorkout') }
+            } else if (current < 70) {
+              // Phase 3: SLOW AI selection (45-70%)
+              return { step: 3, interval: 3500, phase: 'ai', message: tProgress('aiSelecting') }
+            } else if (current < 90) {
+              // Phase 4: ULTRA-SLOW optimization (70-90%)
+              // Small increments to show system is still working during long AI generation
+              // +1% every 5 seconds prevents "frozen" perception
+              return { step: 1, interval: 5000, phase: 'optimization', message: tProgress('optimizing') }
+            }
+            // Cap at 90% until AI completes
+            return { step: 0, interval: 0, phase: 'optimization', message: tProgress('optimizing') }
+          }
 
-          // Phase 6: Finalizing
-          sendProgress('finalize', 95, tProgress('finalizing'))
-          await new Promise(resolve => setTimeout(resolve, 200))
+          // Start from 0% with immediate feedback
+          let currentProgress = 0
+          sendProgress('profile', currentProgress, tProgress('starting'))
 
-          // Complete
-          sendProgress('complete', 100, tProgress('workoutReady'))
-          const completeData = JSON.stringify({
-            phase: 'complete',
-            workout: result.workout,
-            insightInfluencedChanges: result.insightInfluencedChanges
-          })
-          controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
+          // Dynamic progress interval that adapts speed based on current progress
+          let progressInterval: NodeJS.Timeout | null = null
+          const updateProgress = () => {
+            const config = getProgressConfig(currentProgress)
 
-          controller.close()
+            if (config.step > 0 && currentProgress < 90) {
+              currentProgress = Math.min(currentProgress + config.step, 90)
+              sendProgress(config.phase, currentProgress, config.message)
+
+              // Schedule next update with appropriate interval
+              if (progressInterval) clearTimeout(progressInterval)
+              progressInterval = setTimeout(updateProgress, config.interval)
+            }
+          }
+
+          // Start the adaptive progress updates
+          updateProgress()
+
+          try {
+            // Determine if we're generating for current day or future day
+            let result
+            if (targetCycleDay) {
+              // Get user's current cycle day to determine which method to use
+              const profile = await UserProfileService.getByUserIdServer(userId)
+              const currentCycleDay = profile?.current_cycle_day || 1
+
+              if (targetCycleDay === currentCycleDay) {
+                // Current day: use generateWorkout with status='ready'
+                result = await WorkoutGeneratorService.generateWorkout(userId, {
+                  targetCycleDay,
+                  status: 'ready'
+                })
+              } else if (targetCycleDay > currentCycleDay) {
+                // Future day: use generateDraftWorkout
+                result = await WorkoutGeneratorService.generateDraftWorkout(
+                  userId,
+                  targetCycleDay
+                )
+              } else {
+                throw new Error(tErrors('cannotGeneratePastDay', { current: currentCycleDay, target: targetCycleDay }))
+              }
+            } else {
+              // No targetCycleDay specified: generate for current day
+              result = await WorkoutGeneratorService.generateWorkout(userId, {
+                status: 'ready'
+              })
+            }
+
+            // Stop the progress updates once generation completes
+            if (progressInterval) {
+              clearTimeout(progressInterval)
+              progressInterval = null
+            }
+
+            // Phase 5: Finalizing workout (real milestone - after AI generation)
+            // Jump to 95% (must be > 90% cap to avoid going backwards)
+            sendProgress('finalize', 95, tProgress('finalizing'))
+
+            // Complete
+            sendProgress('complete', 100, tProgress('workoutReady'))
+            const completeData = JSON.stringify({
+              phase: 'complete',
+              workout: result.workout,
+              insightInfluencedChanges: result.insightInfluencedChanges
+            })
+            controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
+
+            // Cache the completed generation (for reconnection/polling)
+            if (generationRequestId) {
+              GenerationCache.complete(
+                generationRequestId,
+                result.workout,
+                result.insightInfluencedChanges || []
+              )
+            }
+
+            controller.close()
+          } catch (error) {
+            // Always stop the progress updates on error
+            if (progressInterval) {
+              clearTimeout(progressInterval)
+              progressInterval = null
+            }
+            throw error // Re-throw to be caught by outer catch
+          }
         } catch (error) {
-          console.error('Stream error:', error)
+          // Detailed error logging for debugging
+          console.error('🔴 [WORKOUT_GENERATION_ERROR] Stream error details:', {
+            errorName: error?.constructor?.name,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            errorStack: error instanceof Error ? error.stack : undefined,
+            errorCause: error instanceof Error ? error.cause : undefined,
+            timestamp: new Date().toISOString()
+          })
+
+          // Cache the error (for polling fallback)
+          if (generationRequestId) {
+            GenerationCache.error(
+              generationRequestId,
+              error instanceof Error ? error.message : 'Generation failed'
+            )
+          }
+
+          // Provide user-friendly error messages based on error type
+          let userErrorMessage = tErrors('failedToGenerate')
+
+          if (error instanceof Error) {
+            // Check for specific error types to provide better guidance
+            if (error.message.includes('timeout')) {
+              userErrorMessage = tErrors('timeout') ||
+                'AI generation timed out. The service may be overloaded. Please try again in a moment.'
+            } else if (error.message.includes('ExerciseSelector')) {
+              userErrorMessage = tErrors('exerciseSelectionFailed') ||
+                'Failed to select exercises for your workout. Please try again or contact support if the issue persists.'
+            } else if (error.message.includes('SplitPlanner')) {
+              userErrorMessage = tErrors('splitPlanningFailed') ||
+                'Failed to plan your training split. Please try again or contact support if the issue persists.'
+            } else if (error.message.includes('validation')) {
+              userErrorMessage = tErrors('validationFailed') ||
+                'Generated workout did not meet quality standards. Please try again - the AI will attempt to improve the result.'
+            } else {
+              // Include partial error info for debugging while remaining user-friendly
+              userErrorMessage = error.message
+            }
+          }
+
           const errorData = JSON.stringify({
             phase: 'error',
-            error: error instanceof Error ? error.message : tErrors('failedToGenerate')
+            error: userErrorMessage
           })
           controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
           controller.close()

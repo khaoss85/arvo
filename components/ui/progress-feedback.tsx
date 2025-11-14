@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
@@ -31,13 +31,78 @@ export function ProgressFeedback({
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('Starting...')
 
+  // Polling fallback for mobile disconnections
+  const [generationRequestId] = useState(() => {
+    // Generate UUID only once per component mount
+    return crypto.randomUUID()
+  })
+  const [pollingMode, setPollingMode] = useState(false)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Polling logic (activated on SSE failure)
+  useEffect(() => {
+    if (!pollingMode || !generationRequestId) return
+
+    let cancelled = false
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/workouts/generation-status/${generationRequestId}`)
+
+        if (!res.ok) {
+          throw new Error(`Polling failed: ${res.status}`)
+        }
+
+        const data = await res.json()
+
+        if (cancelled) return
+
+        if (data.status === 'complete') {
+          // Generation completed!
+          onComplete(data)
+        } else if (data.status === 'error') {
+          onError(data.error || 'Generation failed')
+        } else if (data.status === 'in_progress') {
+          // Update progress from server estimate
+          if (data.progress !== undefined) setProgress(data.progress)
+          if (data.message) setMessage(data.message)
+
+          // Continue polling (2s interval)
+          pollingIntervalRef.current = setTimeout(poll, 2000)
+        } else {
+          // not_found - expired or invalid
+          onError('Generation request expired. Please try again.')
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[ProgressFeedback] Polling error:', error)
+          // Keep trying with longer interval (network issue)
+          pollingIntervalRef.current = setTimeout(poll, 3000)
+        }
+      }
+    }
+
+    poll() // Start immediately
+
+    return () => {
+      cancelled = true
+      if (pollingIntervalRef.current) {
+        clearTimeout(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+    }
+  }, [pollingMode, generationRequestId, onComplete, onError])
+
   useEffect(() => {
     const connectSSE = async () => {
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
+          body: JSON.stringify({
+            ...requestBody,
+            generationRequestId // Add for idempotency + polling fallback
+          })
         })
 
         if (!response.ok) {
@@ -83,8 +148,19 @@ export function ProgressFeedback({
           }
         }
       } catch (error) {
-        console.error('SSE error:', error)
-        onError(error instanceof Error ? error.message : 'Connection error')
+        // Detailed error logging for debugging
+        console.error('🔴 [PROGRESS_FEEDBACK_ERROR] SSE connection error:', {
+          errorName: error?.constructor?.name,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          endpoint,
+          timestamp: new Date().toISOString()
+        })
+
+        // Switch to polling fallback (for mobile disconnections)
+        console.log('[ProgressFeedback] SSE failed, switching to polling mode')
+        setPollingMode(true)
+        setMessage('Reconnecting...')
       }
     }
 
@@ -111,6 +187,13 @@ export function ProgressFeedback({
         </div>
 
         <Progress value={progress} className="h-2" />
+
+        {/* Duration notice - keep users informed */}
+        {progress < 90 && (
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70">
+            This may take a few minutes...
+          </p>
+        )}
 
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-600 dark:text-gray-400">
@@ -170,7 +253,14 @@ export function ProgressFeedback({
         )}
       </div>
 
-      <Progress value={progress} className="mb-3 h-2" />
+      <Progress value={progress} className="mb-2 h-2" />
+
+      {/* Duration notice - keep users informed */}
+      {progress < 90 && (
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70 mb-2">
+          This may take a few minutes...
+        </p>
+      )}
 
       <div className="flex items-center justify-between text-xs mb-2">
         <span className="text-gray-600 dark:text-gray-400">
