@@ -1,10 +1,12 @@
 import { getUser } from "@/lib/utils/auth.server";
 import { HeroSection } from "@/components/features/landing/hero-section";
 import { AIShowcase } from "@/components/features/landing/ai-showcase";
+import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
 import { VolumeTrackingVisual } from "@/components/features/landing/volume-tracking-visual";
 import { BiomechanicsDemo } from "@/components/features/landing/biomechanics-demo";
 import { GymReadyFeatures } from "@/components/features/landing/gym-ready-features";
+import { EquipmentVision } from "@/components/features/landing/equipment-vision";
 import { MethodologiesSection } from "@/components/features/landing/methodologies-section";
 import { ComparisonTable } from "@/components/features/landing/comparison-table";
 import { FAQSection } from "@/components/features/landing/faq-section";
@@ -19,10 +21,12 @@ export default async function Home() {
     <main className="min-h-screen">
       <HeroSection isAuthenticated={isAuthenticated} />
       <AIShowcase />
+      <SmartRestTimer />
       <NotesIntelligence />
       <VolumeTrackingVisual />
       <BiomechanicsDemo />
       <GymReadyFeatures />
+      <EquipmentVision />
       <MethodologiesSection />
       <ComparisonTable />
       <FAQSection />

@@ -650,7 +650,12 @@
           "placeholder": "Type exercise name or describe what you want...",
           "validateButton": "Validate with AI →",
           "validating": "Validating with AI...",
-          "error": "Failed to validate custom exercise"
+          "error": "Failed to validate custom exercise",
+          "textMode": "Text",
+          "photoMode": "Photo",
+          "recognizing": "Recognizing equipment...",
+          "detected": "Detected",
+          "photoError": "Could not identify equipment. Try again or use text input."
         },
         "validation": {
           "approved": "✓ Good",
@@ -1278,6 +1283,11 @@
       "yourEquipment": "Your Custom Equipment",
       "customBadge": "Custom",
       "unverifiedBadge": "Unverified",
+      "typeMode": "Type Name",
+      "photoMode": "Take Photo",
+      "detectedEquipment": "Detected",
+      "analyzingPhoto": "Analyzing photo...",
+      "alreadyAvailable": "This equipment is already in your standard list - no need to add it as custom!",
       "errors": {
         "validationFailed": "Failed to validate equipment",
         "validationError": "An error occurred during validation",
@@ -1546,6 +1556,7 @@
           "aiAnalyzing": "AI analyzing exercises",
           "aiSelecting": "AI selecting best exercises",
           "optimizingSelection": "Optimizing exercise selection",
+          "optimizing": "Optimizing your workout",
           "analyzingHistory": "Analyzing your performance history",
           "finalizing": "Finalizing your workout",
           "workoutReady": "Workout ready!"
@@ -1827,6 +1838,23 @@
         "stats": {
           "factors": "Decision factors: 6+",
           "response": "Response: <500ms"
+        }
+      },
+      "realTimeRecalc": {
+        "title": "Real-Time Adaptation",
+        "description": "Recalculates after every set, not just at workout start · AI Agent",
+        "set1Label": "SET 1 COMPLETED:",
+        "set2Label": "SET 2 UPDATED SUGGESTION:",
+        "recalculating": "AI recalculating...",
+        "reasoningLabel": "Why the adjustment:",
+        "reasoning": {
+          "point1": "✓ RIR 3 → good reserve capacity",
+          "point2": "✗ Mental readiness low (2/5) → fatigue detected",
+          "point3": "✓ Adjustment: -2.5kg + wider rep range for safety"
+        },
+        "stats": {
+          "timing": "Recalc: <400ms",
+          "frequency": "After every set"
         }
       },
       "safetyFirst": {
@@ -2139,6 +2167,116 @@
       "proTip": {
         "label": "Pro tip:",
         "text": "The system also validates if the substitution maintains workout intent. \"Approved\" means same stimulus-to-fatigue profile. \"Caution\" means different stimulus (with explanation)."
+      }
+    },
+    "equipmentVision": {
+      "title": {
+        "part1": "Equipment Recognition",
+        "part2": "AI"
+      },
+      "subtitle": "Spotted an unusual machine at the gym? Just take a photo. AI recognizes it and suggests exercises instantly.",
+      "step1": {
+        "title": "1. Take Photo",
+        "description": "Snap a picture of the equipment",
+        "exampleDevice": "Camera or gallery upload"
+      },
+      "step2": {
+        "title": "2. AI Recognition",
+        "description": "GPT-4 Vision identifies the equipment",
+        "detected": "AI Detection:",
+        "exampleEquipment": "Smith Machine"
+      },
+      "step3": {
+        "title": "3. Exercise Suggestions",
+        "description": "Instant exercise recommendations",
+        "exercise1": "Smith Machine Squat",
+        "exercise1Detail": "Compound · Quads, Glutes",
+        "exercise2": "Smith Machine Bench Press",
+        "exercise2Detail": "Compound · Chest, Triceps",
+        "exercise3": "Smith Machine Row",
+        "exercise3Detail": "Compound · Back, Biceps"
+      },
+      "benefits": {
+        "title": "Why This Matters",
+        "subtitle": "Computer vision meets workout intelligence",
+        "point1": "No Guesswork",
+        "point1Detail": "Don't know the equipment name? Photo solves it",
+        "point2": "Instant Learning",
+        "point2Detail": "AI adds to database + suggests 3 exercises immediately",
+        "point3": "Always Available",
+        "point3Detail": "Every gym, every unusual machine, covered forever",
+        "techBadge": "Powered by:",
+        "model": "GPT-4 Vision"
+      },
+      "useCase": {
+        "title": "Real-World Scenario:",
+        "description": "You travel to a new gym. They have a unique cable machine you've never seen. Take photo → AI identifies \"Dual Adjustable Cable Crossover\" → Suggests Cable Flyes, Cable Rows, Pallof Press. Done."
+      },
+      "footer": {
+        "bold": "Zero app competitor has this.",
+        "text": "Visual equipment recognition + exercise suggestion is exclusive to Arvo. We're using GPT-4 Vision at the edge of fitness tech."
+      }
+    },
+    "smartRestTimer": {
+      "title": {
+        "part1": "The Timer That Knows",
+        "part2": "Your Method"
+      },
+      "subtitle": "Generic apps give you a fixed timer. Arvo adapts to your training methodology in real-time.",
+      "timerCard": {
+        "title": "Real-Time Rest Validation",
+        "description": "Color-coded feedback based on your approach + exercise type",
+        "contextNote": "Example: FST-7 final 7 sets"
+      },
+      "timerStates": {
+        "optimal": {
+          "label": "🟢 Optimal",
+          "message": "Perfect rest for FST-7 hypertrophy stimulus"
+        },
+        "acceptable": {
+          "label": "🔵 Acceptable",
+          "message": "Still within method guidelines"
+        },
+        "warning": {
+          "label": "🟡 Warning",
+          "message": "Approaching upper limit - fascia stretch declining"
+        },
+        "critical": {
+          "label": "🔴 Critical",
+          "message": "Too long - FST-7 protocol compromised"
+        }
+      },
+      "methodologies": {
+        "title": "Approach-Aware Timing",
+        "subtitle": "Every methodology has different rest requirements",
+        "fst7": {
+          "badge": "Strict timing",
+          "sets": "FST-7 sets",
+          "compound": "Compound",
+          "note": "Final 7 sets require strict 30-45s for fascia stretch"
+        },
+        "y3t": {
+          "badge": "Week-dependent",
+          "compound": "Compound",
+          "isolation": "Isolation",
+          "note": "Rest varies by week: Heavy (Week 1) needs more recovery"
+        },
+        "mountainDog": {
+          "badge": "Phase-specific",
+          "activation": "Activation",
+          "explosive": "Explosive",
+          "pump": "Pump",
+          "note": "Different phases = different rest requirements"
+        }
+      },
+      "comparison": {
+        "title": "Generic Apps vs Arvo:",
+        "genericApps": "Generic apps: Fixed 90s timer, regardless of methodology or exercise type. One-size-fits-all.",
+        "arvo": "Arvo: Reads your approach, understands exercise biomechanics, validates rest in real-time with color coding. Smart adaptation."
+      },
+      "footer": {
+        "bold": "Your rest timer has never been this intelligent.",
+        "text": "This isn't a countdown clock. It's a methodology-aware validation system that helps you train with scientific fidelity."
       }
     }
   },

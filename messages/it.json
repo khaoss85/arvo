@@ -650,7 +650,12 @@
           "placeholder": "Digita il nome dell'esercizio o descrivi cosa vuoi...",
           "validateButton": "Valida con AI →",
           "validating": "Validazione con AI...",
-          "error": "Impossibile validare l'esercizio personalizzato"
+          "error": "Impossibile validare l'esercizio personalizzato",
+          "textMode": "Testo",
+          "photoMode": "Foto",
+          "recognizing": "Riconoscimento attrezzatura...",
+          "detected": "Rilevato",
+          "photoError": "Impossibile identificare l'attrezzatura. Riprova o usa l'input testuale."
         },
         "validation": {
           "approved": "✓ Buono",
@@ -1278,6 +1283,11 @@
       "yourEquipment": "La Tua Attrezzatura Personalizzata",
       "customBadge": "Personalizzato",
       "unverifiedBadge": "Non Verificato",
+      "typeMode": "Inserisci Nome",
+      "photoMode": "Scatta Foto",
+      "detectedEquipment": "Rilevato",
+      "analyzingPhoto": "Analisi foto in corso...",
+      "alreadyAvailable": "Questa attrezzatura è già nella tua lista standard - non serve aggiungerla come personalizzata!",
       "errors": {
         "validationFailed": "Impossibile convalidare l'attrezzatura",
         "validationError": "Si è verificato un errore durante la convalida",
@@ -1546,6 +1556,7 @@
           "aiAnalyzing": "AI in analisi degli esercizi",
           "aiSelecting": "AI in selezione degli esercizi migliori",
           "optimizingSelection": "Ottimizzazione selezione esercizi",
+          "optimizing": "Ottimizzazione del tuo allenamento",
           "analyzingHistory": "Analisi della tua cronologia performance",
           "finalizing": "Finalizzazione del tuo allenamento",
           "workoutReady": "Allenamento pronto!"
@@ -1554,6 +1565,8 @@
           "unauthorized": "Non autorizzato",
           "failedToGenerate": "Impossibile generare l'allenamento",
           "internalServerError": "Errore interno del server",
+          "timeout": "Timeout durante la generazione. L'AI sta impiegando più tempo del previsto. Riprova tra poco.",
+          "exerciseSelectionFailed": "Impossibile selezionare gli esercizi. L'AI non è riuscita a generare un allenamento valido dopo diversi tentativi. Riprova tra poco.",
           "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}"
         }
       },
@@ -1827,6 +1840,23 @@
         "stats": {
           "factors": "Fattori decisionali: 6+",
           "response": "Risposta: <500ms"
+        }
+      },
+      "realTimeRecalc": {
+        "title": "Adattamento Real-Time",
+        "description": "Ricalcola dopo ogni serie, non solo all'inizio · Agente AI",
+        "set1Label": "SERIE 1 COMPLETATA:",
+        "set2Label": "SERIE 2 SUGGERIMENTO AGGIORNATO:",
+        "recalculating": "AI ricalcola...",
+        "reasoningLabel": "Perché l'aggiustamento:",
+        "reasoning": {
+          "point1": "✓ RIR 3 → buona capacità di riserva",
+          "point2": "✗ Prontezza mentale bassa (2/5) → fatica rilevata",
+          "point3": "✓ Aggiustamento: -2.5kg + range reps più ampio per sicurezza"
+        },
+        "stats": {
+          "timing": "Ricalcolo: <400ms",
+          "frequency": "Dopo ogni serie"
         }
       },
       "safetyFirst": {
@@ -2139,6 +2169,116 @@
       "proTip": {
         "label": "Suggerimento:",
         "text": "Il sistema valida anche se la sostituzione mantiene l'intento del workout. \"Approvato\" significa stesso profilo stimolo-affaticamento. \"Attenzione\" significa stimolo diverso (con spiegazione)."
+      }
+    },
+    "equipmentVision": {
+      "title": {
+        "part1": "Riconoscimento Attrezzatura",
+        "part2": "AI"
+      },
+      "subtitle": "Hai trovato un macchinario insolito in palestra? Scatta una foto. L'AI lo riconosce e suggerisce esercizi istantaneamente.",
+      "step1": {
+        "title": "1. Scatta Foto",
+        "description": "Fotografa l'attrezzatura",
+        "exampleDevice": "Fotocamera o caricamento da galleria"
+      },
+      "step2": {
+        "title": "2. Riconoscimento AI",
+        "description": "GPT-4 Vision identifica l'attrezzatura",
+        "detected": "Rilevamento AI:",
+        "exampleEquipment": "Smith Machine"
+      },
+      "step3": {
+        "title": "3. Suggerimenti Esercizi",
+        "description": "Raccomandazioni esercizi istantanee",
+        "exercise1": "Squat alla Smith Machine",
+        "exercise1Detail": "Composto · Quadricipiti, Glutei",
+        "exercise2": "Panca Piana alla Smith Machine",
+        "exercise2Detail": "Composto · Petto, Tricipiti",
+        "exercise3": "Rematore alla Smith Machine",
+        "exercise3Detail": "Composto · Schiena, Bicipiti"
+      },
+      "benefits": {
+        "title": "Perché È Importante",
+        "subtitle": "Computer vision incontra intelligenza workout",
+        "point1": "Zero Supposizioni",
+        "point1Detail": "Non sai il nome dell'attrezzatura? La foto risolve",
+        "point2": "Apprendimento Istantaneo",
+        "point2Detail": "L'AI aggiunge al database + suggerisce 3 esercizi immediatamente",
+        "point3": "Sempre Disponibile",
+        "point3Detail": "Ogni palestra, ogni macchinario insolito, coperto per sempre",
+        "techBadge": "Basato su:",
+        "model": "GPT-4 Vision"
+      },
+      "useCase": {
+        "title": "Scenario Reale:",
+        "description": "Viaggi in una nuova palestra. Hanno un macchinario a cavi unico che non hai mai visto. Scatti foto → L'AI identifica \"Dual Adjustable Cable Crossover\" → Suggerisce Cable Flyes, Cable Rows, Pallof Press. Fatto."
+      },
+      "footer": {
+        "bold": "Zero app competitor hanno questa feature.",
+        "text": "Riconoscimento visivo attrezzatura + suggerimento esercizi è esclusivo di Arvo. Usiamo GPT-4 Vision all'avanguardia della tecnologia fitness."
+      }
+    },
+    "smartRestTimer": {
+      "title": {
+        "part1": "Il Timer Che Conosce",
+        "part2": "Il Tuo Metodo"
+      },
+      "subtitle": "Le app generiche ti danno un timer fisso. Arvo si adatta alla tua metodologia di allenamento in tempo reale.",
+      "timerCard": {
+        "title": "Validazione Riposo Real-Time",
+        "description": "Feedback con codice colore basato sul tuo approccio + tipo esercizio",
+        "contextNote": "Esempio: FST-7 ultime 7 serie"
+      },
+      "timerStates": {
+        "optimal": {
+          "label": "🟢 Ottimale",
+          "message": "Riposo perfetto per stimolo ipertrofia FST-7"
+        },
+        "acceptable": {
+          "label": "🔵 Accettabile",
+          "message": "Ancora dentro le linee guida del metodo"
+        },
+        "warning": {
+          "label": "🟡 Attenzione",
+          "message": "Avvicinamento al limite superiore - stretch fascia in calo"
+        },
+        "critical": {
+          "label": "🔴 Critico",
+          "message": "Troppo lungo - protocollo FST-7 compromesso"
+        }
+      },
+      "methodologies": {
+        "title": "Timing Consapevole dell'Approccio",
+        "subtitle": "Ogni metodologia ha requisiti di riposo diversi",
+        "fst7": {
+          "badge": "Timing rigoroso",
+          "sets": "Serie FST-7",
+          "compound": "Composti",
+          "note": "Le ultime 7 serie richiedono 30-45s rigorosi per lo stretch fascia"
+        },
+        "y3t": {
+          "badge": "Dipende dalla settimana",
+          "compound": "Composti",
+          "isolation": "Isolamento",
+          "note": "Il riposo varia per settimana: Pesante (Settimana 1) necessita più recupero"
+        },
+        "mountainDog": {
+          "badge": "Specifico per fase",
+          "activation": "Attivazione",
+          "explosive": "Esplosivo",
+          "pump": "Pump",
+          "note": "Fasi diverse = requisiti di riposo diversi"
+        }
+      },
+      "comparison": {
+        "title": "App Generiche vs Arvo:",
+        "genericApps": "App generiche: Timer fisso 90s, indipendentemente da metodologia o tipo esercizio. Taglia unica.",
+        "arvo": "Arvo: Legge il tuo approccio, comprende la biomeccanica dell'esercizio, valida il riposo in tempo reale con codice colore. Adattamento intelligente."
+      },
+      "footer": {
+        "bold": "Il tuo timer di recupero non è mai stato così intelligente.",
+        "text": "Questo non è un conto alla rovescia. È un sistema di validazione consapevole della metodologia che ti aiuta ad allenarti con fedeltà scientifica."
       }
     }
   },

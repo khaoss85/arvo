@@ -46,7 +46,7 @@ export function AIShowcase() {
         </motion.div>
 
         <motion.div
-          className="grid md:grid-cols-2 gap-8"
+          className="grid md:grid-cols-3 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -206,8 +206,74 @@ export function AIShowcase() {
             </Card>
           </motion.div>
 
-          {/* Example 3: Insights & Safety Integration */}
-          <motion.div variants={itemVariants} className="md:col-span-2">
+          {/* Example 3: Real-Time Recalculation */}
+          <motion.div variants={itemVariants}>
+            <Card className="h-full border-2 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      {t('realTimeRecalc.title')}
+                    </CardTitle>
+                    <CardDescription className="mt-2">
+                      {t('realTimeRecalc.description')}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Set 1 Completed */}
+                <div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('realTimeRecalc.set1Label')}</div>
+                  <div className="bg-muted rounded-md p-3 text-sm font-mono space-y-1">
+                    <div><span className="text-primary-600 dark:text-primary-400">weight:</span> 100kg</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">reps:</span> 8</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">RIR:</span> 3</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">mental:</span> 😕 (2/5)</div>
+                  </div>
+                </div>
+
+                {/* AI Recalculating */}
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <Zap className="w-5 h-5 text-yellow-500 animate-pulse" />
+                    <span className="text-xs text-muted-foreground">{t('realTimeRecalc.recalculating')}</span>
+                  </div>
+                </div>
+
+                {/* Set 2 Updated */}
+                <div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('realTimeRecalc.set2Label')}</div>
+                  <div className="bg-background rounded-md p-3 text-sm font-mono space-y-2 border border-green-300 dark:border-green-700">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-green-600 dark:text-green-400">97.5kg</span>
+                      <span className="text-muted-foreground">×</span>
+                      <span className="text-xl font-bold text-green-600 dark:text-green-400">8-10</span>
+                    </div>
+
+                    <div className="pt-2 border-t text-xs space-y-1">
+                      <div className="text-green-600 dark:text-green-400">{`// ${t('realTimeRecalc.reasoningLabel')}`}</div>
+                      <div className="text-muted-foreground pl-2 space-y-1">
+                        <div>{t('realTimeRecalc.reasoning.point1')}</div>
+                        <div>{t('realTimeRecalc.reasoning.point2')}</div>
+                        <div>{t('realTimeRecalc.reasoning.point3')}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                  <span>{t('realTimeRecalc.stats.timing')}</span>
+                  <span>{t('realTimeRecalc.stats.frequency')}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Example 4: Insights & Safety Integration */}
+          <motion.div variants={itemVariants} className="md:col-span-3">
             <Card className="border-2 border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-950/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
