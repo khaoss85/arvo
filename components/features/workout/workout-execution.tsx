@@ -89,20 +89,29 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
   // Must account for warmup sets + working sets (same logic as store's logSet)
   const isWorkoutComplete = exercises.length > 0 && exercises.every(ex => {
     const warmupSetsCount = ex.warmupSets?.length || 0
-    const totalRequiredSets = warmupSetsCount + ex.targetSets
+    const warmupSetsSkipped = ex.warmupSetsSkipped || 0
+    const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+    const totalRequiredSets = remainingWarmupSets + ex.targetSets
     return ex.completedSets.length >= totalRequiredSets
   })
 
   // Debug logging for completion check
   if (exercises.length > 0) {
-    console.log('[WorkoutExecution] Completion check:', exercises.map(ex => ({
-      name: ex.exerciseName,
-      completedSets: ex.completedSets.length,
-      warmupSets: ex.warmupSets?.length || 0,
-      targetSets: ex.targetSets,
-      totalRequired: (ex.warmupSets?.length || 0) + ex.targetSets,
-      isComplete: ex.completedSets.length >= ((ex.warmupSets?.length || 0) + ex.targetSets)
-    })))
+    console.log('[WorkoutExecution] Completion check:', exercises.map(ex => {
+      const warmupSetsCount = ex.warmupSets?.length || 0
+      const warmupSetsSkipped = ex.warmupSetsSkipped || 0
+      const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+      return {
+        name: ex.exerciseName,
+        completedSets: ex.completedSets.length,
+        warmupSets: warmupSetsCount,
+        warmupSetsSkipped,
+        remainingWarmupSets,
+        targetSets: ex.targetSets,
+        totalRequired: remainingWarmupSets + ex.targetSets,
+        isComplete: ex.completedSets.length >= (remainingWarmupSets + ex.targetSets)
+      }
+    }))
   }
 
   if (isWorkoutComplete) {

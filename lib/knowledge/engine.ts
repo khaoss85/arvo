@@ -57,12 +57,12 @@ Conditions: ${approach.progression?.setProgression?.conditions || 'N/A'}
 
       case 'exercise_selection':
         // Build comprehensive approach context with philosophy and constraints
-        // Support multiple variable structures (Kuba uses setsPerExercise, Heavy Duty uses sets)
+        // Support multiple variable structures (different approaches structure their variables differently)
         const vars = approach.variables as any
         const setsPerExercise = vars?.setsPerExercise?.working
           || (vars?.sets?.range ? `${vars.sets.range[0]}-${vars.sets.range[1]}` : null)
 
-        // Check for total sets constraint (e.g., Heavy Duty: 6-8 total sets per workout)
+        // Check for total sets constraint (some approaches prescribe fixed total sets per workout)
         const totalSetsConstraint = vars?.sessionDuration?.totalSets
           ? `\n- TOTAL sets per workout: ${vars.sessionDuration.totalSets[0]}-${vars.sessionDuration.totalSets[1]} sets MAXIMUM`
           : ''

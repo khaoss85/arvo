@@ -241,7 +241,9 @@
           "hint": "Inserisci qualsiasi nome di esercizio. L'AI verificherà che si adatti all'allenamento.",
           "useButton": "Usa Questo",
           "validating": "Validazione...",
-          "validate": "Valida"
+          "validate": "Valida",
+          "textMode": "Testo",
+          "photoMode": "Foto"
         },
         "validation": {
           "caution": "⚠️ Attenzione: {rationale}",

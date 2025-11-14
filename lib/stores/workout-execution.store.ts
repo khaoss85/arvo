@@ -428,6 +428,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             updatedExercises[currentExerciseIndex].targetWeight = setData.weight
           }
 
+          // For warmup sets, also update targetWeight if performance exceeds expectations
+          // Use a lower threshold (10%) since warmup sets should inform working set predictions
+          if (isWarmupSet && setData.weight > currentExercise.targetWeight * 1.1) {
+            updatedExercises[currentExerciseIndex].targetWeight = setData.weight
+          }
+
           set({
             exercises: updatedExercises,
             lastActivityAt: new Date()

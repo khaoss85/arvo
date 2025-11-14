@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
-import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction } from '@/app/actions/ai-actions'
+import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle } from 'lucide-react'
+import { PhotoUploader } from '@/components/ui/photo-uploader'
+import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type, Camera } from 'lucide-react'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { memoryService } from '@/lib/services/memory.service'
 import { AnimationService } from '@/lib/services/animation.service'
@@ -32,6 +33,134 @@ function extractEquipmentVariant(exerciseName: string): string {
   if (lowerName.includes('bodyweight')) return 'Bodyweight'
 
   return 'Unknown'
+}
+
+/**
+ * Extract muscle groups from exercise name
+ * Uses common exercise name patterns to infer primary muscle groups
+ */
+function extractMuscleGroups(exerciseName: string): string[] {
+  const lowerName = exerciseName.toLowerCase()
+  const muscleGroups: string[] = []
+
+  // Chest exercises
+  if (
+    lowerName.includes('bench press') ||
+    lowerName.includes('chest press') ||
+    lowerName.includes('chest fly') ||
+    lowerName.includes('pec') ||
+    lowerName.includes('dips') ||
+    lowerName.includes('push up') ||
+    lowerName.includes('pushup')
+  ) {
+    muscleGroups.push('chest')
+  }
+
+  // Back exercises
+  if (
+    lowerName.includes('row') ||
+    lowerName.includes('pull') ||
+    lowerName.includes('lat') ||
+    lowerName.includes('pulldown') ||
+    lowerName.includes('chin up') ||
+    lowerName.includes('chinup') ||
+    lowerName.includes('deadlift') ||
+    lowerName.includes('back')
+  ) {
+    muscleGroups.push('back')
+    if (lowerName.includes('lat') || lowerName.includes('pulldown') || lowerName.includes('pull up')) {
+      muscleGroups.push('lats')
+    }
+  }
+
+  // Shoulder exercises
+  if (
+    lowerName.includes('shoulder') ||
+    lowerName.includes('overhead press') ||
+    lowerName.includes('military press') ||
+    lowerName.includes('lateral raise') ||
+    lowerName.includes('front raise') ||
+    lowerName.includes('shoulder press')
+  ) {
+    muscleGroups.push('shoulders')
+  }
+
+  // Leg exercises
+  if (
+    lowerName.includes('squat') ||
+    lowerName.includes('leg press') ||
+    lowerName.includes('quad') ||
+    lowerName.includes('lunge')
+  ) {
+    muscleGroups.push('quads')
+  }
+
+  if (
+    lowerName.includes('hamstring') ||
+    lowerName.includes('leg curl') ||
+    lowerName.includes('rdl') ||
+    lowerName.includes('romanian')
+  ) {
+    muscleGroups.push('hamstrings')
+  }
+
+  if (
+    lowerName.includes('glute') ||
+    lowerName.includes('hip thrust')
+  ) {
+    muscleGroups.push('glutes')
+  }
+
+  if (lowerName.includes('calf')) {
+    muscleGroups.push('calves')
+  }
+
+  // Arm exercises
+  if (
+    lowerName.includes('curl') ||
+    lowerName.includes('bicep')
+  ) {
+    muscleGroups.push('biceps')
+  }
+
+  if (
+    lowerName.includes('tricep') ||
+    lowerName.includes('extension') ||
+    lowerName.includes('skullcrusher')
+  ) {
+    muscleGroups.push('triceps')
+  }
+
+  // Core exercises
+  if (
+    lowerName.includes('crunch') ||
+    lowerName.includes('sit up') ||
+    lowerName.includes('ab') ||
+    lowerName.includes('plank')
+  ) {
+    muscleGroups.push('abs')
+  }
+
+  // If no specific muscles found, try to infer from general patterns
+  if (muscleGroups.length === 0) {
+    // Upper body compound movements
+    if (lowerName.includes('press')) {
+      muscleGroups.push('chest', 'shoulders', 'triceps')
+    }
+  }
+
+  return muscleGroups
+}
+
+/**
+ * Check if there's overlap between two muscle group arrays
+ */
+function hasMuscleGroupOverlap(muscles1: string[], muscles2: string[]): boolean {
+  if (muscles1.length === 0 || muscles2.length === 0) {
+    return false // Cannot determine overlap if either is empty
+  }
+
+  return muscles1.some((muscle) => muscles2.includes(muscle))
 }
 
 interface ExerciseSubstitutionProps {
@@ -65,6 +194,11 @@ export function ExerciseSubstitution({
   const [customResult, setCustomResult] = useState<SubstitutionSuggestion | null>(null)
   const [customError, setCustomError] = useState<string | null>(null)
 
+  // Photo mode state
+  const [photoMode, setPhotoMode] = useState(false)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [isExtractingName, setIsExtractingName] = useState(false)
+
   // Animation modal state
   const [animationModalExercise, setAnimationModalExercise] = useState<{ name: string; url: string | null } | null>(null)
 
@@ -77,6 +211,9 @@ export function ExerciseSubstitution({
       setLoading(true)
       setError(null)
 
+      // Extract muscle groups from current exercise
+      const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
+
       // Build input for AI agent
       // Note: Server action will fetch user profile data (weak points, approach, equipment, etc.)
       const input: SubstitutionInput = {
@@ -86,6 +223,7 @@ export function ExerciseSubstitution({
           sets: currentExercise.targetSets,
           repRange: currentExercise.targetReps,
           targetWeight: currentExercise.targetWeight,
+          primaryMuscles: currentExerciseMuscles.length > 0 ? currentExerciseMuscles : undefined,
         },
         userId,
         // These will be loaded from user profile by the server action
@@ -198,12 +336,16 @@ export function ExerciseSubstitution({
     onClose()
   }
 
-  const handleValidateCustom = async () => {
-    if (!customInput.trim() || customInput.length < 3) return
+  const handleValidateCustom = async (equipmentName?: string) => {
+    const nameToValidate = equipmentName || customInput.trim()
+    if (!nameToValidate || nameToValidate.length < 3) return
 
     try {
       setCustomValidating(true)
       setCustomError(null)
+
+      // Extract muscle groups from current exercise
+      const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
 
       const input: CustomSubstitutionInput = {
         currentExercise: {
@@ -212,8 +354,9 @@ export function ExerciseSubstitution({
           sets: currentExercise.targetSets,
           repRange: currentExercise.targetReps,
           targetWeight: currentExercise.targetWeight,
+          primaryMuscles: currentExerciseMuscles.length > 0 ? currentExerciseMuscles : undefined,
         },
-        customExerciseName: customInput.trim(),
+        customExerciseName: nameToValidate,
         userId,
         approachId: '',
         weakPoints: [],
@@ -235,6 +378,67 @@ export function ExerciseSubstitution({
     } finally {
       setCustomValidating(false)
     }
+  }
+
+  const handlePhotoUpload = async (base64: string) => {
+    setUploadedImage(base64)
+    setIsExtractingName(true)
+    setCustomError(null)
+
+    try {
+      const result = await extractEquipmentNameFromImageAction(base64)
+
+      if (result.success) {
+        // Check if detected equipment targets the correct muscle groups
+        const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
+        const detectedMuscles = result.primaryMuscles
+
+        // Validate muscle group compatibility
+        if (
+          currentExerciseMuscles.length > 0 &&
+          detectedMuscles.length > 0 &&
+          !hasMuscleGroupOverlap(currentExerciseMuscles, detectedMuscles)
+        ) {
+          // Muscle groups don't match - show warning
+          const currentMusclesText = currentExerciseMuscles.join(', ')
+          const detectedMusclesText = detectedMuscles.join(', ')
+
+          setCustomError(
+            `⚠️ Muscle group mismatch: This equipment targets ${detectedMusclesText}, but you're replacing a ${currentMusclesText} exercise. This substitution is not recommended.`
+          )
+          setUploadedImage(null)
+          setIsExtractingName(false)
+          return
+        }
+
+        setCustomInput(result.detectedName)
+        setIsExtractingName(false)
+        // Auto-validate the detected equipment name (pass directly to avoid race condition)
+        await handleValidateCustom(result.detectedName)
+      } else {
+        setCustomError(result.error)
+        setUploadedImage(null)
+      }
+    } catch (err) {
+      console.error('Failed to extract equipment name from image:', err)
+      setCustomError(t('errors.unexpectedError'))
+      setUploadedImage(null)
+    } finally {
+      setIsExtractingName(false)
+    }
+  }
+
+  const handleClearPhoto = () => {
+    setUploadedImage(null)
+    setCustomInput('')
+    setCustomError(null)
+  }
+
+  const handleModeSwitch = (newPhotoMode: boolean) => {
+    setPhotoMode(newPhotoMode)
+    setCustomInput('')
+    setCustomError(null)
+    setUploadedImage(null)
   }
 
   const handleEditCustom = () => {
@@ -328,42 +532,97 @@ export function ExerciseSubstitution({
                 <h3 className="text-sm font-semibold text-gray-300">{t('customInput.title')}</h3>
               </div>
 
+              {/* Mode Toggle - only show when no result yet */}
+              {!customResult && (
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    variant={!photoMode ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleModeSwitch(false)}
+                    disabled={customValidating || isExtractingName}
+                    className="flex-1"
+                  >
+                    <Type className="w-4 h-4 mr-2" />
+                    {t('customInput.textMode')}
+                  </Button>
+                  <Button
+                    variant={photoMode ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleModeSwitch(true)}
+                    disabled={customValidating || isExtractingName}
+                    className="flex-1"
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {t('customInput.photoMode')}
+                  </Button>
+                </div>
+              )}
+
               {/* Input or Result */}
               {!customResult ? (
                 <>
-                  <input
-                    type="text"
-                    value={customInput}
-                    onChange={(e) => setCustomInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !customValidating && customInput.trim().length >= 3) {
-                        handleValidateCustom()
-                      }
-                    }}
-                    placeholder={t('customInput.placeholder')}
-                    className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
-                    disabled={customValidating}
-                    autoComplete="off"
-                  />
+                  {/* Text Input Mode */}
+                  {!photoMode ? (
+                    <input
+                      type="text"
+                      value={customInput}
+                      onChange={(e) => setCustomInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !customValidating && customInput.trim().length >= 3) {
+                          handleValidateCustom()
+                        }
+                      }}
+                      placeholder={t('customInput.placeholder')}
+                      className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
+                      disabled={customValidating}
+                      autoComplete="off"
+                    />
+                  ) : (
+                    /* Photo Upload Mode */
+                    <div className="mb-3">
+                      <PhotoUploader
+                        onUpload={handlePhotoUpload}
+                        onClear={handleClearPhoto}
+                        isLoading={isExtractingName || customValidating}
+                      />
+                      {isExtractingName && (
+                        <div className="mt-2 p-2 bg-blue-950/20 rounded-lg">
+                          <p className="text-sm text-blue-400 flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {t('customInput.recognizing')}
+                          </p>
+                        </div>
+                      )}
+                      {customInput && !isExtractingName && (
+                        <div className="mt-2 p-2 bg-blue-950/20 border border-blue-800 rounded-lg">
+                          <p className="text-xs text-blue-400">
+                            <strong>{t('customInput.detected')}:</strong> {customInput}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {customError && (
                     <div className="text-sm text-red-400 mb-3">{customError}</div>
                   )}
 
-                  <Button
-                    onClick={handleValidateCustom}
-                    disabled={customValidating || customInput.trim().length < 3}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                  >
-                    {customValidating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        {t('customInput.validating')}
-                      </>
-                    ) : (
-                      t('customInput.validateButton')
-                    )}
-                  </Button>
+                  {!photoMode && (
+                    <Button
+                      onClick={() => handleValidateCustom()}
+                      disabled={customValidating || customInput.trim().length < 3}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                    >
+                      {customValidating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          {t('customInput.validating')}
+                        </>
+                      ) : (
+                        t('customInput.validateButton')
+                      )}
+                    </Button>
+                  )}
                 </>
               ) : (
                 /* Custom Result Card */

@@ -10,7 +10,9 @@
     "generate:embeddings": "tsx scripts/generate-embeddings.ts",
     "seed:fst7": "tsx scripts/seed-fst7-approach.ts",
     "seed:mentzer": "tsx scripts/seed-mentzer-approach.ts",
-    "seed:kuba": "tsx scripts/seed-kuba-approach.ts"
+    "seed:kuba": "tsx scripts/seed-kuba-approach.ts",
+    "seed:y3t": "tsx scripts/seed-y3t-approach.ts",
+    "seed:mountaindog": "tsx scripts/seed-mountain-dog-approach.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -23,6 +25,7 @@
     "@supabase/supabase-js": "^2.80.0",
     "@tanstack/react-query": "^5.90.7",
     "@tanstack/react-query-devtools": "^5.90.2",
+    "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",

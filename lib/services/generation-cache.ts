@@ -6,6 +6,8 @@
  * Cache entries auto-expire after 10 minutes
  */
 
+import { getPhaseFromProgress } from '@/components/ui/progress-feedback'
+
 interface CachedGeneration {
   workout: any | null
   insightInfluencedChanges: any[]
@@ -104,18 +106,23 @@ export class GenerationCache {
   /**
    * Calculate estimated progress based on elapsed time
    * Used for polling when actual progress is unknown
+   * Returns both progress percentage and derived phase (synchronized)
    */
-  static getEstimatedProgress(requestId: string): number {
+  static getEstimatedProgress(requestId: string): { progress: number; phase: string } {
     const entry = generationCache.get(requestId)
-    if (!entry) return 0
-    if (entry.status === 'complete') return 100
-    if (entry.status === 'error') return 0
+    if (!entry) return { progress: 0, phase: 'profile' }
+    if (entry.status === 'complete') return { progress: 100, phase: 'finalize' }
+    if (entry.status === 'error') return { progress: 0, phase: 'profile' }
 
     // Estimate progress: ~1.5% per second, capped at 90%
     // (actual completion sends 100%)
     const elapsed = Date.now() - entry.timestamp
     const progress = Math.min(90, Math.floor(elapsed / 1500))
-    return progress
+
+    // Derive phase from progress to keep them synchronized
+    const phase = getPhaseFromProgress(progress)
+
+    return { progress, phase }
   }
 
   /**

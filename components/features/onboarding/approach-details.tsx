@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   X, BookOpen, TrendingUp, Users, CheckCircle, ChevronDown, ChevronRight,
   Target, Zap, Calendar, Clock, Activity, Dumbbell, Info
@@ -14,6 +15,14 @@ interface ApproachDetailsProps {
 }
 
 export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
+  const t = useTranslations('onboarding.approachDetails')
+  const tExp = useTranslations('onboarding.approachDetails.experienceLevels')
+  const tPerfect = useTranslations('onboarding.approachDetails.perfectFor')
+  const tSections = useTranslations('onboarding.approachDetails.sections')
+  const tVars = useTranslations('onboarding.approachDetails.variables')
+  const tVol = useTranslations('onboarding.approachDetails.volumeLandmarks')
+  const tPer = useTranslations('onboarding.approachDetails.periodization')
+
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['philosophy', 'variables'])
   )
@@ -41,11 +50,11 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
   const getExperienceLevel = () => {
     const name = approach.name.toLowerCase()
     if (name.includes('beginner') || name.includes('starting')) {
-      return { level: 'Beginner-Friendly', color: 'green', description: 'Perfect for those new to structured training' }
+      return { level: tExp('beginnerFriendly'), color: 'green', description: tExp('beginnerDescription') }
     } else if (name.includes('advanced') || name.includes('powerlifting') || name.includes('heavy duty')) {
-      return { level: 'Advanced', color: 'red', description: 'Best suited for experienced lifters' }
+      return { level: tExp('advanced'), color: 'red', description: tExp('advancedDescription') }
     }
-    return { level: 'All Levels', color: 'blue', description: 'Suitable for beginners to advanced athletes' }
+    return { level: tExp('allLevels'), color: 'blue', description: tExp('allLevelsDescription') }
   }
 
   // Extract "perfect for" criteria
@@ -55,27 +64,27 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
     const philosophy = approach.philosophy?.toLowerCase() || ''
 
     if (philosophy.includes('hypertrophy') || name.includes('hypertrophy')) {
-      criteria.push('Building muscle mass and size')
+      criteria.push(tPerfect('buildingMass'))
     }
     if (philosophy.includes('strength') || name.includes('strength')) {
-      criteria.push('Increasing maximal strength')
+      criteria.push(tPerfect('increasingStrength'))
     }
     if (philosophy.includes('volume')) {
-      criteria.push('Those who can handle high training volumes')
+      criteria.push(tPerfect('highVolume'))
     }
     if (philosophy.includes('recovery') || philosophy.includes('sustainable')) {
-      criteria.push('Sustainable long-term progress')
+      criteria.push(tPerfect('sustainable'))
     }
     if (philosophy.includes('powerlifting') || name.includes('powerlifting')) {
-      criteria.push('Powerlifting-specific goals')
+      criteria.push(tPerfect('powerlifting'))
     }
     if (philosophy.includes('general') || name.includes('balanced')) {
-      criteria.push('Balanced, well-rounded development')
+      criteria.push(tPerfect('balanced'))
     }
 
     if (criteria.length === 0) {
-      criteria.push('Structured progressive training')
-      criteria.push('Evidence-based programming')
+      criteria.push(tPerfect('structured'))
+      criteria.push(tPerfect('evidenceBased'))
     }
 
     return criteria
@@ -119,7 +128,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
           </h2>
           {approach.creator && (
             <p className="text-sm text-muted-foreground mt-1">
-              by {approach.creator}
+              {t('by')} {approach.creator}
             </p>
           )}
         </div>
@@ -151,7 +160,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <div className="flex items-start gap-2 mb-2">
               <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <h3 className="font-semibold text-blue-900 dark:text-blue-300">Philosophy</h3>
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300">{tSections('philosophy')}</h3>
             </div>
             <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
               {approach.philosophy}
@@ -161,27 +170,27 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
 
         {/* Training Variables - Accordion */}
         <div className="border rounded-lg overflow-hidden">
-          <SectionHeader icon={Target} title="Training Variables" section="variables" />
+          <SectionHeader icon={Target} title={tSections('trainingVariables')} section="variables" />
           {expandedSections.has('variables') && (
             <div className="p-4 bg-accent/50 space-y-4">
               {/* Sets & Reps */}
               <div>
-                <h4 className="text-sm font-semibold text-primary mb-2">Sets & Reps</h4>
+                <h4 className="text-sm font-semibold text-primary mb-2">{tVars('setsReps')}</h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Working Sets</div>
+                    <div className="text-muted-foreground">{tVars('workingSets')}</div>
                     <div className="font-semibold">{variables?.setsPerExercise?.working || 'N/A'}</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Warmup</div>
-                    <div className="font-semibold text-xs">{variables?.setsPerExercise?.warmup || 'None specified'}</div>
+                    <div className="text-muted-foreground">{tVars('warmup')}</div>
+                    <div className="font-semibold text-xs">{variables?.setsPerExercise?.warmup || tVars('noneSpecified')}</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Compound Reps</div>
+                    <div className="text-muted-foreground">{tVars('compoundReps')}</div>
                     <div className="font-semibold">{variables?.repRanges?.compound?.join('-') || 'N/A'}</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Isolation Reps</div>
+                    <div className="text-muted-foreground">{tVars('isolationReps')}</div>
                     <div className="font-semibold">{variables?.repRanges?.isolation?.join('-') || 'N/A'}</div>
                   </div>
                 </div>
@@ -189,18 +198,18 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
 
               {/* RIR Target */}
               <div>
-                <h4 className="text-sm font-semibold text-primary mb-2">RIR Target (Reps In Reserve)</h4>
+                <h4 className="text-sm font-semibold text-primary mb-2">{tVars('rirTarget')}</h4>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Normal</div>
+                    <div className="text-muted-foreground">{tVars('normal')}</div>
                     <div className="font-semibold">{variables?.rirTarget?.normal ?? 'N/A'} RIR</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Intense</div>
+                    <div className="text-muted-foreground">{tVars('intense')}</div>
                     <div className="font-semibold">{variables?.rirTarget?.intense ?? 'N/A'} RIR</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-muted-foreground">Deload</div>
+                    <div className="text-muted-foreground">{tVars('deload')}</div>
                     <div className="font-semibold">{variables?.rirTarget?.deload ?? 'N/A'} RIR</div>
                   </div>
                 </div>
@@ -215,11 +224,11 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
               {/* Rest Periods */}
               {(variables?.restPeriods || variables?.rest) && (
                 <div>
-                  <h4 className="text-sm font-semibold text-primary mb-2">Rest Periods</h4>
+                  <h4 className="text-sm font-semibold text-primary mb-2">{tVars('restPeriods')}</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     {variables?.restPeriods?.compound && (
                       <div className="bg-background p-3 rounded border">
-                        <div className="text-muted-foreground">Compound</div>
+                        <div className="text-muted-foreground">{tVars('compound')}</div>
                         <div className="font-semibold">
                           {variables.restPeriods.compound.join('-')}s
                         </div>
@@ -227,7 +236,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     )}
                     {variables?.restPeriods?.isolation && (
                       <div className="bg-background p-3 rounded border">
-                        <div className="text-muted-foreground">Isolation</div>
+                        <div className="text-muted-foreground">{tVars('isolation')}</div>
                         <div className="font-semibold">
                           {variables.restPeriods.isolation.join('-')}s
                         </div>
@@ -235,7 +244,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     )}
                     {variables?.rest?.betweenSets && (
                       <div className="bg-background p-3 rounded border col-span-2">
-                        <div className="text-muted-foreground">Between Sets</div>
+                        <div className="text-muted-foreground">{tVars('betweenSets')}</div>
                         <div className="font-semibold">
                           {variables.rest.betweenSets.join('-')}s ({Math.floor(variables.rest.betweenSets[0]/60)}-{Math.floor(variables.rest.betweenSets[1]/60)} min)
                         </div>
@@ -256,32 +265,32 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
               {/* Tempo */}
               {variables?.tempo && (
                 <div>
-                  <h4 className="text-sm font-semibold text-primary mb-2">Tempo (Execution Speed)</h4>
+                  <h4 className="text-sm font-semibold text-primary mb-2">{tVars('tempo')}</h4>
                   <div className="bg-background p-4 rounded border">
                     <div className="text-center mb-3">
                       <div className="text-2xl font-bold font-mono">
                         {formatTempo(variables.tempo)}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Eccentric - Pause - Concentric - Top
+                        {tVars('tempoFormat')}
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-2 text-xs">
                       <div className="text-center">
                         <div className="font-semibold">{variables.tempo.eccentric}s</div>
-                        <div className="text-muted-foreground">Eccentric</div>
+                        <div className="text-muted-foreground">{tVars('eccentric')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">{variables.tempo.pauseBottom}s</div>
-                        <div className="text-muted-foreground">Pause</div>
+                        <div className="text-muted-foreground">{tVars('pause')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">{variables.tempo.concentric}s</div>
-                        <div className="text-muted-foreground">Concentric</div>
+                        <div className="text-muted-foreground">{tVars('concentric')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">{variables.tempo.pauseTop}s</div>
-                        <div className="text-muted-foreground">Top</div>
+                        <div className="text-muted-foreground">{tVars('top')}</div>
                       </div>
                     </div>
                   </div>
@@ -297,17 +306,17 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
               {/* Frequency */}
               {variables?.frequency && (
                 <div>
-                  <h4 className="text-sm font-semibold text-primary mb-2">Training Frequency</h4>
+                  <h4 className="text-sm font-semibold text-primary mb-2">{tVars('trainingFrequency')}</h4>
                   <div className="bg-background p-3 rounded border space-y-2 text-sm">
                     {variables.frequency.muscleGroupDays && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Per Muscle Group:</span>
+                        <span className="text-muted-foreground">{tVars('perMuscleGroup')}</span>
                         <span className="font-semibold">{variables.frequency.muscleGroupDays}x/week</span>
                       </div>
                     )}
                     {variables.frequency.weeklyPattern && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Pattern:</span>
+                        <span className="text-muted-foreground">{tVars('pattern')}</span>
                         <span className="font-semibold text-xs">{variables.frequency.weeklyPattern}</span>
                       </div>
                     )}
@@ -318,17 +327,17 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
               {/* Session Duration */}
               {variables?.sessionDuration && (
                 <div>
-                  <h4 className="text-sm font-semibold text-primary mb-2">Session Duration</h4>
+                  <h4 className="text-sm font-semibold text-primary mb-2">{tVars('sessionDuration')}</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="bg-background p-3 rounded border">
-                      <div className="text-muted-foreground">Duration</div>
+                      <div className="text-muted-foreground">{tVars('duration')}</div>
                       <div className="font-semibold">
                         {variables.sessionDuration.typical?.join('-')} min
                       </div>
                     </div>
                     {variables.sessionDuration.totalSets && (
                       <div className="bg-background p-3 rounded border">
-                        <div className="text-muted-foreground">Total Sets</div>
+                        <div className="text-muted-foreground">{tVars('totalSets')}</div>
                         <div className="font-semibold">
                           {variables.sessionDuration.totalSets.join('-')} sets
                         </div>
@@ -350,34 +359,42 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
         {/* Progression Strategy - Accordion */}
         {progression && (
           <div className="border rounded-lg overflow-hidden">
-            <SectionHeader icon={TrendingUp} title="Progression Strategy" section="progression" />
+            <SectionHeader icon={TrendingUp} title={tSections('progressionStrategy')} section="progression" />
             {expandedSections.has('progression') && (
               <div className="p-4 bg-accent/50 space-y-3">
                 <div className="bg-background p-3 rounded border">
-                  <div className="text-sm font-semibold mb-1">Priority</div>
-                  <div className="text-sm capitalize">{progression?.priority?.replace('_', ' ') || 'N/A'}</div>
+                  <div className="text-sm font-semibold mb-1">{tVars('priority')}</div>
+                  <div className="text-sm">
+                    {progression?.priority
+                      ? progression.priority
+                          .replace(/_/g, ' ')
+                          .split(' ')
+                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                          .join(' ')
+                      : 'N/A'}
+                  </div>
                 </div>
                 {progression?.weightIncrement && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1">Weight Increment</div>
-                    <div className="text-sm">{progression.weightIncrement.default}kg default</div>
+                    <div className="text-sm font-semibold mb-1">{tVars('weightIncrement')}</div>
+                    <div className="text-sm">{progression.weightIncrement.default}kg {tVars('default')}</div>
                   </div>
                 )}
                 {progression?.whenToAddWeight && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1">When to Add Weight</div>
+                    <div className="text-sm font-semibold mb-1">{tVars('whenToAddWeight')}</div>
                     <div className="text-sm">{progression.whenToAddWeight}</div>
                   </div>
                 )}
                 {progression?.setProgression && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1">Set Progression Strategy</div>
+                    <div className="text-sm font-semibold mb-1">{tVars('setProgressionStrategy')}</div>
                     <div className="text-sm">{progression.setProgression}</div>
                   </div>
                 )}
                 {progression?.deloadTriggers && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1">Deload Triggers</div>
+                    <div className="text-sm font-semibold mb-1">{tVars('deloadTriggers')}</div>
                     <ul className="text-sm space-y-1 mt-2">
                       {progression.deloadTriggers.map((trigger: string, idx: number) => (
                         <li key={idx} className="flex items-start gap-2">
@@ -396,21 +413,21 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
         {/* Volume Landmarks - Accordion (if exists) */}
         {volumeLandmarks && (
           <div className="border rounded-lg overflow-hidden">
-            <SectionHeader icon={Activity} title="Volume Guidelines (MEV/MAV/MRV)" section="volume" />
+            <SectionHeader icon={Activity} title={tSections('volumeGuidelines')} section="volume" />
             {expandedSections.has('volume') && (
               <div className="p-4 bg-accent/50 space-y-3">
                 <div className="grid grid-cols-3 gap-2 text-xs mb-3">
                   <div className="bg-green-50 dark:bg-green-950/30 p-2 rounded border border-green-200 dark:border-green-800">
-                    <div className="font-semibold text-green-900 dark:text-green-200">MEV</div>
-                    <div className="text-green-700 dark:text-green-300">Minimum Effective</div>
+                    <div className="font-semibold text-green-900 dark:text-green-200">{tVol('mev')}</div>
+                    <div className="text-green-700 dark:text-green-300">{tVol('mevFull')}</div>
                   </div>
                   <div className="bg-blue-50 dark:bg-blue-950/30 p-2 rounded border border-blue-200 dark:border-blue-800">
-                    <div className="font-semibold text-blue-900 dark:text-blue-200">MAV</div>
-                    <div className="text-blue-700 dark:text-blue-300">Maximum Adaptive</div>
+                    <div className="font-semibold text-blue-900 dark:text-blue-200">{tVol('mav')}</div>
+                    <div className="text-blue-700 dark:text-blue-300">{tVol('mavFull')}</div>
                   </div>
                   <div className="bg-orange-50 dark:bg-orange-950/30 p-2 rounded border border-orange-200 dark:border-orange-800">
-                    <div className="font-semibold text-orange-900 dark:text-orange-200">MRV</div>
-                    <div className="text-orange-700 dark:text-orange-300">Maximum Recoverable</div>
+                    <div className="font-semibold text-orange-900 dark:text-orange-200">{tVol('mrv')}</div>
+                    <div className="text-orange-700 dark:text-orange-300">{tVol('mrvFull')}</div>
                   </div>
                 </div>
                 {volumeLandmarks.muscleGroups && Object.entries(volumeLandmarks.muscleGroups).map(([muscle, volumes]: [string, any]) => (
@@ -431,7 +448,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
         {/* Advanced Techniques - Accordion (if exists) */}
         {advancedTechniques && (
           <div className="border rounded-lg overflow-hidden">
-            <SectionHeader icon={Zap} title="Advanced Techniques" section="techniques" />
+            <SectionHeader icon={Zap} title={tSections('advancedTechniques')} section="techniques" />
             {expandedSections.has('techniques') && (
               <div className="p-4 bg-accent/50 space-y-3">
                 {Object.entries(advancedTechniques).map(([key, technique]: [string, any]) => (
@@ -442,17 +459,17 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     </div>
                     {technique.when && (
                       <div className="text-xs mb-1">
-                        <span className="text-muted-foreground">When:</span> {technique.when}
+                        <span className="text-muted-foreground">{tPer('when')}</span> {technique.when}
                       </div>
                     )}
                     {technique.protocol && (
                       <div className="text-xs mb-1">
-                        <span className="text-muted-foreground">How:</span> {technique.protocol}
+                        <span className="text-muted-foreground">{tPer('how')}</span> {technique.protocol}
                       </div>
                     )}
                     {technique.frequency && (
                       <div className="text-xs">
-                        <span className="text-muted-foreground">Frequency:</span> {technique.frequency}
+                        <span className="text-muted-foreground">{tPer('frequency')}</span> {technique.frequency}
                       </div>
                     )}
                   </div>
@@ -465,24 +482,24 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
         {/* Periodization - Accordion (if exists) */}
         {periodization && (
           <div className="border rounded-lg overflow-hidden">
-            <SectionHeader icon={Calendar} title="Periodization" section="periodization" />
+            <SectionHeader icon={Calendar} title={tSections('periodization')} section="periodization" />
             {expandedSections.has('periodization') && (
               <div className="p-4 bg-accent/50 space-y-3">
                 {periodization.model && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold">Model</div>
+                    <div className="text-sm font-semibold">{tPer('model')}</div>
                     <div className="text-sm">{periodization.model}</div>
                   </div>
                 )}
                 {periodization.cycleDuration && (
                   <div className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold">Cycle Duration</div>
+                    <div className="text-sm font-semibold">{tPer('cycleDuration')}</div>
                     <div className="text-sm">{periodization.cycleDuration}</div>
                   </div>
                 )}
                 {periodization.phases && Object.entries(periodization.phases).map(([phase, details]: [string, any]) => (
                   <div key={phase} className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1 capitalize">{phase.replace('_', ' ')} Phase</div>
+                    <div className="text-sm font-semibold mb-1 capitalize">{phase.replace('_', ' ')} {tPer('phase')}</div>
                     {typeof details === 'object' && details.description && (
                       <div className="text-xs">{details.description}</div>
                     )}
@@ -496,7 +513,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
         {/* Key Principles/Rationales - Accordion (if exists) */}
         {rationales && Object.keys(rationales).length > 0 && (
           <div className="border rounded-lg overflow-hidden">
-            <SectionHeader icon={Info} title="Key Principles" section="rationales" />
+            <SectionHeader icon={Info} title={tSections('keyPrinciples')} section="rationales" />
             {expandedSections.has('rationales') && (
               <div className="p-4 bg-accent/50 space-y-3">
                 {Object.entries(rationales).map(([key, value]: [string, any]) => (
@@ -517,7 +534,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
           <div className="flex items-center gap-2 mb-3">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
             <h3 className="font-semibold text-green-900 dark:text-green-300">
-              Perfect For You If...
+              {tPerfect('title')}
             </h3>
           </div>
           <ul className="space-y-2">
@@ -537,7 +554,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
           onClick={onClose}
           className="w-full"
         >
-          Got it, thanks!
+          {t('closeButton')}
         </Button>
       </div>
     </div>

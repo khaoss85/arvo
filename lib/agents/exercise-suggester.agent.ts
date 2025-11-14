@@ -69,7 +69,7 @@ export interface ExerciseSuggestionOutput {
  */
 export class ExerciseSuggester extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'low') // Low reasoning for fast, straightforward suggestions
+    super(supabaseClient, 'minimal') // Minimal reasoning for fast, straightforward suggestions
   }
 
   get systemPrompt(): string {

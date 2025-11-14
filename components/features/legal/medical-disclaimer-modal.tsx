@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -26,9 +27,11 @@ export function MedicalDisclaimerModal({
   open,
   onAccept,
   onCancel,
-  title = "Medical Disclaimer",
+  title,
   context = "general",
 }: MedicalDisclaimerModalProps) {
+  const t = useTranslations("legal.medicalDisclaimer");
+  const tCommon = useTranslations("common.buttons");
   const [agreed, setAgreed] = useState(false);
 
   const handleAccept = () => {
@@ -50,8 +53,8 @@ export function MedicalDisclaimerModal({
     switch (context) {
       case "onboarding":
         return {
-          description: "Before we generate your first AI-powered workout, please read this important safety information.",
-          emphasis: "AI-generated workouts are educational tools, not medical advice or professional coaching.",
+          description: t("onboarding.description"),
+          emphasis: t("onboarding.emphasis"),
         };
       case "injury_tracking":
         return {
@@ -60,13 +63,14 @@ export function MedicalDisclaimerModal({
         };
       default:
         return {
-          description: "Please read this important safety information about using Arvo.",
-          emphasis: "Arvo is not a substitute for professional medical advice or coaching.",
+          description: t("onboarding.description"),
+          emphasis: t("onboarding.emphasis"),
         };
     }
   };
 
   const content = getContextContent();
+  const displayTitle = title || t("title");
 
   return (
     <Dialog open={open} onOpenChange={onCancel ? () => handleCancel() : undefined}>
@@ -75,7 +79,7 @@ export function MedicalDisclaimerModal({
           <div className="flex items-start gap-3 mb-2">
             <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-400 shrink-0 mt-1" />
             <div>
-              <DialogTitle className="text-xl">{title}</DialogTitle>
+              <DialogTitle className="text-xl">{displayTitle}</DialogTitle>
               <DialogDescription className="mt-2">
                 {content.description}
               </DialogDescription>
@@ -90,47 +94,43 @@ export function MedicalDisclaimerModal({
               {content.emphasis}
             </p>
             <p className="text-sm text-orange-800 dark:text-orange-300">
-              Always consult with a qualified healthcare professional before starting any exercise program.
+              {t("consultProfessional")}
             </p>
           </div>
 
           {/* Main Points */}
           <div className="space-y-3 text-sm">
             <div>
-              <h4 className="font-semibold mb-2">⚠️ AI Cannot:</h4>
+              <h4 className="font-semibold mb-2">{t("sections.aiCannot.title")}</h4>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
-                <li>Provide medical advice, diagnosis, or treatment</li>
-                <li>Replace professional healthcare or coaching</li>
-                <li>Detect or prevent injuries</li>
-                <li>Account for undisclosed medical conditions</li>
+                {(t.raw("sections.aiCannot.items") as string[]).map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2">🚨 Stop Exercise and Seek Medical Help If You Experience:</h4>
+              <h4 className="font-semibold mb-2">{t("sections.stopExercise.title")}</h4>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
-                <li>Chest pain, pressure, or difficulty breathing</li>
-                <li>Severe dizziness or loss of consciousness</li>
-                <li>Sharp or persistent joint/muscle pain</li>
-                <li>Any unusual or concerning symptoms</li>
+                {(t.raw("sections.stopExercise.items") as string[]).map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </ul>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-2">✅ Your Responsibilities:</h4>
+              <h4 className="font-semibold mb-2">{t("sections.responsibilities.title")}</h4>
               <ul className="list-disc pl-6 space-y-1 text-muted-foreground">
-                <li>Obtain medical clearance before exercising (if needed)</li>
-                <li>Provide accurate information about your health and limitations</li>
-                <li>Use proper form and technique</li>
-                <li>Stop if you experience pain, discomfort, or unusual symptoms</li>
-                <li>Critically evaluate AI recommendations using your own judgment</li>
+                {(t.raw("sections.responsibilities.items") as string[]).map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </ul>
             </div>
 
             <div className="pt-2 border-t">
-              <h4 className="font-semibold mb-2">⚖️ Assumption of Risk:</h4>
+              <h4 className="font-semibold mb-2">{t("sections.assumptionOfRisk.title")}</h4>
               <p className="text-muted-foreground">
-                Exercise involves inherent risks including muscle strains, joint injuries, cardiovascular events, and in rare cases, serious injury or death. By using Arvo, you voluntarily assume all risks associated with exercise and physical training.
+                {t("sections.assumptionOfRisk.description")}
               </p>
             </div>
           </div>
@@ -142,7 +142,7 @@ export function MedicalDisclaimerModal({
               target="_blank"
               className="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
             >
-              Read full medical disclaimer →
+              {t("readFullDisclaimer")}
             </Link>
           </div>
 
@@ -157,7 +157,7 @@ export function MedicalDisclaimerModal({
               htmlFor="medical-disclaimer-consent"
               className="text-sm leading-relaxed cursor-pointer select-none"
             >
-              I have read and understood this medical disclaimer. I acknowledge that Arvo is not medical advice, that AI can make mistakes, and that I am solely responsible for my safety and health. I agree to consult healthcare professionals when appropriate.
+              {t("consent")}
             </label>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function MedicalDisclaimerModal({
         <DialogFooter className="flex-col sm:flex-row gap-2">
           {onCancel && (
             <Button variant="outline" onClick={handleCancel} className="sm:flex-1">
-              Cancel
+              {tCommon("cancel")}
             </Button>
           )}
           <Button
@@ -173,7 +173,7 @@ export function MedicalDisclaimerModal({
             disabled={!agreed}
             className="sm:flex-1"
           >
-            I Understand and Accept
+            {t("acceptButton")}
           </Button>
         </DialogFooter>
       </DialogContent>

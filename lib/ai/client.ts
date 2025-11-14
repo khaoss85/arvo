@@ -5,12 +5,25 @@ let client: OpenAI | null = null
 
 export function getOpenAIClient(): OpenAI {
   if (!client) {
+    // Debug logging for API key verification
+    const apiKeyExists = !!process.env.OPENAI_API_KEY
+    const apiKeyLength = process.env.OPENAI_API_KEY?.length || 0
+    console.log('🔑 [OPENAI_CLIENT] API key check:', {
+      exists: apiKeyExists,
+      length: apiKeyLength,
+      startsWithSk: process.env.OPENAI_API_KEY?.startsWith('sk-') || false
+    })
+
     if (!process.env.OPENAI_API_KEY) {
+      console.error('🔴 [OPENAI_CLIENT] OPENAI_API_KEY not configured!')
       throw new Error('OPENAI_API_KEY not configured')
     }
+
+    console.log('✅ [OPENAI_CLIENT] Initializing OpenAI client...')
     client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY
     })
+    console.log('✅ [OPENAI_CLIENT] OpenAI client initialized successfully')
   }
   return client
 }

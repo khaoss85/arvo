@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sparkles, TrendingUp, Target, Heart } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
-import { useGenerateWorkout } from '@/lib/hooks/useAI'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
@@ -33,7 +32,6 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const t = useTranslations('workout.summary')
   const tMentalReadiness = useTranslations('workout.execution.mentalReadiness')
   const { reset, startedAt, exercises, workout, setOverallMentalReadiness, overallMentalReadiness } = useWorkoutExecutionStore()
-  const { mutate: generateWorkout, isPending } = useGenerateWorkout()
   const [stats, setStats] = useState<{
     duration: number
     totalVolume: number
@@ -44,6 +42,9 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const [mentalReadinessSelected, setMentalReadinessSelected] = useState<number | null>(overallMentalReadiness)
   const [workoutNotes, setWorkoutNotes] = useState<string>('')
   const [savingNotes, setSavingNotes] = useState(false)
+
+  // Ref to prevent duplicate API calls during save
+  const savingNotesRef = useRef(false)
 
   // User demographics for personalized feedback
   const [userAge, setUserAge] = useState<number | null>(null)
@@ -256,16 +257,33 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
   const handleSaveNotes = async () => {
     if (!workoutNotes.trim()) {
+      console.log('[WorkoutSummary] No notes to save (empty or whitespace only)')
       return // Nothing to save
     }
 
+    // Prevent duplicate calls
+    if (savingNotesRef.current) {
+      console.log('[WorkoutSummary] Already saving notes, skipping duplicate call')
+      return
+    }
+
+    console.log('[WorkoutSummary] Starting save notes flow...', {
+      userId,
+      workoutId,
+      notesLength: workoutNotes.length
+    })
+
+    savingNotesRef.current = true
     setSavingNotes(true)
     try {
       // Save notes to workout
+      console.log('[WorkoutSummary] Step 1/2: Updating workout notes in database...')
       await WorkoutService.updateWorkoutNotes(workoutId, workoutNotes)
+      console.log('[WorkoutSummary] ✅ Step 1/2: Workout notes updated successfully')
 
       // Trigger insight parsing (background job)
       // This will be handled by a server action
+      console.log('[WorkoutSummary] Step 2/2: Calling insights parse API...')
       const response = await fetch('/api/insights/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -276,31 +294,29 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         })
       })
 
+      console.log('[WorkoutSummary] API response status:', response.status, response.statusText)
+
       if (!response.ok) {
-        throw new Error('Failed to parse insights')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('[WorkoutSummary] ❌ Insights API failed:', errorData)
+        throw new Error(`Failed to parse insights: ${response.status} - ${JSON.stringify(errorData)}`)
       }
 
-      console.log('[WorkoutSummary] Notes saved and insights parsed successfully')
+      const responseData = await response.json()
+      console.log('[WorkoutSummary] ✅ Step 2/2: Insights parsed successfully', responseData)
+      console.log('[WorkoutSummary] 🎉 Notes saved and insights parsed successfully')
     } catch (error) {
-      console.error('[WorkoutSummary] Failed to save notes:', error)
+      console.error('[WorkoutSummary] ❌ FAILED to save notes:', error)
+      console.error('[WorkoutSummary] Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      })
       alert(t('errors.failedToSaveNotes'))
     } finally {
       setSavingNotes(false)
+      savingNotesRef.current = false
+      console.log('[WorkoutSummary] Save notes flow completed (savingNotes=false)')
     }
-  }
-
-  const handleGenerateNext = async () => {
-    // Save notes before generating next workout
-    if (workoutNotes.trim()) {
-      await handleSaveNotes()
-    }
-
-    generateWorkout(userId, {
-      onSuccess: () => {
-        reset()
-        router.push('/dashboard')
-      }
-    })
   }
 
   const handleFinish = async () => {
@@ -533,22 +549,12 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
         {/* Actions - Only show after AI summary */}
         {aiSummary && (
-          <div className="space-y-3">
-            <Button
-              onClick={handleGenerateNext}
-              disabled={isPending}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isPending ? t('generating') : t('generateNextWorkout')}
-            </Button>
-            <Button
-              onClick={handleFinish}
-              variant="outline"
-              className="w-full h-12 border-gray-700 text-gray-300"
-            >
-              {t('backToDashboard')}
-            </Button>
-          </div>
+          <Button
+            onClick={handleFinish}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {t('backToDashboard')}
+          </Button>
         )}
       </div>
     </div>

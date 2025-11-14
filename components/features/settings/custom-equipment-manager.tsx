@@ -5,12 +5,13 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { PhotoUploader } from '@/components/ui/photo-uploader'
 import {
   validateCustomEquipmentAction,
   addCustomEquipmentAction,
   removeCustomEquipmentAction
 } from '@/app/actions/ai-actions'
-import { PlayCircle, Trash2, CheckCircle, AlertCircle, XCircle, Loader2, Plus, X } from 'lucide-react'
+import { PlayCircle, Trash2, CheckCircle, AlertCircle, XCircle, Loader2, Plus, X, Type, Camera } from 'lucide-react'
 import { ExerciseAnimationModal } from '../workout/exercise-animation-modal'
 import { AnimationService } from '@/lib/services/animation.service'
 
@@ -45,6 +46,9 @@ export function CustomEquipmentManager({
   const t = useTranslations('settings.customEquipment')
   const [customEquipment, setCustomEquipment] = useState(initialCustomEquipment)
   const [inputValue, setInputValue] = useState('')
+  const [photoMode, setPhotoMode] = useState(false)
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [detectedName, setDetectedName] = useState<string | null>(null)
   const [isValidating, setIsValidating] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
@@ -71,6 +75,32 @@ export function CustomEquipmentManager({
       }
     } catch (err) {
       setError(t('errors.validationError'))
+      console.error(err)
+    } finally {
+      setIsValidating(false)
+    }
+  }
+
+  const handlePhotoUpload = async (base64: string) => {
+    setUploadedImage(base64)
+    setIsValidating(true)
+    setError(null)
+    setValidationResult(null)
+    setDetectedName(null)
+
+    try {
+      const result = await validateCustomEquipmentAction(userId, undefined, base64)
+
+      if (result.success && result.result) {
+        setValidationResult(result.result as ValidationResult)
+        setDetectedName(result.detectedName || null)
+      } else {
+        setError(result.error || t('errors.validationFailed'))
+        setUploadedImage(null)
+      }
+    } catch (err) {
+      setError(t('errors.validationError'))
+      setUploadedImage(null)
       console.error(err)
     } finally {
       setIsValidating(false)
@@ -139,6 +169,17 @@ export function CustomEquipmentManager({
   const handleClearValidation = () => {
     setValidationResult(null)
     setError(null)
+    setUploadedImage(null)
+    setDetectedName(null)
+  }
+
+  const handleModeSwitch = (newPhotoMode: boolean) => {
+    setPhotoMode(newPhotoMode)
+    setInputValue('')
+    setValidationResult(null)
+    setError(null)
+    setUploadedImage(null)
+    setDetectedName(null)
   }
 
   return (
@@ -153,48 +194,101 @@ export function CustomEquipmentManager({
 
         {/* Input Section */}
         <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              placeholder={t('inputPlaceholder')}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !isValidating) {
-                  handleValidate()
-                }
-              }}
-              disabled={isValidating || !!validationResult}
-              className="flex-1"
-            />
-            {validationResult ? (
+          {/* Mode Toggle */}
+          {!validationResult && (
+            <div className="flex gap-2">
               <Button
-                variant="outline"
-                size="icon"
-                onClick={handleClearValidation}
-                title={t('clearButton')}
+                variant={!photoMode ? 'default' : 'outline'}
+                onClick={() => handleModeSwitch(false)}
+                disabled={isValidating}
+                className="flex-1"
               >
-                <X className="w-4 h-4" />
+                <Type className="w-4 h-4 mr-2" />
+                {t('typeMode') || 'Type Name'}
               </Button>
-            ) : (
               <Button
-                onClick={handleValidate}
-                disabled={!inputValue.trim() || isValidating}
+                variant={photoMode ? 'default' : 'outline'}
+                onClick={() => handleModeSwitch(true)}
+                disabled={isValidating}
+                className="flex-1"
               >
-                {isValidating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t('validating')}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    {t('validateButton')}
-                  </>
-                )}
+                <Camera className="w-4 h-4 mr-2" />
+                {t('photoMode') || 'Take Photo'}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Text Input Mode */}
+          {!photoMode && (
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder={t('inputPlaceholder')}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isValidating) {
+                    handleValidate()
+                  }
+                }}
+                disabled={isValidating || !!validationResult}
+                className="flex-1"
+              />
+              {validationResult ? (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleClearValidation}
+                  title={t('clearButton')}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleValidate}
+                  disabled={!inputValue.trim() || isValidating}
+                >
+                  {isValidating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t('validating')}
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      {t('validateButton')}
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Photo Upload Mode */}
+          {photoMode && (
+            <div>
+              <PhotoUploader
+                onUpload={handlePhotoUpload}
+                onClear={handleClearValidation}
+                isLoading={isValidating}
+              />
+              {isValidating && (
+                <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t('analyzingPhoto')}
+                  </p>
+                </div>
+              )}
+              {detectedName && !isValidating && (
+                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-xs text-blue-700 dark:text-blue-400">
+                    <strong>{t('detectedEquipment') || 'Detected'}:</strong> {detectedName}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Validation Result */}
           {validationResult && (
@@ -258,6 +352,14 @@ export function CustomEquipmentManager({
                   )}
                 </div>
               </div>
+
+              {validationResult.validation === 'duplicate' && (
+                <div className="mt-3 p-2 bg-green-50 dark:bg-green-950/20 rounded border border-green-200 dark:border-green-800">
+                  <p className="text-xs text-green-700 dark:text-green-400">
+                    ✓ {t('alreadyAvailable')}
+                  </p>
+                </div>
+              )}
 
               {(validationResult.validation === 'approved' || validationResult.validation === 'unclear') && (
                 <Button

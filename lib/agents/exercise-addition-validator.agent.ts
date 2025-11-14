@@ -233,10 +233,10 @@ Required JSON structure:
       context += `- Sets per exercise: ${setsPerExercise} working sets\n`
     }
 
-    // Total sets per workout (e.g., Heavy Duty: 6-8 max)
+    // Total sets per workout constraint (approach-specific)
     const totalSetsConstraint = vars?.sessionDuration?.totalSets
     if (totalSetsConstraint) {
-      context += `- TOTAL sets per workout: ${totalSetsConstraint[0]}-${totalSetsConstraint[1]} sets MAXIMUM\n`
+      context += `- TOTAL sets per workout: ${totalSetsConstraint[0]}-${totalSetsConstraint[1]} sets MAXIMUM (${approach.name} constraint)\n`
       context += `  ⚠️ Adding exercises that exceed this limit violates the approach's core philosophy\n`
     }
 

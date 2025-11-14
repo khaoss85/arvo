@@ -20,6 +20,12 @@ export interface EquipmentValidationResult {
   suggestions?: string[] // Alternative names or equipment from taxonomy if unclear/invalid
 }
 
+export interface EquipmentDetailsFromImage {
+  name: string
+  primaryMuscles: string[]
+  secondaryMuscles?: string[]
+}
+
 export class EquipmentValidator extends BaseAgent {
   get systemPrompt(): string {
     // Build taxonomy reference for AI
@@ -131,6 +137,154 @@ IMPORTANT:
 - Normalize brand-specific names to generic (e.g., "Concept2 Rower" → "Rowing Machine")
 - Be strict but helpful - suggest corrections for typos
 - Provide actionable feedback in rationale and suggestions`
+  }
+
+  async extractNameFromImage(imageBase64: string): Promise<string> {
+    // Remove data:image prefix if present
+    const base64Data = imageBase64.includes(',')
+      ? imageBase64.split(',')[1]
+      : imageBase64
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: 'Identify the gym equipment in this image. Return ONLY the equipment name in English (2-4 words max), nothing else. Examples: "Smith Machine", "Leg Press", "Cable Station", "Dumbbells", "Hex Bar", "T-Bar Row", "Preacher Curl Bench". If you cannot clearly identify gym equipment, return "Unknown Equipment".',
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Data}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 50,
+      temperature: 0.3, // Low temperature for consistent naming
+    })
+
+    const detectedName = response.choices[0]?.message?.content?.trim() || 'Unknown Equipment'
+    return detectedName
+  }
+
+  async extractEquipmentDetailsFromImage(imageBase64: string): Promise<EquipmentDetailsFromImage> {
+    // Remove data:image prefix if present
+    const base64Data = imageBase64.includes(',')
+      ? imageBase64.split(',')[1]
+      : imageBase64
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Identify the gym equipment in this image and determine which muscle groups it primarily targets.
+
+Return ONLY valid JSON in this exact format:
+{
+  "name": "Equipment Name",
+  "primaryMuscles": ["muscle1", "muscle2"],
+  "secondaryMuscles": ["muscle3"]
+}
+
+MUSCLE GROUP NAMES (use these exact terms):
+- chest
+- back
+- shoulders
+- triceps
+- biceps
+- forearms
+- abs
+- obliques
+- quads
+- hamstrings
+- glutes
+- calves
+- traps
+- lats
+
+EXAMPLES:
+
+Lat Pulldown Machine:
+{
+  "name": "Lat Pulldown Machine",
+  "primaryMuscles": ["lats", "back"],
+  "secondaryMuscles": ["biceps", "shoulders"]
+}
+
+Leg Press Machine:
+{
+  "name": "Leg Press Machine",
+  "primaryMuscles": ["quads", "glutes"],
+  "secondaryMuscles": ["hamstrings", "calves"]
+}
+
+Chest Press Machine:
+{
+  "name": "Chest Press Machine",
+  "primaryMuscles": ["chest"],
+  "secondaryMuscles": ["triceps", "shoulders"]
+}
+
+Cable Machine:
+{
+  "name": "Cable Machine",
+  "primaryMuscles": ["chest", "back", "shoulders"],
+  "secondaryMuscles": []
+}
+
+If you cannot clearly identify gym equipment, return:
+{
+  "name": "Unknown Equipment",
+  "primaryMuscles": [],
+  "secondaryMuscles": []
+}`,
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Data}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 150,
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    })
+
+    const content = response.choices[0]?.message?.content?.trim() || '{}'
+
+    try {
+      const parsed = JSON.parse(content) as EquipmentDetailsFromImage
+
+      // Validate structure
+      if (!parsed.name || !Array.isArray(parsed.primaryMuscles)) {
+        throw new Error('Invalid response structure')
+      }
+
+      return {
+        name: parsed.name,
+        primaryMuscles: parsed.primaryMuscles,
+        secondaryMuscles: parsed.secondaryMuscles || [],
+      }
+    } catch (error) {
+      console.error('Failed to parse equipment details from image:', error)
+      return {
+        name: 'Unknown Equipment',
+        primaryMuscles: [],
+        secondaryMuscles: [],
+      }
+    }
   }
 
   async validateEquipment(input: EquipmentValidationInput): Promise<EquipmentValidationResult> {

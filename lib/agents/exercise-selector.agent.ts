@@ -161,6 +161,7 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
   // Shoulders variations
   'deltoid': 'shoulders',
   'deltoids': 'shoulders',
+  'shoulder': 'shoulders', // singular after plural removal
   'anterior deltoid': 'shoulders',
   'lateral deltoid': 'shoulders',
   'posterior deltoid': 'shoulders',
@@ -187,12 +188,21 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
   'rhomboids': 'upper_back',
   'rhomboid': 'upper_back',
   'upper back': 'upper_back',
+  'upperback': 'upper_back', // case-sensitivity variant
+  // Generic "back" terms → default to upper_back (most common usage in pull workouts)
+  'back': 'upper_back',
+  'back muscles': 'upper_back',
+  'entire back': 'upper_back',
+  'full back': 'upper_back',
   'lower back': 'lowerBack',
+  'low back': 'lowerBack', // common variant
+  'lumbar': 'lowerBack', // anatomical region
   'erector spinae': 'lowerBack',
   'spinal erectors': 'lowerBack',
 
   // Traps variations
   'trapezius': 'traps',
+  'trap': 'traps', // singular after plural removal
   'upper trapezius': 'traps',
   'middle trapezius': 'traps',
   'lower trapezius': 'traps',
@@ -217,6 +227,8 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
   'rectus femoris': 'quads',
   'vastus lateralis': 'quads',
   'vastus medialis': 'quads',
+  'vastus medialis oblique': 'quads', // VMO - inner quad teardrop
+  'vmo': 'quads', // VMO abbreviation
   'vastus intermedius': 'quads',
 
   // Hamstrings variations
@@ -241,7 +253,9 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
   'rectus abdominis': 'abs',
   'abdominals': 'abs',
   'abdominal': 'abs',
+  'ab': 'abs', // singular after plural removal
   'core': 'abs',
+  'anterior core': 'abs', // common variant
   'six pack': 'abs',
 
   // Obliques variations
@@ -289,8 +303,8 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
 export class ExerciseSelector extends BaseAgent {
   protected supabase: any
 
-  constructor(supabaseClient?: any) {
-    super(supabaseClient)
+  constructor(supabaseClient?: any, reasoningEffort?: 'low' | 'medium' | 'high') {
+    super(supabaseClient, reasoningEffort)
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 
@@ -344,6 +358,12 @@ Make user safety and preferences your top priority.`
   async selectExercises(input: ExerciseSelectionInput, targetLanguage?: 'en' | 'it'): Promise<ExerciseSelectionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
+
+    // Extract constraints from approach.variables (nested structure)
+    const vars = approach.variables as any
+    const maxSetsPerExercise = vars?.setsPerExercise?.working
+      || (vars?.sets?.range ? vars.sets.range[1] : null)
+    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
 
     // Load user's recently used exercises for naming consistency
     const recentExercises = input.userId
@@ -434,128 +454,167 @@ Exercise Selection Strategy:
 `
       : ''
 
+    // Determine if approach has fixed vs flexible volume
+    // Note: approach object no longer available in input (only approachId), defaulting to flexible volume
+    const hasFixedVolume = false
+
     // Build caloric phase context
     const caloricPhaseContext = input.caloricPhase
       ? `
-=== CALORIC PHASE CONTEXT ===
-Current Nutritional Phase: ${input.caloricPhase.toUpperCase()}
-${input.caloricIntakeKcal ? `Daily Caloric ${input.caloricIntakeKcal > 0 ? 'Surplus' : 'Deficit'}: ${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal` : ''}
+<caloric_phase_modulation>
+  <current_phase>${input.caloricPhase.toUpperCase()}</current_phase>
+  ${input.caloricIntakeKcal ? `<daily_intake>${input.caloricIntakeKcal > 0 ? 'Surplus' : 'Deficit'}: ${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal</daily_intake>` : ''}
+  <approach_classification>${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}</approach_classification>
 
-⚠️ APPROACH-AWARE OPTIMIZATION:
-The guidance below must be applied WITHIN your training approach's constraints, not as absolute rules.
-If the approach has specific volume limits or progression rules, THOSE TAKE PRIORITY over these general guidelines.
+  <fundamental_rule>
+    ⚠️ CRITICAL: The guidance below must be applied WITHIN your training approach's constraints (Priority 1), not as absolute rules.
+    If the approach has specific volume limits or progression rules, THOSE TAKE PRIORITY over these guidelines (Priority 4).
+  </fundamental_rule>
 
 ${input.caloricPhase === 'bulk' ? `
-Phase Overview: Caloric surplus for muscle building
+  <bulk_phase>
+    <overview>Caloric surplus for muscle building - enhanced recovery and anabolic environment</overview>
 
-VOLUME (conditional on approach):
-- IF approach allows volume modulation (e.g., flexible volume landmarks, no fixed set limits):
-  * Aim for +15-20% higher volume compared to your approach's maintenance baseline
-  * Can handle more total sets within approach's framework
-  * Example: If approach suggests 12-16 sets for quads, lean toward 15-16 sets
+    <volume_guidance approach_type="${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}">
+      ${!hasFixedVolume ? `
+      <if condition="FLEXIBLE_VOLUME">
+        <strategy>Volume modulation</strategy>
+        <adjustment>+15-20% higher volume compared to maintenance baseline</adjustment>
+        <rationale>Enhanced recovery allows more total work within approach's framework</rationale>
+        <example>If approach suggests 12-16 sets for quads → lean toward 15-16 sets</example>
+      </if>
+      ` : ''}
 
-- IF approach has FIXED VOLUME (e.g., Heavy Duty 1-2 sets, DC Training prescribed sets):
-  * DO NOT increase set count - respect the approach's set limits
-  * INSTEAD increase INTENSITY within approach's guidelines:
-    - Use heavier loads (aggressive week-to-week progression)
-    - Push closer to/beyond failure (within approach's RIR targets)
-    - Apply advanced techniques IF approach supports (rest-pause, drop sets, negatives)
-  * Example: Heavy Duty in bulk = still 6-8 total sets, but heavier weights + more aggressive intensity techniques
+      ${hasFixedVolume ? `
+      <if condition="FIXED_VOLUME">
+        <strategy>Intensity modulation (volume stays FIXED)</strategy>
+        <critical_rule>DO NOT increase set count - respect the approach's set limits</critical_rule>
+        <instead>
+          - Use heavier loads (aggressive week-to-week progression)
+          - Push closer to/beyond failure (within approach's RIR targets)
+          - Apply advanced techniques IF approach supports (rest-pause, drop sets, negatives)
+        </instead>
+        <example>${approach.name} in bulk = ${approach.variables.setsPerExercise?.working ? `still ${approach.variables.setsPerExercise.working} sets per exercise` : 'maintain prescribed set count'}, but heavier weights + more aggressive intensity techniques</example>
+      </if>
+      ` : ''}
+    </volume_guidance>
 
-- IF approach is periodized:
-  * Check if current mesocycle phase supports volume increases
-  * Defer to periodization context if it conflicts
 
-EXERCISE SELECTION (approach-dependent):
-- Compound-focused approaches → prioritize main lifts (squat, bench, deadlift variations)
-- Balanced approaches → maintain your approach's typical compound/isolation ratio
-- Follow your approach's exercise priority rules
-- Use caloric surplus as reason to push harder on approach's key exercises
+    <exercise_selection>
+      - Compound-focused approaches → prioritize main lifts (squat, bench, deadlift variations)
+      - Balanced approaches → maintain your approach's typical compound/isolation ratio
+      - Follow your approach's exercise priority rules
+      - Use caloric surplus as reason to push harder on approach's key exercises
+    </exercise_selection>
 
-REP RANGES (within approach's prescribed ranges):
-- Stay within approach's prescribed rep ranges for each exercise type
-- IF approach allows range flexibility → explore lower end for strength emphasis
-- DO NOT change prescribed ranges; progress via LOAD, not by changing rep prescriptions
-- Example: If approach says 6-10 reps, use the 6-8 range more often in bulk
+    <rep_ranges>
+      <guideline>Stay within approach's prescribed rep ranges for each exercise type</guideline>
+      <if condition="approach_allows_flexibility">IF approach allows range flexibility → explore lower end for strength emphasis</if>
+      <critical_rule>DO NOT change prescribed ranges; progress via LOAD, not by changing rep prescriptions</critical_rule>
+      <example>If approach says 6-10 reps → use the 6-8 range more often in bulk</example>
+    </rep_ranges>
 
-PROGRESSION FOCUS:
-- Aggressive load progression (this is the prime time for PRs)
-- Prioritize strength gains on approach's main movements
-- Take advantage of enhanced recovery for progressive overload
-- User has nutritional support for strength gains
+    <progression_focus>
+      - Aggressive load progression (this is the prime time for PRs)
+      - Prioritize strength gains on approach's main movements
+      - Take advantage of enhanced recovery for progressive overload
+      - User has nutritional support for strength gains
+    </progression_focus>
+  </bulk_phase>
 ` : ''}
 ${input.caloricPhase === 'cut' ? `
-Phase Overview: Caloric deficit for fat loss while preserving muscle
+  <cut_phase>
+    <overview>Caloric deficit for fat loss while preserving muscle - compromised recovery</overview>
 
-VOLUME (conditional on approach):
-- IF approach allows volume modulation:
-  * Reduce total volume by -15-20% compared to your approach's maintenance baseline
-  * QUALITY over QUANTITY - fewer sets, executed with precision
-  * Example: If approach suggests 12-16 sets for quads, lean toward 12-13 sets
+    <volume_guidance approach_type="${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}">
+      ${!hasFixedVolume ? `
+      <if condition="FLEXIBLE_VOLUME">
+        <strategy>Volume reduction</strategy>
+        <adjustment>-15-20% lower volume compared to maintenance baseline</adjustment>
+        <principle>QUALITY over QUANTITY - fewer sets, executed with precision</principle>
+        <example>If approach suggests 12-16 sets for quads → lean toward 12-13 sets</example>
+      </if>
+      ` : ''}
 
-- IF approach has FIXED VOLUME (e.g., Heavy Duty, DC Training):
-  * Maintain the prescribed set count - DO NOT reduce sets
-  * INSTEAD manage fatigue and recovery differently:
-    - Slightly reduce load if needed to maintain perfect technique (~85-90% of bulk loads)
-    - Focus on maintaining strength rather than pushing absolute limits
-    - Prioritize quality of contraction over maximum weight
-  * Example: Heavy Duty in cut = still 6-8 total sets, slightly lighter loads with focus on form
+      ${hasFixedVolume ? `
+      <if condition="FIXED_VOLUME">
+        <strategy>Load/intensity management (volume stays FIXED)</strategy>
+        <critical_rule>Maintain the prescribed set count - DO NOT reduce sets</critical_rule>
+        <instead>
+          - Slightly reduce load if needed to maintain perfect technique (~85-90% of bulk loads)
+          - Focus on maintaining strength rather than pushing absolute limits
+          - Prioritize quality of contraction over maximum weight
+        </instead>
+        <example>${approach.name} in cut = ${approach.variables.setsPerExercise?.working ? `still ${approach.variables.setsPerExercise.working} sets per exercise` : 'maintain prescribed set count'}, slightly lighter loads with focus on form</example>
+      </if>
+      ` : ''}
+    </volume_guidance>
 
-- IF approach is periodized:
-  * Check if current mesocycle phase's volume should be adjusted for deficit
-  * Defer to periodization context for volume guidance
+    <exercise_selection>
+      <guideline>Within your approach's exercise priority rules, favor higher stimulus-to-fatigue options when possible:</guideline>
+      - Machines and cables when they fit approach's philosophy
+      - Exercise variations that preserve muscle with less systemic fatigue
+      - Example: If approach allows squat variations, prefer Safety Bar Squat or Leg Press over Low Bar Back Squat
 
-EXERCISE SELECTION (within approach's exercise framework):
-- Within your approach's exercise priority rules, favor higher stimulus-to-fatigue options when possible:
-  * Machines and cables when they fit approach's philosophy
-  * Exercise variations that preserve muscle with less systemic fatigue
-  * Example: If approach allows squat variations, prefer Safety Bar Squat or Leg Press over Low Bar Back Squat
+      <if condition="compound_focused_approach">
+        - Maintain compound focus but choose slightly less fatiguing variations
+        - Safety Squat Bar, Trap Bar Deadlift, Floor Press = same movement patterns, less CNS demand
+      </if>
 
-- IF approach is compound-focused (e.g., Starting Strength, 5/3/1):
-  * Maintain compound focus but choose slightly less fatiguing variations
-  * Safety Squat Bar, Trap Bar Deadlift, Floor Press = same movement patterns, less CNS demand
+      <rule>Respect your approach's exercise distribution rules</rule>
+    </exercise_selection>
 
-- Respect your approach's exercise distribution rules
+    <rep_ranges>
+      <guideline>Stay within approach's prescribed rep ranges</guideline>
+      <if condition="approach_allows_flexibility">Prefer middle-to-upper end (8-12 range) for muscle preservation</if>
+      <critical_rule>DO NOT arbitrarily change to "hypertrophy ranges" if approach specifies different ranges</critical_rule>
+      <focus>Maintain technique and muscle engagement over absolute load</focus>
+    </rep_ranges>
 
-REP RANGES (within approach's prescribed ranges):
-- Stay within approach's prescribed rep ranges
-- IF approach allows flexibility → prefer middle-to-upper end (8-12 range) for preservation
-- DO NOT arbitrarily change to "hypertrophy ranges" if approach specifies different ranges
-- Focus on maintaining technique and muscle engagement over absolute load
+    <progression_focus>
+      - Goal: Maintain strength at ~85-90% of bulking performance
+      - Expect slight strength decrease (normal and acceptable in deficit)
+      - Prioritize muscle retention over load progression
+      - This is NOT the time for PRs unless they happen naturally
+    </progression_focus>
 
-PROGRESSION FOCUS:
-- Goal: Maintain strength at ~85-90% of bulking performance
-- Expect slight strength decrease (normal and acceptable in deficit)
-- Prioritize muscle retention over load progression
-- This is NOT the time for PRs unless they happen naturally
-
-CRITICAL PRINCIPLE: Minimum effective dose WITHIN approach's framework
-- Apply your approach's minimum effective volume
-- Every extra set costs recovery you don't have
-- Strategic modulation is smart training
+    <critical_principle>
+      Minimum effective dose WITHIN approach's framework:
+      - Apply your approach's minimum effective volume
+      - Every extra set costs recovery you don't have
+      - Strategic modulation is smart training
+    </critical_principle>
+  </cut_phase>
 ` : ''}
 ${input.caloricPhase === 'maintenance' ? `
-Phase Overview: Balanced caloric intake for sustainable training
+  <maintenance_phase>
+    <overview>Balanced caloric intake for sustainable training - optimal baseline</overview>
 
-VOLUME:
-- Apply your approach's standard baseline volume guidelines
-- No caloric-driven adjustments needed
+    <volume_guidance>
+      <strategy>Apply your approach's standard baseline volume guidelines</strategy>
+      <adjustment>No caloric-driven adjustments needed</adjustment>
+    </volume_guidance>
 
-EXERCISE SELECTION:
-- Follow your approach's exercise priority rules
-- No special adjustments for caloric phase
+    <exercise_selection>
+      - Follow your approach's exercise priority rules
+      - No special adjustments for caloric phase
+    </exercise_selection>
 
-REP RANGES:
-- Use your approach's prescribed rep ranges
-- No modifications needed
+    <rep_ranges>
+      - Use your approach's prescribed rep ranges
+      - No modifications needed
+    </rep_ranges>
 
-PROGRESSION:
-- Steady, sustainable progress within approach's progression rules
-- Focus on technique refinement and consistency
-- Sustainable long-term training
+    <progression_focus>
+      - Steady, sustainable progress within approach's progression rules
+      - Focus on technique refinement and consistency
+      - Sustainable long-term training
+    </progression_focus>
 
-This is your sustainable baseline - apply your approach as designed.
+    <principle>This is your sustainable baseline - apply your approach as designed.</principle>
+  </maintenance_phase>
 ` : ''}
+</caloric_phase_modulation>
 `
       : ''
 
@@ -571,17 +630,98 @@ ${input.sessionFocus.map(m => `- ${m}`).join('\n')}
 EXECUTION RULES:
 • Each muscle group listed above requires AT LEAST 1 exercise
 • Distribute the exercises across the workout according to the approach's structure
-• For multi-phase approaches (e.g., Mountain Dog), assign muscles to appropriate phases
-• For technique-specific approaches (e.g., FST-7, Y3T), apply the technique while covering all muscles
+${approach.periodization?.accumulationPhase || approach.periodization?.intensificationPhase ? '• For multi-phase approaches, assign muscles to appropriate phases based on the current training phase' : ''}
+${Object.keys(approach.advancedTechniques || {}).length > 0 ? `• Apply ${approach.name}'s specific techniques (${Object.keys(approach.advancedTechniques || {}).slice(0, 2).join(', ')}, etc.) while covering all muscles` : ''}
 • If the approach has volume constraints that conflict, prioritize muscles in the order listed above
 ` : ''}
 ${input.targetVolume ? `
 ⚠️ MANDATORY TARGET VOLUME (MUST match within ±20%):
-${JSON.stringify(input.targetVolume, null, 2)}
 
-CRITICAL RULE: You MUST generate exercises that result in these EXACT set counts per muscle group.
-Each muscle group must receive sets within 20% of its target. This is NON-NEGOTIABLE.
-Example: If target is 12 sets for chest, you must generate 10-14 sets (12 ± 20% = 9.6-14.4 → round to 10-14).
+=== 📊 VOLUME CALCULATION RULES (APPLY THESE EXACTLY) ===
+
+⚡ **CRITICAL**: Before selecting exercises, understand how sets count toward muscle volume:
+
+**CALCULATION FORMULA:**
+• **Primary muscle** = 1.0x set count (full credit)
+• **Secondary/synergist muscle** = 0.5x set count (half credit)
+
+**CONCRETE EXAMPLE:**
+Exercise: Barbell Bench Press (4 sets)
+  - Primary: chest
+  - Secondary: shoulders, triceps
+
+Volume contributions:
+  → chest: +4.0 sets (4 × 1.0)
+  → shoulders: +2.0 sets (4 × 0.5)
+  → triceps: +2.0 sets (4 × 0.5)
+
+**WHY THIS MATTERS:**
+If target is chest = 12 sets, you CANNOT just do 3 exercises × 4 sets each.
+✗ Wrong thinking: "3 chest exercises × 4 sets = 12 sets" ← Ignores primary vs secondary!
+✓ Correct: Calculate primary (1.0x) + secondary (0.5x) contributions from ALL exercises
+
+⚠️ **YOU MUST apply this calculation when verifying your exercise selection against the targets below.**
+
+=== TARGET VOLUME TABLE (HARD CONSTRAINTS) ===
+${Object.entries(input.targetVolume).map(([muscle, sets]) => {
+  const setCount = typeof sets === 'number' ? sets : 0
+  const minSets = Math.floor(setCount * 0.8)
+  const maxSets = Math.ceil(setCount * 1.2)
+
+  if (setCount === 0) {
+    return `❌ ${muscle}: ZERO SETS REQUIRED - DO NOT include ANY exercises targeting this muscle`
+  }
+
+  return `✓ ${muscle}: ${setCount} sets (acceptable range: ${minSets}-${maxSets} sets)`
+}).join('\n')}
+
+${(() => {
+  // Generate dynamic advanced technique compatibility rules
+  const techniquesRequiringConsecutiveSets = Object.entries(approach.advancedTechniques || {})
+    .filter(([_, tech]) => tech.requiresConsecutiveSets && tech.minSets)
+
+  if (techniquesRequiringConsecutiveSets.length === 0) return ''
+
+  return techniquesRequiringConsecutiveSets.map(([techName, tech]) => `
+=== ${techName.toUpperCase().replace(/_/g, ' ')} COMPATIBILITY RULES ===
+⚠️ CRITICAL: ${techName} technique requires ${tech.minSets} consecutive sets${tech.protocol ? ` (${tech.protocol.substring(0, 50)}...)` : ''}.
+Before applying ${techName} to a muscle, verify compatibility:
+
+✓ COMPATIBLE: Target volume ≥ ${tech.minSets} sets
+  Example: chest = 12 sets → Can use ${12 - tech.minSets!} regular sets + ${tech.minSets} ${techName} sets = 12 total ✓
+
+❌ INCOMPATIBLE: Target volume < ${tech.minSets} sets
+  Example: biceps = ${Math.max(1, tech.minSets! - 3)} sets → CANNOT use ${techName} (would require minimum ${tech.minSets} sets)
+  Solution: Use standard set exercises instead
+
+PRIORITY RULE: Volume targets OVERRIDE ${techName} protocol when conflicts arise.
+If you cannot fit ${techName} within the volume constraint, use standard set/rep schemes.
+`).join('\n')
+})()}
+
+=== MUSCLE TAXONOMY (PREVENT CONFUSION) ===
+These are DISTINCT muscle groups - do not confuse or combine:
+• rear_delts ≠ shoulders (rear delts are NOT shoulders)
+• upper_back ≠ lower_back (separate spinal regions)
+• biceps ≠ forearms (separate arm muscles)
+• hamstrings ≠ glutes (separate posterior chain)
+• chest ≠ shoulders (separate upper body push muscles)
+
+When target is 0 for a muscle: DO NOT add exercises for that muscle "by accident"
+Example: If target is { rear_delts: 2, shoulders: 0 }
+  → Include: rear delt flies (2 sets) ✓
+  → DO NOT include: lateral raises, overhead press ❌ (these target shoulders)
+
+=== VALIDATION PREVIEW ===
+Your exercise selection will be validated against these exact constraints:
+${Object.entries(input.targetVolume).map(([muscle, sets]) => {
+  const setCount = typeof sets === 'number' ? sets : 0
+  const minSets = Math.floor(setCount * 0.8)
+  const maxSets = Math.ceil(setCount * 1.2)
+  return `• ${muscle}: Must be ${minSets}-${maxSets} sets (target: ${setCount})`
+}).join('\n')}
+
+FAILURE TO MEET THESE CONSTRAINTS WILL RESULT IN REJECTION.
 ` : ''}
 ${input.sessionPrinciples ? `
 Session-Specific Principles:
@@ -591,6 +731,29 @@ ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
 
     const prompt = `
 Create a ${input.workoutType} workout using AI-generated exercises.
+
+=== 🎯 SOLUTION COMPLETENESS REQUIREMENT ===
+
+**THIS IS A ONE-SHOT GENERATION TASK**
+
+You MUST generate a COMPLETE workout that satisfies ALL constraints in a SINGLE response.
+
+✅ **DO:**
+- Select ALL exercises needed to meet volume targets
+- Calculate exact set counts for each exercise
+- Provide complete rationale and alternatives for each exercise
+- Verify your solution meets ALL constraints BEFORE outputting JSON
+
+❌ **DO NOT:**
+- Generate partial exercise lists expecting further prompts
+- Suggest "add more exercises as needed" — select the exact exercises NOW
+- Provide placeholders or incomplete rationales
+- Leave any muscle group under-targeted
+- Stop after analyzing constraints — proceed to full implementation
+
+**CRITICAL**: Your response must be production-ready and immediately executable. Treat yourself as an autonomous system that must deliver a complete, valid workout without requiring follow-up clarification.
+
+==========================================================================
 
 Approach context:
 ${context}
@@ -641,32 +804,93 @@ ${recentExercises.map(ex => `- ${ex.name}${ex.metadata?.equipment_variant ? ` ($
 IMPORTANT: Only create a new exercise name if the exercise is truly different from the ones listed above. Naming consistency is crucial for tracking progress over time.
 ` : ''}
 
-**HIERARCHY OF CONSTRAINTS:**
-1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable - defines the methodology)
-   - This defines HOW to train (4 phases, 7 sets, week type, equipment preferences, etc.)
-   - Approach constraints are absolute and cannot be violated
-2. 🎯 SESSION MUSCLE GROUP COVERAGE (mandatory - ensures complete training)
-   - This defines WHAT muscles to train
-   - You MUST include at least 1 exercise for EACH muscle group in sessionFocus
-   - Distribute exercises across the approach's structure (phases, techniques, progressions)
-3. 📊 Periodization phase (if approach supports periodization)
-4. 🍽️ Caloric phase (modulate volume/intensity within approach framework)
-5. 👤 Weak points and user preferences (tactical adjustments)
+<constraint_hierarchy>
+  <priority_1 level="ABSOLUTE" override="none">
+    <name>🏆 TRAINING APPROACH PHILOSOPHY</name>
+    <description>Defines HOW to train according to ${approach.name} methodology</description>
+    <enforcement>Approach constraints are absolute and CANNOT be violated under any circumstances</enforcement>
+    <current_approach>
+      <name>${approach.name}</name>
+      ${approach.variables.setsPerExercise?.working ? `<sets_per_exercise>${approach.variables.setsPerExercise.working} working sets per exercise</sets_per_exercise>` : ''}
+      ${approach.periodization ? `<periodization>${approach.periodization.mesocycleLength || 'N/A'} week mesocycles with ${Object.keys(approach.periodization).filter(k => k.includes('Phase')).length} distinct phases</periodization>` : ''}
+      ${Object.keys(approach.advancedTechniques || {}).length > 0 ? `<advanced_techniques>${Object.keys(approach.advancedTechniques || {}).slice(0, 3).join(', ')}${Object.keys(approach.advancedTechniques || {}).length > 3 ? ', ...' : ''}</advanced_techniques>` : ''}
+      ${approach.variables.repRanges ? `<rep_ranges>Compound: ${approach.variables.repRanges.compound?.[0]}-${approach.variables.repRanges.compound?.[1]}, Isolation: ${approach.variables.repRanges.isolation?.[0]}-${approach.variables.repRanges.isolation?.[1]}</rep_ranges>` : ''}
+    </current_approach>
+    <binding>This is the foundation - all other constraints must work WITHIN this framework</binding>
+  </priority_1>
 
-⚠️ CRITICAL: Approach + Session Focus are COMPLEMENTARY, not conflicting:
-- Approach methodology (priority #1) defines HOW to structure the workout
-- Session muscle coverage (priority #2) defines WHAT muscles to include
-- Apply the approach's methodology WHILE ensuring all session focus muscles are covered
-- If approach volume constraints make it impossible to adequately cover all muscles, prioritize them in the order given
+  <priority_2 level="MANDATORY" override="priority_3_and_below">
+    <name>🎯 SESSION MUSCLE GROUP COVERAGE</name>
+    <description>Defines WHAT muscles to train</description>
+    <enforcement>You MUST include at least 1 exercise for EACH muscle group in sessionFocus</enforcement>
+    <distribution>Distribute exercises across the approach's structure (phases, techniques, progressions)</distribution>
+    ${input.sessionFocus ? `
+    <required_muscles>${input.sessionFocus.join(', ')}</required_muscles>
+    ` : ''}
+    <binding>This defines the workout scope - cannot be ignored</binding>
+  </priority_2>
 
-⚠️ CONFLICT RESOLUTION RULE:
-If any guidance below conflicts with the approach philosophy or volume constraints, THE APPROACH WINS.
+  <priority_3 level="IMPORTANT" override="priority_4_and_below">
+    <name>📊 Periodization Phase</name>
+    <applies_when>Approach supports periodization</applies_when>
+    <description>Guides intensity/volume within approach-defined ranges</description>
+  </priority_3>
 
-Example: Heavy Duty + BULK scenario
-- Heavy Duty says: "1-2 sets per exercise, 6-8 total sets, NEVER add more sets"
-- BULK says: "+15-20% volume"
-- CORRECT action: Stay within 1-2 sets × 6-8 total, increase intensity (heavier weights, advanced techniques)
-- WRONG action: Increase to 10-12 total sets
+  <priority_4 level="RECOMMENDED" override="priority_5_only">
+    <name>🍽️ Caloric Phase</name>
+    <applies_within>Approach framework - modulate volume/intensity</applies_within>
+    <description>Adjust training stress based on energy availability</description>
+    ${input.caloricPhase ? `
+    <current_phase>${input.caloricPhase}</current_phase>
+    ` : ''}
+  </priority_4>
+
+  <priority_5 level="OPTIONAL" override="none">
+    <name>👤 Weak Points & User Preferences</name>
+    <description>Tactical adjustments for individual customization</description>
+    <enforcement>Consider when possible, but never violate higher priorities</enforcement>
+    ${input.weakPoints && input.weakPoints.length > 0 ? `
+    <weak_points>${input.weakPoints.join(', ')}</weak_points>
+    ` : ''}
+  </priority_5>
+</constraint_hierarchy>
+
+<constraint_interaction_rules>
+  <complementary_relationship>
+    Approach methodology (Priority 1) and Session muscle coverage (Priority 2) are COMPLEMENTARY, not conflicting:
+    - Priority 1 defines HOW to structure the workout
+    - Priority 2 defines WHAT muscles to include
+    - Apply Priority 1's methodology WHILE ensuring all Priority 2 muscles are covered
+    - If Priority 1 volume constraints make complete Priority 2 coverage impossible, prioritize muscles in the order given
+  </complementary_relationship>
+
+  <conflict_resolution_rule>
+    When constraints conflict, ALWAYS prioritize the HIGHER numbered priority.
+
+    The HIGHER priority ALWAYS WINS - no exceptions.
+
+    <example name="${approach.name} + BULK conflict (if approach has fixed volume)">
+      <priority_1_says>${approach.name}: "${approach.variables.setsPerExercise?.working ? `${approach.variables.setsPerExercise.working} sets per exercise` : 'prescribed set structure'}, NEVER add more sets"</priority_1_says>
+      <priority_4_says>BULK: "+15-20% volume"</priority_4_says>
+      <resolution>Priority 1 WINS</resolution>
+      <correct_action>Stay within approach's prescribed set structure, increase INTENSITY (heavier weights${Object.keys(approach.advancedTechniques || {}).length > 0 ? `, ${Object.keys(approach.advancedTechniques || {}).slice(0, 2).join(', ')}` : ''})</correct_action>
+      <wrong_action>Violate approach's set structure by adding extra volume</wrong_action>
+    </example>
+
+    ${(() => {
+      const minSetsTechnique = Object.entries(approach.advancedTechniques || {}).find(([_, tech]) => tech.minSets && tech.requiresConsecutiveSets)
+      if (!minSetsTechnique) return ''
+      const [techName, tech] = minSetsTechnique
+      return `<example name="${techName} + Low Volume conflict">
+      <priority_1_says>${approach.name}: "Use ${tech.minSets} consecutive sets for ${techName}"</priority_1_says>
+      <priority_2_says>Target volume: muscle X = ${Math.max(1, tech.minSets! - 3)} sets</priority_2_says>
+      <resolution>Priority 2 WINS (volume targets are MANDATORY)</resolution>
+      <correct_action>Use standard set exercises for this muscle (${techName} incompatible)</correct_action>
+      <wrong_action>Force ${techName} with ${tech.minSets} sets (VIOLATES volume target)</wrong_action>
+    </example>`
+    })()}
+  </conflict_resolution_rule>
+</constraint_interaction_rules>
 
 ${input.experienceYears ? `Consider that the user has ${input.experienceYears} years of experience - beginners benefit from simpler compound movements, advanced lifters can handle more variation and volume.` : ''}
 ${input.userAge && input.userAge > 50 ? `Consider that the user is ${input.userAge} years old - prioritize joint-friendly exercise variations when possible.` : ''}
@@ -710,7 +934,7 @@ COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
 - technicalCues: 2-4 brief, actionable technical cues for proper form
   * Keep cues SHORT and CLEAR (max 8-10 words each)
   * Make them ACTIONABLE and easy to remember in the gym
-  * Tailor to the approach philosophy (e.g., Kuba Method emphasizes stretch, contraction, ROM)
+  * Tailor to the ${approach.name} philosophy${approach.romEmphasis ? ` (emphasizes ${Object.entries(approach.romEmphasis).filter(([k, v]) => k !== 'principles' && typeof v === 'number' && v > 30).map(([k]) => k).join(', ')})` : ''}
   * Examples: "Semi-bent arms throughout the movement", "Squeeze pecs hard at top", "Avoid lockout on elbows"
 - warmupSets: ONLY for compound movements (squat, deadlift, bench, overhead press, rows), provide 2 warmup sets:
   * Set 1: 50% weight, 15 reps, RIR 5, 60s rest, technicalFocus: "Feel the movement pattern"
@@ -822,6 +1046,123 @@ ${memories.map(mem => {
 - Document your memory-influenced choices in "insightInfluencedChanges" array
 - Include the memory ID, what you chose, and why
 ` : ''}
+
+=== 🔍 SELF-VERIFICATION CHECKLIST (Complete BEFORE generating final JSON) ===
+
+**MANDATORY PRE-OUTPUT VERIFICATION:**
+
+Before you output your final JSON, you MUST verify your exercise selection meets ALL constraints. Follow these steps:
+
+${input.targetVolume ? `
+**STEP 1: Volume Accuracy Verification**
+
+Calculate total sets per muscle using the formula: Primary = 1.0x sets, Secondary = 0.5x sets
+
+For EACH muscle in your workout, show your calculation:
+
+${Object.entries(input.targetVolume).map(([muscle, sets]) => {
+  const setCount = typeof sets === 'number' ? sets : 0
+  const minSets = Math.floor(setCount * 0.8)
+  const maxSets = Math.ceil(setCount * 1.2)
+
+  if (setCount === 0) {
+    return `• ${muscle}: TARGET = 0 sets
+  → Verify: NO exercises target ${muscle} (neither primary nor secondary)
+  → If ANY exercise targets ${muscle} → REMOVE it`
+  }
+
+  return `• ${muscle}: TARGET = ${setCount} sets (range: ${minSets}-${maxSets})
+  → Calculate: [List each exercise's contribution]
+    Example: "Bench Press (4 sets, primary) = +4.0 sets"
+             "Overhead Press (3 sets, secondary) = +1.5 sets"
+    Total = [sum]
+  → Check: Is total within ${minSets}-${maxSets}?
+  → If NO → REVISE exercises (add/remove sets or change exercises)`
+}).join('\n\n')}
+
+**If ANY muscle is outside tolerance → You MUST REVISE before finalizing**
+` : ''}
+
+${input.sessionFocus ? `
+**STEP 2: Muscle Coverage Verification**
+
+Required muscles: ${input.sessionFocus.join(', ')}
+
+For EACH required muscle:
+  ✓ Verify at least 1 exercise has it as primary or secondary
+  ✓ If missing → ADD an exercise targeting that muscle
+
+**If ANY required muscle is missing → You MUST ADD an exercise before finalizing**
+` : ''}
+
+${maxTotalSets || maxSetsPerExercise ? `
+**STEP 3: Approach Constraints Verification**
+
+${maxTotalSets ? `Max total sets per workout: ${maxTotalSets}` : ''}
+${maxSetsPerExercise ? `Max sets per exercise: ${maxSetsPerExercise}` : ''}
+
+Calculate:
+  → Total sets across ALL exercises = [sum all exercise sets]
+  → Max sets in any single exercise = [find max]
+
+Check:
+  ${maxTotalSets ? `→ Total ≤ ${maxTotalSets}? If NO → REDUCE sets or REMOVE exercises` : ''}
+  ${maxSetsPerExercise ? `→ All exercises ≤ ${maxSetsPerExercise} sets? If NO → REDUCE sets per exercise` : ''}
+
+**If constraints violated → You MUST REVISE before finalizing**
+` : ''}
+
+${(() => {
+  // Check if approach has advanced techniques requiring consecutive sets
+  const techniquesRequiringConsecutiveSets = Object.entries(approach.advancedTechniques || {})
+    .filter(([_, tech]) => tech.requiresConsecutiveSets && tech.minSets)
+
+  if (techniquesRequiringConsecutiveSets.length === 0 || !input.targetVolume) return ''
+
+  return `
+**STEP 4: Advanced Technique Compatibility Verification**
+
+${approach.name} uses advanced techniques that require consecutive sets. Verify compatibility:
+
+${techniquesRequiringConsecutiveSets.map(([techName, tech]) => `
+**${techName.toUpperCase()}** (requires ${tech.minSets} consecutive sets):
+  → For each muscle where you want to use ${techName}:
+    • Check target volume ≥ ${tech.minSets} sets
+    • If target < ${tech.minSets} sets → CANNOT use ${techName}, use standard sets instead
+`).join('\n')}
+
+${input.targetVolume ? `Example verification for current target volumes:
+${Object.entries(input.targetVolume)
+  .map(([muscle, sets]) => {
+    const compatible = techniquesRequiringConsecutiveSets.every(([_, tech]) => sets >= (tech.minSets || 0))
+    return `  • ${muscle}: ${sets} sets ${compatible ? '→ COMPATIBLE ✓' : `→ INCOMPATIBLE (need ${Math.max(...techniquesRequiringConsecutiveSets.map(([_, tech]) => tech.minSets || 0))}+ for advanced techniques)`}`
+  })
+  .join('\n')}` : ''}
+
+**If advanced technique used on incompatible muscle → You MUST CHANGE to standard sets before finalizing**
+`
+})()}
+
+**FINAL CHECK:**
+  1. All volume targets met? ✓ / ✗
+  2. All required muscles covered? ✓ / ✗
+  3. All approach constraints satisfied? ✓ / ✗
+${(() => {
+  const techniquesRequiringConsecutiveSets = Object.entries(approach.advancedTechniques || {})
+    .filter(([_, tech]) => tech.requiresConsecutiveSets && tech.minSets)
+
+  if (techniquesRequiringConsecutiveSets.length === 0) return ''
+
+  return techniquesRequiringConsecutiveSets.map(([techName, tech], idx) =>
+    `  ${4 + idx}. ${techName} only on compatible muscles (${tech.minSets}+ sets required)? ✓ / ✗ / N/A`
+  ).join('\n')
+})()}
+
+**⚠️ ONLY AFTER ALL CHECKS PASS → Generate the JSON below**
+
+If any check fails (✗) → REVISE your exercise selection and re-verify
+
+==========================================================================
 
 Required JSON structure:
 {
@@ -1216,8 +1557,63 @@ Return ONLY valid JSON (no markdown, no code blocks):
           return ANATOMICAL_TO_CANONICAL[withoutPlural]
         }
 
-        // Not in mapping - log for monitoring and return as-is (already normalized, canonical)
-        console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscle name encountered:', {
+        // Intelligent fallback: pattern matching for common muscle group keywords
+        // This handles unknown variants, typos, or new AI-generated terms
+        if (normalized.includes('back')) {
+          console.warn(`⚠️ [FALLBACK] Unknown back variant "${muscle}" → upper_back`, { normalized })
+          return 'upper_back'
+        }
+        if (normalized.includes('delt')) {
+          console.warn(`⚠️ [FALLBACK] Unknown deltoid variant "${muscle}" → shoulders`, { normalized })
+          return 'shoulders'
+        }
+        if (normalized.includes('pect')) {
+          console.warn(`⚠️ [FALLBACK] Unknown pectoral variant "${muscle}" → chest`, { normalized })
+          return 'chest'
+        }
+        if (normalized.includes('quad')) {
+          console.warn(`⚠️ [FALLBACK] Unknown quadriceps variant "${muscle}" → quads`, { normalized })
+          return 'quads'
+        }
+        if (normalized.includes('ham')) {
+          console.warn(`⚠️ [FALLBACK] Unknown hamstring variant "${muscle}" → hamstrings`, { normalized })
+          return 'hamstrings'
+        }
+        if (normalized.includes('glut')) {
+          console.warn(`⚠️ [FALLBACK] Unknown glute variant "${muscle}" → glutes`, { normalized })
+          return 'glutes'
+        }
+        if (normalized.includes('calf') || normalized.includes('calv')) {
+          console.warn(`⚠️ [FALLBACK] Unknown calf variant "${muscle}" → calves`, { normalized })
+          return 'calves'
+        }
+        if (normalized.includes('tricep')) {
+          console.warn(`⚠️ [FALLBACK] Unknown tricep variant "${muscle}" → triceps`, { normalized })
+          return 'triceps'
+        }
+        if (normalized.includes('bicep')) {
+          console.warn(`⚠️ [FALLBACK] Unknown bicep variant "${muscle}" → biceps`, { normalized })
+          return 'biceps'
+        }
+        if (normalized.includes('lat')) {
+          console.warn(`⚠️ [FALLBACK] Unknown lat variant "${muscle}" → lats`, { normalized })
+          return 'lats'
+        }
+        if (normalized.includes('trap')) {
+          console.warn(`⚠️ [FALLBACK] Unknown trap variant "${muscle}" → traps`, { normalized })
+          return 'traps'
+        }
+        if (normalized.includes('ab') || normalized.includes('abdominal')) {
+          console.warn(`⚠️ [FALLBACK] Unknown abs variant "${muscle}" → abs`, { normalized })
+          return 'abs'
+        }
+        if (normalized.includes('oblique')) {
+          console.warn(`⚠️ [FALLBACK] Unknown oblique variant "${muscle}" → obliques`, { normalized })
+          return 'obliques'
+        }
+
+        // Last resort: unknown muscle - log for monitoring and return as-is
+        console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscle name encountered (no fallback matched):', {
           original: muscle,
           normalized: normalized,
           withoutPlural: withoutPlural,
@@ -1231,8 +1627,135 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
       const actualVolume = calculateMuscleVolume(result.exercises)
       const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
-      const violations: Array<{muscle: string; target: number; actual: number; suggestion: string}> = []
+
+      // 🔍 DIAGNOSTIC LOGGING: Pre-validation volume analysis
+      console.log('\n' + '='.repeat(80))
+      console.log('📊 [VOLUME DIAGNOSTIC] Pre-Validation Analysis')
+      console.log('='.repeat(80))
+
+      // Log exercise-by-exercise breakdown
+      console.log('\n🏋️ EXERCISE CONTRIBUTIONS:')
+      result.exercises.forEach((ex, idx) => {
+        console.log(`\n  ${idx + 1}. ${ex.name} (${ex.sets} sets)`)
+        console.log(`     Primary: ${ex.primaryMuscles?.join(', ') || 'none'}`)
+        console.log(`     Secondary: ${ex.secondaryMuscles?.join(', ') || 'none'}`)
+        console.log(`     Volume contribution:`)
+        ex.primaryMuscles?.forEach(m => {
+          console.log(`       → ${m}: +${ex.sets} sets (primary 1.0x)`)
+        })
+        ex.secondaryMuscles?.forEach(m => {
+          console.log(`       → ${m}: +${(ex.sets * 0.5).toFixed(1)} sets (secondary 0.5x)`)
+        })
+      })
+
+      // Log target vs actual comparison table
+      console.log('\n📋 TARGET vs ACTUAL COMPARISON:')
+      console.log('─'.repeat(80))
+      console.log(String('MUSCLE').padEnd(25) +
+                  String('TARGET').padEnd(12) +
+                  String('ACTUAL').padEnd(12) +
+                  String('RANGE').padEnd(15) +
+                  String('STATUS'))
+      console.log('─'.repeat(80))
+
       const targetTolerance = 0.20
+      const diagnosticResults: Array<{
+        muscle: string
+        target: number
+        actual: number
+        min: number
+        max: number
+        status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION'
+        delta: number
+      }> = []
+
+      // Pre-calculate all results for sorting
+      for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
+        const normalizedTarget = normalizeMuscleForVolume(muscleKey)
+        let actualSets = 0
+
+        for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
+          const normalizedActual = normalizeMuscleForVolume(actualMuscle)
+          if (normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)) {
+            actualSets += sets
+          }
+        }
+
+        const minAllowed = Math.floor(targetSets * (1 - targetTolerance))
+        const maxAllowed = Math.ceil(targetSets * (1 + targetTolerance))
+
+        let status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' = 'PASS'
+        if (targetSets === 0 && actualSets > 0) {
+          status = 'ZERO_VIOLATION'
+        } else if (actualSets < minAllowed) {
+          status = 'UNDER'
+        } else if (actualSets > maxAllowed) {
+          status = 'OVER'
+        }
+
+        diagnosticResults.push({
+          muscle: muscleKey,
+          target: targetSets,
+          actual: actualSets,
+          min: minAllowed,
+          max: maxAllowed,
+          status,
+          delta: actualSets - targetSets
+        })
+      }
+
+      // Sort: violations first, then by absolute delta
+      diagnosticResults.sort((a, b) => {
+        if (a.status !== 'PASS' && b.status === 'PASS') return -1
+        if (a.status === 'PASS' && b.status !== 'PASS') return 1
+        return Math.abs(b.delta) - Math.abs(a.delta)
+      })
+
+      // Display results
+      diagnosticResults.forEach(result => {
+        const statusIcon = result.status === 'PASS' ? '✅' :
+                          result.status === 'ZERO_VIOLATION' ? '🚫' :
+                          result.status === 'UNDER' ? '⬇️' :
+                          '⬆️'
+        const statusText = result.status === 'PASS' ? 'PASS' :
+                          result.status === 'ZERO_VIOLATION' ? 'ZERO VIOLATED' :
+                          result.status === 'UNDER' ? `UNDER (${result.delta.toFixed(1)})` :
+                          `OVER (+${result.delta.toFixed(1)})`
+
+        console.log(
+          statusIcon + ' ' + String(result.muscle).padEnd(23) +
+          String(result.target).padEnd(12) +
+          String(result.actual.toFixed(1)).padEnd(12) +
+          String(`${result.min}-${result.max}`).padEnd(15) +
+          statusText
+        )
+      })
+
+      console.log('─'.repeat(80))
+      const passCount = diagnosticResults.filter(r => r.status === 'PASS').length
+      const totalCount = diagnosticResults.length
+      console.log(`\n📈 SUMMARY: ${passCount}/${totalCount} muscles within tolerance`)
+
+      // Show unknown muscles (not in targets)
+      const unknownMuscles = Object.keys(actualVolume).filter(muscle => {
+        if (!input.targetVolume) return false
+        const normalizedActual = normalizeMuscleForVolume(muscle)
+        return !Object.keys(input.targetVolume).some(targetKey => {
+          const normalizedTarget = normalizeMuscleForVolume(targetKey)
+          return normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)
+        })
+      })
+
+      if (unknownMuscles.length > 0) {
+        console.log(`\n⚠️  UNEXPECTED MUSCLES (not in targets):`)
+        unknownMuscles.forEach(muscle => {
+          console.log(`   - ${muscle}: ${actualVolume[muscle].toFixed(1)} sets`)
+        })
+      }
+
+      console.log('='.repeat(80) + '\n')
+
+      const violations: Array<{muscle: string; target: number; actual: number; suggestion: string}> = []
 
       for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
         const muscleName = MUSCLE_GROUPS[muscleKey as keyof typeof MUSCLE_GROUPS] || muscleKey

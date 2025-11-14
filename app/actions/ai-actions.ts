@@ -1521,32 +1521,40 @@ export async function suggestExerciseAdditionAction(
 }
 
 /**
- * Server action to extract equipment name from photo
+ * Server action to extract equipment name and muscle groups from photo
  * Uses Vision API to identify gym equipment in uploaded image
  * Used for photo-based exercise substitution
  */
 export async function extractEquipmentNameFromImageAction(
   imageBase64: string
-): Promise<{ success: true; detectedName: string } | { success: false; error: string }> {
+): Promise<
+  | { success: true; detectedName: string; primaryMuscles: string[]; secondaryMuscles?: string[] }
+  | { success: false; error: string }
+> {
   try {
     const supabase = await getSupabaseServerClient()
     const validator = new EquipmentValidator(supabase)
 
-    const detectedName = await validator.extractNameFromImage(imageBase64)
+    const details = await validator.extractEquipmentDetailsFromImage(imageBase64)
 
-    if (!detectedName || detectedName === 'Unknown Equipment') {
+    if (!details.name || details.name === 'Unknown Equipment') {
       return {
         success: false,
-        error: 'Could not identify gym equipment. Try a clearer photo or enter the name manually.'
+        error: 'Could not identify gym equipment. Try a clearer photo or enter the name manually.',
       }
     }
 
-    return { success: true, detectedName }
+    return {
+      success: true,
+      detectedName: details.name,
+      primaryMuscles: details.primaryMuscles,
+      secondaryMuscles: details.secondaryMuscles,
+    }
   } catch (error) {
     console.error('Server action - Extract equipment name from image error:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to process image'
+      error: error instanceof Error ? error.message : 'Failed to process image',
     }
   }
 }

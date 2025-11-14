@@ -241,7 +241,9 @@
           "hint": "Enter any exercise name. The AI will validate it fits the workout.",
           "useButton": "Use This",
           "validating": "Validating...",
-          "validate": "Validate"
+          "validate": "Validate",
+          "textMode": "Text",
+          "photoMode": "Photo"
         },
         "validation": {
           "caution": "⚠️ Caution: {rationale}",

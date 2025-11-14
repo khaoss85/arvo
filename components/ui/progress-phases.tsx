@@ -10,7 +10,7 @@ export const WORKOUT_PHASES: Phase[] = [
   { id: 'profile', label: 'Loading profile', emoji: '👤' },
   { id: 'split', label: 'Planning workout', emoji: '📋' },
   { id: 'ai', label: 'AI selecting exercises', emoji: '🤖' },
-  { id: 'history', label: 'Analyzing history', emoji: '📊' },
+  { id: 'optimization', label: 'Optimizing workout', emoji: '🎯' },
   { id: 'finalize', label: 'Finalizing', emoji: '✨' }
 ]
 

@@ -151,6 +151,7 @@ export function EditSetModal({
                   type="number"
                   value={weight}
                   onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+                  onFocus={(e) => e.currentTarget.select()}
                   className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
                   step="0.5"
                   disabled={isLoading}
@@ -182,6 +183,7 @@ export function EditSetModal({
                   type="number"
                   value={reps}
                   onChange={(e) => setReps(parseInt(e.target.value) || 0)}
+                  onFocus={(e) => e.currentTarget.select()}
                   className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
                   disabled={isLoading}
                 />

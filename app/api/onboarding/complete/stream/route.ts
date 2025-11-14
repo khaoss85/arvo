@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
           sendProgress('ai', 40, 'AI selecting best exercises')
 
           // Generate workout using ExerciseSelector
-          const exerciseSelector = new ExerciseSelector(supabase)
+          const exerciseSelector = new ExerciseSelector(supabase, 'medium')
           const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
 
           // For first workout, start with 'push' for push_pull_legs, 'upper' for upper_lower, etc.
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
             throw new Error('Failed to create workout')
           }
 
-          sendProgress('history', 75, 'Analyzing your baseline')
+          sendProgress('optimization', 75, 'Analyzing your baseline')
 
           // Phase 4: Generate split plan if data provided (80-95%)
           let splitPlanId = null

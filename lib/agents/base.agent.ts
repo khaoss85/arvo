@@ -1,14 +1,15 @@
 import { getOpenAIClient } from '@/lib/ai/client'
 import { KnowledgeEngine } from '@/lib/knowledge/engine'
 import type { Locale } from '@/i18n'
+import { aiMetrics, getOperationType } from '@/lib/utils/ai-metrics'
 
 export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
   protected supabase: any
-  protected reasoningEffort: 'low' | 'medium' | 'high' = 'low'
+  protected reasoningEffort: 'minimal' | 'low' | 'medium' | 'high' = 'low'
 
-  constructor(supabaseClient?: any, reasoningEffort?: 'low' | 'medium' | 'high') {
+  constructor(supabaseClient?: any, reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high') {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
     this.openai = getOpenAIClient()
     // Pass Supabase client to KnowledgeEngine for server-side usage
@@ -28,6 +29,8 @@ export abstract class BaseAgent {
    */
   protected getTimeoutForReasoning(): number {
     switch (this.reasoningEffort) {
+      case 'minimal':
+        return 60000      // 60s - instant responses, minimal reasoning
       case 'low':
         return 90000      // 90s - fast, standard constraints
       case 'medium':
@@ -48,6 +51,57 @@ export abstract class BaseAgent {
     return '\n\n🇬🇧 LANGUAGE INSTRUCTION: Respond in English.'
   }
 
+  /**
+   * Gets reasoning effort guidance for the AI
+   * Helps the model budget reasoning tokens appropriately based on task complexity
+   */
+  protected getReasoningGuidance(): string {
+    switch (this.reasoningEffort) {
+      case 'minimal':
+        return `
+⚡ **REASONING GUIDANCE: Minimal Reasoning Mode**
+This task should be handled quickly without extended thinking:
+- Execute directly based on clear patterns
+- Use your training to respond immediately
+- Avoid lengthy analysis or alternative exploration
+- Trust your instincts for straightforward solutions
+`
+      case 'low':
+        return `
+⚡ **REASONING GUIDANCE: Low Effort Mode**
+This task is straightforward. Use minimal reasoning:
+- Quick constraint checking (verify 2-3 key constraints)
+- Direct solution generation based on clear rules
+- Skip extensive exploration of alternatives
+- Simple validation of outputs before finalizing
+- Budget: ~30-60 seconds of thinking
+`
+      case 'medium':
+        return `
+🧠 **REASONING GUIDANCE: Medium Effort Mode**
+This task has multiple interdependent constraints. Use moderate reasoning:
+- Systematically verify EACH constraint (5-10 constraints)
+- Consider 2-3 alternative approaches before choosing
+- Calculate volume distributions explicitly (show your work)
+- Verify solution against ALL constraints with step-by-step calculations
+- Budget: ~90-120 seconds of thinking
+- Balance speed with thoroughness
+`
+      case 'high':
+        return `
+🔬 **REASONING GUIDANCE: High Effort Mode**
+This task is complex with many interdependent constraints. Use deep reasoning:
+- Map out ALL constraint interactions systematically
+- Explore multiple solution paths (4-6 alternatives)
+- Verify solution against ALL constraints with detailed calculations
+- Consider edge cases and failure modes proactively
+- Explain your reasoning process step-by-step
+- Budget: ~180-240 seconds of extended thinking
+- Prioritize correctness over speed
+`
+    }
+  }
+
   protected async complete<T>(
     userPrompt: string,
     targetLanguage: Locale = 'en',
@@ -62,12 +116,13 @@ export abstract class BaseAgent {
         timestamp: new Date().toISOString()
       })
 
-      // Add language instruction to system prompt
+      // Add language instruction and reasoning guidance to system prompt
       const languageInstruction = this.getLanguageInstruction(targetLanguage)
+      const reasoningGuidance = this.getReasoningGuidance()
 
       // Combine system and user prompts for Responses API
       // GPT-5 relies on instruction following for JSON formatting (no response_format parameter)
-      const combinedInput = `${this.systemPrompt}${languageInstruction}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
+      const combinedInput = `${this.systemPrompt}${languageInstruction}${reasoningGuidance}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
 
       // Add timeout safety to prevent indefinite hangs
       // Use reasoning-based timeout (90s for 'low', 150s for 'medium', 240s for 'high')
@@ -146,6 +201,8 @@ export abstract class BaseAgent {
     let lastFeedback = ''
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const startTime = Date.now()
+
       try {
         // Build prompt with feedback from previous attempt
         const feedbackSection = lastFeedback
@@ -175,8 +232,23 @@ export abstract class BaseAgent {
         // Validate result (await since validation function can be async)
         const validation = await validationFn(result)
 
+        const latencyMs = Date.now() - startTime
+
         if (validation.valid) {
           console.log(`[BaseAgent.completeWithRetry] ✅ Success on attempt ${attempt}`)
+
+          // Track successful attempt
+          aiMetrics.track({
+            agentName: this.constructor.name,
+            operationType: getOperationType(this.constructor.name),
+            reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+            attemptNumber: attempt,
+            maxAttempts,
+            success: true,
+            latencyMs,
+            timestamp: new Date().toISOString()
+          })
+
           return result
         }
 
@@ -186,6 +258,20 @@ export abstract class BaseAgent {
           attempt,
           feedbackLength: lastFeedback.length,
           feedbackPreview: lastFeedback.substring(0, 200)
+        })
+
+        // Track failed attempt
+        aiMetrics.track({
+          agentName: this.constructor.name,
+          operationType: getOperationType(this.constructor.name),
+          reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+          attemptNumber: attempt,
+          maxAttempts,
+          success: false,
+          latencyMs,
+          failureReason: 'Validation failed',
+          validationErrors: [validation.feedback.substring(0, 500)], // Truncate for storage
+          timestamp: new Date().toISOString()
         })
 
         // If this was the last attempt, throw error with full context
@@ -203,6 +289,21 @@ export abstract class BaseAgent {
         }
 
       } catch (error) {
+        const latencyMs = Date.now() - startTime
+
+        // Track error (API failure, timeout, or validation error on last attempt)
+        aiMetrics.track({
+          agentName: this.constructor.name,
+          operationType: getOperationType(this.constructor.name),
+          reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+          attemptNumber: attempt,
+          maxAttempts,
+          success: false,
+          latencyMs,
+          failureReason: error instanceof Error ? error.message.substring(0, 200) : 'Unknown error',
+          timestamp: new Date().toISOString()
+        })
+
         // If it's an AI API error (not validation), don't retry
         if (error instanceof Error && !error.message.includes('validation') && !error.message.includes('VIOLATION')) {
           console.error(`[BaseAgent.completeWithRetry] Non-validation error, aborting retry:`, error.message)

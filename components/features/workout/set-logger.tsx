@@ -55,14 +55,29 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
   // Get effective target weight from actual performance or target
   const getEffectiveTargetWeight = useCallback(() => {
-    // Filter to get only working sets (exclude warmups)
-    const workingSets = exercise.completedSets.filter((_, idx) => {
-      return idx >= remainingWarmupSets
-    })
+    // Calculate how many warmup sets have been completed
+    const completedWarmupCount = Math.min(exercise.completedSets.length, remainingWarmupSets)
+
+    // Working sets are everything after warmup sets
+    const workingSets = exercise.completedSets.slice(completedWarmupCount)
 
     // If we have working sets logged, use the max weight from those
     if (workingSets.length > 0) {
       return Math.max(...workingSets.map(s => s.weight))
+    }
+
+    // If we're still in warmup and have completed some warmup sets,
+    // check if actual performance significantly exceeds the target
+    const completedWarmupSets = exercise.completedSets.slice(0, completedWarmupCount)
+    if (completedWarmupSets.length > 0) {
+      const maxWarmupWeight = Math.max(...completedWarmupSets.map(s => s.weight))
+      const targetWeight = exercise.targetWeight || 0
+
+      // If warmup performance exceeds target by 10%+, use actual performance
+      // This ensures subsequent warmup sets adapt to demonstrated strength
+      if (maxWarmupWeight > targetWeight * 1.1) {
+        return maxWarmupWeight
+      }
     }
 
     // Otherwise use the target weight
@@ -219,6 +234,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
             type="number"
             value={weight}
             onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+            onFocus={(e) => e.currentTarget.select()}
             className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
             step="0.5"
           />
@@ -245,6 +261,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
             type="number"
             value={reps}
             onChange={(e) => setReps(parseInt(e.target.value) || 0)}
+            onFocus={(e) => e.currentTarget.select()}
             className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
           />
           <Button

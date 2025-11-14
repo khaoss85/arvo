@@ -93,7 +93,11 @@ export async function POST(request: NextRequest) {
 
           // Dynamic progress interval that adapts speed based on current progress
           let progressInterval: NodeJS.Timeout | null = null
+          let progressStopped = false // Flag to prevent race conditions
           const updateProgress = () => {
+            // Check if progress updates have been stopped (prevents race conditions)
+            if (progressStopped) return
+
             const config = getProgressConfig(currentProgress)
 
             if (config.step > 0 && currentProgress < 90) {
@@ -140,6 +144,7 @@ export async function POST(request: NextRequest) {
             }
 
             // Stop the progress updates once generation completes
+            progressStopped = true // Prevent any scheduled updates from firing
             if (progressInterval) {
               clearTimeout(progressInterval)
               progressInterval = null
@@ -170,6 +175,7 @@ export async function POST(request: NextRequest) {
             controller.close()
           } catch (error) {
             // Always stop the progress updates on error
+            progressStopped = true // Prevent any scheduled updates from firing
             if (progressInterval) {
               clearTimeout(progressInterval)
               progressInterval = null

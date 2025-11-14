@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react'
-import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
+import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2 } from 'lucide-react'
+import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import type { Workout } from '@/lib/types/schemas'
@@ -19,6 +19,7 @@ import { AddExerciseButton } from './add-exercise-button'
 import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { ConfirmDialog } from './confirm-dialog'
+import { PhotoUploader } from '@/components/ui/photo-uploader'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
@@ -101,6 +102,11 @@ export function RefineWorkoutPage({
   // Custom input validation state
   const [customValidationResults, setCustomValidationResults] = useState<Map<number, SubstitutionSuggestion>>(new Map())
   const [customValidating, setCustomValidating] = useState<Map<number, boolean>>(new Map())
+
+  // Photo mode state
+  const [photoMode, setPhotoMode] = useState<Map<number, boolean>>(new Map())
+  const [uploadedImages, setUploadedImages] = useState<Map<number, string | null>>(new Map())
+  const [extractingNames, setExtractingNames] = useState<Map<number, boolean>>(new Map())
 
   // Initialize exercises when workout changes
   React.useEffect(() => {
@@ -210,6 +216,85 @@ export function RefineWorkoutPage({
     } finally {
       setCustomValidating(new Map(customValidating).set(index, false))
     }
+  }
+
+  const handleModeSwitch = (index: number, isPhotoMode: boolean) => {
+    setPhotoMode(new Map(photoMode).set(index, isPhotoMode))
+    if (!isPhotoMode) {
+      // Clear photo data when switching to text mode
+      setUploadedImages(new Map(uploadedImages).set(index, null))
+      setExtractingNames(new Map(extractingNames).set(index, false))
+    }
+    // Clear validation result and custom input when switching modes
+    setCustomValidationResults(new Map(customValidationResults).set(index, undefined as any))
+    setCustomInputs(new Map(customInputs).set(index, ''))
+  }
+
+  const handlePhotoUpload = async (index: number, base64: string) => {
+    setUploadedImages(new Map(uploadedImages).set(index, base64))
+    setExtractingNames(new Map(extractingNames).set(index, true))
+    setCustomValidationResults(new Map(customValidationResults).set(index, undefined as any))
+
+    try {
+      const result = await extractEquipmentNameFromImageAction(base64)
+
+      if (result.success) {
+        setCustomInputs(new Map(customInputs).set(index, result.detectedName))
+        setExtractingNames(new Map(extractingNames).set(index, false))
+        // Auto-validate after successful extraction
+        await handleValidateCustomWithName(index, result.detectedName)
+      } else {
+        console.error('Failed to extract equipment name:', result.error)
+        setUploadedImages(new Map(uploadedImages).set(index, null))
+      }
+    } catch (error) {
+      console.error('Failed to extract equipment name:', error)
+      setUploadedImages(new Map(uploadedImages).set(index, null))
+    } finally {
+      setExtractingNames(new Map(extractingNames).set(index, false))
+    }
+  }
+
+  const handleValidateCustomWithName = async (index: number, equipmentName: string) => {
+    const exercise = exercises[index]
+
+    if (!equipmentName?.trim() || equipmentName.length < 3 || !exercise) return
+
+    // Set validating state
+    setCustomValidating(new Map(customValidating).set(index, true))
+
+    try {
+      const input: CustomSubstitutionInput = {
+        currentExercise: {
+          name: exercise.name,
+          equipmentVariant: exercise.equipmentVariant || '',
+          sets: exercise.sets,
+          repRange: exercise.repRange,
+          targetWeight: exercise.targetWeight,
+        },
+        customExerciseName: equipmentName.trim(),
+        userId,
+        approachId: '',
+        weakPoints: [],
+        availableEquipment: [],
+      }
+
+      const result = await validateCustomSubstitutionAction(userId, input)
+
+      if (result.success && result.data) {
+        setCustomValidationResults(new Map(customValidationResults).set(index, result.data))
+      }
+    } catch (error) {
+      console.error('Failed to validate custom input:', error)
+    } finally {
+      setCustomValidating(new Map(customValidating).set(index, false))
+    }
+  }
+
+  const handleClearPhoto = (index: number) => {
+    setUploadedImages(new Map(uploadedImages).set(index, null))
+    setCustomInputs(new Map(customInputs).set(index, ''))
+    setCustomValidationResults(new Map(customValidationResults).set(index, undefined as any))
   }
 
   const handleSwapExercise = async (exerciseIndex: number, alternativeIndex: number) => {
@@ -859,35 +944,83 @@ export function RefineWorkoutPage({
                     <p className="text-sm text-muted-foreground font-medium">{t('rationale.custom')}</p>
                     {!customValidationResults.get(index) ? (
                       <>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            placeholder={t('customInput.placeholder')}
-                            value={customInputs.get(index) || ''}
-                            onChange={(e) => {
-                              const newInputs = new Map(customInputs)
-                              newInputs.set(index, e.target.value)
-                              setCustomInputs(newInputs)
-                            }}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && customInputs.get(index)?.trim()) {
-                                handleValidateCustom(index)
-                              }
-                            }}
-                            className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                          />
+                        {/* Mode Toggle */}
+                        <div className="flex gap-2 mb-3">
                           <Button
-                            variant="default"
+                            variant={!photoMode.get(index) ? 'default' : 'outline'}
                             size="sm"
-                            onClick={() => handleValidateCustom(index)}
-                            disabled={!customInputs.get(index)?.trim() || customValidating.get(index)}
+                            onClick={() => handleModeSwitch(index, false)}
                           >
-                            {customValidating.get(index) ? t('customInput.validating') : t('customInput.validate')}
+                            <Type className="w-4 h-4 mr-2" />
+                            {t('customInput.textMode')}
+                          </Button>
+                          <Button
+                            variant={photoMode.get(index) ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleModeSwitch(index, true)}
+                          >
+                            <Camera className="w-4 h-4 mr-2" />
+                            {t('customInput.photoMode')}
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          {t('customInput.hint')}
-                        </p>
+
+                        {/* Conditional Input */}
+                        {!photoMode.get(index) ? (
+                          <>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder={t('customInput.placeholder')}
+                                value={customInputs.get(index) || ''}
+                                onChange={(e) => {
+                                  const newInputs = new Map(customInputs)
+                                  newInputs.set(index, e.target.value)
+                                  setCustomInputs(newInputs)
+                                }}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter' && customInputs.get(index)?.trim()) {
+                                    handleValidateCustom(index)
+                                  }
+                                }}
+                                className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              />
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleValidateCustom(index)}
+                                disabled={!customInputs.get(index)?.trim() || customValidating.get(index)}
+                              >
+                                {customValidating.get(index) ? t('customInput.validating') : t('customInput.validate')}
+                              </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {t('customInput.hint')}
+                            </p>
+                          </>
+                        ) : (
+                          <div>
+                            <PhotoUploader
+                              onUpload={(base64) => handlePhotoUpload(index, base64)}
+                              onClear={() => handleClearPhoto(index)}
+                              isLoading={extractingNames.get(index) || customValidating.get(index)}
+                            />
+                            {extractingNames.get(index) && (
+                              <div className="mt-2 p-2 bg-blue-950/20 rounded-lg border border-blue-800">
+                                <p className="text-sm text-blue-400 flex items-center gap-2">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  {t('customInput.recognizing')}
+                                </p>
+                              </div>
+                            )}
+                            {customInputs.get(index) && !extractingNames.get(index) && (
+                              <div className="mt-2 p-2 bg-blue-950/20 border border-blue-800 rounded-lg">
+                                <p className="text-xs text-blue-400">
+                                  <strong>{t('customInput.detected')}:</strong> {customInputs.get(index)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className={`border-2 rounded-lg p-3 ${

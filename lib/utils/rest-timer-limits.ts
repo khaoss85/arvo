@@ -5,6 +5,8 @@
  * di allenamento e sul tipo di esercizio.
  */
 
+import type { TrainingApproach } from '@/lib/knowledge/types'
+
 export type RestTimerStatus = 'optimal' | 'acceptable' | 'warning' | 'critical'
 
 export interface RestTimerLimits {
@@ -15,66 +17,108 @@ export interface RestTimerLimits {
 }
 
 interface RestTimerContext {
-  approachName?: string
+  approach?: TrainingApproach
+  approachName?: string // Deprecated: mantienilo per backward compatibility
   exerciseType?: 'compound' | 'isolation' | 'fst7' | 'activation' | 'explosive' | 'pump'
   currentRestSeconds: number
   originalRestSeconds: number
+  weekType?: 'week1' | 'week2' | 'week3' // For periodized approaches like Y3T
 }
 
 /**
  * Calcola i limiti del rest timer e lo status basandosi sul contesto
  */
 export function calculateRestTimerLimits(context: RestTimerContext): RestTimerLimits {
-  const { approachName, exerciseType, currentRestSeconds, originalRestSeconds } = context
+  const { approach, approachName, exerciseType, currentRestSeconds, originalRestSeconds, weekType } = context
 
   let min = 30
   let max = 240
-  const recommended = originalRestSeconds
+  let recommended = originalRestSeconds
 
-  // Determina limiti basati sull'approccio
-  if (approachName?.toLowerCase().includes('fst-7')) {
-    if (exerciseType === 'fst7') {
-      // FST-7 sets: range molto stretto
-      min = 30
-      max = 45
-    } else if (exerciseType === 'compound') {
-      min = 90
-      max = 180
-    } else {
-      // isolation
-      min = 60
-      max = 90
+  // NEW APPROACH: Use approach.restTimerGuidelines if available
+  if (approach?.restTimerGuidelines && exerciseType) {
+    // Build lookup key based on exercise type and week type (for periodized approaches)
+    const lookupKeys = [
+      weekType ? `${weekType}_${exerciseType}` : null, // e.g., "week1_compound"
+      exerciseType, // e.g., "compound" or "fst7"
+      exerciseType === 'compound' || exerciseType === 'isolation' ? exerciseType : 'isolation' // fallback
+    ].filter(Boolean) as string[]
+
+    // Try to find guidelines for this exercise type
+    for (const key of lookupKeys) {
+      const guidelines = approach.restTimerGuidelines[key]
+      if (guidelines) {
+        min = guidelines.min
+        max = guidelines.max
+        recommended = guidelines.default
+        break
+      }
     }
-  } else if (approachName?.toLowerCase().includes('y3t')) {
-    // Y3T: dipende dalla week, ma per ora usiamo range ampio
-    // In futuro si può aggiungere logica per detectare la week corrente
-    if (exerciseType === 'compound') {
-      min = 90
-      max = 240 // Week 1 può arrivare a 240s
-    } else {
-      min = 30
-      max = 120
+
+    // If no specific guidelines found, use compound/isolation defaults
+    if (!approach.restTimerGuidelines[exerciseType]) {
+      const fallbackKey = exerciseType === 'compound' ? 'compound' : 'isolation'
+      const fallbackGuidelines = approach.restTimerGuidelines[fallbackKey]
+      if (fallbackGuidelines) {
+        min = fallbackGuidelines.min
+        max = fallbackGuidelines.max
+        recommended = fallbackGuidelines.default
+      }
     }
-  } else if (approachName?.toLowerCase().includes('mountain dog')) {
-    // Mountain Dog: dipende dalla fase
-    if (exerciseType === 'activation') {
-      min = 45
-      max = 60
-    } else if (exerciseType === 'explosive') {
-      min = 180
-      max = 240
-    } else if (exerciseType === 'pump') {
-      min = 30
-      max = 60
-    } else if (exerciseType === 'compound') {
-      min = 120
-      max = 180
+  }
+  // FALLBACK: Use old approach name string matching for backward compatibility
+  else if (approachName) {
+    const nameLower = approachName.toLowerCase()
+
+    if (nameLower.includes('fst-7')) {
+      if (exerciseType === 'fst7') {
+        min = 30
+        max = 45
+      } else if (exerciseType === 'compound') {
+        min = 90
+        max = 180
+      } else {
+        min = 60
+        max = 90
+      }
+    } else if (nameLower.includes('y3t')) {
+      if (exerciseType === 'compound') {
+        min = 90
+        max = 240
+      } else {
+        min = 30
+        max = 120
+      }
+    } else if (nameLower.includes('mountain dog')) {
+      if (exerciseType === 'activation') {
+        min = 45
+        max = 60
+      } else if (exerciseType === 'explosive') {
+        min = 180
+        max = 240
+      } else if (exerciseType === 'pump') {
+        min = 30
+        max = 60
+      } else if (exerciseType === 'compound') {
+        min = 120
+        max = 180
+      } else {
+        min = 60
+        max = 90
+      }
     } else {
-      min = 60
-      max = 90
+      // Default approach
+      if (exerciseType === 'compound') {
+        min = 90
+        max = 180
+      } else {
+        min = 45
+        max = 90
+      }
     }
-  } else {
-    // Default/Custom approach: range standard bodybuilding
+  }
+  // DEFAULT: Standard bodybuilding ranges
+  else {
     if (exerciseType === 'compound') {
       min = 90
       max = 180
@@ -187,7 +231,7 @@ export function getRestTimerStatusColor(status: RestTimerStatus): {
  */
 export function inferExerciseType(
   exerciseName: string | undefined,
-  setGuidance?: { type?: string }
+  setGuidance?: { type?: string; technique?: string }
 ): RestTimerContext['exerciseType'] {
   // Early return con fallback safety se exerciseName è undefined
   if (!exerciseName) {
@@ -196,23 +240,43 @@ export function inferExerciseType(
 
   const nameLower = exerciseName.toLowerCase()
 
-  // Check for FST-7 specific markers
+  // Priority 1: Check setGuidance.type (most reliable)
+  if (setGuidance?.type) {
+    const type = setGuidance.type.toLowerCase()
+    // Advanced technique types
+    if (type === 'fst7' || type === 'fst-7') return 'fst7'
+    if (type === 'activation') return 'activation'
+    if (type === 'explosive') return 'explosive'
+    if (type === 'pump') return 'pump'
+    // Standard types
+    if (type === 'compound') return 'compound'
+    if (type === 'isolation') return 'isolation'
+  }
+
+  // Priority 2: Check setGuidance.technique
+  if (setGuidance?.technique) {
+    const tech = setGuidance.technique.toLowerCase()
+    if (tech.includes('fst') || tech === 'fst7') return 'fst7'
+    if (tech === 'activation' || tech === 'pre-activation') return 'activation'
+    if (tech === 'explosive' || tech.includes('speed')) return 'explosive'
+    if (tech === 'pump' || tech.includes('metabolic')) return 'pump'
+  }
+
+  // Priority 3: Check exercise name for technique markers
   if (nameLower.includes('fst-7') || nameLower.includes('fst7')) {
     return 'fst7'
   }
-
-  // Mountain Dog specific phases
-  if (setGuidance?.type === 'activation' || nameLower.includes('activation')) {
+  if (nameLower.includes('activation')) {
     return 'activation'
   }
-  if (setGuidance?.type === 'explosive' || nameLower.includes('explosive')) {
+  if (nameLower.includes('explosive')) {
     return 'explosive'
   }
-  if (setGuidance?.type === 'pump' || nameLower.includes('pump')) {
+  if (nameLower.includes('pump')) {
     return 'pump'
   }
 
-  // Compound movements (common patterns)
+  // Priority 4: Compound movement detection (common patterns)
   const compoundKeywords = [
     'squat', 'deadlift', 'bench press', 'overhead press', 'row',
     'pull-up', 'chin-up', 'dip', 'lunge', 'leg press'

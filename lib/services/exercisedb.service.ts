@@ -139,6 +139,12 @@ export class ExerciseDBService {
    * Returns null if not found (graceful degradation)
    */
   static async getGifUrl(exerciseName: string): Promise<string | null> {
+    // Safety check: handle undefined/null/empty exercise names
+    if (!exerciseName) {
+      console.warn('[ExerciseDB] getGifUrl called with empty/undefined exerciseName')
+      return null
+    }
+
     // Ensure cache is initialized
     if (this.cache.exercises.size === 0) {
       await this.initializeCache()

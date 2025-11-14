@@ -205,7 +205,7 @@ ${approachContext}
 
 ⚠️ CONFLICT RESOLUTION:
 When suggesting substitutions, if caloric phase or other context conflicts with approach philosophy, THE APPROACH WINS.
-Example: Heavy Duty approach + CUT → Don't suggest 3-4 sets when approach says 1-2 max
+Example: ${approach.name} + ${input.caloricPhase?.toUpperCase() || 'CUT'} → ${approach.variables.setsPerExercise?.working ? `Don't suggest ${approach.variables.setsPerExercise.working + 2}-${approach.variables.setsPerExercise.working + 3} sets when approach says ${approach.variables.setsPerExercise.working} max` : "Respect approach's prescribed set/rep structure"}
 
 REQUIREMENTS:
 1. Provide 3-5 alternatives that vary in:
@@ -382,35 +382,46 @@ TRAINING APPROACH:
 ${approachContext}
 
 YOUR TASK:
-1. Interpret user's input (could be exact exercise name OR natural language description)
-   - If natural language (e.g., "something easier on my elbows"), infer the specific exercise they likely want
-   - If gibberish or unclear, return "not_recommended" with helpful guidance
 
-2. Validate if it's a good substitute:
-   - "approved": Excellent choice, maintains or improves workout quality
-   - "caution": Works but has trade-offs (explain WHAT changes and WHY it matters - e.g., "Less stabilizer work" or "Changes angle emphasis")
-   - "not_recommended": Poor choice (explain why: wrong muscle group, unsafe, equipment missing, etc.)
+**CRITICAL STEP 1 - MUSCLE GROUP VALIDATION:**
+BEFORE anything else, verify that the proposed exercise targets the SAME PRIMARY MUSCLE GROUPS as the current exercise.
+- If the current exercise has Primary Muscles listed, the proposed exercise MUST target at least ONE of those same muscles
+- If there is NO overlap in primary muscle groups → IMMEDIATELY return "not_recommended" with rationale "Wrong muscle group for [muscle] workout"
+- Examples of INVALID substitutions:
+  * Lat Pulldown (back) for Bench Press (chest) → NOT_RECOMMENDED
+  * Leg Press (quads/glutes) for Bicep Curl (biceps) → NOT_RECOMMENDED
+  * Shoulder Press (shoulders) for Squat (quads) → NOT_RECOMMENDED
 
-3. Calculate adjusted weight (considering equipment biomechanics):
-   - Barbell → Dumbbells: ~40-45% per hand
-   - Barbell → Machine: ~80%
-   - Barbell → Cables: ~70-75%
-   - Bilateral → Unilateral: ~45% per limb
-   - If user's proposed exercise is invalid/gibberish, set weight to 0
+**STEP 2 - Interpret user's input:**
+- Could be exact exercise name OR natural language description
+- If natural language (e.g., "something easier on my elbows"), infer the specific exercise they likely want
+- If gibberish or unclear, return "not_recommended" with helpful guidance
 
-4. Provide concise, gym-friendly feedback:
-   - Rationale: MAX 10 words, explain why this works or doesn't
-     * For "caution": state the specific trade-off (e.g., "Less stabilizer work" or "Changes angle emphasis")
-   - Swap Impact: MAX 15 words, what changes compared to original
-   - Similarity Score: 0-100 (how close to original exercise)
-   - Workout Integration: MAX 40 words, how it fits into the workout flow
+**STEP 3 - Validate if it's a good substitute:**
+- "approved": Excellent choice, maintains or improves workout quality
+- "caution": Works but has trade-offs (explain WHAT changes and WHY it matters - e.g., "Less stabilizer work" or "Changes angle emphasis")
+- "not_recommended": Poor choice (explain why: wrong muscle group, unsafe, equipment missing, etc.)
 
-5. Handle edge cases:
-   - Gibberish → "Invalid exercise name, can't identify movement"
-   - Wrong muscle group → "Wrong muscle group, breaks workout plan"
-   - Dangerous exercise → "Higher injury risk, consider safer alternative"
-   - Equipment unavailable → "Requires X equipment not available, try Y instead"
-   - Natural language → Interpret intent and suggest specific exercise
+**STEP 4 - Calculate adjusted weight** (considering equipment biomechanics):
+- Barbell → Dumbbells: ~40-45% per hand
+- Barbell → Machine: ~80%
+- Barbell → Cables: ~70-75%
+- Bilateral → Unilateral: ~45% per limb
+- If user's proposed exercise is invalid/gibberish, set weight to 0
+
+**STEP 5 - Provide concise, gym-friendly feedback:**
+- Rationale: MAX 10 words, explain why this works or doesn't
+  * For "caution": state the specific trade-off (e.g., "Less stabilizer work" or "Changes angle emphasis")
+- Swap Impact: MAX 15 words, what changes compared to original
+- Similarity Score: 0-100 (how close to original exercise)
+- Workout Integration: MAX 40 words, how it fits into the workout flow
+
+**STEP 6 - Handle edge cases:**
+- Gibberish → "Invalid exercise name, can't identify movement"
+- Wrong muscle group → "Wrong muscle group, breaks workout plan" (THIS IS CRITICAL - see STEP 1)
+- Dangerous exercise → "Higher injury risk, consider safer alternative"
+- Equipment unavailable → "Requires X equipment not available, try Y instead"
+- Natural language → Interpret intent and suggest specific exercise
 
 EXAMPLES:
 

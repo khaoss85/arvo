@@ -69,8 +69,8 @@ export async function GET(
       })
     }
 
-    // Still in progress - estimate progress
-    const progress = GenerationCache.getEstimatedProgress(requestId)
+    // Still in progress - estimate progress (with phase-awareness)
+    const { progress, phase } = GenerationCache.getEstimatedProgress(requestId)
     const elapsed = Date.now() - cached.timestamp
     const elapsedSeconds = Math.floor(elapsed / 1000)
 
@@ -83,12 +83,14 @@ export async function GET(
 
     console.log(`[GenerationStatus] In progress: ${requestId}`, {
       elapsed: `${elapsedSeconds}s`,
-      progress: `${progress}%`
+      progress: `${progress}%`,
+      phase
     })
 
     return Response.json({
       status: 'in_progress',
       progress,
+      phase, // Include phase to keep synchronized with percentage
       message,
       elapsedSeconds
     })

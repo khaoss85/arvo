@@ -90,7 +90,7 @@ export function EquipmentVision() {
                       <p className="text-sm text-muted-foreground">{t('step2.description')}</p>
                       <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-950/30 rounded-md border border-primary-200 dark:border-primary-800">
                         <div className="text-sm font-mono text-primary-900 dark:text-primary-100">
-                          <div className="text-green-600 dark:text-green-400 mb-1">{'// ' + t('step2.detected')}</div>
+                          <div className="text-green-600 dark:text-green-400 mb-1">{'/\u002F ' + t('step2.detected')}</div>
                           <div className="pl-2 space-y-1">
                             <div><span className="text-primary-600 dark:text-primary-400">name:</span> "{t('step2.exampleEquipment')}"</div>
                             <div><span className="text-primary-600 dark:text-primary-400">confidence:</span> 0.92</div>

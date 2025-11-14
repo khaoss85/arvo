@@ -6,6 +6,19 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { ProgressPhases, WORKOUT_PHASES, type Phase } from './progress-phases'
 
+/**
+ * Derive phase from progress percentage (single source of truth)
+ * This ensures phase indicators always match the percentage shown
+ * Exported for use in polling estimation
+ */
+export function getPhaseFromProgress(progress: number): string {
+  if (progress < 20) return 'profile'
+  if (progress < 45) return 'split'
+  if (progress < 70) return 'ai'
+  if (progress < 90) return 'optimization'
+  return 'finalize'
+}
+
 interface ProgressFeedbackProps {
   variant: 'inline' | 'modal'
   endpoint: string
@@ -63,8 +76,12 @@ export function ProgressFeedback({
         } else if (data.status === 'error') {
           onError(data.error || 'Generation failed')
         } else if (data.status === 'in_progress') {
-          // Update progress from server estimate
-          if (data.progress !== undefined) setProgress(data.progress)
+          // Update progress from server estimate (percentage is single source of truth)
+          if (data.progress !== undefined) {
+            setProgress(data.progress)
+            // Derive phase from progress to keep them synchronized
+            setPhase(getPhaseFromProgress(data.progress))
+          }
           if (data.message) setMessage(data.message)
 
           // Continue polling (2s interval)
@@ -94,6 +111,16 @@ export function ProgressFeedback({
   }, [pollingMode, generationRequestId, onComplete, onError])
 
   useEffect(() => {
+    // AbortController for cleanup and extended timeout
+    const abortController = new AbortController()
+
+    // Set a generous timeout (240s = 4 minutes) - longer than AI timeout (180s)
+    // This prevents premature browser timeouts while allowing server to complete
+    const timeoutId = setTimeout(() => {
+      console.log('[ProgressFeedback] Request taking longer than expected, switching to polling...')
+      abortController.abort()
+    }, 240000) // 240 seconds
+
     const connectSSE = async () => {
       try {
         const response = await fetch(endpoint, {
@@ -102,7 +129,8 @@ export function ProgressFeedback({
           body: JSON.stringify({
             ...requestBody,
             generationRequestId // Add for idempotency + polling fallback
-          })
+          }),
+          signal: abortController.signal
         })
 
         if (!response.ok) {
@@ -136,9 +164,12 @@ export function ProgressFeedback({
                   onError(data.error || 'Operation failed')
                   break
                 } else {
-                  // Update progress
-                  if (data.phase) setPhase(data.phase)
-                  if (data.progress !== undefined) setProgress(data.progress)
+                  // Update progress (percentage is single source of truth)
+                  if (data.progress !== undefined) {
+                    setProgress(data.progress)
+                    // Derive phase from progress to keep them synchronized
+                    setPhase(getPhaseFromProgress(data.progress))
+                  }
                   if (data.message) setMessage(data.message)
                 }
               } catch (parseError) {
@@ -148,7 +179,18 @@ export function ProgressFeedback({
           }
         }
       } catch (error) {
-        // Detailed error logging for debugging
+        // Clear the timeout since we're handling the error
+        clearTimeout(timeoutId)
+
+        // Check if this is an intentional abort (cleanup)
+        if (error instanceof Error && error.name === 'AbortError') {
+          // Normal cleanup - component unmounted or timeout reached
+          // Don't log as error or switch to polling
+          console.log('[ProgressFeedback] SSE connection aborted (cleanup)')
+          return
+        }
+
+        // Real error - log details for debugging
         console.error('🔴 [PROGRESS_FEEDBACK_ERROR] SSE connection error:', {
           errorName: error?.constructor?.name,
           errorMessage: error instanceof Error ? error.message : String(error),
@@ -157,7 +199,8 @@ export function ProgressFeedback({
           timestamp: new Date().toISOString()
         })
 
-        // Switch to polling fallback (for mobile disconnections)
+        // Switch to polling fallback (for mobile disconnections or network errors)
+        // DO NOT call onError() here - let polling handle success/failure
         console.log('[ProgressFeedback] SSE failed, switching to polling mode')
         setPollingMode(true)
         setMessage('Reconnecting...')
@@ -165,6 +208,12 @@ export function ProgressFeedback({
     }
 
     connectSSE()
+
+    // Cleanup function
+    return () => {
+      clearTimeout(timeoutId)
+      abortController.abort()
+    }
   }, [endpoint, requestBody, onComplete, onError])
 
   const currentPhaseData = phases.find(p => p.id === phase) || phases[0]
@@ -186,8 +235,6 @@ export function ProgressFeedback({
           </div>
         </div>
 
-        <Progress value={progress} className="h-2" />
-
         {/* Duration notice - keep users informed */}
         {progress < 90 && (
           <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70">
@@ -195,7 +242,7 @@ export function ProgressFeedback({
           </p>
         )}
 
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-xs mb-2">
           <span className="text-gray-600 dark:text-gray-400">
             {currentPhaseData.label}
           </span>
@@ -204,6 +251,10 @@ export function ProgressFeedback({
           </span>
         </div>
 
+        {/* Continuous progress bar showing exact percentage */}
+        <Progress value={progress} className="mb-3" />
+
+        {/* Phase indicators */}
         <ProgressPhases
           phases={phases}
           currentPhase={phase}
@@ -253,8 +304,6 @@ export function ProgressFeedback({
         )}
       </div>
 
-      <Progress value={progress} className="mb-2 h-2" />
-
       {/* Duration notice - keep users informed */}
       {progress < 90 && (
         <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70 mb-2">
@@ -271,6 +320,10 @@ export function ProgressFeedback({
         </span>
       </div>
 
+      {/* Continuous progress bar showing exact percentage */}
+      <Progress value={progress} className="mb-3" />
+
+      {/* Phase indicators */}
       <ProgressPhases
         phases={phases}
         currentPhase={phase}

@@ -140,6 +140,17 @@ export interface TrainingApproach {
       priority?: string // which muscles benefit most
       exercises?: string[] // examples
       integration?: string // how to program
+      minSets?: number // minimum sets required (e.g., 7 for FST-7)
+      requiresConsecutiveSets?: boolean // whether technique requires consecutive sets
+    }
+  >
+
+  restTimerGuidelines?: Record<
+    string,
+    {
+      min: number // minimum rest time in seconds
+      max: number // maximum rest time in seconds
+      default: number // default/recommended rest time in seconds
     }
   >
 
