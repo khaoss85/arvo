@@ -5,11 +5,14 @@ export type { ProgressionInput, ProgressionOutput }
 
 export class ProgressionCalculator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient)
+    // Use GPT-5.1 with reasoning='minimal' and verbosity='low' for low latency during workouts
+    super(supabaseClient, 'minimal', 'low')
   }
 
   get systemPrompt() {
-    return `You are an expert bodybuilding coach specializing in set progression.
+    return `PREAMBLE INSTRUCTION: Before providing your JSON response, briefly explain your reasoning in natural language. Consider the approach philosophy, last set performance, and periodization context.
+
+You are an expert bodybuilding coach specializing in set progression.
 Based on the training approach philosophy and the previous set performance,
 suggest the optimal next set parameters.
 

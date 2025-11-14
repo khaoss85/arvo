@@ -8,7 +8,8 @@
 export type AIMetricEvent = {
   agentName: string
   operationType: 'workout_generation' | 'split_planning' | 'equipment_validation' | 'exercise_suggestion' | 'other'
-  reasoningEffort: 'low' | 'medium' | 'high'
+  reasoningEffort: 'minimal' | 'low' | 'medium' | 'high'
+  model?: string  // e.g., 'gpt-5-mini', 'gpt-5.1'
   attemptNumber: number
   maxAttempts: number
   success: boolean
@@ -56,7 +57,8 @@ class AIMetricsCollector {
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       const emoji = event.success ? '✅' : '❌'
-      console.log(`${emoji} [AI_METRICS] ${event.agentName} | Attempt ${event.attemptNumber}/${event.maxAttempts} | ${event.latencyMs}ms | ${event.reasoningEffort}`, {
+      const modelInfo = event.model ? ` | ${event.model}` : ''
+      console.log(`${emoji} [AI_METRICS] ${event.agentName} | Attempt ${event.attemptNumber}/${event.maxAttempts} | ${event.latencyMs}ms | ${event.reasoningEffort}${modelInfo}`, {
         success: event.success,
         failureReason: event.failureReason,
         validationErrors: event.validationErrors
@@ -137,7 +139,7 @@ class AIMetricsCollector {
       avgAttempts: number
     }> = {}
 
-    for (const effort of ['low', 'medium', 'high'] as const) {
+    for (const effort of ['minimal', 'low', 'medium', 'high'] as const) {
       const effortGroups = requestGroups.filter(group =>
         group[0].reasoningEffort === effort
       )
@@ -190,7 +192,7 @@ class AIMetricsCollector {
     const successfulFirstAttempts = filteredEvents.filter(e => e.success).length
 
     const byReasoningEffort: Record<string, number> = {}
-    for (const effort of ['low', 'medium', 'high'] as const) {
+    for (const effort of ['minimal', 'low', 'medium', 'high'] as const) {
       const effortEvents = filteredEvents.filter(e => e.reasoningEffort === effort)
       const effortSuccesses = effortEvents.filter(e => e.success).length
       byReasoningEffort[effort] = effortEvents.length > 0

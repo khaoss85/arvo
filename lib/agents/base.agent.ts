@@ -8,8 +8,14 @@ export abstract class BaseAgent {
   protected knowledge: KnowledgeEngine
   protected supabase: any
   protected reasoningEffort: 'minimal' | 'low' | 'medium' | 'high' = 'low'
+  protected verbosity: 'low' | 'medium' | 'high' = 'medium'
+  protected model: string = process.env.OPENAI_MODEL || 'gpt-5-mini'
 
-  constructor(supabaseClient?: any, reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high') {
+  constructor(
+    supabaseClient?: any,
+    reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high',
+    verbosity?: 'low' | 'medium' | 'high'
+  ) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
     this.openai = getOpenAIClient()
     // Pass Supabase client to KnowledgeEngine for server-side usage
@@ -18,6 +24,8 @@ export abstract class BaseAgent {
     this.supabase = supabaseClient
     // Configure reasoning effort (default: low for better performance)
     if (reasoningEffort) this.reasoningEffort = reasoningEffort
+    // Configure verbosity (default: medium for balanced responses)
+    if (verbosity) this.verbosity = verbosity
   }
 
   abstract get systemPrompt(): string
@@ -30,7 +38,7 @@ export abstract class BaseAgent {
   protected getTimeoutForReasoning(): number {
     switch (this.reasoningEffort) {
       case 'minimal':
-        return 60000      // 60s - instant responses, minimal reasoning
+        return 30000      // 30s - instant responses, minimal reasoning (GPT-5.1 fast mode)
       case 'low':
         return 90000      // 90s - fast, standard constraints
       case 'medium':
@@ -139,10 +147,10 @@ This task is complex with many interdependent constraints. Use deep reasoning:
 
       const response = await Promise.race([
         this.openai.responses.create({
-          model: 'gpt-5-mini',
+          model: this.model,
           input: combinedInput,
           reasoning: { effort: this.reasoningEffort },
-          text: { verbosity: 'medium' }
+          text: { verbosity: this.verbosity }
         }),
         timeoutPromise
       ])
@@ -241,7 +249,8 @@ This task is complex with many interdependent constraints. Use deep reasoning:
           aiMetrics.track({
             agentName: this.constructor.name,
             operationType: getOperationType(this.constructor.name),
-            reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+            reasoningEffort: this.reasoningEffort,
+            model: this.model,
             attemptNumber: attempt,
             maxAttempts,
             success: true,
@@ -264,7 +273,8 @@ This task is complex with many interdependent constraints. Use deep reasoning:
         aiMetrics.track({
           agentName: this.constructor.name,
           operationType: getOperationType(this.constructor.name),
-          reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+          reasoningEffort: this.reasoningEffort,
+          model: this.model,
           attemptNumber: attempt,
           maxAttempts,
           success: false,
@@ -295,7 +305,8 @@ This task is complex with many interdependent constraints. Use deep reasoning:
         aiMetrics.track({
           agentName: this.constructor.name,
           operationType: getOperationType(this.constructor.name),
-          reasoningEffort: this.reasoningEffort === 'minimal' ? 'low' : this.reasoningEffort,
+          reasoningEffort: this.reasoningEffort,
+          model: this.model,
           attemptNumber: attempt,
           maxAttempts,
           success: false,

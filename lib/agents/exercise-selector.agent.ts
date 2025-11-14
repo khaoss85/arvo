@@ -303,8 +303,9 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
 export class ExerciseSelector extends BaseAgent {
   protected supabase: any
 
-  constructor(supabaseClient?: any, reasoningEffort?: 'low' | 'medium' | 'high') {
-    super(supabaseClient, reasoningEffort)
+  constructor(supabaseClient?: any, reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high') {
+    // Use GPT-5.1 with minimal reasoning and low verbosity for fast workout generation
+    super(supabaseClient, reasoningEffort || 'minimal', 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 

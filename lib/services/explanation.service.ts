@@ -70,6 +70,9 @@ export class ExplanationService {
           contextKeys: Object.keys(context)
         })
 
+        // NOTE: Intentionally using gpt-5-mini instead of OPENAI_MODEL env variable
+        // Exercise explanations are non-critical and informative only
+        // Using the lower-cost model here helps optimize costs while maintaining quality
         const response = await this.openai.responses.create({
           model: 'gpt-5-mini',
           input: prompt,
