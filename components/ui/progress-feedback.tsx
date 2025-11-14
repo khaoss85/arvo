@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
-import { ProgressPhases, WORKOUT_PHASES, type Phase } from './progress-phases'
+import { ProgressPhases, useWorkoutPhases, type Phase } from './progress-phases'
 
 /**
  * Derive phase from progress percentage (single source of truth)
@@ -34,15 +34,21 @@ export function ProgressFeedback({
   variant,
   endpoint,
   requestBody,
-  phases = WORKOUT_PHASES,
+  phases,
   cancellable = true,
   onComplete,
   onError,
   onCancel
 }: ProgressFeedbackProps) {
-  const [phase, setPhase] = useState(phases[0]?.id || 'profile')
+  // Use i18n phases if not provided
+  const defaultPhases = useWorkoutPhases()
+  const activePhases = phases || defaultPhases
+
+  const [phase, setPhase] = useState(activePhases[0]?.id || 'profile')
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('Starting...')
+  const [eta, setEta] = useState<number | null>(null) // ETA in seconds
+  const [detail, setDetail] = useState<string | null>(null) // Additional details
 
   // Polling fallback for mobile disconnections
   const [generationRequestId] = useState(() => {
@@ -76,13 +82,19 @@ export function ProgressFeedback({
         } else if (data.status === 'error') {
           onError(data.error || 'Generation failed')
         } else if (data.status === 'in_progress') {
-          // Update progress from server estimate (percentage is single source of truth)
+          // Update progress from server estimate
           if (data.progress !== undefined) {
             setProgress(data.progress)
-            // Derive phase from progress to keep them synchronized
+          }
+          // Use phase from server if provided, otherwise derive from progress
+          if (data.phase) {
+            setPhase(data.phase)
+          } else if (data.progress !== undefined) {
             setPhase(getPhaseFromProgress(data.progress))
           }
           if (data.message) setMessage(data.message)
+          if (data.eta !== undefined) setEta(data.eta)
+          if (data.detail) setDetail(data.detail)
 
           // Continue polling (2s interval)
           pollingIntervalRef.current = setTimeout(poll, 2000)
@@ -164,13 +176,19 @@ export function ProgressFeedback({
                   onError(data.error || 'Operation failed')
                   break
                 } else {
-                  // Update progress (percentage is single source of truth)
+                  // Update progress and phase from server
                   if (data.progress !== undefined) {
                     setProgress(data.progress)
-                    // Derive phase from progress to keep them synchronized
+                  }
+                  // Use phase from server if provided, otherwise derive from progress
+                  if (data.phase) {
+                    setPhase(data.phase)
+                  } else if (data.progress !== undefined) {
                     setPhase(getPhaseFromProgress(data.progress))
                   }
                   if (data.message) setMessage(data.message)
+                  if (data.eta !== undefined) setEta(data.eta)
+                  if (data.detail) setDetail(data.detail)
                 }
               } catch (parseError) {
                 console.error('Failed to parse SSE data:', parseError)
@@ -214,10 +232,13 @@ export function ProgressFeedback({
       clearTimeout(timeoutId)
       abortController.abort()
     }
-  }, [endpoint, requestBody, onComplete, onError])
+    // Only depend on endpoint to avoid re-fetching when requestBody reference changes
+    // requestBody values are already captured in the fetch call above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint])
 
-  const currentPhaseData = phases.find(p => p.id === phase) || phases[0]
-  const currentPhaseIndex = phases.findIndex(p => p.id === phase)
+  const currentPhaseData = activePhases.find(p => p.id === phase) || activePhases[0]
+  const currentPhaseIndex = activePhases.findIndex(p => p.id === phase)
 
   // Inline variant
   if (variant === 'inline') {
@@ -230,15 +251,26 @@ export function ProgressFeedback({
               {message}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Phase {currentPhaseIndex + 1} of {phases.length}
+              Phase {currentPhaseIndex + 1} of {activePhases.length}
             </p>
           </div>
         </div>
 
-        {/* Duration notice - keep users informed */}
-        {progress < 90 && (
+        {/* Duration notice or ETA - keep users informed */}
+        {eta !== null && eta > 0 ? (
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70">
+            About {eta < 60 ? `${eta} second${eta !== 1 ? 's' : ''}` : `${Math.ceil(eta / 10) * 10} seconds`} remaining...
+          </p>
+        ) : progress < 90 && (
           <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70">
             This may take a few minutes...
+          </p>
+        )}
+
+        {/* Additional details if provided */}
+        {detail && (
+          <p className="text-xs text-center text-purple-600 dark:text-purple-400 font-medium">
+            {detail}
           </p>
         )}
 
@@ -256,7 +288,7 @@ export function ProgressFeedback({
 
         {/* Phase indicators */}
         <ProgressPhases
-          phases={phases}
+          phases={activePhases}
           currentPhase={phase}
           variant="bars"
         />
@@ -304,16 +336,27 @@ export function ProgressFeedback({
         )}
       </div>
 
-      {/* Duration notice - keep users informed */}
-      {progress < 90 && (
+      {/* Duration notice or ETA - keep users informed */}
+      {eta !== null && eta > 0 ? (
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70 mb-2">
+          About {eta < 60 ? `${eta} second${eta !== 1 ? 's' : ''}` : `${Math.ceil(eta / 10) * 10} seconds`} remaining...
+        </p>
+      ) : progress < 90 && (
         <p className="text-xs text-center text-gray-500 dark:text-gray-400 opacity-70 mb-2">
           This may take a few minutes...
         </p>
       )}
 
+      {/* Additional details if provided */}
+      {detail && (
+        <p className="text-xs text-center text-purple-600 dark:text-purple-400 font-medium mb-2">
+          {detail}
+        </p>
+      )}
+
       <div className="flex items-center justify-between text-xs mb-2">
         <span className="text-gray-600 dark:text-gray-400">
-          Phase {currentPhaseIndex + 1} of {phases.length}
+          Phase {currentPhaseIndex + 1} of {activePhases.length}
         </span>
         <span className="font-semibold text-purple-600 dark:text-purple-400">
           {progress}%
@@ -325,7 +368,7 @@ export function ProgressFeedback({
 
       {/* Phase indicators */}
       <ProgressPhases
-        phases={phases}
+        phases={activePhases}
         currentPhase={phase}
         variant="bars"
       />

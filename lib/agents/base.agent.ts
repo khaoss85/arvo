@@ -34,7 +34,7 @@ export abstract class BaseAgent {
       case 'low':
         return 90000      // 90s - fast, standard constraints
       case 'medium':
-        return 180000     // 180s (3min) - complex multi-constraint optimization
+        return 240000     // 240s (4min) - complex multi-constraint optimization
       case 'high':
         return 240000     // 240s (4min) - maximum reasoning for hardest problems
     }

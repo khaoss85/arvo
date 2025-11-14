@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
-import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
-import type { SplitType, WorkoutType } from '@/lib/services/muscle-groups.service'
-import type { Workout } from '@/lib/types/schemas'
+import type { SplitType } from '@/lib/services/muscle-groups.service'
+import { getTranslations } from 'next-intl/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
+import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -40,15 +41,53 @@ export async function POST(request: NextRequest) {
 
     const stream = new ReadableStream({
       async start(controller) {
+        // Initialize generation tracking
+        const generationRequestId = crypto.randomUUID()
+
         try {
-          // Helper to send progress updates
-          const sendProgress = (phase: string, progress: number, message: string) => {
-            const eventData = JSON.stringify({ phase, progress, message })
-            controller.enqueue(encoder.encode(`data: ${eventData}\n\n`))
+          // Get user language for i18n
+          const locale = await getUserLanguage(data.userId)
+          const tProgress = await getTranslations({
+            locale,
+            namespace: 'api.onboarding.complete.progress'
+          })
+
+          // Start metrics tracking
+          await GenerationMetricsService.startGeneration(
+            data.userId,
+            generationRequestId,
+            { type: 'onboarding' }
+          )
+
+          // Get estimated duration for ETA calculation
+          const estimatedDuration = await GenerationMetricsService.getEstimatedDuration(
+            data.userId,
+            { type: 'onboarding' }
+          )
+
+          const getRemainingEta = (progressPercent: number): number | null => {
+            if (!estimatedDuration) return null
+            const remaining = estimatedDuration * ((100 - progressPercent) / 100)
+            return Math.max(0, Math.round(remaining / 1000))
           }
 
-          // Phase 1: Create user profile (5-15%)
-          sendProgress('profile', 5, 'Creating your profile')
+          // Helper to send progress updates with ETA
+          const sendProgress = (
+            phase: string,
+            progress: number,
+            message: string,
+            eta?: number | null,
+            detail?: string
+          ) => {
+            const data: any = { phase, progress, message }
+            if (eta !== undefined && eta !== null) data.eta = eta
+            if (detail) data.detail = detail
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+          }
+
+          // Phase 1: Create user profile (0-30%)
+          sendProgress('profile', 0, tProgress('starting'), getRemainingEta(0))
+          sendProgress('profile', 10, tProgress('creatingProfile'), getRemainingEta(10))
 
           const { error: profileError } = await supabase
             .from('user_profiles')
@@ -75,101 +114,14 @@ export async function POST(request: NextRequest) {
             throw new Error(`Failed to create profile: ${profileError.message}`)
           }
 
-          sendProgress('profile', 15, 'Profile created')
+          sendProgress('profile', 30, tProgress('profileCreated'), getRemainingEta(30))
 
-          // Phase 2: Planning workout (20-25%)
-          sendProgress('split', 20, 'Planning your workout')
-          await new Promise(resolve => setTimeout(resolve, 200))
-          sendProgress('split', 25, 'Analyzing training approach')
-
-          // Phase 3: AI selecting exercises (30-70%)
-          sendProgress('ai', 30, 'AI analyzing exercises')
-          await new Promise(resolve => setTimeout(resolve, 300))
-
-          // Get user profile for workout generation
-          const { data: profile, error: fetchProfileError } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('user_id', data.userId)
-            .single()
-
-          if (fetchProfileError || !profile) {
-            throw new Error('Failed to fetch user profile')
-          }
-
-          sendProgress('ai', 40, 'AI selecting best exercises')
-
-          // Generate workout using ExerciseSelector
-          const exerciseSelector = new ExerciseSelector(supabase, 'medium')
-          const preferredSplit = (profile.preferred_split as SplitType) || 'push_pull_legs'
-
-          // For first workout, start with 'push' for push_pull_legs, 'upper' for upper_lower, etc.
-          let workoutType: WorkoutType = 'push'
-          if (preferredSplit === 'upper_lower') {
-            workoutType = 'upper'
-          } else if (preferredSplit === 'full_body') {
-            workoutType = 'full_body'
-          }
-
-          sendProgress('ai', 55, 'Optimizing exercise selection')
-
-          // Merge standard equipment with custom equipment
-          const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
-          const customEquipmentIds = customEquipment.map(eq => eq.id)
-          const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
-
-          // Select exercises
-          const selection = await exerciseSelector.selectExercises({
-            workoutType,
-            approachId: data.approachId,
-            weakPoints: profile.weak_points || [],
-            availableEquipment: allAvailableEquipment,
-            customEquipment: customEquipment, // Pass custom equipment metadata
-            recentExercises: [],
-            userId: data.userId,
-            experienceYears: profile.experience_years,
-            userAge: profile.age,
-            userGender: profile.gender as 'male' | 'female' | 'other' | null
-          })
-
-          sendProgress('ai', 70, 'Calculating target weights')
-
-          // Format exercises for workout
-          const exercises = selection.exercises.map((exercise: any) => ({
-            name: exercise.name,
-            equipmentVariant: exercise.equipmentVariant,
-            targetSets: exercise.sets,
-            targetReps: exercise.repRange[0],
-            targetWeight: 0, // Will be estimated on first use
-            rir: exercise.rir || 2,
-            notes: exercise.notes || null
-          }))
-
-          // Create workout in database
-          const { data: workout, error: workoutError } = await supabase
-            .from('workouts')
-            .insert({
-              user_id: data.userId,
-              planned_at: new Date().toISOString(),
-              workout_type: workoutType,
-              status: 'ready',
-              approach_id: data.approachId,
-              completed: false,
-              exercises: exercises
-            })
-            .select()
-            .single()
-
-          if (workoutError || !workout) {
-            throw new Error('Failed to create workout')
-          }
-
-          sendProgress('optimization', 75, 'Analyzing your baseline')
-
-          // Phase 4: Generate split plan if data provided (80-95%)
+          // Phase 2: Generate split plan if data provided (40-90%)
           let splitPlanId = null
           if (data.splitType && data.weeklyFrequency) {
-            sendProgress('finalize', 80, 'Generating training split plan')
+            sendProgress('split', 40, tProgress('planningWorkout'), getRemainingEta(40))
+            sendProgress('split', 50, tProgress('analyzingApproach'), getRemainingEta(50))
+            sendProgress('split', 60, tProgress('generatingSplit'), getRemainingEta(60))
 
             const { generateSplitPlanAction } = await import('@/app/actions/split-actions')
             const splitResult = await generateSplitPlanAction({
@@ -197,20 +149,21 @@ export async function POST(request: NextRequest) {
                 .eq('user_id', data.userId)
             }
 
-            sendProgress('finalize', 90, 'Split plan created')
+            sendProgress('split', 90, tProgress('splitCreated'), getRemainingEta(90))
           } else {
-            sendProgress('finalize', 85, 'Finalizing your setup')
+            sendProgress('split', 85, tProgress('finalizingSetup'), getRemainingEta(85))
           }
 
-          // Phase 5: Complete (95-100%)
-          sendProgress('finalize', 95, 'Finalizing workout')
-          await new Promise(resolve => setTimeout(resolve, 200))
-          sendProgress('complete', 100, 'Workout ready!')
+          // Phase 3: Complete (95-100%)
+          sendProgress('finalize', 95, tProgress('finalizingSetup'), getRemainingEta(95))
+          sendProgress('complete', 100, tProgress('setupComplete'), 0)
 
-          // Send final complete event with workout data
+          // Complete metrics tracking
+          await GenerationMetricsService.completeGeneration(generationRequestId, true)
+
+          // Send final complete event
           const completeData = JSON.stringify({
             phase: 'complete',
-            workout: workout,
             splitPlanId: splitPlanId
           })
           controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
@@ -218,6 +171,10 @@ export async function POST(request: NextRequest) {
           controller.close()
         } catch (error) {
           console.error('Onboarding stream error:', error)
+
+          // Mark generation as failed
+          await GenerationMetricsService.completeGeneration(generationRequestId, false)
+
           const errorData = JSON.stringify({
             phase: 'error',
             error: error instanceof Error ? error.message : 'Failed to complete onboarding'

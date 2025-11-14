@@ -9,6 +9,7 @@ import { TrainingApproachService } from '@/lib/services/training-approach.servic
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ProgressFeedback } from '@/components/ui/progress-feedback'
+import { useOnboardingPhases } from '@/components/ui/progress-phases'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { useAuthStore } from '@/lib/stores/auth.store'
 import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
@@ -24,6 +25,7 @@ export default function ReviewPage() {
   const router = useRouter()
   const { user } = useAuthStore()
   const { data, setStep, setStepData, reset } = useOnboardingStore()
+  const onboardingPhases = useOnboardingPhases()
   const [approach, setApproach] = useState<TrainingApproach | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -504,6 +506,7 @@ export default function ReviewPage() {
               splitType: data.splitType,
               weeklyFrequency: data.weeklyFrequency
             }}
+            phases={onboardingPhases}
             cancellable={false}
             onComplete={handleGenerationComplete}
             onError={handleGenerationError}

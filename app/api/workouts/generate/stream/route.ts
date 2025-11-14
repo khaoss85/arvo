@@ -5,9 +5,27 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationCache } from '@/lib/services/generation-cache'
+import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+/**
+ * Safely close a ReadableStreamDefaultController
+ * Handles the case where the controller is already closed (can happen with GenerationCache)
+ */
+function safeClose(controller: ReadableStreamDefaultController) {
+  try {
+    controller.close()
+  } catch (error) {
+    // Controller already closed - this is expected when using GenerationCache
+    if (error instanceof TypeError && error.message.includes('already closed')) {
+      console.log('[WorkoutGenerate] Controller already closed (expected with cache)')
+    } else {
+      throw error
+    }
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,9 +56,21 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Helper to send progress update
-          const sendProgress = (phase: string, progress: number, message: string) => {
-            const data = JSON.stringify({ phase, progress, message })
+          // Helper to send progress update with ETA
+          const sendProgress = (
+            phase: string,
+            progress: number,
+            message: string,
+            eta?: number | null,
+            detail?: string
+          ) => {
+            const data = JSON.stringify({
+              phase,
+              progress,
+              message,
+              ...(eta !== undefined && eta !== null && { eta }),
+              ...(detail && { detail })
+            })
             controller.enqueue(encoder.encode(`data: ${data}\n\n`))
           }
 
@@ -57,7 +87,7 @@ export async function POST(request: NextRequest) {
                 workout: cached.workout,
                 insightInfluencedChanges: cached.insightInfluencedChanges
               })}\n\n`))
-              controller.close()
+              safeClose(controller)
               return
             }
 
@@ -65,70 +95,66 @@ export async function POST(request: NextRequest) {
             GenerationCache.start(generationRequestId)
           }
 
-          // Multi-phase non-linear progress algorithm
-          // Provides natural-feeling progression that matches user expectations
-          const getProgressConfig = (current: number): { step: number; interval: number; phase: string; message: string } => {
-            if (current < 20) {
-              // Phase 1: FAST initial feedback (0-20%)
-              return { step: 5, interval: 600, phase: 'profile', message: tProgress('loadingProfile') }
-            } else if (current < 45) {
-              // Phase 2: MEDIUM momentum building (20-45%)
-              return { step: 4, interval: 2000, phase: 'split', message: tProgress('planningWorkout') }
-            } else if (current < 70) {
-              // Phase 3: SLOW AI selection (45-70%)
-              return { step: 3, interval: 3500, phase: 'ai', message: tProgress('aiSelecting') }
-            } else if (current < 90) {
-              // Phase 4: ULTRA-SLOW optimization (70-90%)
-              // Small increments to show system is still working during long AI generation
-              // +1% every 5 seconds prevents "frozen" perception
-              return { step: 1, interval: 5000, phase: 'optimization', message: tProgress('optimizing') }
-            }
-            // Cap at 90% until AI completes
-            return { step: 0, interval: 0, phase: 'optimization', message: tProgress('optimizing') }
+          // Get estimated duration for ETA calculation
+          const generationStartTime = Date.now()
+          const estimatedDuration = await GenerationMetricsService.getEstimatedDuration(
+            userId,
+            { type: 'workout', targetCycleDay }
+          )
+
+          // Helper to calculate remaining ETA based on progress
+          const getRemainingEta = (progressPercent: number): number | null => {
+            if (!estimatedDuration) return null
+            const estimatedRemaining = estimatedDuration * ((100 - progressPercent) / 100)
+            return Math.max(0, Math.round(estimatedRemaining / 1000)) // Convert to seconds
           }
 
-          // Start from 0% with immediate feedback
-          let currentProgress = 0
-          sendProgress('profile', currentProgress, tProgress('starting'))
-
-          // Dynamic progress interval that adapts speed based on current progress
-          let progressInterval: NodeJS.Timeout | null = null
-          let progressStopped = false // Flag to prevent race conditions
-          const updateProgress = () => {
-            // Check if progress updates have been stopped (prevents race conditions)
-            if (progressStopped) return
-
-            const config = getProgressConfig(currentProgress)
-
-            if (config.step > 0 && currentProgress < 90) {
-              currentProgress = Math.min(currentProgress + config.step, 90)
-              sendProgress(config.phase, currentProgress, config.message)
-
-              // Schedule next update with appropriate interval
-              if (progressInterval) clearTimeout(progressInterval)
-              progressInterval = setTimeout(updateProgress, config.interval)
-            }
+          // Start metrics tracking
+          if (generationRequestId) {
+            await GenerationMetricsService.startGeneration(userId, generationRequestId, {
+              type: 'workout',
+              targetCycleDay
+            })
           }
 
-          // Start the adaptive progress updates
-          updateProgress()
+          // Milestone 1: Starting (0%)
+          sendProgress('profile', 0, tProgress('starting'), getRemainingEta(0))
 
           try {
+            // Milestone 2: Loading profile (10%)
+            sendProgress('profile', 10, tProgress('loadingProfile'), getRemainingEta(10))
+
             // Determine if we're generating for current day or future day
             let result
+            let profile
             if (targetCycleDay) {
               // Get user's current cycle day to determine which method to use
-              const profile = await UserProfileService.getByUserIdServer(userId)
+              profile = await UserProfileService.getByUserIdServer(userId)
               const currentCycleDay = profile?.current_cycle_day || 1
+
+              // Milestone 3: Profile loaded (20%)
+              sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
+
+              // Milestone 4: Planning workout split (30%)
+              sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
+
+              // Milestone 5: AI analyzing exercises (45%)
+              sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
 
               if (targetCycleDay === currentCycleDay) {
                 // Current day: use generateWorkout with status='ready'
+                // Milestone 6: AI selecting best exercises (55%)
+                sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+
                 result = await WorkoutGeneratorService.generateWorkout(userId, {
                   targetCycleDay,
                   status: 'ready'
                 })
               } else if (targetCycleDay > currentCycleDay) {
                 // Future day: use generateDraftWorkout
+                // Milestone 6: AI selecting exercises for future day (55%)
+                sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+
                 result = await WorkoutGeneratorService.generateDraftWorkout(
                   userId,
                   targetCycleDay
@@ -138,24 +164,36 @@ export async function POST(request: NextRequest) {
               }
             } else {
               // No targetCycleDay specified: generate for current day
+              profile = await UserProfileService.getByUserIdServer(userId)
+
+              // Milestone 3: Profile loaded (20%)
+              sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
+
+              // Milestone 4: Planning workout (30%)
+              sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
+
+              // Milestone 5: AI analyzing (45%)
+              sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
+
+              // Milestone 6: AI selecting (55%)
+              sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+
               result = await WorkoutGeneratorService.generateWorkout(userId, {
                 status: 'ready'
               })
             }
 
-            // Stop the progress updates once generation completes
-            progressStopped = true // Prevent any scheduled updates from firing
-            if (progressInterval) {
-              clearTimeout(progressInterval)
-              progressInterval = null
-            }
+            // Milestone 7: Optimizing workout (75%)
+            sendProgress('optimization', 75, tProgress('optimizing'), getRemainingEta(75))
 
-            // Phase 5: Finalizing workout (real milestone - after AI generation)
-            // Jump to 95% (must be > 90% cap to avoid going backwards)
-            sendProgress('finalize', 95, tProgress('finalizing'))
+            // Milestone 8: Analyzing performance history (85%)
+            sendProgress('optimization', 85, tProgress('analyzingHistory'), getRemainingEta(85))
 
-            // Complete
-            sendProgress('complete', 100, tProgress('workoutReady'))
+            // Milestone 9: Finalizing workout (95%)
+            sendProgress('finalize', 95, tProgress('finalizing'), getRemainingEta(95))
+
+            // Milestone 10: Complete (100%)
+            sendProgress('complete', 100, tProgress('workoutReady'), 0)
             const completeData = JSON.stringify({
               phase: 'complete',
               workout: result.workout,
@@ -170,15 +208,16 @@ export async function POST(request: NextRequest) {
                 result.workout,
                 result.insightInfluencedChanges || []
               )
+
+              // Track successful generation metrics for ETA improvement
+              await GenerationMetricsService.completeGeneration(generationRequestId, true)
             }
 
-            controller.close()
+            safeClose(controller)
           } catch (error) {
-            // Always stop the progress updates on error
-            progressStopped = true // Prevent any scheduled updates from firing
-            if (progressInterval) {
-              clearTimeout(progressInterval)
-              progressInterval = null
+            // Track failed generation metrics
+            if (generationRequestId) {
+              await GenerationMetricsService.completeGeneration(generationRequestId, false)
             }
             throw error // Re-throw to be caught by outer catch
           }

@@ -1681,8 +1681,8 @@ Return ONLY valid JSON (no markdown, no code blocks):
           }
         }
 
-        const minAllowed = Math.floor(targetSets * (1 - targetTolerance))
-        const maxAllowed = Math.ceil(targetSets * (1 + targetTolerance))
+        const minAllowed = Math.round(targetSets * (1 - targetTolerance))
+        const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
 
         let status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' = 'PASS'
         if (targetSets === 0 && actualSets > 0) {
@@ -1769,8 +1769,8 @@ Return ONLY valid JSON (no markdown, no code blocks):
           }
         }
 
-        const minAllowed = Math.floor(targetSets * (1 - targetTolerance))
-        const maxAllowed = Math.ceil(targetSets * (1 + targetTolerance))
+        const minAllowed = Math.round(targetSets * (1 - targetTolerance))
+        const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
 
         if (actualSets < minAllowed || actualSets > maxAllowed) {
           const suggestion = actualSets < minAllowed

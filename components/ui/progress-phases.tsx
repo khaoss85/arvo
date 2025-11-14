@@ -1,4 +1,7 @@
+'use client'
+
 import React from 'react'
+import { useTranslations } from 'next-intl'
 
 export interface Phase {
   id: string
@@ -6,11 +9,51 @@ export interface Phase {
   emoji: string
 }
 
+/**
+ * Get default workout phases with translations
+ * This is a hook and must be called inside a component
+ */
+export function useWorkoutPhases(): Phase[] {
+  const t = useTranslations('components.ui.progressPhases')
+
+  return [
+    { id: 'profile', label: t('profile'), emoji: '👤' },
+    { id: 'split', label: t('split'), emoji: '📋' },
+    { id: 'ai', label: t('ai'), emoji: '🤖' },
+    { id: 'optimization', label: t('optimization'), emoji: '🎯' },
+    { id: 'finalize', label: t('finalize'), emoji: '✨' }
+  ]
+}
+
+/**
+ * Get onboarding phases with translations (3 phases only)
+ * This is a hook and must be called inside a component
+ */
+export function useOnboardingPhases(): Phase[] {
+  const t = useTranslations('components.ui.progressPhases')
+
+  return [
+    { id: 'profile', label: t('profile'), emoji: '👤' },
+    { id: 'split', label: t('split'), emoji: '📋' },
+    { id: 'finalize', label: t('finalize'), emoji: '✨' }
+  ]
+}
+
+// Fallback constant for backward compatibility (English only)
+// Prefer using useWorkoutPhases() hook for i18n support
 export const WORKOUT_PHASES: Phase[] = [
   { id: 'profile', label: 'Loading profile', emoji: '👤' },
   { id: 'split', label: 'Planning workout', emoji: '📋' },
   { id: 'ai', label: 'AI selecting exercises', emoji: '🤖' },
   { id: 'optimization', label: 'Optimizing workout', emoji: '🎯' },
+  { id: 'finalize', label: 'Finalizing', emoji: '✨' }
+]
+
+// Onboarding phases fallback (English only)
+// Prefer using useOnboardingPhases() hook for i18n support
+export const ONBOARDING_PHASES: Phase[] = [
+  { id: 'profile', label: 'Creating profile', emoji: '👤' },
+  { id: 'split', label: 'Generating split', emoji: '📋' },
   { id: 'finalize', label: 'Finalizing', emoji: '✨' }
 ]
 
