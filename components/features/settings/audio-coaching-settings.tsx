@@ -106,7 +106,7 @@ export function AudioCoachingSettings() {
       // Create a simple test that uses Web Speech API directly to verify it works
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         console.log('[Audio Test] Testing Web Speech API directly...')
-        const utterance = new SpeechSynthesisUtterance('Test')
+        const utterance = new SpeechSynthesisUtterance('Hey! Arvo coaching ready.')
         utterance.volume = currentSettings.volume
         utterance.rate = currentSettings.speed
 
@@ -146,8 +146,8 @@ export function AudioCoachingSettings() {
         id: 'test-voice',
         type: 'pre_set',
         segments: [
-          { text: 'This is how I will sound during your workout.', pauseAfter: 500, type: 'narration' },
-          { text: 'Stay focused, keep pushing, you got this!', pauseAfter: 0, type: 'narration' },
+          { text: "I'm your AI coach, and I'll be guiding you through every rep, every set.", pauseAfter: 800, type: 'narration' },
+          { text: "Let's build strength together. You ready? Let's go!", pauseAfter: 0, type: 'narration' },
         ],
         priority: 10,
       })
