@@ -161,8 +161,8 @@ export class AudioCoachingService {
       this.playNext()
     } else {
       this.queue.push(script)
-      // Only start playback if queue was empty (prevents race condition when multiple enqueue calls happen rapidly)
-      if (this.state === 'idle' && this.queue.length === 1) {
+      // Start playback if nothing is currently playing
+      if (this.state === 'idle') {
         this.playNext()
       }
     }
@@ -200,6 +200,11 @@ export class AudioCoachingService {
    * Play next script in queue
    */
   private async playNext(): Promise<void> {
+    // Guard: Don't start next if already playing (prevents race condition)
+    if (this.state !== 'idle') {
+      return
+    }
+
     if (this.queue.length === 0) {
       this.setState('idle')
       this.currentScript = null
