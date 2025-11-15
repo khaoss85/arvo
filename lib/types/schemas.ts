@@ -187,6 +187,8 @@ export const workoutSchema = z.object({
   variation: z.enum(['A', 'B']).nullable(), // A/B variation
   // Workout status field
   status: workoutStatusSchema.nullable(),
+  // Audio coaching scripts
+  audio_scripts: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({

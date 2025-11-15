@@ -18,6 +18,7 @@ import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
+import { AudioCoachButton } from './audio-coach-button'
 import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
 import { getHydrationSuggestionAction } from '@/app/actions/hydration-actions'
 import type { HydrationOutput } from '@/lib/types/hydration'
@@ -32,6 +33,7 @@ import {
   inferExerciseType,
   type RestTimerStatus
 } from '@/lib/utils/rest-timer-limits'
+import type { AudioScript } from '@/lib/services/audio-coaching.service'
 
 interface ExerciseCardProps {
   exercise: ExerciseExecution
@@ -50,7 +52,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -612,6 +614,65 @@ export function ExerciseCard({
     }
   }
 
+  // Helper: Create audio script for next set
+  const getNextSetAudioScript = (): AudioScript | null => {
+    if (isLastSet) return null // No more sets
+
+    const nextSetNum = currentSetNumber
+    const isWarmupSet = nextSetNum <= remainingWarmupSets
+
+    // Try to get AI-generated script from workout.audio_scripts
+    if (audioScripts && audioScripts.exercises && audioScripts.exercises[exerciseIndex]) {
+      const exerciseScripts = audioScripts.exercises[exerciseIndex]
+      const allSetScripts = exerciseScripts.sets || []
+
+      // Find matching set script by set number and type
+      const matchingScript = allSetScripts.find(s =>
+        s.setNumber === nextSetNum &&
+        s.setType === (isWarmupSet ? 'warmup' : 'working')
+      )
+
+      if (matchingScript) {
+        return {
+          id: `${exercise.exerciseName}-set-${nextSetNum}-ai`,
+          type: 'pre_set',
+          text: matchingScript.script,
+          priority: 5
+        }
+      }
+    }
+
+    // Fallback: Create simple script if AI scripts not available
+    const setType: 'warmup' | 'working' = isWarmupSet ? 'warmup' : 'working'
+    let technicalFocus = ''
+    let mentalFocus = ''
+
+    if (isWarmupSet) {
+      const warmupIndex = nextSetNum - 1
+      technicalFocus = exercise.warmupSets?.[warmupIndex]?.technicalFocus || 'Feel the movement pattern'
+    } else {
+      const workingSetNum = nextSetNum - remainingWarmupSets
+      const guidance = exercise.setGuidance?.[workingSetNum - 1]
+      technicalFocus = guidance?.technicalFocus || ''
+      mentalFocus = guidance?.mentalFocus || ''
+    }
+
+    const tempoText = exercise.tempo ? `Tempo: ${exercise.tempo}. ` : ''
+    const techText = technicalFocus ? `Technical focus: ${technicalFocus}. ` : ''
+    const mentalText = mentalFocus ? `Mental approach: ${mentalFocus}. ` : ''
+
+    const scriptText = `${setType === 'warmup' ? 'Warmup ' : ''}Set ${nextSetNum}. ${tempoText}${techText}${mentalText}Start when ready.`
+
+    return {
+      id: `${exercise.exerciseName}-set-${nextSetNum}`,
+      type: 'pre_set',
+      text: scriptText,
+      priority: 5
+    }
+  }
+
+  const nextSetScript = getNextSetAudioScript()
+
   return (
     <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
       {/* Exercise Header */}
@@ -631,6 +692,13 @@ export function ExerciseCard({
                 <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-400" />
               )}
             </button>
+            {nextSetScript && (
+              <AudioCoachButton
+                script={nextSetScript}
+                size="sm"
+                variant="icon"
+              />
+            )}
           </div>
           <span className="text-sm text-gray-400">
             {t('exercise.exerciseNumber', { current: exerciseIndex + 1, total: totalExercises })}

@@ -2179,6 +2179,71 @@
       },
       "footer": "Queste funzionalità non sono punti di marketing. Sono in produzione, testate sul campo in palestre reali con WiFi instabile e telefoni scarichi."
     },
+    "aiCoaching": {
+      "title": {
+        "part1": "Il Tuo Coach AI",
+        "part2": "Durante Ogni Serie"
+      },
+      "subtitle": "Guida in tempo reale, monitoraggio idratazione e coaching vocale. Non solo pianificazione—supporto attivo durante tutto l'allenamento.",
+      "hydrationReminders": {
+        "title": "AI Hydration Advisor",
+        "description": "Monitoraggio idratazione basato su linee guida ACSM · AI Agent",
+        "detail": "Promemoria scientifici (400-800ml/ora) che si adattano al tipo di esercizio. Avvisi intelligenti prima di sollevamenti pesanti per prevenire nausea.",
+        "features": {
+          "acsm": "Linee guida ACSM (0,4-0,8L/ora)",
+          "adaptive": "Timing adattivo agli esercizi (intervalli 15-20min)",
+          "smart": "Piccoli sorsi prima di squat/stacchi"
+        },
+        "badge": "Powered by: Sports Science"
+      },
+      "audioCoaching": {
+        "title": "Coaching Vocale",
+        "description": "Guida audio generata da GPT · AI Agent",
+        "detail": "Suggerimenti vocali serie per serie generati dall'AI. Focus tecnico, preparazione mentale, timing recupero—come avere un coach al tuo fianco.",
+        "features": {
+          "personalized": "Script personalizzati con il tuo nome",
+          "setBySet": "Suggerimenti tecnici serie per serie",
+          "tts": "Riproduzione text-to-speech naturale"
+        },
+        "badge": "Powered by: GPT-5 + TTS"
+      },
+      "quickActions": {
+        "title": "Azioni Rapide Workout",
+        "description": "Modifiche veloci senza interrompere il flow",
+        "detail": "Aggiungi serie, sostituisci esercizi, regola pesi—tutto validato dall'AI in tempo reale. Nessuna interruzione al tuo flusso di allenamento.",
+        "features": {
+          "quickAdd": "Aggiungi serie durante il workout istantaneamente",
+          "aiValidated": "Sostituzioni esercizi validate dall'AI",
+          "noFlow": "Zero interruzioni al flow"
+        },
+        "badge": "Powered by: UI + validazione AI"
+      },
+      "realExample": {
+        "title": "Scenario Reale: Sessione Squat Pesante",
+        "timeline": {
+          "min15": {
+            "label": "Dopo 15 min",
+            "event": "Promemoria idratazione: \"200ml acqua - squat in arrivo\""
+          },
+          "min20": {
+            "label": "Dopo 20 min",
+            "event": "Audio coach: \"Prossima serie, concentrati sulla discesa controllata. Eccentrica 3 secondi. Puoi farcela.\""
+          },
+          "min25": {
+            "label": "Serie 3 completata",
+            "event": "Avviso piccoli sorsi: \"Serie pesante in arrivo. Solo piccoli sorsi (50-100ml) per evitare nausea.\""
+          },
+          "min30": {
+            "label": "Dolore al ginocchio",
+            "event": "Sostituzione rapida: Squat → Bulgarian Split Squat (AI valida + regola peso a 63kg)"
+          }
+        }
+      },
+      "footer": {
+        "bold": "Questo è AI coaching fatto bene.",
+        "text": "Non timer generici o script statici. Adattamento in tempo reale usando ragionamento GPT-5, scienza sportiva e intelligenza biomeccanica."
+      }
+    },
     "comparison": {
       "title": {
         "part1": "Perché ",

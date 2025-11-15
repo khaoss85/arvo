@@ -11,6 +11,7 @@ import { WorkoutSummary } from './workout-summary'
 import { ReorderExercisesModal } from './reorder-exercises-modal'
 import { WorkoutRationale, type WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseSubstitution } from './exercise-substitution'
+import { AudioCoachPlayer } from './audio-coach-player'
 import { Button } from '@/components/ui/button'
 
 interface WorkoutExecutionProps {
@@ -191,6 +192,9 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           onRationaleInvalidate={handleRationaleInvalidate}
         />
       )}
+
+      {/* Audio Coach Player (Floating) */}
+      <AudioCoachPlayer />
     </div>
   )
 }

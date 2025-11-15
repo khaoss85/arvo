@@ -1,4 +1,5 @@
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
+import { AudioScriptGeneratorAgent } from '@/lib/agents/audio-script-generator.agent'
 import { WorkoutService } from './workout.service'
 import { UserProfileService } from './user-profile.service'
 import { SplitPlanService } from './split-plan.service'
@@ -297,9 +298,100 @@ export class WorkoutGeneratorService {
 
     const workout = await WorkoutService.createServer(workoutData)
 
+    // Generate audio coaching scripts (async, don't wait for completion)
+    // This runs in the background to avoid blocking workout creation
+    this.generateAudioScripts(
+      workout.id,
+      {
+        exercises: exercisesWithTargets,
+        userId,
+        approachId: profile.approach_id,
+        userName: undefined, // User name not available in profile schema
+        experienceYears: profile.experience_years || undefined
+      },
+      profile.preferred_language as 'en' | 'it' || 'en',
+      supabase
+    ).catch((error) => {
+      // Log error but don't fail workout creation
+      console.error('[WorkoutGenerator] Failed to generate audio scripts:', error)
+    })
+
     return {
       workout,
       insightInfluencedChanges: selection.insightInfluencedChanges
+    }
+  }
+
+  /**
+   * Generate audio coaching scripts for a workout
+   * Runs asynchronously after workout creation to avoid blocking
+   */
+  private static async generateAudioScripts(
+    workoutId: string,
+    scriptInput: {
+      exercises: any[]
+      userId: string
+      approachId: string
+      userName?: string
+      experienceYears?: number
+    },
+    targetLanguage: 'en' | 'it',
+    supabase: any
+  ): Promise<void> {
+    try {
+      console.log(`[WorkoutGenerator] Generating audio scripts for workout ${workoutId}`)
+
+      // Initialize audio script generator
+      const audioGenerator = new AudioScriptGeneratorAgent(supabase)
+
+      // Extract common rest periods from exercises
+      const restPeriods = Array.from(
+        new Set(
+          scriptInput.exercises
+            .map((ex) => ex.restSeconds)
+            .filter((r): r is number => typeof r === 'number')
+        )
+      ).sort((a, b) => a - b)
+
+      // Prepare input for audio script generator
+      const audioInput = {
+        exercises: scriptInput.exercises.map((ex) => ({
+          name: ex.name || ex.exerciseName,
+          sets: ex.sets,
+          repRange: ex.repRange,
+          tempo: ex.tempo,
+          technicalCues: ex.technicalCues,
+          rationaleForSelection: ex.rationale,
+          setGuidance: ex.setGuidance,
+          warmupSets: ex.warmupSets,
+        })),
+        userId: scriptInput.userId,
+        approachId: scriptInput.approachId,
+        userName: scriptInput.userName,
+        experienceYears: scriptInput.experienceYears,
+        commonRestPeriods: restPeriods.length > 0 ? restPeriods : [60, 90, 120],
+      }
+
+      // Generate scripts using AI
+      const audioScripts = await audioGenerator.generateWorkoutScripts(
+        audioInput,
+        targetLanguage
+      )
+
+      // Update workout with audio scripts
+      const { error: updateError } = await supabase
+        .from('workouts')
+        .update({ audio_scripts: audioScripts })
+        .eq('id', workoutId)
+
+      if (updateError) {
+        throw new Error(`Failed to save audio scripts: ${updateError.message}`)
+      }
+
+      console.log(`[WorkoutGenerator] Audio scripts generated successfully for workout ${workoutId}`)
+    } catch (error) {
+      console.error('[WorkoutGenerator] Audio script generation error:', error)
+      throw error
     }
   }
 

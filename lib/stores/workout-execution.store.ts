@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Workout } from '@/lib/types/schemas'
 import type { ProgressionOutput } from '@/lib/agents/progression-calculator.agent'
+import type { AudioScriptsOutput } from '@/lib/agents/audio-script-generator.agent'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { AnimationService } from '@/lib/services/animation.service'
@@ -72,6 +73,7 @@ interface WorkoutExecutionState {
   workout: Workout | null
   exercises: ExerciseExecution[]
   currentExerciseIndex: number
+  audioScripts: AudioScriptsOutput | null // AI-generated audio coaching scripts
 
   // Workout metadata
   startedAt: Date | null
@@ -133,6 +135,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       workout: null,
       exercises: [],
       currentExerciseIndex: 0,
+      audioScripts: null,
       startedAt: null,
       lastActivityAt: null,
       overallMentalReadiness: null,
@@ -204,6 +207,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           workout,
           exercises,
           currentExerciseIndex: 0,
+          audioScripts: (workout.audio_scripts as unknown as AudioScriptsOutput) || null,
           startedAt: new Date(),
           lastActivityAt: new Date(),
           isActive: true
@@ -318,6 +322,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           workout,
           exercises,
           currentExerciseIndex: firstIncompleteIndex >= 0 ? firstIncompleteIndex : 0,
+          audioScripts: (workout.audio_scripts as unknown as AudioScriptsOutput) || null,
           startedAt: persistedStartedAt || (workout.started_at ? new Date(workout.started_at) : new Date()),
           lastActivityAt: new Date(),
           isActive: true
