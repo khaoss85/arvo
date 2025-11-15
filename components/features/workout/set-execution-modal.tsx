@@ -76,10 +76,10 @@ export function SetExecutionModal({
       // Generate AI cue pools and start set
       const startSetWithPools = async () => {
         try {
-          let cuePools: RealtimeCuePools | null = null
+          let cuePools: RealtimeCuePools | undefined = undefined
 
           // Check cache first
-          cuePools = cuePoolCacheService.get(exerciseName, language)
+          cuePools = cuePoolCacheService.get(exerciseName, language) || undefined
 
           // Generate new pools if not cached
           if (!cuePools) {
@@ -107,9 +107,11 @@ export function SetExecutionModal({
 
             cuePools = await response.json()
 
-            // Cache the generated pools
-            cuePoolCacheService.set(exerciseName, language, cuePools)
-            console.log('[SetExecution] AI pools generated and cached')
+            // Cache the generated pools (only if we got a valid response)
+            if (cuePools) {
+              cuePoolCacheService.set(exerciseName, language, cuePools)
+              console.log('[SetExecution] AI pools generated and cached')
+            }
           } else {
             console.log('[SetExecution] Using cached AI pools')
           }

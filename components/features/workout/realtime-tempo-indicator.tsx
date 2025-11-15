@@ -72,7 +72,9 @@ export function RealtimeTempoIndicator({
   }, [currentPhase])
 
   const phaseColors = PHASE_COLORS[currentPhase] || PHASE_COLORS.idle
-  const phaseDisplayName = tempoParserService.getPhaseDisplayName(currentPhase, language)
+  const phaseDisplayName = currentPhase === 'idle'
+    ? (language === 'it' ? 'Inattivo' : 'Idle')
+    : tempoParserService.getPhaseDisplayName(currentPhase, language)
   const tempoBreakdown = tempoParserService.getTempoBreakdown(tempo, language)
   const tempoData = tempoParserService.parseTempo(tempo)
 
