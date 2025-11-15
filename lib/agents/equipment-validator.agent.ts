@@ -146,6 +146,10 @@ IMPORTANT:
   }
 
   async extractNameFromImage(imageBase64: string): Promise<string> {
+    // Extract MIME type from data URI (preserve original format instead of hardcoding jpeg)
+    const mimeMatch = imageBase64.match(/data:image\/(\w+);base64/)
+    const mimeType = mimeMatch?.[1] || 'jpeg'
+
     // Remove data:image prefix if present
     const base64Data = imageBase64.includes(',')
       ? imageBase64.split(',')[1]
@@ -156,8 +160,16 @@ IMPORTANT:
         model: 'gpt-5.1',
         input: [
           {
-            type: 'text',
-            text: `You are an expert at identifying gym equipment from photos. Analyze this image carefully.
+            role: 'user',
+            content: [
+              {
+                type: 'input_image',
+                image_url: `data:image/${mimeType};base64,${base64Data}`,
+                detail: 'high', // Enable high-resolution image analysis
+              },
+              {
+                type: 'input_text',
+                text: `You are an expert at identifying gym equipment from photos. Analyze this image carefully.
 
 TASK: Identify the gym equipment visible in this photo.
 
@@ -193,18 +205,21 @@ FALLBACK RULES:
 - Only return "Unknown Equipment" if the image shows NO gym equipment whatsoever
 
 Analyze the image now and provide the equipment name:`,
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:image/jpeg;base64,${base64Data}`,
-              detail: 'high', // Enable high-resolution image analysis
-            },
+              },
+            ],
           },
         ],
-        reasoning: { effort: 'none' }, // Fast mode for simple identification
+        reasoning: { effort: 'minimal' }, // Minimal reasoning for better vision accuracy
         text: { verbosity: 'low' }, // Concise response
-        max_output_tokens: 100,
+        max_output_tokens: 200, // Increased from 100 to avoid truncation
+      })
+
+      // Log raw response for debugging
+      console.log('🏋️ [EQUIPMENT_VALIDATOR] Raw GPT-5.1 response:', {
+        output_text: response.output_text,
+        output_length: response.output_text?.length || 0,
+        responseId: response.id,
+        first_100_chars: response.output_text?.substring(0, 100),
       })
 
       const detectedName = response.output_text?.trim() || 'Unknown Equipment'
@@ -216,12 +231,35 @@ Analyze the image now and provide the equipment name:`,
 
       return detectedName
     } catch (error) {
-      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment name from image:', error)
+      // Enhanced error handling to distinguish API errors from recognition failures
+      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment name from image:', {
+        error,
+        errorType: error?.constructor?.name,
+        message: error instanceof Error ? error.message : String(error),
+      })
+
+      // Throw specific errors for API issues (will be caught by action layer)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('timeout')) {
+        throw new Error('Vision API timeout - please try again')
+      }
+      if (errorMessage.includes('rate')) {
+        throw new Error('Too many requests - please wait a moment')
+      }
+      if (errorMessage.includes('authentication') || errorMessage.includes('API key')) {
+        throw new Error('API configuration error')
+      }
+
+      // Only return "Unknown Equipment" for actual recognition failures
       return 'Unknown Equipment'
     }
   }
 
   async extractEquipmentDetailsFromImage(imageBase64: string): Promise<EquipmentDetailsFromImage> {
+    // Extract MIME type from data URI (preserve original format instead of hardcoding jpeg)
+    const mimeMatch = imageBase64.match(/data:image\/(\w+);base64/)
+    const mimeType = mimeMatch?.[1] || 'jpeg'
+
     // Remove data:image prefix if present
     const base64Data = imageBase64.includes(',')
       ? imageBase64.split(',')[1]
@@ -232,8 +270,16 @@ Analyze the image now and provide the equipment name:`,
         model: 'gpt-5.1',
         input: [
           {
-            type: 'text',
-            text: `You are an expert at identifying gym equipment and analyzing which muscle groups they target.
+            role: 'user',
+            content: [
+              {
+                type: 'input_image',
+                image_url: `data:image/${mimeType};base64,${base64Data}`,
+                detail: 'high', // Enable high-resolution image analysis
+              },
+              {
+                type: 'input_text',
+                text: `You are an expert at identifying gym equipment and analyzing which muscle groups they target.
 
 TASK: Identify the gym equipment in this image and determine which muscle groups it primarily targets.
 
@@ -313,18 +359,21 @@ If you cannot clearly identify gym equipment, return:
 }
 
 IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting.`,
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:image/jpeg;base64,${base64Data}`,
-              detail: 'high', // Enable high-resolution image analysis
-            },
+              },
+            ],
           },
         ],
-        reasoning: { effort: 'none' }, // Fast mode for simple identification
+        reasoning: { effort: 'minimal' }, // Minimal reasoning for better vision accuracy
         text: { verbosity: 'low' }, // Concise response
-        max_output_tokens: 200,
+        max_output_tokens: 250, // Increased from 200 for JSON structure
+      })
+
+      // Log raw response for debugging
+      console.log('🏋️ [EQUIPMENT_VALIDATOR] Raw GPT-5.1 details response:', {
+        output_text: response.output_text,
+        output_length: response.output_text?.length || 0,
+        responseId: response.id,
+        first_150_chars: response.output_text?.substring(0, 150),
       })
 
       const content = response.output_text?.trim() || '{}'
@@ -367,7 +416,26 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdo
         secondaryMuscles: parsed.secondaryMuscles || [],
       }
     } catch (error) {
-      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment details from image:', error)
+      // Enhanced error handling to distinguish API errors from recognition failures
+      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment details from image:', {
+        error,
+        errorType: error?.constructor?.name,
+        message: error instanceof Error ? error.message : String(error),
+      })
+
+      // Throw specific errors for API issues (will be caught by action layer)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (errorMessage.includes('timeout')) {
+        throw new Error('Vision API timeout - please try again')
+      }
+      if (errorMessage.includes('rate')) {
+        throw new Error('Too many requests - please wait a moment')
+      }
+      if (errorMessage.includes('authentication') || errorMessage.includes('API key')) {
+        throw new Error('API configuration error')
+      }
+
+      // Only return default for actual recognition failures or JSON parsing errors
       return {
         name: 'Unknown Equipment',
         primaryMuscles: [],

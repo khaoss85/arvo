@@ -870,10 +870,21 @@ export async function validateCustomEquipmentAction(
     // If image is provided, extract equipment name using Vision API
     if (imageBase64) {
       console.log('[validateCustomEquipmentAction] Extracting equipment name from image')
-      finalEquipmentName = await validator.extractNameFromImage(imageBase64)
-      console.log('[validateCustomEquipmentAction] Detected equipment:', finalEquipmentName)
 
-      // Check if extraction failed
+      try {
+        finalEquipmentName = await validator.extractNameFromImage(imageBase64)
+        console.log('[validateCustomEquipmentAction] Detected equipment:', finalEquipmentName)
+      } catch (error) {
+        // API error (timeout, rate limit, etc.) - return specific error message
+        const errorMessage = error instanceof Error ? error.message : 'Failed to process image'
+        console.error('[validateCustomEquipmentAction] Vision API error:', errorMessage)
+        return {
+          success: false,
+          error: errorMessage
+        }
+      }
+
+      // Check if extraction returned Unknown Equipment (legitimate recognition failure)
       if (!finalEquipmentName || finalEquipmentName === 'Unknown Equipment') {
         return {
           success: false,
