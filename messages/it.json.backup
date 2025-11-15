@@ -1,0 +1,1960 @@
+{
+  "common": {
+    "buttons": {
+      "save": "Salva",
+      "cancel": "Annulla",
+      "continue": "Continua",
+      "back": "Indietro",
+      "next": "Avanti",
+      "skip": "Salta",
+      "close": "Chiudi",
+      "confirm": "Conferma",
+      "delete": "Elimina",
+      "edit": "Modifica",
+      "submit": "Invia",
+      "loading": "Caricamento..."
+    },
+    "labels": {
+      "email": "Indirizzo email",
+      "password": "Password",
+      "optional": "Opzionale",
+      "required": "Obbligatorio"
+    },
+    "errors": {
+      "generic": "Qualcosa è andato storto. Riprova.",
+      "network": "Errore di rete. Controlla la tua connessione.",
+      "unauthorized": "Devi effettuare l'accesso per farlo.",
+      "notFound": "La risorsa richiesta non è stata trovata.",
+      "failedToLogSet": "Impossibile registrare la serie. Riprova.",
+      "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova.",
+      "failedToSkipWarmup": "Impossibile saltare il riscaldamento. Riprova."
+    },
+    "success": {
+      "saved": "Salvato con successo!",
+      "updated": "Aggiornato con successo!",
+      "deleted": "Eliminato con successo!"
+    },
+    "actions": {
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "deleting": "Eliminazione...",
+      "confirmDelete": "Conferma Eliminazione"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi con la tua email per continuare",
+      "emailLabel": "Indirizzo email",
+      "emailPlaceholder": "tuoemail@example.com",
+      "submitButton": "Continua con email",
+      "sendingButton": "Invio link magico...",
+      "magicLinkInfo": "Ti invieremo un link magico per accedere senza password",
+      "termsAndPrivacy": "Continuando, accetti i nostri Termini di Servizio e la Privacy Policy",
+      "checkEmailTitle": "Controlla la tua email",
+      "checkEmailMessage": "Abbiamo inviato un link magico a <email></email>",
+      "linkExpiryInfo": "Clicca il link nella tua email per accedere. Il link scadrà tra 1 ora.",
+      "tryAnotherEmail": "Prova un'altra email",
+      "errors": {
+        "invalidEmail": "Inserisci un indirizzo email valido.",
+        "failed": "Invio del link magico fallito. Riprova."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bentornato, {email}!",
+    "settings": "Impostazioni",
+    "viewProgress": "Visualizza Progressi",
+    "recentActivity": "Attività Recente",
+    "viewAllHistory": "Visualizza Tutta la Cronologia",
+    "noWorkoutsMessage": "Nessun allenamento completato. Completa il tuo primo allenamento per vederlo qui!",
+    "workoutsCompleted": "{count} {count, plural, one {allenamento completato} other {allenamenti completati}}",
+    "sets": "{count} serie",
+    "volume": "{value}kg",
+    "startWorkout": "Inizia Allenamento",
+    "resumeWorkout": "Riprendi Allenamento",
+    "generateWorkout": "Genera Nuovo Allenamento",
+    "splitCycle": {
+      "loadingSplitPlan": "Caricamento piano split...",
+      "activeSplitPlan": "Piano Split Attivo",
+      "skipToNextDay": "Salta al Giorno Successivo",
+      "advancing": "Avanzamento...",
+      "cycleProgress": "Progresso del Ciclo",
+      "dayOf": "Giorno {current} di {total}",
+      "nextWorkout": "Prossimo Allenamento",
+      "variation": "Variazione {variation}",
+      "focusAreas": "Aree Focus:",
+      "targetVolume": "Volume Target:",
+      "moreMuscleGroups": "+{count} gruppi muscolari in più",
+      "keyPrinciples": "Principi Chiave:",
+      "helperText": "Clicca \"Genera l'Allenamento di Oggi\" qui sotto per creare questa sessione con esercizi selezionati dall'AI."
+    },
+    "timeline": {
+      "loadingSplitTimeline": "Caricamento timeline split...",
+      "splitProgramming": "Programmazione Split",
+      "cycleProgress": "Progresso del Ciclo",
+      "dayOf": "Giorno {current} di {total}",
+      "helperText": "Scorri per vedere il tuo ciclo di allenamento completo. Genera l'allenamento di oggi qui sotto per iniziare la sessione.",
+      "legend": {
+        "completed": "Completato",
+        "current": "Corrente",
+        "preGenerated": "Pre-Generato",
+        "upcoming": "Prossimi",
+        "rest": "Riposo"
+      }
+    },
+    "dayCard": {
+      "day": "Giorno {day}",
+      "rest": "Riposo",
+      "today": "OGGI",
+      "inProgress": "In Corso",
+      "done": "Fatto",
+      "ready": "Pronto",
+      "draft": "Bozza",
+      "upcoming": "Prossimo",
+      "restDay": "Giorno di Riposo",
+      "recoveryEssential": "Il recupero è essenziale per la crescita muscolare",
+      "variation": "{variation}",
+      "targetVolume": "Volume Target:",
+      "moreMuscles": "+{count} in più",
+      "generateTodaysWorkout": "Genera l'Allenamento di Oggi",
+      "generating": "Generazione...",
+      "exercisesReady": "{count} {count, plural, one {Esercizio Pronto} other {Esercizi Pronti}}",
+      "reviewed": "Revisionato",
+      "readyStatus": "Pronto",
+      "review": "Revisiona",
+      "startWorkout": "Inizia Allenamento",
+      "continueWorkout": "Continua Allenamento",
+      "preGenerateWorkout": "Pre-Genera Allenamento",
+      "exercisesPreGenerated": "{count} {count, plural, one {Esercizio Pre-Generato} other {Esercizi Pre-Generati}}",
+      "draftStatus": "Bozza",
+      "start": "Inizia",
+      "actualPerformance": "Performance Effettiva:",
+      "actualSets": "{count} serie",
+      "skipRestDay": "Salta al Prossimo Allenamento",
+      "skippingRestDay": "Saltando..."
+    },
+    "generation": {
+      "title": "Generazione Allenamento",
+      "phases": {
+        "profile": "Caricamento profilo",
+        "split": "Pianificazione allenamento",
+        "ai": "AI seleziona esercizi",
+        "history": "Analisi cronologia",
+        "finalize": "Finalizzazione"
+      },
+      "phaseOf": "Fase {current} di {total}"
+    }
+  },
+  "workout": {
+    "pages": {
+      "layout": {
+        "exitWorkout": "Esci dall'Allenamento",
+        "backToDashboard": "Torna alla Dashboard",
+        "back": "Indietro",
+        "reviewWorkout": "Revisiona Allenamento"
+      }
+    },
+    "modals": {
+      "reorderExercises": {
+        "title": "Riordina Esercizi",
+        "description": "Trascina gli esercizi per riordinarli. L'IA validerà le tue modifiche.",
+        "setsCompleted": "{completed}/{total} serie completate",
+        "setsReps": "{sets} serie × {reps} reps",
+        "validating": "Validazione in corso...",
+        "validateButton": "Valida Riordino con IA",
+        "aiRecommendation": "Raccomandazione IA:",
+        "workoutFlowPreview": "Anteprima Flusso Allenamento",
+        "keyChanges": "Cambiamenti Chiave:",
+        "warnings": "Avvisi",
+        "betterAlternatives": "Alternative Migliori",
+        "cancelButton": "Annulla",
+        "applyButton": "Applica Riordino",
+        "saving": "Salvataggio...",
+        "errors": {
+          "failedToSave": "Impossibile salvare le modifiche. Riprova."
+        }
+      },
+      "exitWorkout": {
+        "title": "Terminare la Sessione?",
+        "description": "I tuoi progressi sono stati salvati. Puoi riprendere questo allenamento in qualsiasi momento dalla dashboard.",
+        "savedNote": "Tutte le serie salvate automaticamente",
+        "exitButton": "Vai alla Dashboard",
+        "continueButton": "Continua Allenamento",
+        "closeAriaLabel": "Chiudi modale"
+      },
+      "addSet": {
+        "prompt": "Ti senti bene? Aggiungi un'altra serie",
+        "validating": "Validazione...",
+        "adding": "Aggiunta Serie...",
+        "addButton": "Aggiungi Serie Extra",
+        "addButtonInline": "Aggiungi Serie",
+        "currentSets": "Attuale: {count} {count, plural, one {serie} other {serie}}",
+        "errors": {
+          "hardLimit": "Non puoi aggiungere più serie",
+          "failed": "Impossibile aggiungere la serie. Riprova."
+        }
+      },
+      "addExercise": {
+        "prompt": "Vuoi aggiungere un altro esercizio?",
+        "opening": "Apertura...",
+        "addButton": "Aggiungi Esercizio Extra",
+        "addButtonAfter": "Aggiungi Esercizio Dopo Questo",
+        "addButtonEnd": "Aggiungi Esercizio alla Fine",
+        "currentExercises": "Attuale: {count} {count, plural, one {esercizio} other {esercizi}}",
+        "errors": {
+          "hardLimit": "Non puoi aggiungere più esercizi",
+          "failed": "Impossibile aggiungere l'esercizio. Riprova."
+        }
+      },
+      "refineWorkout": {
+        "title": "Perfeziona Allenamento",
+        "titleWithName": "Perfeziona Allenamento - {name}",
+        "description": "Rivedi e personalizza il tuo allenamento pre-generato prima di iniziare",
+        "reorderMode": {
+          "done": "Fine Riordino",
+          "start": "Riordina Esercizi"
+        },
+        "exercise": {
+          "sets": "Serie:",
+          "reps": "Reps:",
+          "weight": "Peso:",
+          "rest": "Riposo:",
+          "units": {
+            "kg": "kg",
+            "seconds": "s"
+          },
+          "viewAnimation": "Visualizza esercizio",
+          "viewAnimationAria": "Visualizza animazione {name}",
+          "removeExercise": "Rimuovi esercizio"
+        },
+        "rationale": {
+          "title": "Perché questo esercizio:",
+          "alternatives": "Alternative suggerite dall'AI:",
+          "custom": "Oppure inserisci il tuo:",
+          "noAlternatives": "Nessuna alternativa disponibile",
+          "loadingAlternatives": "Caricamento alternative..."
+        },
+        "customInput": {
+          "placeholder": "Digita nome esercizio...",
+          "hint": "Inserisci qualsiasi nome di esercizio. L'AI verificherà che si adatti all'allenamento.",
+          "useButton": "Usa Questo",
+          "validating": "Validazione...",
+          "validate": "Valida"
+        },
+        "validation": {
+          "caution": "⚠️ Attenzione: {rationale}",
+          "edit": "Modifica"
+        },
+        "userModifications": {
+          "aiRecommended": "AI raccomandato: {count} serie",
+          "youAdded": "Hai aggiunto: +{count}",
+          "volumeWarning": "⚠️ Avviso volume"
+        },
+        "buttons": {
+          "swap": "Scambia",
+          "regenerate": "Rigenera",
+          "regenerating": "Rigenerazione...",
+          "cancel": "Annulla",
+          "markAsReady": "Segna come Pronto",
+          "markingAsReady": "Contrassegno come Pronto...",
+          "reorder": "Riordina",
+          "saveAndReturn": "Salva e Torna",
+          "saving": "Salvataggio..."
+        },
+        "addExercise": {
+          "extraExercises": "Esercizi extra: {current}/{max}",
+          "hardLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo."
+        },
+        "removeDialog": {
+          "cannotRemoveTitle": "Impossibile Rimuovere",
+          "cannotRemoveMessage": "Non puoi rimuovere esercizi raccomandati dall'AI. Puoi solo rimuovere esercizi aggiunti da te.",
+          "confirmTitle": "Conferma Rimozione",
+          "confirmMessage": "Vuoi rimuovere \"{name}\"?",
+          "removeButton": "Rimuovi"
+        },
+        "alerts": {
+          "maxExtraSets": "Massimo 5 serie extra consentite. Hai raggiunto il limite per prevenire il sovrallenamento.",
+          "highVolumeWarning": "Stai aggiungendo la serie #{count} oltre la raccomandazione AI.\n\nQuesto aumenta l'affaticamento e le esigenze di recupero. Continuare?",
+          "highVolumeLabel": "Volume elevato - monitora il recupero"
+        },
+        "errors": {
+          "error": "Errore",
+          "failedToSave": "Impossibile salvare le modifiche. Riprova.",
+          "failedToMarkReady": "Impossibile contrassegnare l'allenamento come pronto. Riprova.",
+          "failedToRegenerate": "Impossibile rigenerare l'esercizio. Riprova.",
+          "failedToAddExercise": "Impossibile aggiungere l'esercizio. Riprova.",
+          "failedToRemoveExercise": "Impossibile rimuovere l'esercizio. Riprova.",
+          "failedToAddSet": "Impossibile aggiungere la serie. Riprova.",
+          "failedToPrepareWorkout": "Impossibile preparare l'allenamento: {error}",
+          "failedToPrepareWorkoutGeneric": "Impossibile preparare l'allenamento. Riprova."
+        }
+      }
+    },
+    "summary": {
+      "title": "Riepilogo Allenamento",
+      "workoutComplete": "Allenamento Completato!",
+      "greatWork": "Ottimo lavoro! Ecco il tuo riepilogo:",
+      "mentalReadinessTitle": "Come ti sei sentito mentalmente durante questo allenamento?",
+      "mentalReadinessDescription": "Questo ci aiuta a capire il tuo stato mentale generale e ottimizzare gli allenamenti futuri",
+      "completeWorkoutButton": "Completa Allenamento & Genera Riepilogo AI",
+      "selectMentalState": "Seleziona Stato Mentale per Continuare",
+      "sets": "Serie",
+      "volume": "Volume",
+      "duration": "Durata",
+      "generatingAiFeedback": "Generazione feedback AI...",
+      "performance": "Performance",
+      "todaysHighlights": "Punti Salienti di Oggi",
+      "quickObservations": "Osservazioni Rapide",
+      "recoveryAdvice": "Consigli per il Recupero",
+      "exercisesCompleted": "Esercizi Completati",
+      "setsCount": "{count} serie",
+      "aiRecommended": "AI raccomandato: {count} serie",
+      "youAdded": "Hai aggiunto: +{count} {count, plural, one {serie} other {serie}}",
+      "notesTitle": "Note di Allenamento (Opzionale)",
+      "notesDescription": "Hai avuto dolori? Problemi di tecnica? Preferenze su esercizi o recupero? Condividi qui le tue osservazioni per migliorare i prossimi allenamenti.",
+      "notesPlaceholder": "Es: Ho sentito un leggero dolore alla spalla sinistra durante il Military Press. Preferisco usare i manubri per le Chest Press...",
+      "charactersCount": "{count}/1000 caratteri",
+      "saveNotes": "Salva Note",
+      "savingNotes": "Salvataggio...",
+      "generateNextWorkout": "Genera Prossimo Allenamento",
+      "generating": "Generazione...",
+      "backToDashboard": "Torna alla Dashboard",
+      "mentalReadinessRequired": "Seleziona il tuo stato mentale prima di completare l'allenamento",
+      "completeWorkout": "Completa Allenamento",
+      "completing": "Completamento...",
+      "aiAnalysisDisclaimer": "L'IA analizzerà le tue note. Per dolori persistenti, consulta un professionista medico.",
+      "mentalReadiness": {
+        "descriptions": {
+          "drained": "Ho faticato mentalmente durante tutto l'allenamento",
+          "struggling": "Mancanza di motivazione",
+          "neutral": "Stato mentale nella media",
+          "engaged": "Concentrato e presente",
+          "lockedIn": "Picco di concentrazione mentale"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Allenamento non trovato nel database. Aggiorna la pagina e riprova.",
+        "databasePermission": "Errore di permessi del database. Contatta il supporto.",
+        "failedToAdvanceCycle": "Impossibile avanzare il ciclo di allenamento. Riprova.",
+        "networkError": "Errore di rete. Controlla la connessione e riprova.",
+        "failedToCompleteWorkout": "Impossibile completare l'allenamento",
+        "failedToSaveNotes": "Impossibile salvare le note. Riprova."
+      }
+    },
+    "execution": {
+      "loadingWorkout": "Caricamento allenamento...",
+      "setLogger": "Registra Serie",
+      "reps": "Reps",
+      "weight": "Peso",
+      "rir": "RIR",
+      "logSet": "Registra Serie",
+      "nextExercise": "Esercizio Successivo",
+      "previousExercise": "Esercizio Precedente",
+      "finishWorkout": "Termina Allenamento",
+      "mentalReadiness": {
+        "drained": "Esausto",
+        "struggling": "In Difficoltà",
+        "neutral": "Neutrale",
+        "engaged": "Concentrato",
+        "lockedIn": "Super Carico"
+      },
+      "setLogger": {
+        "warmup": "Riscaldamento {current}/{total}",
+        "workingSet": "Serie {current}/{total}",
+        "weightLabel": "Peso (kg)",
+        "repsLabel": "Ripetizioni",
+        "rirLabel": "RIR (Ripetizioni di Riserva)",
+        "tempoRequirement": "⏱️ Tempo Richiesto",
+        "fromYourApproach": "Dal tuo approccio",
+        "tempoDown": "Discesa",
+        "tempoPause": "Pausa",
+        "tempoUp": "Salita",
+        "tempoSqueeze": "Contrazione",
+        "tempoDescription": "Mantieni questo tempo per un'ottimale tensione muscolare",
+        "mentalDrainedOptional": "Ti senti mentalmente stanco? (opzionale)",
+        "mentalState": "Stato mentale: {state}",
+        "logSetButton": "Registra Serie",
+        "logging": "Registrazione...",
+        "skipWarmup": "Salta riscaldamento",
+        "skipping": "Saltando...",
+        "skipWarmupTitle": "Saltare il Riscaldamento?",
+        "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro.",
+        "confirmSkip": "Salta alle Serie"
+      },
+      "progress": {
+        "title": "Progresso Allenamento",
+        "exercisesCount": "{current} di {total} esercizi",
+        "sets": "serie",
+        "viewExercise": "Visualizza esercizio",
+        "changeExercise": "Cambia esercizio"
+      },
+      "exercise": {
+        "exerciseNumber": "Esercizio {current} di {total}",
+        "whyThisExercise": "Perché questo esercizio?",
+        "warmupProgress": "Riscaldamento: {current}/{total}",
+        "setsProgress": "Serie: {current}/{total}",
+        "reps": "reps",
+        "target": "Obiettivo: {weight}kg",
+        "techniqueCues": "Tecnica Esercizio",
+        "completedSets": "Serie Completate",
+        "set": "Serie {number}",
+        "mentalStateLabel": "Stato mentale: {state}",
+        "aiSuggestion": "Suggerimento AI per Serie {number}",
+        "whyThisProgression": "Perché questa progressione?",
+        "restPeriod": "Periodo di Riposo",
+        "skip": "Salta",
+        "restSeconds": "{seconds}s di riposo prescritto",
+        "defaultRestPeriod": "Periodo di riposo predefinito",
+        "restDescription": "Il riposo permette il recupero di ATP per prestazioni ottimali nella prossima serie",
+        "restTimer": {
+          "status": {
+            "optimal": "Nel range ottimale",
+            "acceptable": "Variazione accettabile",
+            "warning": "Deviazione dalle linee guida dell'approccio",
+            "critical": "Significativamente fuori dal range raccomandato"
+          },
+          "recommendedRange": "Raccomandato: {min}-{max} min",
+          "original": "Originale"
+        },
+        "exerciseComplete": "Esercizio Completato!",
+        "greatWork": "Ottimo lavoro su {exerciseName}",
+        "changeExercise": "Cambia Esercizio",
+        "previous": "← Precedente",
+        "gettingAiSuggestion": "Ottenimento suggerimento AI...",
+        "exerciseLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.",
+        "editSet": "Modifica serie"
+      },
+      "editSet": {
+        "title": "Modifica Serie {setNumber}",
+        "deleteConfirmMessage": "Sei sicuro di voler eliminare questa serie? L'azione non può essere annullata.",
+        "notesLabel": "Note (opzionale)",
+        "notesPlaceholder": "Aggiungi note su questa serie...",
+        "saveButton": "Salva Modifiche",
+        "deleteButton": "Elimina Serie"
+      },
+      "modificationWarning": {
+        "approved": "Modificazione Approvata",
+        "caution": "Attenzione: Considera i Trade-Off",
+        "notRecommended": "Non Raccomandato",
+        "sets": "{count, plural, one {serie} other {serie}}",
+        "close": "Chiudi",
+        "aiEvaluation": "Valutazione AI",
+        "warnings": "Avvertenze",
+        "suggestions": "Suggerimenti",
+        "approachGuidelines": "Linee Guida del Tuo Approccio",
+        "cancel": "Annulla",
+        "addSets": "Aggiungi Serie",
+        "addAnyway": "Aggiungi Comunque",
+        "keyboardHints": "ESC per annullare • ENTER per procedere",
+        "esc": "ESC",
+        "enter": "ENTER"
+      }
+    },
+    "substitution": {
+      "title": "Sostituzione Esercizio",
+      "loading": "Ricerca alternative...",
+      "selectAlternative": "Seleziona un esercizio alternativo",
+      "keepOriginal": "Mantieni esercizio originale"
+    },
+    "components": {
+      "userModificationBadge": {
+        "compactTitle": "Hai aggiunto {count} {count, plural, one {serie extra} other {serie extra}} oltre la raccomandazione AI",
+        "extraSetsAdded": "{count} {count, plural, one {serie extra aggiunta} other {serie extra aggiunte}}"
+      },
+      "warmupSkipPrompt": {
+        "title": "Saltare il Riscaldamento?",
+        "dismiss": "Ignora suggerimento",
+        "skipButton": "Salta {count} {count, plural, one {serie} other {serie}} di riscaldamento",
+        "performWarmup": "Esegui riscaldamento",
+        "skipping": "Saltando..."
+      },
+      "confirmDialog": {
+        "closeAriaLabel": "Chiudi",
+        "closeButtonText": "Chiudi",
+        "escHint": "ESC",
+        "enterHint": "ENTER"
+      },
+      "exerciseAnimation": {
+        "notAvailable": "Animazione non disponibile",
+        "loadingFailed": "Impossibile caricare l'animazione"
+      },
+      "exerciseAnimationModal": {
+        "exerciseVisualization": "Visualizzazione esercizio",
+        "closeAriaLabel": "Chiudi",
+        "notYetAvailable": "Animazione non ancora disponibile",
+        "buildingLibrary": "Stiamo ancora costruendo la libreria di animazioni. Torna presto!"
+      },
+      "quickAdjustments": {
+        "title": "Azioni Rapide",
+        "equipmentBusy": {
+          "title": "Attrezzatura Occupata",
+          "description": "Trova un esercizio simile con attrezzatura disponibile"
+        },
+        "weightTooHeavy": {
+          "title": "Peso Troppo Pesante",
+          "description": "Riduci il peso target del 10%"
+        },
+        "weightTooLight": {
+          "title": "Peso Troppo Leggero",
+          "description": "Aumenta il peso target del 10%"
+        },
+        "restPeriods": {
+          "title": "Periodi di Riposo",
+          "description": "Info sul riposo auto-regolato",
+          "alertMessage": "I periodi di riposo sono auto-regolati in base al tuo respiro e alla tua prontezza. Riposati quanto necessario!"
+        },
+        "cancelButton": "Annulla"
+      },
+      "workoutRationale": {
+        "title": "Perché questi esercizi?",
+        "generatingExplanation": "Generazione spiegazione...",
+        "tryAgain": "Riprova",
+        "workoutFocus": "Focus Allenamento",
+        "workoutFlow": "Flusso Allenamento",
+        "exerciseFlow": "Flusso Esercizi",
+        "exerciseBreakdown": "Dettaglio Esercizi"
+      },
+      "insightChanges": {
+        "title": "Modifiche Applicate al Workout",
+        "description": "Ho personalizzato il tuo workout in base a ciò che ho imparato su di te:",
+        "actions": {
+          "avoided": "Evitato",
+          "substituted": "Sostituito",
+          "preferred": "Preferito",
+          "adjusted": "Adattato"
+        },
+        "sourceLabels": {
+          "insight": "Insight",
+          "memory": "Memory"
+        },
+        "basedOn": "Basato su:",
+        "viewAllMemories": "Vedi tutte le Memories",
+        "understood": "Ho capito"
+      },
+      "addExerciseModal": {
+        "title": "Aggiungi Esercizio",
+        "closeAriaLabel": "Chiudi",
+        "searchPlaceholder": "Cerca esercizi...",
+        "categories": {
+          "all": "Tutti",
+          "chest": "Petto",
+          "back": "Schiena",
+          "legs": "Gambe",
+          "shoulders": "Spalle",
+          "arms": "Braccia"
+        },
+        "aiSuggestions": {
+          "title": "Esercizi Suggeriti dall'AI",
+          "analyzing": "Analisi del tuo allenamento...",
+          "noSuggestions": "Nessun suggerimento disponibile"
+        },
+        "priority": {
+          "high": "alta",
+          "medium": "media",
+          "low": "bassa"
+        },
+        "emptyState": {
+          "title": "Nessun esercizio trovato",
+          "description": "Prova a modificare la ricerca o la categoria"
+        },
+        "footer": "ESC per chiudere • Seleziona un esercizio per aggiungerlo al tuo allenamento",
+        "viewExercise": "Visualizza esercizio",
+        "viewExerciseAria": "Visualizza animazione {name}",
+        "bodyPartLabels": {
+          "general": "Generale",
+          "any": "Qualsiasi"
+        }
+      },
+      "exerciseValidation": {
+        "closeAriaLabel": "Chiudi",
+        "status": {
+          "approved": "Esercizio Approvato",
+          "caution": "Attenzione: Considera i Trade-Off",
+          "rejected": "Esercizio Non Raccomandato"
+        },
+        "sections": {
+          "aiEvaluation": "Valutazione AI",
+          "warnings": "Avvertenze",
+          "suggestions": "Suggerimenti",
+          "workoutContext": "Contesto Workout"
+        },
+        "warningSeverity": {
+          "low": "bassa",
+          "medium": "media",
+          "high": "alta"
+        },
+        "workoutBalance": {
+          "muscleOverlap": "Sovrapposizione muscolare",
+          "fatigueEstimate": "Stima affaticamento",
+          "phaseAlignment": "Allineamento fase"
+        },
+        "buttons": {
+          "close": "Chiudi",
+          "cancel": "Annulla",
+          "addExercise": "Aggiungi Esercizio",
+          "addAnyway": "Aggiungi Comunque"
+        },
+        "keyboardHints": {
+          "closeOnly": "ESC per chiudere",
+          "proceedOrCancel": "ESC per annullare • ENTER per procedere",
+          "esc": "ESC",
+          "enter": "ENTER"
+        }
+      },
+      "workoutRecap": {
+        "backToDashboard": "Torna alla Dashboard",
+        "completedWorkout": "Allenamento Completato",
+        "workout": "Allenamento",
+        "stats": {
+          "date": "Data",
+          "duration": "Durata",
+          "volume": "Volume",
+          "totalSets": "Serie Totali",
+          "unknownDate": "Data sconosciuta",
+          "na": "N/D"
+        },
+        "mentalState": {
+          "title": "Stato Mentale",
+          "readiness": "Prontezza mentale: {value}/5"
+        },
+        "muscleGroups": {
+          "title": "Gruppi Muscolari"
+        },
+        "exercises": {
+          "title": "Esercizi",
+          "titleWithCount": "Esercizi ({count})",
+          "set": "Serie {number}",
+          "sets": "{count, plural, one {serie} other {serie}}",
+          "reps": "reps",
+          "rir": "RIR: {value}"
+        },
+        "notes": {
+          "title": "Note"
+        },
+        "buttons": {
+          "viewProgress": "Visualizza Progressi"
+        }
+      },
+      "exerciseSubstitution": {
+        "title": "Cambia Esercizio",
+        "closeAriaLabel": "Chiudi",
+        "currentExercise": {
+          "label": "Esercizio Corrente",
+          "viewAnimation": "Visualizza esercizio",
+          "viewAnimationAria": "Visualizza animazione {name}"
+        },
+        "customInput": {
+          "title": "Suggerisci il Tuo",
+          "placeholder": "Digita il nome dell'esercizio o descrivi cosa vuoi...",
+          "validateButton": "Valida con AI →",
+          "validating": "Validazione con AI...",
+          "error": "Impossibile validare l'esercizio personalizzato"
+        },
+        "validation": {
+          "approved": "✓ Buono",
+          "caution": "⚠ Attenzione",
+          "notRecommended": "✗ Non raccomandato",
+          "targetWeight": "→ {weight}kg"
+        },
+        "rationalePreview": {
+          "impactTitle": "Impatto sull'Allenamento"
+        },
+        "buttons": {
+          "edit": "Modifica",
+          "select": "Seleziona →",
+          "back": "Indietro",
+          "confirmSwap": "Conferma Scambio",
+          "tryAgain": "Riprova",
+          "cancel": "Annulla"
+        },
+        "loading": {
+          "findingAlternatives": "Ricerca alternative intelligenti...",
+          "analyzingContext": "L'AI sta analizzando il tuo contesto di allenamento"
+        },
+        "suggestions": {
+          "aiTitle": "🤖 Suggerimenti AI ({count})",
+          "overallReasoning": "Ragionamento Generale",
+          "noGoodOptions": "Nessuna di queste va bene?",
+          "emailSupport": "Contatta il Supporto"
+        },
+        "confirmation": {
+          "swapTo": "Passare a {name}?",
+          "details": {
+            "sets": "Serie:",
+            "reps": "Ripetizioni:",
+            "weight": "Peso:",
+            "weightChange": "{current}kg → {target}kg"
+          }
+        },
+        "errors": {
+          "failedToLoad": "Impossibile caricare i suggerimenti",
+          "unexpectedError": "Si è verificato un errore imprevisto"
+        }
+      }
+    }
+  },
+  "onboarding": {
+    "welcome": "Benvenuto in Arvo",
+    "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
+    "layout": {
+      "stepNames": {
+        "approach": "Approccio",
+        "split": "Suddivisione",
+        "profile": "Profilo",
+        "weakPoints": "Punti Deboli",
+        "equipment": "Attrezzatura",
+        "strength": "Forza",
+        "review": "Revisione"
+      }
+    },
+    "approachCard": {
+      "by": "di",
+      "workingSets": "Serie di Lavoro:",
+      "repRanges": "Range Ripetizioni (Composti):",
+      "rirTarget": "RIR Target:",
+      "progression": "Progressione:",
+      "learnMore": "Scopri di Più"
+    },
+    "approachDetails": {
+      "by": "di",
+      "experienceLevels": {
+        "beginnerFriendly": "Adatto ai Principianti",
+        "beginnerDescription": "Perfetto per chi è nuovo all'allenamento strutturato",
+        "advanced": "Avanzato",
+        "advancedDescription": "Ideale per atleti esperti",
+        "allLevels": "Tutti i Livelli",
+        "allLevelsDescription": "Adatto a principianti e atleti avanzati"
+      },
+      "perfectFor": {
+        "title": "Perfetto Per Te Se...",
+        "buildingMass": "Costruire massa e volume muscolare",
+        "increasingStrength": "Aumentare la forza massimale",
+        "highVolume": "Chi può gestire volumi di allenamento elevati",
+        "sustainable": "Progresso sostenibile a lungo termine",
+        "powerlifting": "Obiettivi specifici di powerlifting",
+        "balanced": "Sviluppo equilibrato e completo",
+        "structured": "Allenamento progressivo strutturato",
+        "evidenceBased": "Programmazione basata su evidenze scientifiche"
+      },
+      "sections": {
+        "philosophy": "Filosofia",
+        "trainingVariables": "Variabili di Allenamento",
+        "progressionStrategy": "Strategia di Progressione",
+        "volumeGuidelines": "Linee Guida Volume (MEV/MAV/MRV)",
+        "advancedTechniques": "Tecniche Avanzate",
+        "periodization": "Periodizzazione",
+        "keyPrinciples": "Principi Chiave"
+      },
+      "variables": {
+        "setsReps": "Serie & Ripetizioni",
+        "workingSets": "Serie di Lavoro",
+        "warmup": "Riscaldamento",
+        "compoundReps": "Ripetizioni Composti",
+        "isolationReps": "Ripetizioni Isolamento",
+        "noneSpecified": "Non specificato",
+        "rirTarget": "RIR Target (Ripetizioni di Riserva)",
+        "normal": "Normale",
+        "intense": "Intenso",
+        "deload": "Scarico",
+        "restPeriods": "Periodi di Riposo",
+        "compound": "Composti",
+        "isolation": "Isolamento",
+        "betweenSets": "Tra le Serie",
+        "tempo": "Tempo (Velocità di Esecuzione)",
+        "tempoFormat": "Eccentrica - Pausa - Concentrica - Alto",
+        "eccentric": "Eccentrica",
+        "concentric": "Concentrica",
+        "pause": "Pausa",
+        "top": "Alto",
+        "trainingFrequency": "Frequenza di Allenamento",
+        "perMuscleGroup": "Per Gruppo Muscolare:",
+        "pattern": "Schema:",
+        "sessionDuration": "Durata Sessione",
+        "duration": "Durata",
+        "totalSets": "Serie Totali",
+        "priority": "Priorità",
+        "weightIncrement": "Incremento Peso",
+        "default": "predefinito",
+        "whenToAddWeight": "Quando Aggiungere Peso",
+        "setProgressionStrategy": "Strategia Progressione Serie",
+        "deloadTriggers": "Trigger di Scarico"
+      },
+      "volumeLandmarks": {
+        "mev": "MEV",
+        "mevFull": "Minimo Effettivo",
+        "mav": "MAV",
+        "mavFull": "Massimo Adattivo",
+        "mrv": "MRV",
+        "mrvFull": "Massimo Recuperabile"
+      },
+      "periodization": {
+        "when": "Quando:",
+        "how": "Come:",
+        "frequency": "Frequenza:",
+        "model": "Modello",
+        "cycleDuration": "Durata Ciclo",
+        "phase": "Fase"
+      },
+      "closeButton": "Ho capito, grazie!"
+    },
+    "reviewPage": {
+      "edit": "Modifica",
+      "splitType": "Tipo Suddivisione:",
+      "trainingFrequency": "Frequenza Allenamento:",
+      "daysPerWeek": "giorni/settimana",
+      "noSplitSelected": "Nessuna suddivisione selezionata",
+      "profile": "Profilo",
+      "profileLabels": {
+        "name": "Nome:",
+        "gender": "Genere:",
+        "age": "Età:",
+        "weight": "Peso:",
+        "height": "Altezza:",
+        "years": "anni"
+      },
+      "noProfileData": "Nessun dato profilo fornito",
+      "noWeakPoints": "Nessun punto debole selezionato",
+      "noEquipment": "Nessuna attrezzatura selezionata",
+      "strengthBaseline": {
+        "noBaseline": "Nessun livello di forza registrato (l'AI stimerà)",
+        "standard": "Standard",
+        "custom": "Personalizzato",
+        "at": "@",
+        "experienceTitle": "Stima Esperienza di Allenamento",
+        "basedOnStrength": "In base al tuo livello di forza, sembri essere",
+        "withApproximately": "con circa",
+        "ofExperience": "di esperienza di allenamento",
+        "confidence": "Confidenza:",
+        "considerProviding": "(Considera di fornire il peso corporeo e più esercizi per una maggiore accuratezza)",
+        "viewBreakdown": "Visualizza dettaglio per esercizio",
+        "e1rm": "e1RM:",
+        "relativeStrength": "(x PC)",
+        "adjustExperience": "Regola la tua esperienza di allenamento (anni):",
+        "experiencePlaceholder": "es: 2.5",
+        "disagreeNote": "Non sei d'accordo con la stima AI? Regolala liberamente in base alla tua effettiva storia di allenamento.",
+        "confirmed": "Confermato:",
+        "usingEstimate": "Usando stima AI:"
+      },
+      "whatHappensNext": {
+        "title": "Cosa succede dopo:",
+        "description": "L'AI creerà il tuo profilo utente e genererà il tuo primo allenamento personalizzato basato su",
+        "andPreferences": "e le tue preferenze. Potrebbe richiedere alcuni istanti."
+      },
+      "medicalDisclaimer": "Disclaimer Medico - Si Prega di Leggere Attentamente"
+    },
+    "steps": {
+      "approach": {
+        "title": "Scegli la Tua Filosofia di Allenamento",
+        "description": "Seleziona l'approccio che meglio si allinea al tuo stile di allenamento. Questo guiderà come l'AI genera i tuoi allenamenti.",
+        "loading": "Caricamento approcci di allenamento...",
+        "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba."
+      },
+      "split": {
+        "title": "Scegli la Tua Suddivisione di Allenamento",
+        "description": "Seleziona come vuoi organizzare la tua settimana di allenamento. Questo determina come i gruppi muscolari vengono distribuiti nei vari allenamenti.",
+        "backToApproach": "Torna all'Approccio di Allenamento",
+        "options": {
+          "push_pull_legs": {
+            "name": "Push / Pull / Legs",
+            "description": "Separa movimenti di spinta, tirata e gambe in giorni diversi. Ideale per sviluppo bilanciato e alta frequenza.",
+            "frequency": "3-6 giorni/settimana"
+          },
+          "upper_lower": {
+            "name": "Upper / Lower",
+            "description": "Alterna allenamenti per parte superiore e inferiore del corpo. Ottimo per forza e recupero bilanciato.",
+            "frequency": "4-6 giorni/settimana"
+          },
+          "full_body": {
+            "name": "Full Body",
+            "description": "Allena tutti i principali gruppi muscolari ogni sessione. Perfetto per principianti o chi ha pochi giorni di allenamento.",
+            "frequency": "2-4 giorni/settimana"
+          },
+          "custom": {
+            "name": "Suddivisione Personalizzata",
+            "description": "Lascia che l'AI crei una suddivisione personalizzata basata sulle tue preferenze e approccio di allenamento.",
+            "frequency": "Variabile"
+          }
+        },
+        "frequencyLabel": "Quanti giorni alla settimana puoi allenarti?",
+        "frequencyDescription": "Questo ci aiuta a ottimizzare la tua suddivisione e distribuzione del volume.",
+        "daysPerWeek": "giorni alla settimana",
+        "typicalFrequency": "Frequenza tipica: {frequency}",
+        "recommendations": {
+          "label": "Raccomandazione:",
+          "low": "La suddivisione Full Body è ideale per 2 o meno giorni di allenamento a settimana.",
+          "three": "Push/Pull/Legs o Full Body funzionano bene con 3 giorni alla settimana.",
+          "medium": "Upper/Lower o Push/Pull/Legs forniscono frequenza e recupero ottimali.",
+          "high": "Push/Pull/Legs permette allenamenti ad alta frequenza con recupero adeguato."
+        }
+      },
+      "equipment": {
+        "title": "Preferenze Attrezzatura",
+        "description": "Seleziona tutta l'attrezzatura a cui hai accesso. L'AI userà queste informazioni per generare allenamenti personalizzati.",
+        "backToWeakPoints": "Torna a Punti Deboli",
+        "selector": {
+          "title": "Selezione Attrezzatura",
+          "itemsSelected": "{count} {count, plural, one {elemento} other {elementi}} selezionato",
+          "clearAll": "Cancella Tutto",
+          "continueButton": "Continua ({count} selezionati)"
+        }
+      },
+      "weakPoints": {
+        "title": "Identifica i Tuoi Punti Deboli",
+        "description": "Seleziona fino a 3 gruppi muscolari che vuoi prioritizzare. L'AI adatterà il volume di allenamento e la selezione degli esercizi di conseguenza.",
+        "optionalNote": "Questo è opzionale - puoi saltare se non hai punti deboli specifici.",
+        "backToProfile": "Torna al Profilo",
+        "skipButton": "Salta (Nessun punto debole)",
+        "continueButton": "Continua con {count} {count, plural, one {selezione} other {selezioni}}",
+        "bodyMap": {
+          "front": "Frontale",
+          "back": "Posteriore",
+          "selectedWeakPoints": "Punti deboli selezionati: {count}/3",
+          "muscles": {
+            "chest_upper": "Petto Superiore",
+            "chest_lower": "Petto Inferiore",
+            "shoulders": "Spalle",
+            "back_width": "Larghezza Schiena",
+            "back_thickness": "Spessore Schiena",
+            "biceps": "Bicipiti",
+            "triceps": "Tricipiti",
+            "quads": "Quadricipiti",
+            "hamstrings": "Femorali",
+            "glutes": "Glutei",
+            "calves": "Polpacci",
+            "abs": "Addominali"
+          }
+        }
+      },
+      "strength": {
+        "title": "Livello di Forza Base",
+        "description": "Aggiungi i tuoi livelli di forza attuali per gli esercizi che conosci. Questo aiuta l'AI a impostare pesi di partenza appropriati.",
+        "optional": "Questo è opzionale - l'AI può stimare i pesi di partenza se salti questo passaggio.",
+        "backToEquipment": "Torna all'Attrezzatura",
+        "addExercise": {
+          "placeholder": "Aggiungi esercizio (es: Panca Piana, Squat, ecc.)",
+          "suggestedExercises": "Esercizi Suggeriti",
+          "addCustom": "Aggiungi \"{name}\" come esercizio personalizzato",
+          "typeToSearch": "Digita per cercare o aggiungere esercizio personalizzato"
+        },
+        "exercises": {
+          "bench_press": "Panca Piana",
+          "squat": "Squat",
+          "deadlift": "Stacco da Terra",
+          "overhead_press": "Military Press",
+          "hip_thrust": "Hip Thrust",
+          "barbell_row": "Rematore con Bilanciere",
+          "pull_ups": "Trazioni",
+          "front_squat": "Front Squat"
+        },
+        "emptyState": {
+          "title": "Nessun esercizio aggiunto",
+          "description": "Usa la casella di ricerca sopra per aggiungere il tuo primo esercizio"
+        },
+        "exerciseCard": {
+          "standard": "Standard",
+          "custom": "Personalizzato",
+          "remove": "Rimuovi esercizio",
+          "weightLabel": "Peso (kg)",
+          "weightPlaceholder": "80",
+          "repsLabel": "Ripetizioni",
+          "repsPlaceholder": "8",
+          "rirLabel": "RIR",
+          "rirPlaceholder": "1",
+          "validationError": "Compila tutti i campi per questo esercizio"
+        },
+        "tip": {
+          "label": "Suggerimento:",
+          "description": "RIR (Ripetizioni di Riserva) indica quante ripetizioni in più avresti potuto fare. Ad esempio, RIR 1 significa che ti sei fermato con 1 ripetizione nel serbatoio."
+        },
+        "skipButton": "Salta (l'AI stimerà)",
+        "continueButton": "Continua con {count} {count, plural, one {esercizio} other {esercizi}}"
+      },
+      "profile": {
+        "title": "Il Tuo Profilo (Opzionale)",
+        "description": "Aiuta l'AI a personalizzare il tuo allenamento con migliori raccomandazioni, standard di forza e approfondimenti.",
+        "allOptional": "Tutti i campi sono opzionali - puoi saltare completamente e l'app funzionerà benissimo.",
+        "backToSplit": "Torna alla Suddivisione",
+        "fields": {
+          "firstName": {
+            "label": "Nome",
+            "placeholder": "es., Mario",
+            "tooltip": "Il tuo nome ci aiuta a personalizzare la tua esperienza con saluti e feedback"
+          },
+          "gender": {
+            "label": "Genere",
+            "tooltip": "Usato per standard di forza più accurati e stime iniziali del peso",
+            "options": {
+              "male": "Maschio",
+              "female": "Femmina",
+              "other": "Altro"
+            }
+          },
+          "age": {
+            "label": "Età",
+            "placeholder": "es., 28",
+            "tooltip": "Aiuta l'AI ad adattare le raccomandazioni di recupero e i tassi di progressione",
+            "error": "L'età deve essere compresa tra 13 e 120"
+          },
+          "weight": {
+            "label": "Peso Corporeo (kg)",
+            "placeholder": "es., 75",
+            "unit": "kg",
+            "tooltip": "Essenziale per calcolare la forza relativa (es., 1.5x peso corporeo squat) e punteggio Wilks",
+            "error": "Il peso deve essere maggiore di 0"
+          },
+          "height": {
+            "label": "Altezza (cm)",
+            "placeholder": "es., 180",
+            "unit": "cm",
+            "tooltip": "Opzionale - usato per tracciamento composizione corporea e calcoli BMI",
+            "error": "L'altezza deve essere maggiore di 0"
+          }
+        },
+        "skipProfile": "Salta Profilo"
+      },
+      "review": {
+        "title": "Rivedi il Tuo Profilo",
+        "description": "Rivedi le tue selezioni qui sotto. L'AI userà queste informazioni per generare i tuoi allenamenti personalizzati.",
+        "completeSteps": "Completa prima i passaggi precedenti.",
+        "sections": {
+          "approach": "Approccio di Allenamento",
+          "split": "Suddivisione di Allenamento",
+          "profile": "Informazioni Personali",
+          "weakPoints": "Punti Deboli",
+          "equipment": "Attrezzatura Disponibile",
+          "strength": "Livello di Forza Base"
+        },
+        "labels": {
+          "edit": "Modifica",
+          "days": "{count} {count, plural, one {giorno} other {giorni}} alla settimana",
+          "years": "{count} {count, plural, one {anno} other {anni}}",
+          "exercises": "{count} {count, plural, one {esercizio} other {esercizi}}",
+          "items": "{count} {count, plural, one {elemento} other {elementi}}"
+        },
+        "profile": {
+          "name": "Nome",
+          "age": "Età",
+          "gender": "Genere",
+          "weight": "Peso",
+          "height": "Altezza",
+          "notProvided": "Non fornito"
+        },
+        "weakPoints": {
+          "none": "Nessuno selezionato",
+          "selected": "{count} {count, plural, one {gruppo muscolare} other {gruppi muscolari}} prioritizzati"
+        },
+        "equipment": {
+          "all": "Tutta l'attrezzatura disponibile",
+          "selected": "{count} {count, plural, one {tipo} other {tipi}} di attrezzatura"
+        },
+        "strength": {
+          "none": "Non fornito - l'AI stimerà",
+          "provided": "{count} {count, plural, one {esercizio} other {esercizi}} con dati di base"
+        },
+        "experience": {
+          "title": "Esperienza di Allenamento",
+          "estimated": "Stimato dai tuoi dati di forza",
+          "aiEstimate": "Stima AI",
+          "yourInput": "Il Tuo Input",
+          "editButton": "Modifica Esperienza",
+          "confirmButton": "Conferma",
+          "yearsLabel": "Anni di allenamento",
+          "levelLabel": "Livello di esperienza",
+          "placeholder": "es: 2.5"
+        },
+        "errors": {
+          "userNotFound": "Utente non trovato. Effettua nuovamente l'accesso.",
+          "completeSteps": "Completa tutti i passaggi richiesti."
+        },
+        "completeButton": "Completa Onboarding & Genera Allenamento"
+      }
+    }
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "subtitle": "Gestisci le tue preferenze di allenamento e profilo",
+    "backToDashboard": "Torna alla Dashboard",
+    "profile": {
+      "title": "Profilo",
+      "email": "Email",
+      "age": "Età",
+      "gender": "Genere",
+      "experience": "Esperienza di Allenamento"
+    },
+    "preferences": {
+      "title": "Preferenze",
+      "language": "Lingua",
+      "languageDescription": "Scegli la tua lingua preferita per l'interfaccia e i contenuti generati dall'AI",
+      "theme": "Tema",
+      "notifications": "Notifiche"
+    },
+    "account": {
+      "title": "Account",
+      "signOut": "Esci",
+      "deleteAccount": "Elimina Account"
+    },
+    "splitSelector": {
+      "title": "Tipo di Split",
+      "description": "Scegli il tipo di programmazione che preferisci per i tuoi allenamenti",
+      "rotation": "Rotazione",
+      "days": "{count} {count, plural, one {giorno} other {giorni}}",
+      "sequence": "Sequenza",
+      "success": "Split aggiornato con successo!",
+      "error": "Errore durante l'aggiornamento",
+      "updating": "Aggiornamento in corso...",
+      "splits": {
+        "push_pull_legs": {
+          "name": "Push / Pull / Legs",
+          "description": "Split a 3 giorni: giorni push (petto, spalle, tricipiti), pull (schiena, bicipiti) e legs (gambe)",
+          "schedule": "Push → Pull → Legs"
+        },
+        "upper_lower": {
+          "name": "Upper / Lower",
+          "description": "Split a 2 giorni: upper body (parte superiore) e lower body (parte inferiore)",
+          "schedule": "Upper → Lower"
+        },
+        "full_body": {
+          "name": "Full Body",
+          "description": "Allenamento total body ogni sessione, ideale per principianti o chi si allena 2-3 volte a settimana",
+          "schedule": "Full Body"
+        }
+      }
+    },
+    "page": {
+      "metadata": {
+        "title": "Impostazioni",
+        "description": "Personalizza le tue preferenze di allenamento, gestisci il tuo profilo e configura la tua esperienza di allenamento."
+      },
+      "accountInfo": {
+        "title": "Informazioni Account",
+        "description": "I dettagli del tuo account",
+        "email": "Email",
+        "userId": "ID Utente",
+        "trainingExperience": "Esperienza di Allenamento",
+        "experienceYears": "{years, plural, one {# anno} other {# anni}}"
+      },
+      "accountManagement": {
+        "title": "Gestione Account",
+        "description": "Resetta i tuoi dati di allenamento o elimina permanentemente il tuo account"
+      }
+    },
+    "resetData": {
+      "title": "Resetta Tutti i Dati",
+      "description": "Elimina tutti i tuoi dati di allenamento e ricomincia dall'onboarding. Il tuo account rimarrà attivo.",
+      "button": "Resetta Dati",
+      "confirmMessage": "Questo eliminerà permanentemente:",
+      "deleteItems": {
+        "profile": "Il tuo profilo utente e preferenze",
+        "workoutHistory": "Tutta la cronologia allenamenti e serie registrate",
+        "splitPlans": "Tutti i piani split e dati di allenamento",
+        "customExercises": "Esercizi personalizzati che hai creato"
+      },
+      "accountRemains": "Il tuo account e email rimarranno attivi. Rifarai l'onboarding.",
+      "confirmButton": "Conferma Reset",
+      "resetting": "Reset in corso...",
+      "cancel": "Annulla",
+      "errorResetting": "Errore nel reset dei dati",
+      "unknownError": "Errore sconosciuto"
+    },
+    "deleteAccount": {
+      "title": "Zona Pericolosa",
+      "description": "Elimina permanentemente il tuo account e tutti i dati associati. Questa azione non può essere annullata.",
+      "button": "Elimina Account",
+      "warningMessage": "⚠️ ATTENZIONE: Questa azione NON può essere annullata!",
+      "confirmMessage": "Questo eliminerà permanentemente:",
+      "deleteItems": {
+        "profile": "Il tuo profilo utente e preferenze",
+        "workoutHistory": "Tutta la cronologia allenamenti e serie registrate",
+        "splitPlans": "Tutti i piani split e dati di allenamento",
+        "customExercises": "Esercizi personalizzati che hai creato",
+        "account": "Il tuo intero account",
+        "accountNote": "(verrai disconnesso)"
+      },
+      "canRecreate": "Potrai creare un nuovo account con la stessa email dopo l'eliminazione.",
+      "typeDeleteLabel": "Digita",
+      "typeDeleteSuffix": "per confermare:",
+      "confirmButton": "Elimina il Mio Account Permanentemente",
+      "deleting": "Eliminazione Account...",
+      "cancel": "Annulla",
+      "validationError": "Devi digitare esattamente \"DELETE\" (tutto maiuscolo) per procedere",
+      "errorDeleting": "Errore nell'eliminazione dell'account",
+      "unknownError": "Errore sconosciuto"
+    },
+    "caloricPhase": {
+      "title": "Fase Calorica",
+      "description": "La tua fase nutrizionale attuale influenza il volume di allenamento, la selezione degli esercizi e i range di ripetizioni",
+      "active": "✓ Attivo",
+      "phases": {
+        "bulk": {
+          "name": "Bulk",
+          "description": "Eccedenza calorica per guadagno muscolare",
+          "details": "Ottimizza per la massima crescita muscolare con maggiore tolleranza al volume (+15-20% serie)"
+        },
+        "cut": {
+          "name": "Cut",
+          "description": "Deficit calorico per perdita di grasso",
+          "details": "Priorità alla preservazione muscolare con riduzione strategica del volume (-15-20% serie) ed esercizi ad alto S:F"
+        },
+        "maintenance": {
+          "name": "Maintenance",
+          "description": "Apporto calorico bilanciato",
+          "details": "Mantiene massa muscolare e forza con approccio di allenamento standard"
+        }
+      },
+      "input": {
+        "label": "Specifica la tua {type} calorica giornaliera (opzionale)",
+        "surplus": "eccedenza",
+        "deficit": "deficit",
+        "unit": "kcal",
+        "placeholder": {
+          "bulk": "Es. +500",
+          "cut": "Es. -300"
+        },
+        "help": {
+          "bulk": "Valore positivo per eccedenza calorica (es. +500 significa mangiare 500 kcal sopra il mantenimento)",
+          "cut": "Valore negativo per deficit calorico (es. -300 significa mangiare 300 kcal sotto il mantenimento)"
+        },
+        "range": "Lascia vuoto se preferisci non specificarlo. Range: da -1500 a +1500 kcal."
+      },
+      "messages": {
+        "phaseUpdated": "Fase calorica aggiornata a {phase}. Il tuo prossimo allenamento rifletterà questi cambiamenti.",
+        "updateFailed": "Impossibile aggiornare la fase calorica. Riprova.",
+        "invalidNumber": "Inserisci un numero valido",
+        "rangeError": "L'apporto calorico deve essere tra -1500 e +1500 kcal",
+        "intakeUpdated": "Apporto calorico aggiornato a {value} kcal",
+        "intakeUpdateFailed": "Impossibile aggiornare l'apporto calorico"
+      },
+      "tip": "💡 Consiglio: Cambia fase quando i tuoi obiettivi nutrizionali cambiano (es. iniziare un cut dopo una stagione di bulk)"
+    },
+    "weakPoints": {
+      "title": "Punti Deboli",
+      "description": "Identifica i gruppi muscolari che vuoi dare priorità (max 3)",
+      "editButton": "Modifica",
+      "saveButton": "Salva Modifiche",
+      "savingButton": "Salvataggio...",
+      "cancelButton": "Annulla",
+      "emptyState": "Nessun punto debole selezionato",
+      "maxWeakPointsError": "Massimo 3 punti deboli consentiti",
+      "updateSuccess": "Punti deboli aggiornati con successo!",
+      "updateError": "Impossibile aggiornare i punti deboli",
+      "muscles": {
+        "chestUpper": "Petto Alto",
+        "chestLower": "Petto Basso",
+        "shoulders": "Spalle",
+        "backWidth": "Dorsali Larghezza",
+        "backThickness": "Dorsali Spessore",
+        "biceps": "Bicipiti",
+        "triceps": "Tricipiti",
+        "quads": "Quadricipiti",
+        "hamstrings": "Femorali",
+        "glutes": "Glutei",
+        "calves": "Polpacci",
+        "abs": "Addominali"
+      }
+    },
+    "equipment": {
+      "title": "Inventario Attrezzatura",
+      "description": "Seleziona tutta l'attrezzatura a cui hai accesso. Questo ci aiuta a generare allenamenti personalizzati in base alla tua attrezzatura disponibile.",
+      "saveButton": "Salva Modifiche",
+      "savingButton": "Salvataggio...",
+      "savedButton": "Salvato!",
+      "itemsSelected": "{count} elementi selezionati",
+      "saveError": "Impossibile salvare l'attrezzatura",
+      "genericError": "Si è verificato un errore durante il salvataggio"
+    }
+  },
+  "progress": {
+    "title": "Progressi",
+    "overview": "Panoramica",
+    "charts": "Grafici",
+    "insights": "Insight AI",
+    "history": "Cronologia",
+    "noData": "Nessun dato disponibile. Completa alcuni allenamenti per vedere i tuoi progressi!",
+    "page": {
+      "title": "Progressi & Statistiche",
+      "subtitle": "Monitora i tuoi guadagni di forza e la costanza dell'allenamento",
+      "navigation": {
+        "backToDashboard": "Torna alla Dashboard",
+        "aiInsights": "Insight AI",
+        "settings": "Impostazioni"
+      },
+      "controls": {
+        "timeRangeLabel": "Intervallo Temporale"
+      },
+      "timeRanges": {
+        "lastWeek": "Ultima Settimana",
+        "lastMonth": "Ultimo Mese",
+        "last3Months": "Ultimi 3 Mesi",
+        "lastYear": "Ultimo Anno"
+      },
+      "charts": {
+        "strengthProgress": "Progresso di Forza",
+        "trainingVolume": "Volume di Allenamento"
+      },
+      "personalRecords": {
+        "title": "Record Personali"
+      },
+      "stats": {
+        "totalPRs": "PR Totali",
+        "topE1RM": "e1RM Massimo",
+        "totalVolume": "Volume Totale",
+        "workouts": "Allenamenti"
+      }
+    }
+  },
+  "api": {
+    "workouts": {
+      "generate": {
+        "progress": {
+          "starting": "Avvio generazione allenamento",
+          "loadingProfile": "Caricamento del tuo profilo",
+          "planningWorkout": "Pianificazione del tuo allenamento",
+          "aiAnalyzing": "AI in analisi degli esercizi",
+          "aiSelecting": "AI in selezione degli esercizi migliori",
+          "optimizingSelection": "Ottimizzazione selezione esercizi",
+          "analyzingHistory": "Analisi della tua cronologia performance",
+          "finalizing": "Finalizzazione del tuo allenamento",
+          "workoutReady": "Allenamento pronto!"
+        },
+        "errors": {
+          "unauthorized": "Non autorizzato",
+          "failedToGenerate": "Impossibile generare l'allenamento",
+          "internalServerError": "Errore interno del server",
+          "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}"
+        }
+      },
+      "errors": {
+        "workoutNotFound": "Allenamento non trovato",
+        "failedToFetch": "Impossibile recuperare l'allenamento"
+      }
+    },
+    "exercises": {
+      "errors": {
+        "failedToFetch": "Impossibile recuperare gli esercizi",
+        "internalServerError": "Errore interno del server"
+      }
+    }
+  },
+  "memory": {
+    "title": "Dashboard Memory",
+    "subtitle": "Cosa ha imparato Arvo su di te",
+    "loading": "Caricamento...",
+    "stats": {
+      "activeMemories": "Memory Attive",
+      "averageConfidence": "Confidence Media",
+      "activeInsights": "Insight Attivi"
+    },
+    "buttons": {
+      "refresh": "Aggiorna",
+      "export": "Esporta",
+      "refreshing": "Aggiornamento..."
+    },
+    "tabs": {
+      "overview": "Panoramica ({count})",
+      "preference": "Preferenze ({count})",
+      "limitation": "Limitazioni ({count})",
+      "pattern": "Pattern ({count})",
+      "strength": "Punti di Forza ({count})",
+      "equipment": "Attrezzatura ({count})"
+    },
+    "insights": {
+      "title": "Insight Attivi",
+      "relevance": "Rilevanza: {score}%",
+      "resolveButton": "Segna come risolto",
+      "resolveButtonAria": "Segna come risolto"
+    },
+    "memories": {
+      "title": "Tutte le Memory",
+      "titleFiltered": "Memory: {category}",
+      "confidence": "Confidence",
+      "confirmed": "Confermata {count}x",
+      "archiveButton": "Archivia",
+      "archiveButtonAria": "Archivia",
+      "moreExercises": "+{count}"
+    },
+    "empty": {
+      "noMemories": "Nessuna memory ancora. Continua ad allenarti!",
+      "noMemoriesFiltered": "Nessuna memory in \"{category}\"",
+      "noInsights": "Nessun insight attivo"
+    },
+    "categories": {
+      "preference": "Preferenze",
+      "pattern": "Pattern",
+      "limitation": "Limitazioni",
+      "strength": "Punti di Forza",
+      "equipment": "Attrezzatura",
+      "learned_behavior": "Comportamento Appreso"
+    },
+    "severity": {
+      "info": "Info",
+      "caution": "Attenzione",
+      "warning": "Avviso",
+      "critical": "Critico"
+    },
+    "export": {
+      "filename": "arvo-memories-{date}.json"
+    }
+  },
+  "landing": {
+    "cta": {
+      "title": {
+        "part1": "Pronto ad Allenarti",
+        "part2": "Meglio?"
+      },
+      "subtitle": "Unisciti agli atleti che usano l'allenamento potenziato dall'AI. Completa il tuo primo workout generato dall'AI in pochi minuti.",
+      "features": {
+        "onboarding": "Onboarding di 5 minuti",
+        "instantGeneration": "Generazione workout istantanea",
+        "freeToStart": "Gratuito per iniziare"
+      },
+      "button": {
+        "startWorkout": "Inizia il Tuo Primo Workout",
+        "dashboard": "Vai alla Dashboard"
+      },
+      "technical": {
+        "noCreditCard": "Nessuna carta di credito richiesta.",
+        "magicLink": "Autenticazione passwordless con magic link.",
+        "privacyFirst": "I tuoi dati sono tuoi. Design privacy-first."
+      }
+    },
+    "footer": {
+      "brand": {
+        "tagline": "Allenamento parametrico potenziato dall'AI per atleti seri."
+      },
+      "product": {
+        "title": "Prodotto",
+        "login": "Login",
+        "features": "Funzionalità"
+      },
+      "legal": {
+        "title": "Legale",
+        "privacy": "Privacy Policy",
+        "terms": "Termini di Servizio"
+      },
+      "copyright": "© {year} Arvo. Costruito con precisione.",
+      "developer": {
+        "text": "Sviluppato da"
+      },
+      "powered": "Basato su GPT-5 · Next.js · Supabase"
+    },
+    "methodologies": {
+      "title": {
+        "part1": "Metodi di Allenamento con",
+        "part2": "Fedeltà Scientifica"
+      },
+      "subtitle": "Non interpretazioni generiche. Implementazioni metodologiche complete.",
+      "kubaMethod": {
+        "name": "Kuba Method",
+        "description": "Allenamento parametrico basato su evidenze",
+        "implementationDepth": "Profondità Implementazione",
+        "configLines": "{count} righe",
+        "configDescription": "di configurazione & regole metodologiche",
+        "corePrinciples": "Principi Fondamentali:",
+        "principles": {
+          "workingSets": "<mono>2 serie di lavoro</mono> per esercizio @ RIR 0-1",
+          "tempo": "Tempo: <mono>3-1-1-1</mono> (3s eccentrica, 1s pausa, 1s concentrica, 1s contrazione)",
+          "lengthenedBiased": "<mono>60%</mono> esercizi in allungamento",
+          "rest": "Riposo: <mono>150-180s</mono> composti, <mono>90-120s</mono> isolamento"
+        },
+        "volumeLandmarks": "Parametri Volume (serie/settimana):",
+        "volumeTable": {
+          "muscle": "Muscolo",
+          "mev": "MEV",
+          "mav": "MAV",
+          "mrv": "MRV",
+          "chest": "Petto",
+          "back": "Schiena",
+          "quads": "Quadricipiti"
+        },
+        "volumeAcronyms": "MEV: Volume Effettivo Minimo · MAV: Volume Adattivo Massimo · MRV: Volume Recuperabile Massimo",
+        "periodization": "Periodizzazione:",
+        "phases": {
+          "weeks1to3": "Settimane 1-3",
+          "accumulation": "Accumulo",
+          "weeks4to5": "Settimane 4-5",
+          "intensification": "Intensificazione",
+          "week6": "Settimana 6",
+          "deload": "Scarico"
+        }
+      },
+      "mentzerHIT": {
+        "name": "Mike Mentzer HIT",
+        "description": "Filosofia di allenamento ad alta intensità",
+        "implementationDepth": "Profondità Implementazione",
+        "configLines": "{count} righe",
+        "configDescription": "di configurazione & regole metodologiche",
+        "corePrinciples": "Principi Fondamentali:",
+        "principles": {
+          "sets": "<mono>1-2 serie</mono> per esercizio a cedimento assoluto",
+          "intensity": "Volume basso, <bold>intensità massima</bold>",
+          "recovery": "Recupero: <mono>4-7 giorni</mono> tra le sessioni",
+          "preExhaust": "Tecniche di pre-esaurimento"
+        },
+        "advancedTechniques": "Tecniche Avanzate:",
+        "techniques": {
+          "staticHolds": "Isometrie Statiche",
+          "staticHoldsValue": "Post-cedimento",
+          "forcedReps": "Ripetizioni Forzate",
+          "forcedRepsValue": "1-2 reps",
+          "restPause": "Rest-Pause",
+          "restPauseValue": "10s riposo",
+          "negativeEmphasis": "Enfasi Negative",
+          "negativeEmphasisValue": "4-6s eccentrica"
+        },
+        "philosophy": "Filosofia di Allenamento:",
+        "philosophyQuote": "\"Di più non è meglio. Meglio è meglio. Allenati con intensità assoluta, poi permetti il recupero completo per la crescita.\"",
+        "typicalSplit": "Split Tipica:",
+        "split": {
+          "workoutA": "Workout A",
+          "workoutAMuscles": "Petto, Schiena, Deltoidi",
+          "workoutB": "Workout B",
+          "workoutBMuscles": "Gambe, Braccia"
+        },
+        "frequency": "Frequenza: Ogni 4-7 giorni per workout"
+      },
+      "bottomNote": {
+        "bold": "Architettura Guidata dalla Conoscenza:",
+        "text": "Gli approcci di allenamento sono implementati come basi di conoscenza complete, non regole hardcoded. Gli agenti AI interrogano questi motori di conoscenza per prendere decisioni con completa fedeltà metodologica."
+      }
+    },
+    "hero": {
+      "title": {
+        "aiCoach": "AI Coach",
+        "subtitle": "Che Ragiona Come un Esperto"
+      },
+      "painPoints": "\"Che peso uso nella prossima serie?\" · \"Mi sto sovrallenando?\" · \"Questo esercizio alternativo è equivalente?\"",
+      "description": {
+        "main": "15 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
+        "methods": "Metodo Kuba & Mentzer HIT implementati con fedeltà scientifica."
+      },
+      "stats": {
+        "agents": "15 Agenti AI",
+        "exercises": "1300+ Esercizi",
+        "methods": "Kuba · Mentzer · FST-7 & Altro"
+      },
+      "cta": {
+        "start": "Inizia ad Allenarti",
+        "dashboard": "Vai alla Dashboard",
+        "seeHow": "Scopri Come Funziona"
+      },
+      "technical": {
+        "powered": "Basato su modelli di ragionamento GPT-5. Rilevamento di pattern. Aggiustamenti biomeccanici del peso.",
+        "promise": "Zero supposizioni. Solo progressione."
+      }
+    },
+    "aiShowcase": {
+      "title": {
+        "part1": "AI Che",
+        "part2": "Ragiona Davvero"
+      },
+      "subtitle": "Non solo suggerimenti casuali di esercizi. Vedi le vere decisioni AI con ragionamento completo.",
+      "exerciseArchitect": {
+        "title": "Exercise Architect",
+        "description": "Progetta il tuo allenamento usando ragionamento GPT-5 · Agente AI",
+        "inputContextLabel": "CONTESTO INPUT:",
+        "outputLabel": "OUTPUT RAGIONAMENTO AI:",
+        "selectedExercises": "Esercizi Selezionati:",
+        "insightChanges": "Modifiche Basate su Insight:",
+        "technicalCues": "Indicazioni Tecniche:",
+        "example": {
+          "reason1": "\"Colpisce il petto superiore debole mentre sei fresco\"",
+          "avoided": "✗ Dips (evitato)",
+          "avoidedReason": "Motivo: \"Avviso attivo per dolore alla spalla\"",
+          "substituted": "✓ Cable Flyes (sostituito)",
+          "substitutedReason": "Motivo: \"Alternativa rispettosa delle articolazioni per isolamento petto\"",
+          "cues": "[\"Braccia semi-piegate per tutta l'esecuzione\", \"Contrai nello stretch\"]"
+        },
+        "stats": {
+          "considers": "Considera: 8+ variabili",
+          "model": "Modello di ragionamento: GPT-5"
+        }
+      },
+      "loadNavigator": {
+        "title": "Load Navigator",
+        "description": "Naviga i tuoi carichi in tempo reale, serie per serie · Agente AI",
+        "previousSetLabel": "PERFORMANCE SERIE PRECEDENTE:",
+        "aiReasoning": "AI in ragionamento...",
+        "nextSetLabel": "SUGGERIMENTO PROSSIMA SERIE:",
+        "reasoningLabel": "Ragionamento:",
+        "technicalFocusLabel": "Focus Tecnico:",
+        "technicalFocus": "\"Discesa controllata, spinta esplosiva\"",
+        "example": {
+          "reps": "12 (massimo del range)",
+          "rir": "1 (vicino al cedimento)",
+          "mentalReadiness": "4/5 (buona)"
+        },
+        "reasoning": {
+          "point1": "✓ Raggiunto massimo del range ripetizioni (12) con RIR 1",
+          "point2": "✓ Prontezza mentale alta (4/5)",
+          "point3": "✓ Fase di accumulo → aumento peso",
+          "point4": "✓ Incremento: +2.5kg (standard per bilanciere)",
+          "point5": "✓ Reps target: 8 (minimo del range 8-12)"
+        },
+        "stats": {
+          "factors": "Fattori decisionali: 6+",
+          "response": "Risposta: <500ms"
+        }
+      },
+      "safetyFirst": {
+        "title": "Safety-First: Integrazione Insights",
+        "description": "Ogni agente AI legge gli insight attivi e si adatta automaticamente",
+        "detection": {
+          "title": "1. RILEVAMENTO"
+        },
+        "learning": {
+          "title": "2. APPRENDIMENTO"
+        },
+        "application": {
+          "title": "3. APPLICAZIONE",
+          "selector": "Suggerisce Cable Pushdown",
+          "progression": "Carico conservativo",
+          "substitution": "Valida alternative"
+        },
+        "footer": {
+          "bold": "Zero configurazione richiesta.",
+          "text": "Il sistema impara dal tuo comportamento e ti protegge automaticamente."
+        }
+      }
+    },
+    "notesIntelligence": {
+      "title": {
+        "yourNotesBecome": "Le Tue Note Diventano",
+        "intelligence": "Intelligenza"
+      },
+      "subtitle": {
+        "main": "Scrivi in modo naturale. L'AI estrae insight, preferenze e pattern automaticamente.",
+        "tagline": "Zero tag manuali. Solo feedback onesto."
+      },
+      "step1": {
+        "title": "1. Tu Scrivi",
+        "description": "Linguaggio naturale, a fine workout",
+        "exampleLabel": "// Nota post-workout:",
+        "exampleNote": "\"Oggi squat fantastico, potevo spingere più pesante. La spalla mi dà ancora fastidio sulla military press. Forse passo alla landmine press per un po'.\"",
+        "footer": "✍️ Solo il tuo feedback onesto, nessun formato strutturato richiesto"
+      },
+      "step2": {
+        "title": "2. L'AI Estrae",
+        "description": "Pattern Scout + NLP",
+        "code": {
+          "insightDetected": "// Insight rilevato:",
+          "memoryCreated": "// Memory creata:",
+          "alternativeSuggested": "// Alternativa suggerita:",
+          "patternValue": "Alta fiducia su Squat",
+          "reasonValue": "Alternativa rispettosa delle articolazioni"
+        }
+      },
+      "step3": {
+        "title": "3. Si Auto-Adatta",
+        "description": "Exercise Architect applica ciò che ha imparato",
+        "avoided": "Evitato per insight di dolore alla spalla",
+        "boosted": "Boost di fiducia → aumento progressivo del carico",
+        "suggested": "Suggerita come alternativa rispettosa delle articolazioni"
+      },
+      "realExample": {
+        "title": "Esempio Reale: Estrazione Multi-Entità",
+        "description": "Una nota, molteplici insight estratti simultaneamente",
+        "inputLabel": "NOTA INPUT:",
+        "inputNote": "\"Lombari tesi dopo gli stacchi, forse serve uno scarico la prossima settimana. I rematori ai cavi fantastici però, li preferisco decisamente ai rematori con bilanciere. Prontezza mentale bassa oggi (2/5), probabilmente ho sovrallenato le spalle questa settimana.\"",
+        "outputLabel": "ESTRAZIONE AI:",
+        "preferencePattern": "Rematori Cavi > Rematori Bilanciere",
+        "actionValue": "Monitora volume, suggerisci scarico",
+        "contextBold": "Preservazione del contesto:",
+        "contextText": "Timestamp, nomi esercizi, carico usato e RIR del workout vengono automaticamente allegati ad ogni insight. L'AI non si limita a leggere il testo—capisce il contesto del workout."
+      },
+      "footer": {
+        "noTaggingBold": "Nessun tag richiesto.",
+        "text": "Scrivi come se stessi messaggiando un coach: \"spalla fa male\", \"mi è piaciuto\", \"mi sentivo debole\". L'agente Pattern Scout gestisce estrazione, scoring della confidence e applicazione automatica. Tu scrivi solo in modo onesto."
+      }
+    },
+    "gymReady": {
+      "title": {
+        "part1": "Costruito per la",
+        "gym": "Palestra"
+      },
+      "subtitle": "Non un'altra app che fallisce quando ne hai più bisogno. Progettato per ambienti di allenamento reali.",
+      "wakeLock": {
+        "title": "Wake Lock",
+        "description": "Lo schermo resta acceso durante gli allenamenti",
+        "detail": "Mai più sbloccare il telefono tra le serie. Lo schermo resta attivo con Wake Lock API."
+      },
+      "offlineSupport": {
+        "title": "Supporto Offline",
+        "description": "Zero internet richiesto in palestra",
+        "detail": "Tutte le decisioni AI girano lato client. Funzionalità completa senza connettività. Sincronizzazione automatica quando sei online."
+      },
+      "crashRecovery": {
+        "title": "Recupero Crash",
+        "description": "Non perdi mai una serie registrata",
+        "detail": "Persistenza localStorage dopo ogni serie. L'app crasha? Il telefono si scarica? Il tuo allenamento è al sicuro."
+      },
+      "customEquipment": {
+        "title": "Attrezzatura Personalizzata",
+        "description": "Aggiungi la tua configurazione unica",
+        "detail": "Hai una macchina speciale? Attacco cavi personalizzato? Aggiungilo una volta, l'AI suggerirà esercizi per sempre."
+      },
+      "codeExample": {
+        "title": "Recupero Crash - Persistenza localStorage",
+        "subtitle": "Ogni serie viene salvata immediatamente. Zero perdita di dati.",
+        "results": {
+          "batteryDies": "Batteria telefono si scarica durante allenamento → Riprendi esattamente dove hai lasciato",
+          "appCrash": "App crasha durante serie pesante → Nessun dato perso",
+          "swipeClose": "Chiusura accidentale → Recupero completo"
+        },
+        "scenario": {
+          "label": "Scenario reale:",
+          "text": "Sei a metà serie di squat, batteria telefono all'1%, si scarica. Ricaricalo, apri app → \"Riprendere allenamento dalla Serie 3?\" Tutto ripristinato."
+        }
+      },
+      "footer": "Queste funzionalità non sono punti di marketing. Sono in produzione, testate sul campo in palestre reali con WiFi instabile e telefoni scarichi."
+    },
+    "comparison": {
+      "title": {
+        "part1": "Perché ",
+        "part2": "?"
+      },
+      "subtitle": "Nessuna promessa di marketing. Solo confronto feature per feature.",
+      "card": {
+        "title": "Confronto Funzionalità",
+        "description": "Arvo vs le alternative che probabilmente stai considerando"
+      },
+      "table": {
+        "headers": {
+          "feature": "Funzionalità",
+          "arvo": "Arvo",
+          "excel": "Excel",
+          "genericApps": "App Generiche",
+          "personalTrainer": "Personal Trainer"
+        }
+      },
+      "mobile": {
+        "apps": "App",
+        "trainer": "Trainer"
+      },
+      "features": {
+        "aiReasoning": "Ragionamento AI (GPT-5)",
+        "setBySetProgression": "Progressione serie per serie",
+        "patternLearning": "Apprendimento di pattern",
+        "naturalLanguageNotes": "Note in linguaggio naturale → insight AI",
+        "biomechanicalAdjustments": "Aggiustamenti biomeccanici",
+        "volumeTracking": "Tracciamento volume (MEV/MAV/MRV)",
+        "injuryPrevention": "Prevenzione infortuni",
+        "offlineSupport": "Supporto offline",
+        "alwaysAvailable": "Sempre disponibile",
+        "methodologyFidelity": {
+          "name": "Fedeltà metodologica",
+          "values": {
+            "arvo": "Kuba/Mentzer",
+            "excel": "Manuale",
+            "genericApps": "Generica",
+            "personalTrainer": "Variabile"
+          }
+        },
+        "cost": {
+          "name": "Costo",
+          "values": {
+            "arvo": "Gratis",
+            "excel": "Gratis",
+            "genericApps": "$10/mese",
+            "personalTrainer": "$100+/sessione"
+          }
+        }
+      },
+      "legend": {
+        "fullSupport": "Supporto completo",
+        "partialVaries": "Parziale/Variabile",
+        "notAvailable": "Non disponibile"
+      },
+      "bottomNote": {
+        "label": "La realtà:",
+        "text": "Excel ti dà pieno controllo ma zero intelligenza. Le app generiche tracciano le serie ma non capiscono la progressione. I PT sono ottimi ma costosi e non disponibili 24/7. Arvo combina ragionamento AI con disponibilità sempre attiva a costo zero."
+      }
+    },
+    "faq": {
+      "title": "Domande?",
+      "subtitle": "Le 6 domande che tutti fanno prima di provare una nuova app di allenamento.",
+      "questions": {
+        "offline": {
+          "question": "Funziona offline in palestra?",
+          "answer": "Sì, completamente. Tutte le decisioni AI vengono eseguite localmente con modelli in cache. Non serve internet durante gli allenamenti. I dati si sincronizzano automaticamente quando torni online. Wake Lock mantiene lo schermo acceso, così non devi mai sbloccare il telefono tra le serie."
+        },
+        "customEquipment": {
+          "question": "Posso aggiungere la mia attrezzatura personalizzata?",
+          "answer": "Assolutamente. Hai una macchina speciale nella tua palestra? Un attacco cavi personalizzato? Aggiungilo una volta con nome ed esercizi di esempio. L'AI suggerirà esercizi per la tua attrezzatura personalizzata nei prossimi allenamenti. Resta nel database attrezzature permanentemente."
+        },
+        "injury": {
+          "question": "E se mi infortunassi o avessi dolore?",
+          "answer": "Il sistema Insights rileva automaticamente i pattern. Registri dolore una volta sulla French Press? Lo annota. Due volte? Crea un insight con livello di gravità. Tre volte? Evita automaticamente quell'esercizio e suggerisce alternative. Ogni agente AI legge gli insight attivi e adatta le decisioni di conseguenza. Zero configurazione richiesta."
+        },
+        "learning": {
+          "question": "Come impara l'AI le mie preferenze?",
+          "answer": "In tre modi: 1) Rilevamento pattern (sostituisci l'Esercizio A con B 3+ volte → impara la preferenza), 2) Estrazione dalle note (scrivi 'mi è piaciuto questo esercizio' a fine allenamento → crea memoria positiva con NLP), 3) Segnali comportamentali (prontezza mentale costantemente alta su certi movimenti → boost di fiducia). Tutto automatico, zero tag manuali. Scrivi solo feedback onesto e l'agente Pattern Scout estrae gli insight."
+        },
+        "vsExcel": {
+          "question": "Come è diverso da un foglio Excel?",
+          "answer": "Excel ti dà controllo ma zero intelligenza. Calcoli manualmente il prossimo peso, tracci il volume, decidi quando scaricare. Arvo automatizza tutto con ragionamento AI: suggerimenti di progressione serie per serie in <500ms, tracciamento volume vs MEV/MAV/MRV, trigger automatici di scarico, aggiustamenti biomeccanici del peso per scambi esercizi, apprendimento pattern dalle tue preferenze. Excel è statico. Arvo si adatta."
+        },
+        "dataOwnership": {
+          "question": "I miei dati di allenamento sono miei? Posso esportarli?",
+          "answer": "100% tuoi. Esporta quando vuoi in JSON/CSV. Design privacy-first: niente vendita dati, niente analytics di terze parti che tracciano i tuoi allenamenti. La tua cronologia di allenamento ti appartiene. Backend Supabase con sicurezza a livello di riga. Possiedi completamente i tuoi dati."
+        },
+        "pricing": {
+          "question": "Quanto costa?",
+          "answer": "Gratuito per iniziare. Autenticazione passwordless con magic link, nessuna carta di credito richiesta. Le funzionalità principali (generazione allenamenti AI, tracciamento progressione, insight, attrezzatura personalizzata) sono disponibili immediatamente. L'obiettivo è rendere l'allenamento intelligente accessibile, non metterlo dietro paywall."
+        }
+      },
+      "cta": {
+        "text": "Hai ancora domande?",
+        "email": "support@arvo.guru"
+      }
+    },
+    "volumeTracking": {
+      "title": {
+        "part1": "Gestione",
+        "part2": "Intelligente del Volume"
+      },
+      "subtitle": "Mai sovrallenamento. Mai sottodimensionamento. Tracciamento automatico vs parametri scientifici.",
+      "muscles": {
+        "chest": "Petto",
+        "back": "Schiena",
+        "quads": "Quadricipiti",
+        "shoulders": "Spalle"
+      },
+      "status": {
+        "optimal": "✓ Zona ottimale - massimo stimolo di crescita",
+        "pushing": "⚠ Spingendo forte - monitora il recupero attentamente"
+      },
+      "deloadCard": {
+        "title": "Trigger Automatici di Scarico",
+        "description": "Il sistema rileva pattern di affaticamento e suggerisce scarichi prima del sovrallenamento"
+      },
+      "deloadTriggers": {
+        "noProgress": {
+          "trigger": "3 sessioni senza progressi",
+          "example": "Panca piana bloccata a 100kg × 10 per 3 allenamenti",
+          "action": "Auto-suggerisce settimana di scarico"
+        },
+        "lowReadiness": {
+          "trigger": "Prontezza mentale ≤ 2 costante",
+          "example": "L'utente registra prontezza 2/5 per 4+ sessioni",
+          "action": "Riduce volume del 30-40%"
+        },
+        "exceedMrv": {
+          "trigger": "Volume > MRV per 2+ settimane",
+          "example": "Petto 23 serie/settimana (MRV: 22) per 2 settimane consecutive",
+          "action": "Scarico immediato raccomandato"
+        }
+      },
+      "intelligentPrevention": {
+        "title": "Prevenzione intelligente:",
+        "description": "Il sistema traccia stalli di progresso, trend di prontezza mentale e accumulo di volume. Quando molteplici biomarker suggeriscono affaticamento, raccomanda uno scarico prima che la performance si degradi."
+      },
+      "comparisonNote": {
+        "bold": "Excel non può farlo.",
+        "text": "Le app generiche contano le serie ma non capiscono MEV/MAV/MRV. Arvo traccia parametri di volume scientificamente validati per gruppo muscolare e ti avvisa prima del sovrallenamento."
+      }
+    },
+    "biomechanics": {
+      "title": {
+        "part1": "Precisione",
+        "part2": "Biomeccanica"
+      },
+      "subtitle": "Sostituzioni di esercizi con aggiustamenti automatici del peso basati sulla biomeccanica.",
+      "tagline": "Zero supposizioni. Distribuzione scientifica del carico.",
+      "conversions": {
+        "benchToDumbbell": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Panca Piana con Manubri",
+          "toWeight": "40-45kg per mano",
+          "reason": "Distribuzione carico unilaterale + richiesta di stabilità"
+        },
+        "benchToMachine": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Chest Press alla Macchina",
+          "reason": "Traiettoria fissa riduce requisiti di stabilità"
+        },
+        "benchToCable": {
+          "from": "Panca Piana con Bilanciere",
+          "to": "Chest Press ai Cavi",
+          "reason": "Curva di tensione cavi + richiesta di stabilità"
+        },
+        "squatToBulgarian": {
+          "from": "Squat con Bilanciere",
+          "to": "Bulgarian Split Squat",
+          "toWeight": "~63kg per gamba (45% ciascuna)",
+          "reason": "Unilaterale + requisiti di equilibrio"
+        }
+      },
+      "conversionCard": {
+        "from": "DA:",
+        "to": "A:",
+        "why": "Perché:"
+      },
+      "codeExample": {
+        "title": "Movement Adapter - Calcolo Peso",
+        "description": "Intelligenza biomeccanica per scambi di esercizi · Agente AI",
+        "code": {
+          "inputComment": "// Input:",
+          "processingComment": "// Elaborazione AI:",
+          "outputComment": "// Output:",
+          "step1": "1. Rileva cambio attrezzatura: Bilanciere → Manubri",
+          "step2": "2. Rileva pattern movimento: Spinta Orizzontale (stesso)",
+          "step3": "3. Applica moltiplicatore biomeccanico: 0.40-0.45",
+          "step4": "4. Calcola carico per mano: 100kg × 0.425 = 42.5kg"
+        }
+      },
+      "proTip": {
+        "label": "Suggerimento:",
+        "text": "Il sistema valida anche se la sostituzione mantiene l'intento del workout. \"Approvato\" significa stesso profilo stimolo-affaticamento. \"Attenzione\" significa stimolo diverso (con spiegazione)."
+      }
+    }
+  },
+  "legal": {
+    "medicalDisclaimer": {
+      "title": "Disclaimer Medico",
+      "onboarding": {
+        "description": "Prima di generare il tuo primo allenamento AI, leggi attentamente queste importanti informazioni sulla sicurezza.",
+        "emphasis": "Gli allenamenti generati dall'AI sono strumenti educativi, non consigli medici o coaching professionale."
+      },
+      "consultProfessional": "Consulta sempre un professionista sanitario qualificato prima di iniziare qualsiasi programma di esercizio.",
+      "sections": {
+        "aiCannot": {
+          "title": "⚠️ L'AI Non Può:",
+          "items": [
+            "Fornire consigli medici, diagnosi o trattamenti",
+            "Sostituire professionisti sanitari o coach",
+            "Rilevare o prevenire infortuni",
+            "Tenere conto di condizioni mediche non dichiarate"
+          ]
+        },
+        "stopExercise": {
+          "title": "🚨 Interrompi l'Esercizio e Cerca Aiuto Medico Se Avverti:",
+          "items": [
+            "Dolore toracico, pressione o difficoltà respiratorie",
+            "Vertigini gravi o perdita di coscienza",
+            "Dolore articolare/muscolare acuto o persistente",
+            "Qualsiasi sintomo insolito o preoccupante"
+          ]
+        },
+        "responsibilities": {
+          "title": "✅ Le Tue Responsabilità:",
+          "items": [
+            "Ottenere il nulla osta medico prima di allenarti (se necessario)",
+            "Fornire informazioni accurate sulla tua salute e limitazioni",
+            "Utilizzare la forma e la tecnica corrette",
+            "Interrompere se avverti dolore, disagio o sintomi insoliti",
+            "Valutare criticamente le raccomandazioni dell'AI usando il tuo giudizio"
+          ]
+        },
+        "assumptionOfRisk": {
+          "title": "⚖️ Assunzione di Rischio:",
+          "description": "L'esercizio comporta rischi intrinseci tra cui stiramenti muscolari, lesioni articolari, eventi cardiovascolari e, in rari casi, lesioni gravi o morte. Utilizzando Arvo, assumi volontariamente tutti i rischi associati all'esercizio e all'allenamento fisico."
+        }
+      },
+      "readFullDisclaimer": "Leggi il disclaimer medico completo →",
+      "consent": "Ho letto e compreso questo disclaimer medico. Riconosco che Arvo non è un consiglio medico, che l'AI può commettere errori e che sono l'unico responsabile della mia sicurezza e salute. Accetto di consultare professionisti sanitari quando appropriato.",
+      "acceptButton": "Ho Capito e Accetto"
+    }
+  }
+}

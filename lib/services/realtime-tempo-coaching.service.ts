@@ -8,7 +8,7 @@
 
 import { tempoParserService, type TempoPhases } from './tempo-parser.service'
 import { audioCoachingService, type AudioScript, type AudioScriptSegment } from './audio-coaching.service'
-import type { RealtimeCuePools } from '@/lib/agents/audio-script-generator.agent'
+import type { RealtimeCuePools } from '@/lib/types/realtime-cue-pools'
 
 export interface RealtimeSetConfig {
   tempo: string           // e.g., "3-1-1-1"

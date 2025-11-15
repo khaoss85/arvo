@@ -2,6 +2,10 @@ import { BaseAgent } from './base.agent'
 import { getExerciseName } from '@/lib/utils/exercise-helpers'
 import type { Locale } from '@/i18n'
 import type { AudioScriptSegment } from '@/lib/services/audio-coaching.service'
+import type { RealtimeCuePools, RealtimeCuePoolsInput } from '@/lib/types/realtime-cue-pools'
+
+// Re-export types for backward compatibility
+export type { RealtimeCuePools, RealtimeCuePoolsInput } from '@/lib/types/realtime-cue-pools'
 
 export interface AudioScriptInput {
   // Workout context
@@ -68,58 +72,6 @@ export interface AudioScriptsOutput {
   }
 }
 
-/**
- * Realtime Cue Pools
- * AI-generated pools of varied phrases for realtime set coaching
- */
-export interface RealtimeCuePools {
-  // Starting cues (played at set start)
-  starting: string[] // e.g., ["Let's go!", "Here we go!", "Start strong!"]
-
-  // Rep announcement pools (played at start of each rep)
-  repAnnouncements: {
-    early: string[]   // Reps 1-3: ["Rep 2", "Second rep", "Number 2"]
-    middle: string[]  // Reps 4-7: ["Rep 5, keep it up", "Halfway there, rep 5"]
-    late: string[]    // Reps 8+: ["Rep 8, push through", "Almost there, rep 8"]
-  }
-
-  // Countdown numbers (eccentric phase)
-  countdown: {
-    [key: number]: string[] // e.g., 3: ["3", "Three", "Three seconds down"]
-  }
-
-  // Phase change cues
-  phaseChanges: {
-    pauseBottom: string[]  // e.g., ["Hold", "Pause", "Hold it", "Stay tight"]
-    concentric: string[]   // e.g., ["Up", "Push", "Drive", "Explode"]
-    pauseTop: string[]     // e.g., ["Squeeze", "Contract", "Hold the squeeze"]
-  }
-
-  // Encouragement pools (sprinkled throughout)
-  encouragement: {
-    early: string[]   // Reps 1-3: ["Nice form", "Feeling good", "Controlled"]
-    middle: string[]  // Reps 4-7: ["Keep pushing", "You got this", "Stay strong"]
-    late: string[]    // Reps 8+: ["Dig deep", "Push through", "Almost done"]
-    final: string[]   // Last rep: ["Last one!", "Final rep!", "Finish strong!"]
-  }
-
-  // Set complete
-  setComplete: string[] // e.g., ["Done!", "Great set!", "Nailed it!"]
-}
-
-export interface RealtimeCuePoolsInput {
-  exerciseName: string
-  setNumber: number
-  targetReps: number
-  tempo: string
-  setType: 'warmup' | 'working'
-  language: 'en' | 'it'
-
-  // Optional context for better variety
-  previousSetReps?: number // How many reps they did last set
-  isFailureSet?: boolean   // Are they going to failure?
-  exerciseCategory?: string // e.g., "compound", "isolation"
-}
 
 /**
  * AudioScriptGeneratorAgent

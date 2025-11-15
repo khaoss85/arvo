@@ -6,6 +6,7 @@ import { NotesIntelligence } from "@/components/features/landing/notes-intellige
 import { VolumeTrackingVisual } from "@/components/features/landing/volume-tracking-visual";
 import { BiomechanicsDemo } from "@/components/features/landing/biomechanics-demo";
 import { GymReadyFeatures } from "@/components/features/landing/gym-ready-features";
+import { AICoachingFeatures } from "@/components/features/landing/ai-coaching-features";
 import { EquipmentVision } from "@/components/features/landing/equipment-vision";
 import { MethodologiesSection } from "@/components/features/landing/methodologies-section";
 import { ComparisonTable } from "@/components/features/landing/comparison-table";
@@ -26,6 +27,7 @@ export default async function Home() {
       <VolumeTrackingVisual />
       <BiomechanicsDemo />
       <GymReadyFeatures />
+      <AICoachingFeatures />
       <EquipmentVision />
       <MethodologiesSection />
       <ComparisonTable />

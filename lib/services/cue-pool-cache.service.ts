@@ -5,7 +5,7 @@
  * Pools are cached per exercise + language combination and reused across sets.
  */
 
-import type { RealtimeCuePools } from '@/lib/agents/audio-script-generator.agent'
+import type { RealtimeCuePools } from '@/lib/types/realtime-cue-pools'
 
 export class CuePoolCacheService {
   private static instance: CuePoolCacheService

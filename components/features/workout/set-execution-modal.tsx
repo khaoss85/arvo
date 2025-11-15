@@ -15,7 +15,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { RealtimeTempoIndicator } from './realtime-tempo-indicator'
 import { realtimeTempoCoachingService, type SetExecutionState } from '@/lib/services/realtime-tempo-coaching.service'
 import { tempoParserService } from '@/lib/services/tempo-parser.service'
-import { AudioScriptGeneratorAgent, type RealtimeCuePools } from '@/lib/agents/audio-script-generator.agent'
+import type { RealtimeCuePools } from '@/lib/types/realtime-cue-pools'
 import { cuePoolCacheService } from '@/lib/services/cue-pool-cache.service'
 
 interface SetExecutionModalProps {
@@ -84,16 +84,28 @@ export function SetExecutionModal({
           // Generate new pools if not cached
           if (!cuePools) {
             console.log('[SetExecution] Cache miss, generating AI cue pools...')
-            const agent = new AudioScriptGeneratorAgent()
 
-            cuePools = await agent.generateRealtimeCuePools({
-              exerciseName,
-              setNumber,
-              targetReps,
-              tempo,
-              setType: 'working', // TODO: determine from props if needed
-              language,
+            // Call server-side API route to generate cue pools
+            const response = await fetch('/api/audio/cue-pools', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                exerciseName,
+                setNumber,
+                targetReps,
+                tempo,
+                setType: 'working', // TODO: determine from props if needed
+                language,
+              }),
             })
+
+            if (!response.ok) {
+              throw new Error(`Failed to generate cue pools: ${response.status} ${response.statusText}`)
+            }
+
+            cuePools = await response.json()
 
             // Cache the generated pools
             cuePoolCacheService.set(exerciseName, language, cuePools)

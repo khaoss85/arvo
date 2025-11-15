@@ -1,0 +1,25 @@
+# Translation keys needed for custom-equipment-manager.tsx
+
+## settings.customEquipment namespace:
+- title: "Custom Equipment"
+- description: "Add equipment that's not in our standard list. AI will validate and suggest exercises."
+- inputPlaceholder: "Enter equipment name (e.g., 'Hex Bar', 'Concept2 Rower')"
+- clearButton: "Clear and start over"
+- validateButton: "Validate"
+- validating: "Validating..."
+- exampleExercises: "Example exercises:"
+- warnings: (emoji used inline)
+- suggestions: "Suggestions:"
+- addButton: "Add to My Equipment"
+- adding: "Adding..."
+- yourEquipment: "Your Custom Equipment"
+- customBadge: "Custom"
+- unverifiedBadge: "Unverified"
+
+## Errors:
+- errors.validationFailed: "Failed to validate equipment"
+- errors.validationError: "An error occurred during validation"
+- errors.addFailed: "Failed to add equipment"
+- errors.addError: "An error occurred while adding equipment"
+- errors.removeFailed: "Failed to remove equipment"
+- errors.removeError: "An error occurred while removing equipment"

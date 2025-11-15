@@ -1,0 +1,515 @@
+/**
+ * Test Script: GPT-5.1 Prompt Optimization
+ *
+ * Tests the optimized prompts with 10 diverse workout scenarios to measure:
+ * - First-attempt success rate
+ * - Average retry count
+ * - Volume violation rate
+ * - Muscle coverage failure rate
+ * - Approach constraint violation rate
+ * - Latency per reasoning level
+ */
+
+import { createClient } from '@supabase/supabase-js'
+import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
+import { aiMetrics } from '@/lib/utils/ai-metrics'
+// import type { WorkoutGenerationInput } from '@/lib/agents/exercise-selector.agent' // Type no longer exported
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+// Test scenarios covering diverse approaches and constraints
+const testScenarios: Array<{
+  name: string
+  description: string
+  input: Partial<WorkoutGenerationInput>
+  expectedChallenges: string[]
+}> = [
+  {
+    name: 'FST-7 Push (High Volume)',
+    description: 'FST-7 approach with chest finisher - tests FST-7 compatibility logic',
+    input: {
+      userId: 'test-user-1',
+      workoutType: 'push',
+      sessionFocus: ['chest', 'shoulders', 'triceps'],
+      targetVolume: {
+        chest: 12,
+        shoulders: 6,
+        triceps: 4
+      },
+      approach: {
+        id: 'fst7',
+        name: 'FST-7',
+        description: '7 sets for finisher exercise',
+        maxSetsPerExercise: 7,
+        variables: {
+          finisherMuscle: 'chest'
+        }
+      },
+      caloricPhase: 'bulk',
+      availableEquipment: ['barbell', 'dumbbell', 'cable', 'machine'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'FST-7 compatibility with 12 sets chest (compatible)',
+      'FST-7 compatibility with 4 sets triceps (incompatible)',
+      'Volume calculation with finisher sets'
+    ]
+  },
+  {
+    name: 'Heavy Duty Full Body (Fixed Volume)',
+    description: 'Heavy Duty with strict 6-8 total sets limit - tests fixed volume handling',
+    input: {
+      userId: 'test-user-2',
+      workoutType: 'full_body',
+      sessionFocus: ['chest', 'lats', 'quads', 'shoulders'],
+      targetVolume: {
+        chest: 2,
+        lats: 2,
+        quads: 2,
+        shoulders: 2
+      },
+      approach: {
+        id: 'heavy-duty',
+        name: 'Heavy Duty',
+        description: 'Maximum intensity, minimum volume',
+        maxTotalSets: 8,
+        maxSetsPerExercise: 2,
+        variables: {
+          rir: 0 // Train to absolute failure
+        }
+      },
+      caloricPhase: 'bulk', // Should NOT increase volume
+      availableEquipment: ['barbell', 'machine'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'Must stay within 8 total sets despite bulk phase',
+      'Must NOT increase volume for bulk (increase intensity instead)',
+      'Cover 4 muscle groups with only 8 sets total'
+    ]
+  },
+  {
+    name: 'Mountain Dog Back (4 Phases)',
+    description: 'Mountain Dog with activation→stretch→contraction→pump - tests phase structure',
+    input: {
+      userId: 'test-user-3',
+      workoutType: 'pull',
+      sessionFocus: ['lats', 'upper_back', 'traps'],
+      targetVolume: {
+        lats: 10,
+        upper_back: 6,
+        traps: 3
+      },
+      approach: {
+        id: 'mountain-dog',
+        name: 'Mountain Dog',
+        description: '4-phase structure',
+        variables: {
+          phases: ['activation', 'stretch', 'contraction', 'pump']
+        }
+      },
+      caloricPhase: 'maintenance',
+      availableEquipment: ['barbell', 'dumbbell', 'cable', 'machine'],
+      weakPoints: ['upper_back']
+    },
+    expectedChallenges: [
+      'Must create 4 distinct phases',
+      'Distribute 19 total sets across 4 phases',
+      'Each phase needs appropriate exercise (ROM emphasis)',
+      'Prioritize upper_back as weak point'
+    ]
+  },
+  {
+    name: 'PPL Legs A (Split Cycle)',
+    description: 'PPL split with variation A - tests split-aware generation',
+    input: {
+      userId: 'test-user-4',
+      workoutType: 'legs',
+      sessionFocus: ['quads', 'hamstrings', 'glutes', 'calves'],
+      targetVolume: {
+        quads: 8,
+        hamstrings: 6,
+        glutes: 4,
+        calves: 3
+      },
+      approach: {
+        id: 'ppl',
+        name: 'Push/Pull/Legs',
+        description: 'Standard PPL split'
+      },
+      caloricPhase: 'cut', // Should reduce volume slightly
+      availableEquipment: ['barbell', 'machine', 'dumbbell'],
+      weakPoints: ['calves']
+    },
+    expectedChallenges: [
+      'Cut phase should guide toward -15-20% volume within targets',
+      'High stimulus-to-fatigue exercises for cut',
+      'Cover 4 muscle groups with balanced distribution',
+      'Extra attention to calves (weak point)'
+    ]
+  },
+  {
+    name: 'FST-7 with Incompatible Volume',
+    description: 'FST-7 where target volume is too low - tests compatibility check',
+    input: {
+      userId: 'test-user-5',
+      workoutType: 'arms',
+      sessionFocus: ['biceps', 'triceps'],
+      targetVolume: {
+        biceps: 4, // Too low for FST-7 (needs ≥7)
+        triceps: 4  // Too low for FST-7
+      },
+      approach: {
+        id: 'fst7',
+        name: 'FST-7',
+        description: '7 sets for finisher',
+        variables: {
+          finisherMuscle: 'biceps' // Requested but incompatible
+        }
+      },
+      caloricPhase: 'maintenance',
+      availableEquipment: ['dumbbell', 'cable', 'machine'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'FST-7 finisher incompatible with 4 sets biceps',
+      'Must use standard sets instead of FST-7',
+      'Should explicitly note incompatibility in rationale'
+    ]
+  },
+  {
+    name: 'Periodized Hypertrophy Block',
+    description: 'Periodized approach in accumulation phase - tests periodization context',
+    input: {
+      userId: 'test-user-6',
+      workoutType: 'upper',
+      sessionFocus: ['chest', 'lats', 'shoulders'],
+      targetVolume: {
+        chest: 10,
+        lats: 8,
+        shoulders: 6
+      },
+      approach: {
+        id: 'periodized',
+        name: 'Periodized Training',
+        description: 'Block periodization',
+        variables: {
+          currentBlock: 'hypertrophy'
+        }
+      },
+      periodization: {
+        currentPhaseName: 'Accumulation',
+        phaseGoal: 'Volume accumulation',
+        weekInPhase: 2,
+        totalWeeksInPhase: 4
+      },
+      caloricPhase: 'bulk',
+      availableEquipment: ['barbell', 'dumbbell', 'cable', 'machine'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'Accumulation phase suggests moderate-high volume',
+      'Bulk phase reinforces volume emphasis',
+      'Balance compound and isolation per periodization'
+    ]
+  },
+  {
+    name: 'Minimal Equipment Home Workout',
+    description: 'Limited equipment availability - tests exercise adaptation',
+    input: {
+      userId: 'test-user-7',
+      workoutType: 'full_body',
+      sessionFocus: ['chest', 'lats', 'quads', 'shoulders'],
+      targetVolume: {
+        chest: 6,
+        lats: 6,
+        quads: 6,
+        shoulders: 4
+      },
+      approach: {
+        id: 'basic',
+        name: 'Basic Training',
+        description: 'Straightforward progressive overload'
+      },
+      caloricPhase: 'maintenance',
+      availableEquipment: ['dumbbell', 'resistance_band'], // Very limited
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'Very limited equipment (dumbbells + bands only)',
+      'Must select dumbbell/band variations for all muscles',
+      'Creative exercise selection to hit all targets'
+    ]
+  },
+  {
+    name: 'Cut Phase with Fixed Volume',
+    description: 'Heavy Duty during cut - tests that volume stays fixed',
+    input: {
+      userId: 'test-user-8',
+      workoutType: 'push',
+      sessionFocus: ['chest', 'shoulders', 'triceps'],
+      targetVolume: {
+        chest: 3,
+        shoulders: 2,
+        triceps: 2
+      },
+      approach: {
+        id: 'heavy-duty',
+        name: 'Heavy Duty',
+        description: 'High intensity, low volume',
+        maxTotalSets: 7,
+        maxSetsPerExercise: 2
+      },
+      caloricPhase: 'cut', // Should NOT reduce volume
+      caloricIntakeKcal: -500,
+      availableEquipment: ['barbell', 'dumbbell', 'machine'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'Cut phase should NOT reduce set count (fixed volume)',
+      'Instead: slightly reduce load, focus on form',
+      'Maintain 7 total sets despite cut phase'
+    ]
+  },
+  {
+    name: 'High Volume PPL Push',
+    description: 'High volume push workout - tests volume distribution',
+    input: {
+      userId: 'test-user-9',
+      workoutType: 'push',
+      sessionFocus: ['chest', 'shoulders', 'triceps'],
+      targetVolume: {
+        chest: 16,
+        shoulders: 10,
+        triceps: 6
+      },
+      approach: {
+        id: 'volume',
+        name: 'Volume Training',
+        description: 'High volume hypertrophy'
+      },
+      caloricPhase: 'bulk',
+      availableEquipment: ['barbell', 'dumbbell', 'cable', 'machine'],
+      weakPoints: ['shoulders']
+    },
+    expectedChallenges: [
+      'High total volume (32 sets)',
+      'Complex volume calculation with many exercises',
+      'Primary vs secondary muscle contributions',
+      'Prioritize shoulders (weak point) within volume'
+    ]
+  },
+  {
+    name: 'Zero Volume Conflict',
+    description: 'Target volume has 0 for some muscles - tests exclusion logic',
+    input: {
+      userId: 'test-user-10',
+      workoutType: 'push',
+      sessionFocus: ['chest', 'triceps'], // No shoulders
+      targetVolume: {
+        chest: 12,
+        shoulders: 0, // Explicitly ZERO - must NOT include
+        triceps: 6
+      },
+      approach: {
+        id: 'basic',
+        name: 'Basic Training',
+        description: 'Standard training'
+      },
+      caloricPhase: 'maintenance',
+      availableEquipment: ['barbell', 'dumbbell', 'cable'],
+      weakPoints: []
+    },
+    expectedChallenges: [
+      'Must NOT include ANY shoulder exercises (target = 0)',
+      'But chest/triceps exercises often hit shoulders as secondary',
+      'Must verify shoulders = 0 sets (even as secondary)',
+      'Complex constraint satisfaction'
+    ]
+  }
+]
+
+async function runTest(
+  scenarioIndex: number,
+  scenario: typeof testScenarios[0]
+): Promise<{
+  success: boolean
+  attempts: number
+  latencyMs: number
+  errors: string[]
+}> {
+  console.log(`\n${'='.repeat(80)}`)
+  console.log(`TEST ${scenarioIndex + 1}/${testScenarios.length}: ${scenario.name}`)
+  console.log(`Description: ${scenario.description}`)
+  console.log(`Expected challenges:`)
+  scenario.expectedChallenges.forEach(challenge => console.log(`  - ${challenge}`))
+  console.log('='.repeat(80))
+
+  const agent = new ExerciseSelector(supabase, 'medium')
+
+  const startTime = Date.now()
+  try {
+    const result = await agent.generateExercises(scenario.input as WorkoutGenerationInput)
+
+    const latencyMs = Date.now() - startTime
+
+    console.log(`✅ SUCCESS - Generated ${result.exercises.length} exercises in ${latencyMs}ms`)
+    console.log(`Exercises: ${result.exercises.map(e => e.name).join(', ')}`)
+
+    // Check if workout rationale mentions key aspects
+    if (result.workoutRationale) {
+      console.log(`Rationale: ${result.workoutRationale.substring(0, 150)}...`)
+    }
+
+    return {
+      success: true,
+      attempts: 1, // Will be updated by metrics
+      latencyMs,
+      errors: []
+    }
+  } catch (error) {
+    const latencyMs = Date.now() - startTime
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    console.log(`❌ FAILED after ${latencyMs}ms`)
+    console.log(`Error: ${errorMessage.substring(0, 200)}...`)
+
+    return {
+      success: false,
+      attempts: 3, // Assume max attempts on failure
+      latencyMs,
+      errors: [errorMessage]
+    }
+  }
+}
+
+async function main() {
+  console.log('\n')
+  console.log('╔' + '═'.repeat(78) + '╗')
+  console.log('║' + ' '.repeat(78) + '║')
+  console.log('║' + '  GPT-5.1 PROMPT OPTIMIZATION TEST SUITE'.padStart(48).padEnd(78) + '║')
+  console.log('║' + '  Testing 10 Diverse Workout Scenarios'.padStart(46).padEnd(78) + '║')
+  console.log('║' + ' '.repeat(78) + '║')
+  console.log('╚' + '═'.repeat(78) + '╝')
+  console.log('\n')
+
+  // Clear metrics before starting
+  aiMetrics.clear()
+
+  const results: Array<{
+    scenario: string
+    success: boolean
+    attempts: number
+    latencyMs: number
+  }> = []
+
+  // Run all tests sequentially
+  for (let i = 0; i < testScenarios.length; i++) {
+    const scenario = testScenarios[i]
+    const result = await runTest(i, scenario)
+
+    results.push({
+      scenario: scenario.name,
+      success: result.success,
+      attempts: result.attempts,
+      latencyMs: result.latencyMs
+    })
+
+    // Small delay between tests to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 2000))
+  }
+
+  // Generate report
+  console.log('\n\n')
+  console.log('╔' + '═'.repeat(78) + '╗')
+  console.log('║' + ' '.repeat(78) + '║')
+  console.log('║' + '  TEST RESULTS SUMMARY'.padStart(39).padEnd(78) + '║')
+  console.log('║' + ' '.repeat(78) + '║')
+  console.log('╚' + '═'.repeat(78) + '╝')
+  console.log('\n')
+
+  // Overall metrics
+  const successCount = results.filter(r => r.success).length
+  const totalCount = results.length
+  const successRate = (successCount / totalCount) * 100
+
+  console.log(`📊 OVERALL METRICS:`)
+  console.log(`  Total tests: ${totalCount}`)
+  console.log(`  Successful: ${successCount} (${successRate.toFixed(1)}%)`)
+  console.log(`  Failed: ${totalCount - successCount}`)
+  console.log(`\n`)
+
+  // AI Metrics from tracking system
+  const metricsData = aiMetrics.getSummary()
+  const firstAttemptData = aiMetrics.getFirstAttemptSuccessRate()
+
+  console.log(`📈 AI GENERATION METRICS:`)
+  console.log(`  First-attempt success rate: ${(firstAttemptData.firstAttemptSuccessRate * 100).toFixed(1)}%`)
+  console.log(`  Average attempts per workout: ${metricsData.averageAttempts.toFixed(2)}`)
+  console.log(`  Average latency: ${(metricsData.averageLatencyMs / 1000).toFixed(1)}s`)
+  console.log(`\n`)
+
+  // Breakdown by scenario
+  console.log(`📋 BREAKDOWN BY SCENARIO:`)
+  console.log(``)
+  console.log(`  ${'Scenario'.padEnd(40)} ${'Status'.padEnd(10)} ${'Latency'.padEnd(10)}`)
+  console.log(`  ${'-'.repeat(40)} ${'-'.repeat(10)} ${'-'.repeat(10)}`)
+
+  results.forEach(r => {
+    const status = r.success ? '✅ Pass' : '❌ Fail'
+    const latency = `${(r.latencyMs / 1000).toFixed(1)}s`
+    console.log(`  ${r.scenario.padEnd(40)} ${status.padEnd(10)} ${latency.padEnd(10)}`)
+  })
+
+  console.log(`\n`)
+
+  // Failure analysis if any
+  if (totalCount > successCount) {
+    console.log(`⚠️  FAILURE ANALYSIS:`)
+    console.log(``)
+
+    Object.entries(metricsData.failureReasons).forEach(([reason, count]) => {
+      console.log(`  - ${reason}: ${count} occurrence(s)`)
+    })
+
+    console.log(`\n`)
+  }
+
+  // Export metrics to file for further analysis
+  const metricsExport = aiMetrics.export()
+  const fs = await import('fs')
+  const exportPath = '/tmp/prompt-optimization-metrics.json'
+  fs.writeFileSync(exportPath, JSON.stringify({
+    testDate: new Date().toISOString(),
+    results,
+    metricsData,
+    firstAttemptData,
+    detailedEvents: metricsExport
+  }, null, 2))
+
+  console.log(`📁 Detailed metrics exported to: ${exportPath}`)
+  console.log(`\n`)
+
+  // Final verdict
+  if (successRate >= 90) {
+    console.log(`🎉 EXCELLENT! ${successRate.toFixed(1)}% success rate exceeds 90% target!`)
+  } else if (successRate >= 75) {
+    console.log(`✅ GOOD! ${successRate.toFixed(1)}% success rate shows improvement.`)
+  } else if (successRate >= 60) {
+    console.log(`⚠️  MODERATE. ${successRate.toFixed(1)}% success rate - some issues remain.`)
+  } else {
+    console.log(`❌ NEEDS WORK. ${successRate.toFixed(1)}% success rate - significant issues detected.`)
+  }
+
+  console.log(`\n`)
+
+  process.exit(successRate >= 75 ? 0 : 1)
+}
+
+main().catch(error => {
+  console.error('Test suite failed:', error)
+  process.exit(1)
+})
