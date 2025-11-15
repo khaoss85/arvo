@@ -240,11 +240,17 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
                 <div className="text-blue-300 text-sm mb-2">Quando aumentare il peso</div>
                 <div className="text-gray-300">{approach.progression.rules.whenToAddWeight}</div>
               </div>
-              <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                <div className="text-blue-300 text-sm mb-2">Strategia progressione serie</div>
-                <div className="text-gray-300 mb-1">{approach.progression.setProgression.strategy.replace(/_/g, ' ')}</div>
-                <div className="text-gray-400 text-sm">{approach.progression.setProgression.conditions}</div>
-              </div>
+              {approach.progression.setProgression && (
+                <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
+                  <div className="text-blue-300 text-sm mb-2">Strategia progressione serie</div>
+                  <div className="text-gray-300 mb-1">{approach.progression.setProgression.strategy.replace(/_/g, ' ')}</div>
+                  <div className="text-gray-400 text-sm">
+                    {typeof approach.progression.setProgression.conditions === 'string'
+                      ? approach.progression.setProgression.conditions
+                      : JSON.stringify(approach.progression.setProgression.conditions)}
+                  </div>
+                </div>
+              )}
               {approach.progression.rules.deloadTriggers && approach.progression.rules.deloadTriggers.length > 0 && (
                 <div className="bg-amber-900/20 p-3 rounded border border-amber-500/30">
                   <div className="text-amber-300 text-sm mb-2">⚠️ Trigger per Deload</div>
