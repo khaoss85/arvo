@@ -1,6 +1,7 @@
 import { BaseAgent } from './base.agent'
 import { getExerciseName } from '@/lib/utils/exercise-helpers'
 import type { Locale } from '@/i18n'
+import type { AudioScriptSegment } from '@/lib/services/audio-coaching.service'
 
 export interface AudioScriptInput {
   // Workout context
@@ -36,25 +37,35 @@ export interface AudioScriptInput {
 export interface SetScript {
   setNumber: number
   setType: 'warmup' | 'working'
-  script: string // Full conversational script for this set
+  script: {
+    segments: AudioScriptSegment[]
+  }
 }
 
 export interface ExerciseScript {
   exerciseName: string
-  transition: string // Script when transitioning TO this exercise
+  transition: {
+    segments: AudioScriptSegment[]
+  }
   sets: SetScript[]
 }
 
 export interface RestCountdownScript {
   restSeconds: number
-  countdown: string // Countdown script for this rest period
+  countdown: {
+    segments: AudioScriptSegment[]
+  }
 }
 
 export interface AudioScriptsOutput {
-  workoutIntro: string // Opening script (30-45 seconds)
+  workoutIntro: {
+    segments: AudioScriptSegment[]
+  }
   exercises: ExerciseScript[]
   restCountdowns: RestCountdownScript[]
-  workoutEnd: string // Closing script (10-15 seconds)
+  workoutEnd: {
+    segments: AudioScriptSegment[]
+  }
 }
 
 /**
@@ -269,10 +280,30 @@ REQUIREMENTS:
    - Set expectations (sets, reps, key focus)
    - Brief encouragement
 
-3. **Set Scripts** (15-20 seconds / 35-50 words per set):
-   - For EACH set (including warmups), create a pre-set guidance script
-   - Warmup sets: Light, technique-focused, no tempo breakdown
-   - Working sets: Include tempo breakdown, technical focus, mental approach
+3. **Set Scripts** (SEGMENTED with pauses):
+   - For EACH set (including warmups), create a SEGMENTED pre-set guidance script
+   - Each set should have 3-4 segments with pauses between them:
+
+     **Segment 1: Set Introduction** (5-7 seconds)
+     - Brief set context and focus
+     - Pause After: 1000ms (1 second)
+
+     **Segment 2: Mental Approach** (7-10 seconds)
+     - Mental cues, mindset, approach for this set
+     - Use setGuidance mentalFocus if provided
+     - Pause After: 2000ms (2 seconds) - LET THEM DIGEST MENTALLY
+
+     **Segment 3: Technical/Tempo Explanation** (7-10 seconds)
+     - Tempo breakdown (e.g., "3 seconds down, pause 1, explode up in 1, squeeze for 1")
+     - Technical focus from setGuidance
+     - Pause After: 3000ms (3 seconds) - TIME TO POSITION ON MACHINE
+
+     **Segment 4: Countdown** (3-4 seconds)
+     - "3... 2... 1... vai!" or "Ready... set... go!"
+     - Pause After: 0ms (immediate start)
+
+   - Warmup sets: Skip tempo, focus on technique, shorter pauses
+   - Working sets: Include full tempo breakdown
    - Use the setGuidance data provided
    - Progress the intensity/mental cues across sets (early = technique, late = push hard)
 
@@ -294,18 +325,34 @@ IMPORTANT:
 - Reference the specific training approach philosophy when relevant
 ${input.userName ? `- Use "${input.userName}" sparingly (2-3 times total across all scripts)` : ''}
 
-Return JSON format:
+Return JSON format with SEGMENTED scripts:
 {
-  "workoutIntro": "string (30-45 seconds)",
+  "workoutIntro": {
+    "segments": [
+      { "text": "Welcome segment...", "pauseAfter": 1000, "type": "narration" },
+      { "text": "Focus segment...", "pauseAfter": 500, "type": "narration" }
+    ]
+  },
   "exercises": [
     {
       "exerciseName": "Exact exercise name",
-      "transition": "string (20-30 seconds)",
+      "transition": {
+        "segments": [
+          { "text": "Transition to exercise...", "pauseAfter": 1000, "type": "narration" }
+        ]
+      },
       "sets": [
         {
           "setNumber": 1,
           "setType": "warmup" | "working",
-          "script": "string (15-20 seconds)"
+          "script": {
+            "segments": [
+              { "text": "Set 1. Focus on control.", "pauseAfter": 1000, "type": "narration" },
+              { "text": "Mentally, stay controlled and deliberate.", "pauseAfter": 2000, "type": "narration" },
+              { "text": "3 seconds down, pause 1, explode up, squeeze for 1.", "pauseAfter": 3000, "type": "narration" },
+              { "text": "3... 2... 1... vai!", "pauseAfter": 0, "type": "countdown" }
+            ]
+          }
         }
       ]
     }
@@ -313,10 +360,19 @@ Return JSON format:
   "restCountdowns": [
     {
       "restSeconds": 60,
-      "countdown": "string (5-10 seconds)"
+      "countdown": {
+        "segments": [
+          { "text": "60 seconds... 30... 15... 10... 5... go!", "pauseAfter": 0, "type": "narration" }
+        ]
+      }
     }
   ],
-  "workoutEnd": "string (10-15 seconds)"
+  "workoutEnd": {
+    "segments": [
+      { "text": "Great work today!", "pauseAfter": 500, "type": "narration" },
+      { "text": "Rest up and recover.", "pauseAfter": 0, "type": "narration" }
+    ]
+  }
 }`
 
     return await this.complete<AudioScriptsOutput>(prompt, targetLanguage)

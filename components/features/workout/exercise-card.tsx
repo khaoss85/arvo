@@ -636,7 +636,7 @@ export function ExerciseCard({
         return {
           id: `${exercise.exerciseName}-set-${nextSetNum}-ai`,
           type: 'pre_set',
-          text: matchingScript.script,
+          segments: matchingScript.script.segments,
           priority: 5
         }
       }
