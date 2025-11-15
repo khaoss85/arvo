@@ -248,17 +248,17 @@ export class AudioCoachingService {
    */
   private async speakSegments(segments: AudioScriptSegment[]): Promise<void> {
     for (const segment of segments) {
-      // Check if playback was stopped
-      if (this.state === 'idle' || !this.currentScript) {
-        break
-      }
-
       // Speak the segment
       await this.speakSingleSegment(segment.text)
 
       // Add pause if specified
       if (segment.pauseAfter && segment.pauseAfter > 0) {
         await this.delay(segment.pauseAfter)
+      }
+
+      // Check if playback was stopped (prevents next segment from playing)
+      if (this.state === 'idle' || !this.currentScript) {
+        break
       }
     }
 
