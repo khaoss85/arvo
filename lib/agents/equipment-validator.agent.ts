@@ -271,7 +271,28 @@ If you cannot clearly identify gym equipment, return:
     const content = response.choices[0]?.message?.content?.trim() || '{}'
 
     try {
-      const parsed = JSON.parse(content) as EquipmentDetailsFromImage
+      // Clean and sanitize the JSON response before parsing
+      let cleanedContent = content
+
+      // Remove markdown code blocks if present
+      cleanedContent = cleanedContent.replace(/^```json\s*/i, '').replace(/\s*```$/i, '')
+
+      // Extract only the JSON object (from first { to last })
+      const firstBrace = cleanedContent.indexOf('{')
+      const lastBrace = cleanedContent.lastIndexOf('}')
+
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1)
+      }
+
+      // Remove control characters from the JSON string
+      // This handles cases where the AI response contains literal newlines, tabs, etc.
+      // Control chars between JSON structural elements are just whitespace
+      // Control chars inside string values (if any) will be removed to preserve JSON validity
+      cleanedContent = cleanedContent.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+
+      // Parse the cleaned JSON
+      const parsed = JSON.parse(cleanedContent) as EquipmentDetailsFromImage
 
       // Validate structure
       if (!parsed.name || !Array.isArray(parsed.primaryMuscles)) {
@@ -284,7 +305,11 @@ If you cannot clearly identify gym equipment, return:
         secondaryMuscles: parsed.secondaryMuscles || [],
       }
     } catch (error) {
-      console.error('Failed to parse equipment details from image:', error)
+      console.error('Failed to parse equipment details from image:', {
+        error,
+        contentLength: content.length,
+        contentPreview: content.substring(0, 200),
+      })
       return {
         name: 'Unknown Equipment',
         primaryMuscles: [],

@@ -206,7 +206,21 @@ This task is complex with many interdependent constraints. Use deep reasoning:
       this.lastResponseId = response.id
 
       // Clean up any potential markdown code blocks or extra whitespace
-      const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '')
+      let cleanedContent = content.trim().replace(/^```json\n?/i, '').replace(/\n?```$/i, '')
+
+      // Extract only the JSON object (from first { to last })
+      const firstBrace = cleanedContent.indexOf('{')
+      const lastBrace = cleanedContent.lastIndexOf('}')
+
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1)
+      }
+
+      // Remove control characters from the JSON string
+      // This handles cases where the AI response contains literal newlines, tabs, etc.
+      // Control chars between JSON structural elements are just whitespace
+      // Control chars inside string values (if any) will be removed to preserve JSON validity
+      cleanedContent = cleanedContent.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
 
       return JSON.parse(cleanedContent) as T
     } catch (error) {
