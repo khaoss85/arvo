@@ -1,9 +1,12 @@
 /**
  * OpenAITTSProvider
  *
- * TTS provider using OpenAI's TTS-1 API.
+ * TTS provider using OpenAI's TTS-1 API via server-side proxy.
  * Premium quality voices with natural intonation.
  * Cost: $0.015 per 1,000 characters
+ *
+ * NOTE: API key is managed server-side for security.
+ * Client-side code calls /api/tts/generate which proxies to OpenAI.
  */
 
 import { TTSProvider, type TTSVoice, type TTSProviderConfig, type TTSPlaybackOptions } from './provider.interface'
@@ -11,14 +14,13 @@ import { TTSProvider, type TTSVoice, type TTSProviderConfig, type TTSPlaybackOpt
 export type OpenAIVoiceId = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer'
 
 export interface OpenAITTSConfig extends TTSProviderConfig {
-  apiKey: string
+  apiKey?: string // DEPRECATED: No longer used client-side (kept for backward compatibility)
   model?: 'tts-1' | 'tts-1-hd' // Default: tts-1 for real-time
   voice?: OpenAIVoiceId // Default: auto-select based on language
-  responseFormat?: 'mp3' | 'opus' | 'aac' | 'flac' // Default: mp3
+  responseFormat?: 'mp3' | 'opus' | 'aac' | 'flac' // Default: mp3 (not used in API route)
 }
 
 export class OpenAITTSProvider extends TTSProvider {
-  private apiKey: string
   private model: 'tts-1' | 'tts-1-hd'
   private selectedVoice?: OpenAIVoiceId
   private responseFormat: 'mp3' | 'opus' | 'aac' | 'flac'
@@ -39,16 +41,18 @@ export class OpenAITTSProvider extends TTSProvider {
 
   constructor(config: OpenAITTSConfig) {
     super(config)
-    this.apiKey = config.apiKey
+    // API key is no longer stored client-side (handled by server route)
+    if (config.apiKey) {
+      console.warn('[OpenAITTSProvider] apiKey parameter is deprecated and ignored. API key should be set in OPENAI_API_KEY environment variable server-side.')
+    }
     this.model = config.model || 'tts-1'
     this.selectedVoice = config.voice
     this.responseFormat = config.responseFormat || 'mp3'
   }
 
   isSupported(): boolean {
-    // Requires API key and browser audio support
+    // Only requires browser audio support (API key is server-side)
     return (
-      !!this.apiKey &&
       typeof window !== 'undefined' &&
       typeof Audio !== 'undefined'
     )
@@ -119,30 +123,40 @@ export class OpenAITTSProvider extends TTSProvider {
   /**
    * Generate speech audio blob without playing it
    * Useful for caching or custom playback logic
+   *
+   * NOTE: Calls server-side API route for security (API key protected)
    */
   async generateSpeech(
     text: string,
     voice: OpenAIVoiceId
   ): Promise<Blob> {
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
+    // Call server-side API route instead of OpenAI directly
+    // This keeps the API key secure server-side
+    const response = await fetch('/api/tts/generate', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        text,
+        voice,
         model: this.model,
-        input: text,
-        voice: voice,
-        response_format: this.responseFormat,
         speed: this.config.speed,
       }),
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+
+      // Check if server suggests fallback to Web Speech
+      if (errorData.fallbackToWebSpeech) {
+        throw new Error(
+          `OpenAI TTS unavailable (${errorData.error}): ${errorData.message}. Falling back to Web Speech API.`
+        )
+      }
+
       throw new Error(
-        `OpenAI TTS API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`
+        `TTS API error: ${response.status} ${response.statusText} - ${errorData.message || JSON.stringify(errorData)}`
       )
     }
 

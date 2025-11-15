@@ -17,10 +17,10 @@ import { audioCacheService } from './audio-cache.service'
 export interface HybridTTSConfig extends TTSProviderConfig {
   // OpenAI settings (optional)
   openai?: {
-    apiKey: string
+    apiKey?: string // DEPRECATED: API key is managed server-side
     model?: 'tts-1' | 'tts-1-hd'
     voice?: OpenAIVoiceId
-    enabled?: boolean // User preference to use OpenAI
+    enabled?: boolean // User preference to use OpenAI (default: true if server has key)
   }
   // Caching settings
   enableCache?: boolean
@@ -41,13 +41,13 @@ export class HybridTTSProvider extends TTSProvider {
     // Initialize Web Speech provider (always available as fallback)
     this.webSpeechProvider = new WebSpeechProvider(config)
 
-    // Initialize OpenAI provider if configured
-    if (config.openai?.apiKey && config.openai?.enabled !== false) {
+    // Initialize OpenAI provider if enabled
+    // NOTE: API key is managed server-side, so we just check if user wants OpenAI enabled
+    if (config.openai?.enabled !== false) {
       this.openaiProvider = new OpenAITTSProvider({
         ...config,
-        apiKey: config.openai.apiKey,
-        model: config.openai.model,
-        voice: config.openai.voice,
+        model: config.openai?.model,
+        voice: config.openai?.voice,
       })
     }
 
@@ -307,19 +307,24 @@ export class HybridTTSProvider extends TTSProvider {
    * Update OpenAI configuration
    */
   updateOpenAIConfig(config: {
-    apiKey?: string
+    apiKey?: string // DEPRECATED: Ignored (API key is server-side)
     model?: 'tts-1' | 'tts-1-hd'
     voice?: OpenAIVoiceId
     enabled?: boolean
   }): void {
-    if (config.apiKey && config.enabled !== false) {
+    if (config.apiKey) {
+      console.warn('[HybridTTSProvider] apiKey parameter is deprecated. API key should be set in OPENAI_API_KEY environment variable server-side.')
+    }
+
+    if (config.enabled !== false) {
+      // Enable OpenAI (API key will be validated server-side)
       this.openaiProvider = new OpenAITTSProvider({
         ...this.config,
-        apiKey: config.apiKey,
         model: config.model,
         voice: config.voice,
       })
     } else if (config.enabled === false) {
+      // Disable OpenAI
       this.openaiProvider = null
     }
   }

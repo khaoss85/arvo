@@ -20,11 +20,14 @@ The system automatically falls back to Web Speech API if OpenAI is not configure
 
 ## Week 2: OpenAI TTS Integration ✅
 
-- Premium voice quality using OpenAI's `tts-1` model
-- 6 professional voices: Alloy, Echo, Fable, Onyx, Nova, Shimmer
-- Automatic caching with IndexedDB (7-day TTL)
-- Intelligent fallback to Web Speech API
-- Cost: $0.015 per 1,000 characters (~$0.30-0.50 per workout session)
+- **Server-side API**: Secure proxy endpoint (`/api/tts/generate`) protecting API keys
+- **Premium voice quality** using OpenAI's `tts-1` model
+- **6 professional voices**: Alloy, Echo, Fable, Onyx, Nova, Shimmer
+- **Settings UI**: Complete configuration panel in Settings page
+- **Automatic caching** with IndexedDB (7-day TTL)
+- **Intelligent fallback** to Web Speech API
+- **Cost**: $0.015 per 1,000 characters (~$0.30-0.50 per workout session)
+- **Security**: API key stored server-side only, never exposed to client
 
 ## Configuration
 
@@ -35,31 +38,44 @@ The system automatically falls back to Web Speech API if OpenAI is not configure
    - Create a new API key
    - Copy the key (starts with `sk-...`)
 
-2. **Configure in the app**
-   ```typescript
-   // In your app, update audio coaching settings:
-   audioCoachingService.updateSettings({
-     enabled: true,
-     language: 'en', // or 'it'
-     speed: 0.9,
-     volume: 1.0,
-     openai: {
-       apiKey: 'sk-...your-key-here',
-       enabled: true,
-       model: 'tts-1', // or 'tts-1-hd' for higher quality
-       voice: 'onyx', // alloy, echo, fable, onyx, nova, shimmer
-     },
-     enableCache: true, // Recommended to minimize costs
-   })
+2. **Configure Server-Side (Environment Variable)**
+   ```bash
+   # Add to .env.local (NEVER commit this file!)
+   OPENAI_API_KEY=sk-...your-key-here
    ```
 
-3. **Voice Selection**
+3. **Configure in Settings UI**
+   - Navigate to **Settings** in the app
+   - Scroll to **Audio Coaching** section
+   - Enable **Audio Coaching** toggle
+   - Enable **Premium Voices (OpenAI TTS)** toggle
+   - Select your preferred **Voice** and **Model Quality**
+   - Click **Test Voice** to preview
+
+4. **Voice Selection**
    - **Onyx**: Deep, authoritative (recommended for gym coaching)
    - **Nova**: Warm, conversational
    - **Alloy**: Neutral, balanced
    - **Echo**: Clear, male voice
    - **Fable**: British accent, expressive
    - **Shimmer**: Soft, gentle
+
+5. **Programmatic Configuration (Optional)**
+   ```typescript
+   // You can also configure programmatically:
+   audioCoachingService.updateSettings({
+     enabled: true,
+     language: 'en', // or 'it'
+     speed: 0.9,
+     volume: 1.0,
+     openai: {
+       enabled: true, // Note: API key is server-side only
+       model: 'tts-1', // or 'tts-1-hd' for higher quality
+       voice: 'onyx', // alloy, echo, fable, onyx, nova, shimmer
+     },
+     enableCache: true, // Recommended to minimize costs
+   })
+   ```
 
 ### Option 2: Using Web Speech API (Free, Built-in)
 
@@ -159,7 +175,7 @@ audioCoachingService.updateSettings({
   volume?: number // 0.0 - 1.0
   language?: 'en' | 'it'
   openai?: {
-    apiKey?: string
+    // Note: API key is configured server-side (OPENAI_API_KEY env variable)
     enabled?: boolean
     voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer'
     model?: 'tts-1' | 'tts-1-hd'
@@ -219,14 +235,16 @@ const cost = audioCoachingService.estimateCost(text)
 
 ## Security Notes
 
-- **Never commit API keys** to version control
-- **Use environment variables** for production deployments
+- **Server-side API key management**: API key is stored in `OPENAI_API_KEY` environment variable and NEVER exposed to the client
+- **Secure proxy endpoint**: All OpenAI TTS requests go through `/api/tts/generate` server-side route
+- **Never commit `.env.local`** to version control (already in `.gitignore`)
 - **Rate limiting**: OpenAI has rate limits (50 requests/minute for tts-1)
-- **CORS**: API calls are made from client-side (browser)
+- **Edge runtime**: API route uses Next.js Edge Runtime for lower latency
 
-## Future Improvements (Week 3)
+## Future Improvements (Week 3+)
 
 - **Real-time counting**: Count tempo phases during set execution
 - **Adaptive speed**: Auto-adjust based on actual rep tempo
-- **Voice customization UI**: Settings panel for voice selection
-- **Usage analytics**: Track costs and cache hit rates
+- **Usage analytics**: Track costs and cache hit rates in UI
+- **Multi-language support**: Add Italian (IT) voice options
+- **Voice preview samples**: Pre-cached samples for each voice

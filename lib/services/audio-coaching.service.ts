@@ -90,11 +90,11 @@ export class AudioCoachingService {
       fallbackToWebSpeech: this.settings.fallbackToWebSpeech,
     }
 
-    // Add OpenAI config if available
-    if (this.settings.openai?.apiKey) {
+    // Add OpenAI config if user wants it enabled
+    // NOTE: API key is managed server-side, so we don't check for it here
+    if (this.settings.openai && this.settings.openai.enabled !== false) {
       config.openai = {
-        apiKey: this.settings.openai.apiKey,
-        enabled: this.settings.openai.enabled !== false,
+        enabled: true,
         model: this.settings.openai.model || 'tts-1',
         voice: this.settings.openai.voice,
       }
@@ -132,7 +132,6 @@ export class AudioCoachingService {
       // Update OpenAI config if changed
       if (settings.openai) {
         this.provider.updateOpenAIConfig({
-          apiKey: settings.openai.apiKey,
           enabled: settings.openai.enabled,
           model: settings.openai.model,
           voice: settings.openai.voice,

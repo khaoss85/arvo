@@ -17,6 +17,7 @@ import { DeleteAccountSection } from "@/components/features/settings/delete-acco
 import { MethodDetails } from "@/components/features/settings/method-details"
 import { ApproachSwitcher } from "@/components/features/settings/approach-switcher"
 import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
+import { AudioCoachingSettings } from "@/components/features/settings/audio-coaching-settings"
 import { Card } from "@/components/ui/card"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -120,6 +121,11 @@ export default async function SettingsPage() {
           {/* Approach History Timeline */}
           <Card className="p-6">
             <ApproachHistoryTimeline userId={user.id} />
+          </Card>
+
+          {/* Audio Coaching Section */}
+          <Card className="p-6">
+            <AudioCoachingSettings />
           </Card>
 
           {/* Account Info Section */}
