@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmDialog } from './confirm-dialog'
+import { SetExecutionModal } from './set-execution-modal'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
+import { Target } from 'lucide-react'
 
 interface SetLoggerProps {
   exercise: ExerciseExecution
@@ -21,6 +23,7 @@ interface SetLoggerProps {
 export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
+  const locale = useLocale()
   const { logSet, skipWarmupSets } = useWorkoutExecutionStore()
 
   // Mental readiness emoji mapping with translations
@@ -122,6 +125,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [isSkipping, setIsSkipping] = useState(false)
   const [showSkipWarmupDialog, setShowSkipWarmupDialog] = useState(false)
+  const [showSetExecutionModal, setShowSetExecutionModal] = useState(false)
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -140,6 +144,19 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     } finally {
       setIsLogging(false)
     }
+  }
+
+  const handleSetExecutionComplete = async (actualReps: number) => {
+    // Update reps with actual completed reps from guided execution
+    setReps(actualReps)
+    // Auto-fill RIR based on target (user can adjust after)
+    // If completed all target reps, default to RIR 1-2
+    if (actualReps >= (exercise.targetReps?.[1] || exercise.targetReps?.[0] || reps)) {
+      setRir(1)
+    } else {
+      setRir(2)
+    }
+    setShowSetExecutionModal(false)
   }
 
   const handleSkipWarmup = () => {
@@ -368,13 +385,24 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         )}
       </div>
 
+      {/* Start Set with Coaching Button - Only for working sets with tempo */}
+      {!isWarmup && exercise.tempo && (
+        <Button
+          onClick={() => setShowSetExecutionModal(true)}
+          className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2"
+        >
+          <Target className="h-5 w-5" />
+          {t('setLogger.startSetWithCoaching', { defaultValue: 'Start Set with Coaching' })}
+        </Button>
+      )}
+
       {/* Log Button */}
       <Button
         onClick={handleLogSet}
         disabled={isLogging}
         className="w-full h-14 text-lg bg-green-600 hover:bg-green-700 text-white font-medium"
       >
-        {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
+        {isLogging ? t('setLogger.logging') : (exercise.tempo && !isWarmup ? t('setLogger.logSetManually', { defaultValue: 'Log Set Manually' }) : t('setLogger.logSetButton'))}
       </Button>
 
       {/* Skip Warmup Confirmation Dialog */}
@@ -388,6 +416,21 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         cancelText={tCommon('buttons.cancel')}
         type="warning"
       />
+
+      {/* Set Execution Modal - Guided tempo-based set execution */}
+      {!isWarmup && exercise.tempo && (
+        <SetExecutionModal
+          isOpen={showSetExecutionModal}
+          onClose={() => setShowSetExecutionModal(false)}
+          exerciseName={exercise.exerciseName}
+          tempo={exercise.tempo}
+          targetReps={reps}
+          targetWeight={weight}
+          setNumber={workingSetNumber}
+          language={locale as 'en' | 'it'}
+          onSetComplete={handleSetExecutionComplete}
+        />
+      )}
     </div>
   )
 }
