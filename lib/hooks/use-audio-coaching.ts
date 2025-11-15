@@ -12,6 +12,7 @@ import {
   PlaybackState,
   AudioCoachingSettings,
 } from '@/lib/services/audio-coaching.service'
+import type { TTSVoice } from '@/lib/services/tts/provider.interface'
 
 interface UseAudioCoachingReturn {
   // State
@@ -34,7 +35,7 @@ interface UseAudioCoachingReturn {
   updateSettings: (settings: Partial<AudioCoachingSettings>) => void
 
   // Utility
-  preloadVoices: () => Promise<SpeechSynthesisVoice[]>
+  preloadVoices: () => Promise<TTSVoice[]>
 }
 
 /**

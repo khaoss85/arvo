@@ -1,9 +1,14 @@
 /**
  * AudioCoachingService
  *
- * Manages audio coaching playback using Web Speech API.
- * Provides a queue system for managing multiple audio scripts during workouts.
+ * Manages audio coaching playback using intelligent hybrid TTS.
+ * Automatically uses OpenAI TTS when available, falls back to Web Speech API.
+ * Provides queue system for managing multiple audio scripts during workouts.
  */
+
+import { HybridTTSProvider, type HybridTTSConfig } from './tts/hybrid-provider'
+import type { TTSVoice } from './tts/provider.interface'
+import type { OpenAIVoiceId } from './tts/openai-provider'
 
 export interface AudioCoachingSettings {
   enabled: boolean
@@ -11,6 +16,16 @@ export interface AudioCoachingSettings {
   speed: number // 0.5 - 2.0
   volume: number // 0.0 - 1.0
   language: 'en' | 'it'
+  // OpenAI TTS settings (optional, premium feature)
+  openai?: {
+    apiKey?: string
+    enabled?: boolean
+    voice?: OpenAIVoiceId
+    model?: 'tts-1' | 'tts-1-hd'
+  }
+  // Caching and fallback
+  enableCache?: boolean
+  fallbackToWebSpeech?: boolean
 }
 
 export interface AudioScriptSegment {
@@ -37,8 +52,7 @@ export type PlaybackState = 'idle' | 'playing' | 'paused'
 
 export class AudioCoachingService {
   private static instance: AudioCoachingService
-  private synth: SpeechSynthesis | null = null
-  private currentUtterance: SpeechSynthesisUtterance | null = null
+  private provider: HybridTTSProvider | null = null
   private queue: AudioScript[] = []
   private state: PlaybackState = 'idle'
   private settings: AudioCoachingSettings = {
@@ -47,13 +61,16 @@ export class AudioCoachingService {
     speed: 0.9,
     volume: 1.0,
     language: 'en',
+    enableCache: true,
+    fallbackToWebSpeech: true,
   }
   private listeners: Set<(state: PlaybackState) => void> = new Set()
   private currentScript: AudioScript | null = null
+  private selectedVoice: TTSVoice | undefined
 
   private constructor() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      this.synth = window.speechSynthesis
+    if (typeof window !== 'undefined') {
+      this.initializeProvider()
     }
   }
 
@@ -64,11 +81,38 @@ export class AudioCoachingService {
     return AudioCoachingService.instance
   }
 
+  private initializeProvider(): void {
+    const config: HybridTTSConfig = {
+      language: this.settings.language,
+      speed: this.settings.speed,
+      volume: this.settings.volume,
+      enableCache: this.settings.enableCache,
+      fallbackToWebSpeech: this.settings.fallbackToWebSpeech,
+    }
+
+    // Add OpenAI config if available
+    if (this.settings.openai?.apiKey) {
+      config.openai = {
+        apiKey: this.settings.openai.apiKey,
+        enabled: this.settings.openai.enabled !== false,
+        model: this.settings.openai.model || 'tts-1',
+        voice: this.settings.openai.voice,
+      }
+    }
+
+    this.provider = new HybridTTSProvider(config)
+
+    // Select best voice on init
+    this.provider.selectBestVoice().then((voice) => {
+      this.selectedVoice = voice
+    })
+  }
+
   /**
-   * Check if Web Speech API is supported in current browser
+   * Check if TTS is supported in current browser
    */
   isSupported(): boolean {
-    return this.synth !== null
+    return this.provider?.isSupported() || false
   }
 
   /**
@@ -76,6 +120,25 @@ export class AudioCoachingService {
    */
   updateSettings(settings: Partial<AudioCoachingSettings>): void {
     this.settings = { ...this.settings, ...settings }
+
+    // Re-initialize provider with new settings
+    if (this.provider) {
+      this.provider.updateConfig({
+        language: this.settings.language,
+        speed: this.settings.speed,
+        volume: this.settings.volume,
+      })
+
+      // Update OpenAI config if changed
+      if (settings.openai) {
+        this.provider.updateOpenAIConfig({
+          apiKey: settings.openai.apiKey,
+          enabled: settings.openai.enabled,
+          model: settings.openai.model,
+          voice: settings.openai.voice,
+        })
+      }
+    }
   }
 
   /**
@@ -155,49 +218,29 @@ export class AudioCoachingService {
   }
 
   /**
-   * Core TTS function using Web Speech API
+   * Core TTS function using provider
    */
   private speak(text: string): Promise<void> {
+    if (!this.provider) {
+      return Promise.reject(new Error('TTS provider not initialized'))
+    }
+
     return new Promise((resolve, reject) => {
-      if (!this.synth) {
-        reject(new Error('Speech synthesis not supported'))
-        return
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text)
-      this.currentUtterance = utterance
-
-      // Configure voice settings
-      utterance.lang = this.settings.language === 'it' ? 'it-IT' : 'en-US'
-      utterance.rate = this.settings.speed
-      utterance.volume = this.settings.volume
-      utterance.pitch = 1.0
-
-      // Select best available voice for the language
-      const bestVoice = this.selectBestVoice(this.settings.language)
-      if (bestVoice) {
-        utterance.voice = bestVoice
-      }
-
-      utterance.onstart = () => {
-        this.setState('playing')
-      }
-
-      utterance.onend = () => {
-        this.currentUtterance = null
-        resolve()
-        // Automatically play next in queue
-        this.playNext()
-      }
-
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event)
-        this.currentUtterance = null
-        this.setState('idle')
-        reject(new Error(`Speech synthesis failed: ${event.error}`))
-      }
-
-      this.synth.speak(utterance)
+      this.provider!.speak(text, this.selectedVoice, {
+        onStart: () => {
+          this.setState('playing')
+        },
+        onEnd: () => {
+          resolve()
+          // Automatically play next in queue
+          this.playNext()
+        },
+        onError: (error) => {
+          console.error('TTS error:', error)
+          this.setState('idle')
+          reject(error)
+        },
+      }).catch(reject)
     })
   }
 
@@ -219,45 +262,34 @@ export class AudioCoachingService {
         await this.delay(segment.pauseAfter)
       }
     }
+
+    // After all segments complete, play next in queue
+    this.playNext()
   }
 
   /**
    * Speak a single segment of text
    */
   private speakSingleSegment(text: string): Promise<void> {
+    if (!this.provider) {
+      return Promise.reject(new Error('TTS provider not initialized'))
+    }
+
     return new Promise((resolve, reject) => {
-      if (!this.synth) {
-        reject(new Error('Speech synthesis not supported'))
-        return
-      }
+      this.setState('playing')
 
-      const utterance = new SpeechSynthesisUtterance(text)
-      this.currentUtterance = utterance
-
-      // Configure voice settings
-      utterance.lang = this.settings.language === 'it' ? 'it-IT' : 'en-US'
-      utterance.rate = this.settings.speed
-      utterance.volume = this.settings.volume
-      utterance.pitch = 1.0
-
-      // Select best available voice for the language
-      const bestVoice = this.selectBestVoice(this.settings.language)
-      if (bestVoice) {
-        utterance.voice = bestVoice
-      }
-
-      utterance.onend = () => {
-        this.currentUtterance = null
-        resolve()
-      }
-
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event)
-        this.currentUtterance = null
-        reject(new Error(`Speech synthesis failed: ${event.error}`))
-      }
-
-      this.synth.speak(utterance)
+      this.provider!.speak(text, this.selectedVoice, {
+        onStart: () => {
+          this.setState('playing')
+        },
+        onEnd: () => {
+          resolve()
+        },
+        onError: (error) => {
+          console.error('TTS segment error:', error)
+          reject(error)
+        },
+      }).catch(reject)
     })
   }
 
@@ -265,57 +297,15 @@ export class AudioCoachingService {
    * Delay for specified milliseconds
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-
-  /**
-   * Select best available voice for the given language
-   * Prioritizes: Neural/Premium > Google/Microsoft > Standard > System
-   */
-  private selectBestVoice(lang: string): SpeechSynthesisVoice | undefined {
-    if (!this.synth) return undefined
-
-    const voices = this.synth.getVoices()
-    const langVoices = voices.filter(v => v.lang.startsWith(lang))
-
-    if (langVoices.length === 0) return undefined
-
-    // Priority 1: Neural voices (best quality)
-    const neuralVoice = langVoices.find(v =>
-      v.name.toLowerCase().includes('neural') ||
-      v.name.toLowerCase().includes('premium') ||
-      v.name.toLowerCase().includes('enhanced')
-    )
-    if (neuralVoice) return neuralVoice
-
-    // Priority 2: Google voices (generally good quality)
-    const googleVoice = langVoices.find(v =>
-      v.name.toLowerCase().includes('google')
-    )
-    if (googleVoice) return googleVoice
-
-    // Priority 3: Microsoft voices
-    const microsoftVoice = langVoices.find(v =>
-      v.name.toLowerCase().includes('microsoft') ||
-      v.name.toLowerCase().includes('zira') ||
-      v.name.toLowerCase().includes('david')
-    )
-    if (microsoftVoice) return microsoftVoice
-
-    // Priority 4: Any non-default voice
-    const nonDefaultVoice = langVoices.find(v => !v.default)
-    if (nonDefaultVoice) return nonDefaultVoice
-
-    // Fallback: First available voice for the language
-    return langVoices[0]
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
    * Pause current playback
    */
   pause(): void {
-    if (this.synth && this.state === 'playing') {
-      this.synth.pause()
+    if (this.provider && this.state === 'playing') {
+      this.provider.pause()
       this.setState('paused')
     }
   }
@@ -324,8 +314,8 @@ export class AudioCoachingService {
    * Resume paused playback
    */
   resume(): void {
-    if (this.synth && this.state === 'paused') {
-      this.synth.resume()
+    if (this.provider && this.state === 'paused') {
+      this.provider.resume()
       this.setState('playing')
     }
   }
@@ -334,9 +324,8 @@ export class AudioCoachingService {
    * Stop current playback
    */
   stop(): void {
-    if (this.synth) {
-      this.synth.cancel()
-      this.currentUtterance = null
+    if (this.provider) {
+      this.provider.stop()
       this.setState('idle')
       this.currentScript = null
     }
@@ -397,39 +386,79 @@ export class AudioCoachingService {
   }
 
   /**
-   * Get available voices for current language
+   * Get available voices
    */
-  getAvailableVoices(): SpeechSynthesisVoice[] {
-    if (!this.synth) return []
-
-    const voices = this.synth.getVoices()
-    return voices.filter((voice) =>
-      voice.lang.startsWith(this.settings.language)
-    )
+  async getAvailableVoices(): Promise<TTSVoice[]> {
+    if (!this.provider) return []
+    return await this.provider.getVoices()
   }
 
   /**
-   * Preload voices (some browsers require this)
+   * Get current voice
    */
-  preloadVoices(): Promise<SpeechSynthesisVoice[]> {
-    return new Promise((resolve) => {
-      if (!this.synth) {
-        resolve([])
-        return
-      }
+  getCurrentVoice(): TTSVoice | undefined {
+    return this.selectedVoice
+  }
 
-      let voices = this.synth.getVoices()
-      if (voices.length > 0) {
-        resolve(voices)
-        return
-      }
+  /**
+   * Set voice manually
+   */
+  async setVoice(voice: TTSVoice): Promise<void> {
+    this.selectedVoice = voice
+  }
 
-      // Some browsers load voices asynchronously
-      this.synth.onvoiceschanged = () => {
-        voices = this.synth!.getVoices()
-        resolve(voices)
+  /**
+   * Preload voices (for browsers that load them asynchronously)
+   */
+  async preloadVoices(): Promise<TTSVoice[]> {
+    if (!this.provider) return []
+    return await this.provider.getVoices()
+  }
+
+  /**
+   * Get provider name (for debugging)
+   */
+  getProviderName(): string {
+    return this.provider?.getProviderName() || 'Not initialized'
+  }
+
+  /**
+   * Check if OpenAI TTS is available
+   */
+  isOpenAIAvailable(): boolean {
+    return this.provider?.isOpenAIAvailable() || false
+  }
+
+  /**
+   * Get cache statistics
+   */
+  async getCacheStats() {
+    if (!this.provider) {
+      return {
+        totalEntries: 0,
+        totalSize: 0,
+        oldestEntry: null,
+        newestEntry: null,
       }
-    })
+    }
+    return await this.provider.getCacheStats()
+  }
+
+  /**
+   * Clear audio cache
+   */
+  async clearCache(): Promise<void> {
+    if (this.provider) {
+      await this.provider.clearCache()
+    }
+  }
+
+  /**
+   * Estimate cost for speaking given text (if using paid provider)
+   */
+  estimateCost(text: string): number | null {
+    if (!this.provider) return null
+    return this.provider.estimateCost(text)
   }
 }
 
