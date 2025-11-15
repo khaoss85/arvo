@@ -743,9 +743,10 @@ export async function updateCaloricPhaseAction(
     const { error } = await supabase
       .from('user_profiles')
       .update({
-        caloric_phase: phase,
-        caloric_phase_start_date: startDate,
-        ...(caloricIntakeKcal !== undefined && { caloric_intake_kcal: caloricIntakeKcal })
+        // TODO: Add caloric_phase fields to database migration
+        // caloric_phase: phase,
+        // caloric_phase_start_date: startDate,
+        // ...(caloricIntakeKcal !== undefined && { caloric_intake_kcal: caloricIntakeKcal })
       })
       .eq('user_id', userId)
 
