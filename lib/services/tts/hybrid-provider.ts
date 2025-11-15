@@ -103,8 +103,12 @@ export class HybridTTSProvider extends TTSProvider {
     // 2. Try OpenAI (if available and voice is OpenAI)
     // 3. Fallback to Web Speech (if enabled)
 
+    console.log('[HybridTTS] speak() called with:', { text: text.substring(0, 50), voiceId: voice?.id, provider: voice?.provider })
+
     const voiceId = voice?.id || (await this.selectBestVoice())?.id || 'unknown'
     const provider = voice?.provider || (this.openaiProvider?.isSupported() ? 'openai' : 'web-speech')
+
+    console.log('[HybridTTS] Selected provider:', provider, 'voice:', voiceId)
 
     // Step 1: Check cache
     if (this.enableCache && provider === 'openai') {
@@ -120,7 +124,7 @@ export class HybridTTSProvider extends TTSProvider {
     // Step 2: Try OpenAI TTS (if configured and requested)
     if (this.openaiProvider?.isSupported() && provider === 'openai') {
       try {
-        console.log('[HybridTTS] Using OpenAI TTS')
+        console.log('[HybridTTS] Attempting OpenAI TTS...')
         this.activeProvider = 'openai'
 
         // Generate audio
@@ -131,6 +135,7 @@ export class HybridTTSProvider extends TTSProvider {
           await this.cacheAudio(text, voiceId, audioBlob)
         }
 
+        console.log('[HybridTTS] OpenAI TTS succeeded!')
         return // Success!
       } catch (error) {
         console.error('[HybridTTS] OpenAI TTS failed:', error)
@@ -140,18 +145,20 @@ export class HybridTTSProvider extends TTSProvider {
           throw error
         }
 
-        console.log('[HybridTTS] Falling back to Web Speech API')
+        console.log('[HybridTTS] Falling back to Web Speech API...')
       }
     }
 
     // Step 3: Fallback to Web Speech API
     if (this.webSpeechProvider.isSupported()) {
-      console.log('[HybridTTS] Using Web Speech API')
+      console.log('[HybridTTS] Using Web Speech API (fallback)')
       this.activeProvider = 'web-speech'
 
       // Select appropriate Web Speech voice
       const webSpeechVoice = await this.webSpeechProvider.selectBestVoice()
+      console.log('[HybridTTS] Web Speech voice selected:', webSpeechVoice?.name)
       await this.webSpeechProvider.speak(text, webSpeechVoice, options)
+      console.log('[HybridTTS] Web Speech playback completed')
     } else {
       throw new Error('No TTS provider available')
     }
