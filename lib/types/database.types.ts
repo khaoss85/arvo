@@ -1,3 +1,6 @@
+// This file is auto-generated from the Supabase database schema
+// Last updated: 2025-11-14
+
 export type Json =
   | string
   | number
@@ -61,6 +64,7 @@ export type Database = {
           id: string
           mental_readiness: number | null
           notes: string | null
+          original_exercise_name: string | null
           reps_actual: number | null
           reps_target: number | null
           rir_actual: number | null
@@ -68,6 +72,7 @@ export type Database = {
           set_type: string | null
           skip_reason: string | null
           skipped: boolean
+          substitution_reason: string | null
           weight_actual: number | null
           weight_target: number | null
           workout_id: string | null
@@ -79,6 +84,7 @@ export type Database = {
           id?: string
           mental_readiness?: number | null
           notes?: string | null
+          original_exercise_name?: string | null
           reps_actual?: number | null
           reps_target?: number | null
           rir_actual?: number | null
@@ -86,6 +92,7 @@ export type Database = {
           set_type?: string | null
           skip_reason?: string | null
           skipped?: boolean
+          substitution_reason?: string | null
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null
@@ -97,6 +104,7 @@ export type Database = {
           id?: string
           mental_readiness?: number | null
           notes?: string | null
+          original_exercise_name?: string | null
           reps_actual?: number | null
           reps_target?: number | null
           rir_actual?: number | null
@@ -104,6 +112,7 @@ export type Database = {
           set_type?: string | null
           skip_reason?: string | null
           skipped?: boolean
+          substitution_reason?: string | null
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null

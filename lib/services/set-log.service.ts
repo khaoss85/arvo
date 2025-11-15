@@ -286,6 +286,9 @@ export class SetLogService {
       reps_target: null,
       notes: null,
       mental_readiness: null,
+      // No exercise substitution for skipped sets
+      original_exercise_name: null,
+      substitution_reason: null,
     };
 
     return this.create(setLog);
@@ -320,6 +323,9 @@ export class SetLogService {
       reps_target: null,
       notes: null,
       mental_readiness: null,
+      // No exercise substitution for skipped sets
+      original_exercise_name: null,
+      substitution_reason: null,
     }));
 
     return this.createMany(setLogs);

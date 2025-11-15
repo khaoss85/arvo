@@ -310,7 +310,7 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
                       {/* Related Exercises */}
                       {memory.related_exercises && memory.related_exercises.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {memory.related_exercises.slice(0, 3).map((ex, idx) => (
+                          {memory.related_exercises.slice(0, 3).map((ex: string, idx: number) => (
                             <span
                               key={idx}
                               className="text-xs px-2 py-1 bg-gray-700 rounded text-gray-300"
