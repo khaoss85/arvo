@@ -8,6 +8,7 @@
 
 import { tempoParserService, type TempoPhases } from './tempo-parser.service'
 import { audioCoachingService, type AudioScript, type AudioScriptSegment } from './audio-coaching.service'
+import type { RealtimeCuePools } from '@/lib/agents/audio-script-generator.agent'
 
 export interface RealtimeSetConfig {
   tempo: string           // e.g., "3-1-1-1"
@@ -15,6 +16,9 @@ export interface RealtimeSetConfig {
   exerciseName: string    // For encouragement cues
   language: 'en' | 'it'
   setNumber?: number      // Optional set number for context
+
+  // NEW: Optional AI-generated cue pools for variety
+  cuePools?: RealtimeCuePools
 }
 
 export interface TempoAudioCue {
@@ -86,7 +90,10 @@ export class RealtimeTempoCoachingService {
     }
 
     // Generate all audio cues for the set
-    const audioQueue = this.generateSetScript(config, tempoData.phases)
+    // Use AI-generated pools if provided, otherwise fallback to hardcoded cues
+    const audioQueue = config.cuePools
+      ? this.generateSetScriptWithPools(config, tempoData.phases, config.cuePools)
+      : this.generateSetScript(config, tempoData.phases)
     const totalDuration = tempoData.totalRepDuration * config.targetReps
 
     this.state = {
@@ -379,6 +386,147 @@ export class RealtimeTempoCoachingService {
     // Set complete
     cues.push({
       text: language === 'it' ? 'Serie completata!' : 'Set complete!',
+      triggerAtSeconds: config.targetReps * repDuration,
+      type: 'encouragement',
+      pauseAfter: 0,
+    })
+
+    return cues
+  }
+
+  /**
+   * Generate set script using AI-generated cue pools
+   * Randomly selects from pools for variety and natural coaching
+   */
+  private generateSetScriptWithPools(
+    config: RealtimeSetConfig,
+    phases: TempoPhases,
+    pools: RealtimeCuePools
+  ): TempoAudioCue[] {
+    const cues: TempoAudioCue[] = []
+    const repDuration = phases.eccentric + phases.pauseBottom + phases.concentric + phases.pauseTop
+
+    // Helper: Random selection from pool
+    const pick = (pool: string[]): string => {
+      if (!pool || pool.length === 0) return ''
+      return pool[Math.floor(Math.random() * pool.length)]
+    }
+
+    // Helper: Get rep category for pool selection
+    const getRepCategory = (rep: number, totalReps: number): 'early' | 'middle' | 'late' => {
+      const progress = rep / totalReps
+      if (progress <= 0.33) return 'early'
+      if (progress <= 0.67) return 'middle'
+      return 'late'
+    }
+
+    // Starting cue (random from pool)
+    cues.push({
+      text: pick(pools.starting),
+      triggerAtSeconds: 0,
+      type: 'encouragement',
+      pauseAfter: 500,
+    })
+
+    // Generate cues for each rep
+    for (let rep = 1; rep <= config.targetReps; rep++) {
+      const repStartTime = (rep - 1) * repDuration
+      let currentTime = repStartTime
+
+      // Determine rep category for announcements and encouragement
+      const repCategory = getRepCategory(rep, config.targetReps)
+
+      // Rep announcement (skip first rep)
+      if (rep > 1) {
+        cues.push({
+          text: pick(pools.repAnnouncements[repCategory]),
+          triggerAtSeconds: currentTime,
+          type: 'rep_announce',
+          repNumber: rep,
+          pauseAfter: 300,
+        })
+      }
+
+      // Eccentric countdown (random from pool for each number)
+      if (phases.eccentric > 0) {
+        for (let i = phases.eccentric; i > 0; i--) {
+          const countdownPool = pools.countdown[i] || [`${i}`]
+          cues.push({
+            text: pick(countdownPool),
+            triggerAtSeconds: currentTime + (phases.eccentric - i),
+            type: 'countdown',
+            phase: 'eccentric',
+            repNumber: rep,
+            pauseAfter: 0,
+          })
+        }
+      }
+      currentTime += phases.eccentric
+
+      // Pause bottom (random from pool)
+      if (phases.pauseBottom > 0) {
+        cues.push({
+          text: pick(pools.phaseChanges.pauseBottom),
+          triggerAtSeconds: currentTime,
+          type: 'phase_change',
+          phase: 'pause_bottom',
+          repNumber: rep,
+          pauseAfter: 0,
+        })
+      }
+      currentTime += phases.pauseBottom
+
+      // Concentric (random from pool)
+      if (phases.concentric > 0) {
+        cues.push({
+          text: pick(pools.phaseChanges.concentric),
+          triggerAtSeconds: currentTime,
+          type: 'phase_change',
+          phase: 'concentric',
+          repNumber: rep,
+          pauseAfter: 0,
+        })
+      }
+      currentTime += phases.concentric
+
+      // Pause top (random from pool)
+      if (phases.pauseTop > 0) {
+        cues.push({
+          text: pick(pools.phaseChanges.pauseTop),
+          triggerAtSeconds: currentTime,
+          type: 'phase_change',
+          phase: 'pause_top',
+          repNumber: rep,
+          pauseAfter: 0,
+        })
+      }
+
+      // Add occasional encouragement (every 3 reps, but not on last rep)
+      if (rep % 3 === 0 && rep !== config.targetReps) {
+        cues.push({
+          text: pick(pools.encouragement[repCategory]),
+          triggerAtSeconds: currentTime - 0.5,
+          type: 'encouragement',
+          repNumber: rep,
+          pauseAfter: 0,
+        })
+      }
+
+      // Final rep encouragement
+      if (rep === config.targetReps) {
+        cues.push({
+          text: pick(pools.encouragement.final),
+          triggerAtSeconds: currentTime - 1,
+          type: 'encouragement',
+          repNumber: rep,
+          pauseAfter: 0,
+        })
+      }
+    }
+
+    // Set complete (random from pool)
+    cues.push({
+      text: pick(pools.setComplete),
       triggerAtSeconds: config.targetReps * repDuration,
       type: 'encouragement',
       pauseAfter: 0,

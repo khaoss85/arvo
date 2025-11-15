@@ -69,6 +69,59 @@ export interface AudioScriptsOutput {
 }
 
 /**
+ * Realtime Cue Pools
+ * AI-generated pools of varied phrases for realtime set coaching
+ */
+export interface RealtimeCuePools {
+  // Starting cues (played at set start)
+  starting: string[] // e.g., ["Let's go!", "Here we go!", "Start strong!"]
+
+  // Rep announcement pools (played at start of each rep)
+  repAnnouncements: {
+    early: string[]   // Reps 1-3: ["Rep 2", "Second rep", "Number 2"]
+    middle: string[]  // Reps 4-7: ["Rep 5, keep it up", "Halfway there, rep 5"]
+    late: string[]    // Reps 8+: ["Rep 8, push through", "Almost there, rep 8"]
+  }
+
+  // Countdown numbers (eccentric phase)
+  countdown: {
+    [key: number]: string[] // e.g., 3: ["3", "Three", "Three seconds down"]
+  }
+
+  // Phase change cues
+  phaseChanges: {
+    pauseBottom: string[]  // e.g., ["Hold", "Pause", "Hold it", "Stay tight"]
+    concentric: string[]   // e.g., ["Up", "Push", "Drive", "Explode"]
+    pauseTop: string[]     // e.g., ["Squeeze", "Contract", "Hold the squeeze"]
+  }
+
+  // Encouragement pools (sprinkled throughout)
+  encouragement: {
+    early: string[]   // Reps 1-3: ["Nice form", "Feeling good", "Controlled"]
+    middle: string[]  // Reps 4-7: ["Keep pushing", "You got this", "Stay strong"]
+    late: string[]    // Reps 8+: ["Dig deep", "Push through", "Almost done"]
+    final: string[]   // Last rep: ["Last one!", "Final rep!", "Finish strong!"]
+  }
+
+  // Set complete
+  setComplete: string[] // e.g., ["Done!", "Great set!", "Nailed it!"]
+}
+
+export interface RealtimeCuePoolsInput {
+  exerciseName: string
+  setNumber: number
+  targetReps: number
+  tempo: string
+  setType: 'warmup' | 'working'
+  language: 'en' | 'it'
+
+  // Optional context for better variety
+  previousSetReps?: number // How many reps they did last set
+  isFailureSet?: boolean   // Are they going to failure?
+  exerciseCategory?: string // e.g., "compound", "isolation"
+}
+
+/**
  * AudioScriptGeneratorAgent
  *
  * Generates conversational, motivational audio coaching scripts for workouts.
@@ -376,5 +429,107 @@ Return JSON format with SEGMENTED scripts:
 }`
 
     return await this.complete<AudioScriptsOutput>(prompt, targetLanguage)
+  }
+
+  /**
+   * Generate AI-driven cue pools for realtime coaching
+   * Creates varied, natural phrases that avoid repetition during set execution
+   */
+  async generateRealtimeCuePools(
+    input: RealtimeCuePoolsInput
+  ): Promise<RealtimeCuePools> {
+    const targetLanguage: Locale = input.language === 'it' ? 'it' : 'en'
+
+    const prompt = `Generate varied, natural audio cue pools for real-time set coaching.
+
+CONTEXT:
+- Exercise: ${input.exerciseName}
+- Set Number: ${input.setNumber} (${input.setType})
+- Target Reps: ${input.targetReps}
+- Tempo: ${input.tempo}
+- Language: ${input.language === 'en' ? 'English' : 'Italian'}
+${input.previousSetReps ? `- Previous Set: ${input.previousSetReps} reps` : ''}
+${input.isFailureSet ? '- Going to failure (expect user to push beyond target)' : ''}
+${input.exerciseCategory ? `- Exercise Type: ${input.exerciseCategory}` : ''}
+
+REQUIREMENTS:
+
+1. **Variety**: Create 5-7 alternatives for each cue type
+   - Avoid repetition within a single set
+   - Mix formal/informal, short/descriptive variants
+   - Each alternative should feel fresh and natural
+
+2. **Tone Progression**:
+   - Early reps (1-3): Encouraging, focused on form and control
+   - Middle reps (4-7): Building intensity, motivational, maintaining quality
+   - Late reps (8+): Urgent, pushing through fatigue, digging deep
+   - Final rep: Maximum encouragement, celebratory, finishing strong
+
+3. **Brevity**: Each cue should be 1-3 words max
+   - Exception: Encouragement can be 3-5 words
+   - Must be quick enough to fit within tempo phases
+   - No long sentences that interrupt rhythm
+
+4. **Natural Language**:
+   - Sound like a real coach, not a robot
+   - Use contractions, casual phrasing where appropriate
+   - Vary sentence structure and word choice
+   - Mix simple commands with motivational phrases
+
+5. **Language-Specific**:
+   ${input.language === 'en'
+     ? `- English: Use energetic gym slang and motivational phrases
+     - Examples: "Let's go!", "You got this!", "Beast mode!", "Drive it!", "Squeeze!"
+     - Mix technical ("Controlled", "Tempo") with motivational ("Strong!", "Power!")
+     - Use variety: "Up" / "Push" / "Drive" / "Press" / "Explode"`
+     : `- Italian: Use natural Italian gym language
+     - Examples: "Dai!", "Forza!", "Grande!", "Spingi!", "Tieni!"
+     - Mix tecnico ("Controllato", "Tempo") con motivazionale ("Forte!", "Potenza!")
+     - Usa varietà: "Su" / "Spingi" / "Dai" / "Premi" / "Esplodi"`
+   }
+
+6. **Context Awareness**:
+   - Warmup sets: Lighter tone, focus on technique and feeling the movement
+   - Working sets: More intense, performance-focused, pushing limits
+   - ${input.setNumber > 1 ? 'Later sets in workout: More encouragement, acknowledge fatigue accumulated' : 'First set: Fresh energy, setting the tone'}
+   - Tempo-specific: ${input.tempo} means each rep takes ${input.tempo.split('-').reduce((a: number, b: string) => a + parseInt(b), 0)} seconds total
+
+RESPONSE FORMAT (JSON):
+{
+  "starting": ["Let's go!", "Here we go!", "Start strong!", "Ready, let's work!", "Time to go!"],
+  "repAnnouncements": {
+    "early": ["Rep 2", "Second rep", "Two", "Number two", "Rep 2, controlled"],
+    "middle": ["Rep 5", "Halfway!", "Five down", "Rep 5, keep it up", "Middle ground, strong"],
+    "late": ["Rep 8", "Eight!", "Almost there", "Rep 8, dig deep", "Final stretch, push"]
+  },
+  "countdown": {
+    "3": ["3", "Three", "Three down", "3 seconds", "Slow and controlled"],
+    "2": ["2", "Two", "Halfway down", "2 more", "Keep it tight"],
+    "1": ["1", "One", "Last second", "Bottom coming", "Final count"]
+  },
+  "phaseChanges": {
+    "pauseBottom": ["Hold", "Pause", "Hold it", "Stay tight", "Freeze", "Keep tension"],
+    "concentric": ["Up", "Push", "Drive", "Explode", "Go", "Press", "Power up"],
+    "pauseTop": ["Squeeze", "Contract", "Hold the squeeze", "Flex", "Lock it", "Max tension"]
+  },
+  "encouragement": {
+    "early": ["Nice form", "Perfect", "Feeling it", "Controlled", "Quality rep", "Good tempo"],
+    "middle": ["Keep pushing", "You got this", "Stay strong", "Great pace", "Maintain it", "Looking good"],
+    "late": ["Dig deep", "Push through", "Almost done", "Don't stop now", "You're strong", "Final push"],
+    "final": ["Last one!", "Final rep!", "Finish strong!", "All you got!", "Close it out!", "Make it count!"]
+  },
+  "setComplete": ["Done!", "Great set!", "Nailed it!", "Perfect!", "That's how it's done!", "Solid work!"]
+}
+
+IMPORTANT:
+- Return ONLY valid JSON, no additional text
+- Ensure all arrays have 5-7 items for maximum variety
+- Make sure countdown has entries for all relevant numbers (1-9 based on tempo)
+- Keep language ${input.language === 'en' ? 'English' : 'Italian'} throughout
+- Focus on brevity and impact
+
+Generate the cue pools now for this specific set.`
+
+    return await this.complete<RealtimeCuePools>(prompt, targetLanguage)
   }
 }

@@ -74,6 +74,28 @@ export function AudioCoachingSettings() {
     setMessage(null)
 
     try {
+      // Pre-flight diagnostics
+      console.log('[Audio Test] Starting voice test...')
+      console.log('[Audio Test] Settings:', audioCoachingService.getSettings())
+      console.log('[Audio Test] Provider:', audioCoachingService.getProviderName())
+      console.log('[Audio Test] Supported:', audioCoachingService.isSupported())
+
+      // Check if audio is supported
+      if (!audioCoachingService.isSupported()) {
+        throw new Error('Audio is not supported in this browser. Please try a different browser.')
+      }
+
+      // Check if audio is enabled
+      const currentSettings = audioCoachingService.getSettings()
+      if (!currentSettings.enabled) {
+        throw new Error('Audio coaching is disabled. Please enable it first.')
+      }
+
+      // Get provider name for feedback
+      const provider = audioCoachingService.getProviderName()
+      console.log('[Audio Test] Using provider:', provider)
+
+      // Play test audio
       await audioCoachingService.playImmediate({
         id: 'test-voice',
         type: 'pre_set',
@@ -83,13 +105,40 @@ export function AudioCoachingSettings() {
         ],
         priority: 10,
       })
+
+      console.log('[Audio Test] Test completed successfully')
       setTestStatus('success')
-      setMessage({ type: 'success', text: 'Voice test successful!' })
+      setMessage({
+        type: 'success',
+        text: `Voice test successful using ${provider}!`
+      })
       setTimeout(() => setMessage(null), 3000)
     } catch (error) {
-      console.error('Voice test failed:', error)
+      console.error('[Audio Test] Failed:', error)
+
+      // Provide specific error messages
+      let errorMessage = 'Voice test failed. '
+
+      if (error instanceof Error) {
+        if (error.message.includes('not supported')) {
+          errorMessage = error.message
+        } else if (error.message.includes('disabled')) {
+          errorMessage = error.message
+        } else if (error.message.includes('autoplay') || error.message.includes('blocked')) {
+          errorMessage += 'Browser blocked audio. Try clicking the button again or check your browser permissions.'
+        } else if (error.message.includes('API key') || error.message.includes('OpenAI')) {
+          errorMessage += 'OpenAI API issue. Falling back to Web Speech API.'
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage += 'Network error. Check your internet connection.'
+        } else {
+          errorMessage += error.message || 'Unknown error occurred.'
+        }
+      } else {
+        errorMessage += 'Unknown error. Check console for details.'
+      }
+
       setTestStatus('error')
-      setMessage({ type: 'error', text: 'Voice test failed. Please check your settings.' })
+      setMessage({ type: 'error', text: errorMessage })
       setTimeout(() => setMessage(null), 5000)
     } finally {
       setIsTestingVoice(false)

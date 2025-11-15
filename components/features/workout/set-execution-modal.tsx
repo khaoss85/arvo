@@ -15,6 +15,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { RealtimeTempoIndicator } from './realtime-tempo-indicator'
 import { realtimeTempoCoachingService, type SetExecutionState } from '@/lib/services/realtime-tempo-coaching.service'
 import { tempoParserService } from '@/lib/services/tempo-parser.service'
+import { AudioScriptGeneratorAgent, type RealtimeCuePools } from '@/lib/agents/audio-script-generator.agent'
+import { cuePoolCacheService } from '@/lib/services/cue-pool-cache.service'
 
 interface SetExecutionModalProps {
   isOpen: boolean
@@ -71,16 +73,63 @@ export function SetExecutionModal({
       setIsStarting(true)
       setShowCompletionDialog(false)
 
-      // Small delay before starting for UX
+      // Generate AI cue pools and start set
+      const startSetWithPools = async () => {
+        try {
+          let cuePools: RealtimeCuePools | null = null
+
+          // Check cache first
+          cuePools = cuePoolCacheService.get(exerciseName, language)
+
+          // Generate new pools if not cached
+          if (!cuePools) {
+            console.log('[SetExecution] Cache miss, generating AI cue pools...')
+            const agent = new AudioScriptGeneratorAgent()
+
+            cuePools = await agent.generateRealtimeCuePools({
+              exerciseName,
+              setNumber,
+              targetReps,
+              tempo,
+              setType: 'working', // TODO: determine from props if needed
+              language,
+            })
+
+            // Cache the generated pools
+            cuePoolCacheService.set(exerciseName, language, cuePools)
+            console.log('[SetExecution] AI pools generated and cached')
+          } else {
+            console.log('[SetExecution] Using cached AI pools')
+          }
+
+          // Start set with AI-generated pools
+          realtimeTempoCoachingService.startSet({
+            tempo,
+            targetReps,
+            exerciseName,
+            language,
+            setNumber,
+            cuePools, // Pass AI-generated pools (cached or fresh)
+          })
+        } catch (error) {
+          console.error('[SetExecution] Failed to generate AI pools, falling back to default:', error)
+
+          // Fallback: Start without pools (uses hardcoded cues)
+          realtimeTempoCoachingService.startSet({
+            tempo,
+            targetReps,
+            exerciseName,
+            language,
+            setNumber,
+          })
+        } finally {
+          setIsStarting(false)
+        }
+      }
+
+      // Small delay before starting for UX, then generate and start
       setTimeout(() => {
-        realtimeTempoCoachingService.startSet({
-          tempo,
-          targetReps,
-          exerciseName,
-          language,
-          setNumber,
-        })
-        setIsStarting(false)
+        startSetWithPools()
       }, 500)
     }
   }, [isOpen, tempo, targetReps, exerciseName, language, setNumber, isStarting])
