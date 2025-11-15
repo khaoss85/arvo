@@ -104,11 +104,11 @@ This task should be handled quickly without extended thinking:
       case 'low':
         return `
 ⚡ **REASONING GUIDANCE: Low Effort Mode**
-This task is straightforward. Use minimal reasoning:
-- Quick constraint checking (verify 2-3 key constraints)
-- Direct solution generation based on clear rules
-- Skip extensive exploration of alternatives
-- Simple validation of outputs before finalizing
+This task has clear rules but multiple constraints. Use focused reasoning:
+- Systematic constraint checking (verify 3-5 key constraints)
+- Direct solution generation based on approach rules
+- Quick validation of outputs before finalizing
+- Consider obvious alternatives if initial solution has issues
 - Budget: ~30-60 seconds of thinking
 `
       case 'medium':

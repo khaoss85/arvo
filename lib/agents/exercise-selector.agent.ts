@@ -304,8 +304,10 @@ export class ExerciseSelector extends BaseAgent {
   protected supabase: any
 
   constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high') {
-    // Use GPT-5.1 with 'none' reasoning for fastest workout generation (20% faster than minimal)
-    super(supabaseClient, reasoningEffort || 'none', 'low')
+    // Use 'low' reasoning for workout generation (90s timeout, basic constraint checking)
+    // ExerciseSelector has complex multi-constraint optimization (volume targets, periodization, insights)
+    // 'low' reasoning reduces retry failures and improves first-attempt success rate
+    super(supabaseClient, reasoningEffort || 'low', 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 
