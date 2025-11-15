@@ -161,7 +161,8 @@ export class AudioCoachingService {
       this.playNext()
     } else {
       this.queue.push(script)
-      if (this.state === 'idle') {
+      // Only start playback if queue was empty (prevents race condition when multiple enqueue calls happen rapidly)
+      if (this.state === 'idle' && this.queue.length === 1) {
         this.playNext()
       }
     }
