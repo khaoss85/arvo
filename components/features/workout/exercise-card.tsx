@@ -17,7 +17,10 @@ import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
+import { HydrationReminder } from './hydration-reminder'
 import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
+import { getHydrationSuggestionAction } from '@/app/actions/hydration-actions'
+import type { HydrationOutput } from '@/lib/types/hydration'
 import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
@@ -81,6 +84,12 @@ export function ExerciseCard({
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [editSetIndex, setEditSetIndex] = useState<number | null>(null)
   const [warmupSkipPromptDismissed, setWarmupSkipPromptDismissed] = useState(false)
+
+  // Hydration reminder state
+  const [hydrationDismissedAt, setHydrationDismissedAt] = useState<Date | null>(null)
+  const [hydrationSuggestion, setHydrationSuggestion] = useState<HydrationOutput | null>(null)
+  const [isLoadingHydration, setIsLoadingHydration] = useState(false)
+  const [lastHydrationCheckTime, setLastHydrationCheckTime] = useState<number>(0)
 
   // Rest timer state
   const [isResting, setIsResting] = useState(false)
@@ -163,6 +172,91 @@ export function ExerciseCard({
 
     fetchApproachName()
   }, [approachId])
+
+  // Hydration suggestion - check periodically and after sets completed
+  useEffect(() => {
+    const checkHydration = async () => {
+      if (!workout?.started_at || isLoadingHydration) return
+
+      // Throttle: don't call AI more than once every 2 minutes (prevents duplicate checks)
+      const timeSinceLastCheck = Date.now() - lastHydrationCheckTime
+      if (lastHydrationCheckTime > 0 && timeSinceLastCheck < 120000) {
+        return // Skip if checked less than 2 minutes ago
+      }
+
+      // Calculate total sets completed across all exercises
+      const totalSetsCompleted = allExercises.reduce((sum, ex) => sum + ex.completedSets.length, 0)
+
+      // Only check if at least one set has been completed
+      if (totalSetsCompleted === 0) return
+
+      try {
+        setIsLoadingHydration(true)
+        setLastHydrationCheckTime(Date.now()) // Update check timestamp
+
+        // Calculate workout duration
+        const workoutDurationMs = Date.now() - new Date(workout.started_at).getTime()
+
+        // Infer exercise type and extract muscle groups
+        const rawExerciseType = inferExerciseType(exercise.exerciseName)
+        // Map to hydration-compatible type (compound | isolation only)
+        const exerciseType: 'compound' | 'isolation' =
+          rawExerciseType === 'compound' || rawExerciseType === 'explosive'
+            ? 'compound'
+            : 'isolation'
+        const muscleGroups = extractMuscleGroupsFromExercise(exercise.exerciseName)
+
+        // Get last set data for intensity indicators
+        const lastSet = exercise.completedSets[exercise.completedSets.length - 1]
+
+        const result = await getHydrationSuggestionAction(userId, {
+          workoutDurationMs,
+          totalSetsCompleted,
+          currentSetNumber: currentSetNumber,
+          exerciseType,
+          exerciseName: exercise.exerciseName,
+          muscleGroups,
+          lastSetRIR: lastSet?.rir,
+          mentalReadiness: lastSet?.mentalReadiness || overallMentalReadiness || undefined,
+          restSeconds: exercise.restSeconds || 90,
+          lastDismissedAt: hydrationDismissedAt
+        })
+
+        if (result.success && result.data) {
+          setHydrationSuggestion(result.data)
+        }
+      } catch (error) {
+        console.error('[ExerciseCard] Failed to get hydration suggestion:', error)
+      } finally {
+        setIsLoadingHydration(false)
+      }
+    }
+
+    // Check on every 3 sets completed (throttle to avoid too many calls)
+    const totalSets = allExercises.reduce((sum, ex) => sum + ex.completedSets.length, 0)
+    if (totalSets > 0 && totalSets % 3 === 0) {
+      checkHydration()
+    }
+
+    // Also set up periodic check every 5 minutes
+    const intervalId = setInterval(() => {
+      checkHydration()
+    }, 5 * 60 * 1000) // 5 minutes
+
+    return () => clearInterval(intervalId)
+  }, [
+    exercise.completedSets.length,
+    allExercises,
+    workout?.started_at,
+    isResting,
+    userId,
+    exercise.exerciseName,
+    exercise.restSeconds,
+    currentSetNumber,
+    overallMentalReadiness,
+    hydrationDismissedAt,
+    isLoadingHydration
+  ])
 
   // Rest timer management - start when a new set is completed
   useEffect(() => {
@@ -833,6 +927,15 @@ export function ExerciseCard({
         </div>
       ) : (
         <>
+          {/* Hydration reminder can show DURING rest (ideal moment for drinking!) */}
+          {hydrationSuggestion && hydrationSuggestion.shouldSuggest && (
+            <HydrationReminder
+              suggestion={hydrationSuggestion}
+              onDismiss={() => setHydrationDismissedAt(new Date())}
+              className="mb-4"
+            />
+          )}
+
           {!isResting && (
             <>
               {showWarmupSkipPrompt && (

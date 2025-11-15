@@ -522,6 +522,14 @@
         "performWarmup": "Esegui riscaldamento",
         "skipping": "Saltando..."
       },
+      "hydrationTips": {
+        "title": "Promemoria Idratazione",
+        "titleSmallSips": "Serie Pesante in Arrivo",
+        "dismiss": "Ignora",
+        "alreadyHydrated": "Sono Idratato",
+        "recommendedAmount": "Consigliato: {amount}",
+        "smallSipsAmount": "Solo piccoli sorsi: {amount}"
+      },
       "confirmDialog": {
         "closeAriaLabel": "Chiudi",
         "closeButtonText": "Chiudi",
@@ -1192,6 +1200,39 @@
       "languageDescription": "Scegli la tua lingua preferita per l'interfaccia e i contenuti generati dall'AI",
       "theme": "Tema",
       "notifications": "Notifiche"
+    },
+    "audioCoaching": {
+      "title": "Coaching Audio",
+      "description": "Ricevi una guida vocale durante gli allenamenti, come avere un coach al tuo fianco",
+      "enabled": "Abilita Coaching Audio",
+      "enabledDescription": "Attiva la guida vocale per i tuoi allenamenti",
+      "autoplay": "Auto-play",
+      "autoplayDescription": "Riproduce automaticamente la guida durante gli allenamenti (puoi anche attivarla manualmente con il pulsante)",
+      "speed": "Velocità di Riproduzione",
+      "speedDescription": "Regola la velocità con cui parla il coach",
+      "speedOptions": {
+        "slow": "Lento (0.8x)",
+        "normal": "Normale (0.9x)",
+        "fast": "Veloce (1.0x)",
+        "faster": "Più Veloce (1.1x)"
+      },
+      "playButton": "Ascolta il Coach",
+      "playing": "In riproduzione...",
+      "stop": "Ferma",
+      "pause": "Pausa",
+      "resume": "Riprendi",
+      "skip": "Salta",
+      "scriptTypes": {
+        "workout_intro": "Introduzione Allenamento",
+        "exercise_transition": "Transizione Esercizio",
+        "pre_set": "Guida Serie",
+        "rest_countdown": "Countdown Riposo",
+        "workout_end": "Allenamento Completato"
+      },
+      "queueStatus": "{count} {count, plural, one {script} other {script}} in coda",
+      "notSupported": "Il coaching audio non è supportato nel tuo browser",
+      "success": "Impostazioni audio salvate",
+      "error": "Errore nel salvare le impostazioni audio"
     },
     "account": {
       "title": "Account",

@@ -522,6 +522,14 @@
         "performWarmup": "Perform warmup",
         "skipping": "Skipping..."
       },
+      "hydrationTips": {
+        "title": "Hydration Check",
+        "titleSmallSips": "Heavy Set Ahead",
+        "dismiss": "Dismiss",
+        "alreadyHydrated": "I'm Hydrated",
+        "recommendedAmount": "Recommended: {amount}",
+        "smallSipsAmount": "Small sips only: {amount}"
+      },
       "confirmDialog": {
         "closeAriaLabel": "Close",
         "closeButtonText": "Close",
@@ -1192,6 +1200,39 @@
       "languageDescription": "Choose your preferred language for the interface and AI-generated content",
       "theme": "Theme",
       "notifications": "Notifications"
+    },
+    "audioCoaching": {
+      "title": "Audio Coaching",
+      "description": "Get voice guidance during your workouts, like having a coach by your side",
+      "enabled": "Enable Audio Coaching",
+      "enabledDescription": "Turn on voice guidance for your workouts",
+      "autoplay": "Auto-play",
+      "autoplayDescription": "Automatically play guidance during workouts (you can also play manually with the button)",
+      "speed": "Playback Speed",
+      "speedDescription": "Adjust how fast the coach speaks",
+      "speedOptions": {
+        "slow": "Slow (0.8x)",
+        "normal": "Normal (0.9x)",
+        "fast": "Fast (1.0x)",
+        "faster": "Faster (1.1x)"
+      },
+      "playButton": "Listen to Coach",
+      "playing": "Playing...",
+      "stop": "Stop",
+      "pause": "Pause",
+      "resume": "Resume",
+      "skip": "Skip",
+      "scriptTypes": {
+        "workout_intro": "Workout Intro",
+        "exercise_transition": "Exercise Transition",
+        "pre_set": "Set Guidance",
+        "rest_countdown": "Rest Countdown",
+        "workout_end": "Workout Complete"
+      },
+      "queueStatus": "{count} {count, plural, one {script} other {scripts}} in queue",
+      "notSupported": "Audio coaching is not supported in your browser",
+      "success": "Audio settings saved",
+      "error": "Failed to save audio settings"
     },
     "account": {
       "title": "Account",
