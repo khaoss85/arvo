@@ -97,51 +97,19 @@ export function AudioCoachingSettings() {
         audioCoachingService.updateSettings({ enabled: true })
       }
 
-      // Get provider name for feedback
+      // Get provider name and voice info for feedback
       const provider = audioCoachingService.getProviderName()
+      const selectedVoice = currentSettings.openai?.voice || 'default'
+      const openaiEnabled = currentSettings.openai?.enabled !== false
+
       console.log('[Audio Test] Using provider:', provider)
+      console.log('[Audio Test] Selected voice:', selectedVoice)
+      console.log('[Audio Test] OpenAI enabled:', openaiEnabled)
       console.log('[Audio Test] Volume:', currentSettings.volume)
       console.log('[Audio Test] Speed:', currentSettings.speed)
 
-      // Create a simple test that uses Web Speech API directly to verify it works
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        console.log('[Audio Test] Testing Web Speech API directly...')
-        const utterance = new SpeechSynthesisUtterance('Hey! Arvo coaching ready.')
-        utterance.volume = currentSettings.volume
-        utterance.rate = currentSettings.speed
-
-        // Wait for voices to load
-        let voices = window.speechSynthesis.getVoices()
-        if (voices.length === 0) {
-          console.log('[Audio Test] Waiting for voices to load...')
-          await new Promise((resolve) => {
-            window.speechSynthesis.onvoiceschanged = () => {
-              voices = window.speechSynthesis.getVoices()
-              console.log('[Audio Test] Voices loaded:', voices.length)
-              resolve(null)
-            }
-            // Timeout after 2 seconds
-            setTimeout(resolve, 2000)
-          })
-        }
-
-        console.log('[Audio Test] Available voices:', voices.length)
-        if (voices.length > 0) {
-          const englishVoice = voices.find(v => v.lang.startsWith('en')) || voices[0]
-          utterance.voice = englishVoice
-          console.log('[Audio Test] Using voice:', englishVoice.name)
-        }
-
-        // Play the test utterance
-        console.log('[Audio Test] Speaking test utterance...')
-        window.speechSynthesis.speak(utterance)
-
-        // Wait a moment for it to play
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
-
-      // Now try the regular audio coaching service
-      console.log('[Audio Test] Testing AudioCoachingService.playImmediate()...')
+      // Test using AudioCoachingService (respects voice selection)
+      console.log('[Audio Test] Playing test audio with selected voice...')
       await audioCoachingService.playImmediate({
         id: 'test-voice',
         type: 'pre_set',
