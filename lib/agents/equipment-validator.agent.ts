@@ -209,7 +209,7 @@ Analyze the image now and provide the equipment name:`,
             ],
           },
         ],
-        reasoning: { effort: 'minimal' }, // Minimal reasoning for better vision accuracy
+        reasoning: { effort: 'none' }, // GPT-5.1 supports: none, low, medium, high (not 'minimal')
         text: { verbosity: 'low' }, // Concise response
         max_output_tokens: 200, // Increased from 100 to avoid truncation
       })
@@ -363,7 +363,7 @@ IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdo
             ],
           },
         ],
-        reasoning: { effort: 'minimal' }, // Minimal reasoning for better vision accuracy
+        reasoning: { effort: 'none' }, // GPT-5.1 supports: none, low, medium, high (not 'minimal')
         text: { verbosity: 'low' }, // Concise response
         max_output_tokens: 250, // Increased from 200 for JSON structure
       })
