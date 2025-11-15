@@ -23,9 +23,14 @@ export interface ReorderValidationOutput {
  * ReorderValidator Agent
  *
  * Validates exercise reordering decisions based on training principles
- * Extends BaseAgent to use GPT-5-mini with medium reasoning effort
+ * Extends BaseAgent to use gpt-5-nano for cost-optimized validation
  */
 export class ReorderValidator extends BaseAgent {
+  constructor(supabaseClient?: any) {
+    super(supabaseClient, 'low', 'low') // Low reasoning for fast validation
+    this.model = 'gpt-5-nano' // Use nano model (-50% cost for simple validation)
+  }
+
   get systemPrompt(): string {
     return `You are a strength training expert validating exercise order changes.
 

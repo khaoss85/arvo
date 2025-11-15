@@ -77,11 +77,12 @@ export interface ExerciseAdditionOutput {
  *
  * Validates if adding a new exercise to a workout is appropriate
  * Analyzes muscle overlap, fatigue, workout balance, and experience level
- * Extends BaseAgent to use GPT-5-mini with medium reasoning effort
+ * Extends BaseAgent to use gpt-5-nano for cost-optimized validation
  */
 export class ExerciseAdditionValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'medium') // Medium reasoning for nuanced validation
+    super(supabaseClient, 'low', 'low') // Low reasoning for fast validation
+    this.model = 'gpt-5-nano' // Use nano model (-50% cost for simple validation)
   }
 
   get systemPrompt(): string {

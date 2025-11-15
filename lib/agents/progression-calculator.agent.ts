@@ -5,8 +5,8 @@ export type { ProgressionInput, ProgressionOutput }
 
 export class ProgressionCalculator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    // Use GPT-5.1 with reasoning='minimal' and verbosity='low' for low latency during workouts
-    super(supabaseClient, 'minimal', 'low')
+    // Use GPT-5.1 with reasoning='none' for ultra-low latency during workouts (critical for gym UX)
+    super(supabaseClient, 'none', 'low')
   }
 
   get systemPrompt() {
@@ -34,7 +34,8 @@ Output valid JSON with the exact structure requested.`
         experienceYears: input.experienceYears,
         userAge: input.userAge,
         mesocyclePhase: input.mesocyclePhase,
-        mesocycleWeek: input.mesocycleWeek
+        mesocycleWeek: input.mesocycleWeek,
+        previousResponseId: input.previousResponseId  // CoT persistence tracking
       },
       timestamp: new Date().toISOString()
     })
@@ -214,10 +215,17 @@ ${relevantInsights.length > 0 ? `
       hasDemographicContext: !!demographicContext,
       mentalReadiness: input.lastSet.mentalReadiness,
       hasActiveInsights: relevantInsights.length > 0,
-      insightsCount: relevantInsights.length
+      insightsCount: relevantInsights.length,
+      previousResponseId: input.previousResponseId  // Multi-turn CoT persistence
     })
 
-    const result = await this.complete<ProgressionOutput>(prompt, targetLanguage)
+    // Pass previousResponseId for multi-turn CoT persistence (+4.3% accuracy, -30-50% CoT tokens)
+    const result = await this.complete<ProgressionOutput>(
+      prompt,
+      targetLanguage,
+      undefined,  // customTimeoutMs (use default)
+      input.previousResponseId  // Enable multi-turn reasoning context
+    )
 
     // Ensure insightWarnings field exists if there were relevant insights
     if (relevantInsights.length > 0 && !result.insightWarnings) {
@@ -259,6 +267,14 @@ ${relevantInsights.length > 0 ? `
       weightChange: result.suggestion.weight - input.lastSet.weight,
       repsChange: result.suggestion.reps - input.lastSet.reps
     })
+
+    // Attach response ID for next set's CoT persistence
+    // This enables passing reasoning context between consecutive sets
+    const responseId = this.getLastResponseId()
+    if (responseId) {
+      result.responseId = responseId
+      console.log('[ProgressionCalculator] Response ID saved for next set', { responseId })
+    }
 
     return result
   }

@@ -7,13 +7,14 @@ export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
   protected supabase: any
-  protected reasoningEffort: 'minimal' | 'low' | 'medium' | 'high' = 'low'
-  protected verbosity: 'low' | 'medium' | 'high' = 'medium'
+  protected reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' = 'low'
+  protected verbosity: 'low' | 'medium' | 'high' = 'low'
   protected model: string = process.env.OPENAI_MODEL || 'gpt-5-mini'
+  protected lastResponseId?: string  // Track response ID for multi-turn CoT persistence
 
   constructor(
     supabaseClient?: any,
-    reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high',
+    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high',
     verbosity?: 'low' | 'medium' | 'high'
   ) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
@@ -24,11 +25,26 @@ export abstract class BaseAgent {
     this.supabase = supabaseClient
     // Configure reasoning effort (default: low for better performance)
     if (reasoningEffort) this.reasoningEffort = reasoningEffort
-    // Configure verbosity (default: medium for balanced responses)
+    // Configure verbosity (default: low for concise responses)
     if (verbosity) this.verbosity = verbosity
   }
 
   abstract get systemPrompt(): string
+
+  /**
+   * Get the last response ID for multi-turn CoT persistence
+   * Use this to pass context between related AI calls
+   */
+  getLastResponseId(): string | undefined {
+    return this.lastResponseId
+  }
+
+  /**
+   * Reset the response ID chain (useful for starting new conversation)
+   */
+  resetResponseId(): void {
+    this.lastResponseId = undefined
+  }
 
   /**
    * Gets appropriate timeout based on reasoning effort level
@@ -37,8 +53,10 @@ export abstract class BaseAgent {
    */
   protected getTimeoutForReasoning(): number {
     switch (this.reasoningEffort) {
+      case 'none':
+        return 15000      // 15s - ultra-fast responses, no extended reasoning (GPT-5.1 fastest mode)
       case 'minimal':
-        return 30000      // 30s - instant responses, minimal reasoning (GPT-5.1 fast mode)
+        return 30000      // 30s - instant responses, minimal reasoning (legacy GPT-5 fast mode)
       case 'low':
         return 90000      // 90s - fast, standard constraints
       case 'medium':
@@ -65,6 +83,15 @@ export abstract class BaseAgent {
    */
   protected getReasoningGuidance(): string {
     switch (this.reasoningEffort) {
+      case 'none':
+        return `
+⚡ **REASONING GUIDANCE: None - Ultra-Fast Mode** (GPT-5.1)
+This task requires immediate response with minimal latency:
+- Respond instantly based on patterns and training
+- No extended thinking or analysis needed
+- Direct execution for well-defined tasks
+- Optimized for speed-critical gym/real-time use cases
+`
       case 'minimal':
         return `
 ⚡ **REASONING GUIDANCE: Minimal Reasoning Mode**
@@ -113,7 +140,8 @@ This task is complex with many interdependent constraints. Use deep reasoning:
   protected async complete<T>(
     userPrompt: string,
     targetLanguage: Locale = 'en',
-    customTimeoutMs?: number
+    customTimeoutMs?: number,
+    previousResponseId?: string
   ): Promise<T> {
     try {
       console.log('🤖 [BASE_AGENT] Starting AI completion request...', {
@@ -121,6 +149,7 @@ This task is complex with many interdependent constraints. Use deep reasoning:
         targetLanguage,
         promptLength: userPrompt.length,
         customTimeout: customTimeoutMs ? `${customTimeoutMs}ms` : 'default',
+        previousResponseId: previousResponseId || this.lastResponseId,
         timestamp: new Date().toISOString()
       })
 
@@ -130,10 +159,11 @@ This task is complex with many interdependent constraints. Use deep reasoning:
 
       // Combine system and user prompts for Responses API
       // GPT-5 relies on instruction following for JSON formatting (no response_format parameter)
+      // Note: Preambles are handled by Responses API reasoning items (visible to developer, not in output_text)
       const combinedInput = `${this.systemPrompt}${languageInstruction}${reasoningGuidance}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
 
       // Add timeout safety to prevent indefinite hangs
-      // Use reasoning-based timeout (90s for 'low', 150s for 'medium', 240s for 'high')
+      // Use reasoning-based timeout (15s for 'none', 30s for 'minimal', 90s for 'low', etc)
       const AI_TIMEOUT_MS = customTimeoutMs || this.getTimeoutForReasoning()
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {
@@ -145,12 +175,17 @@ This task is complex with many interdependent constraints. Use deep reasoning:
         }, AI_TIMEOUT_MS)
       })
 
+      // Use previousResponseId if provided, otherwise use last saved response ID
+      // This enables multi-turn CoT persistence for +4.3% accuracy improvement (Tau-Bench verified)
+      const responseIdToUse = previousResponseId || this.lastResponseId
+
       const response = await Promise.race([
         this.openai.responses.create({
           model: this.model,
           input: combinedInput,
           reasoning: { effort: this.reasoningEffort },
-          text: { verbosity: this.verbosity }
+          text: { verbosity: this.verbosity },
+          ...(responseIdToUse && { previous_response_id: responseIdToUse })
         }),
         timeoutPromise
       ])
@@ -158,11 +193,16 @@ This task is complex with many interdependent constraints. Use deep reasoning:
       console.log('✅ [BASE_AGENT] AI response received', {
         hasResponse: !!response,
         hasOutputText: !!response.output_text,
-        outputLength: response.output_text?.length || 0
+        outputLength: response.output_text?.length || 0,
+        responseId: response.id
       })
 
       const content = response.output_text
       if (!content) throw new Error('No response from AI')
+
+      // Save response ID for multi-turn CoT persistence
+      // This enables passing reasoning context to subsequent calls (+4.3% accuracy, -30-50% CoT tokens)
+      this.lastResponseId = response.id
 
       // Clean up any potential markdown code blocks or extra whitespace
       const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '')
@@ -197,6 +237,7 @@ This task is complex with many interdependent constraints. Use deep reasoning:
    * @param validationFn - Function to validate the AI result and provide feedback (can be async)
    * @param maxAttempts - Maximum number of attempts (default: 3)
    * @param targetLanguage - Target language for responses
+   * @param previousResponseId - Optional previous response ID for multi-turn CoT
    * @returns Validated AI result
    * @throws Error if all attempts fail validation
    */
@@ -204,7 +245,8 @@ This task is complex with many interdependent constraints. Use deep reasoning:
     userPrompt: string,
     validationFn: (result: T) => Promise<{ valid: boolean; feedback: string }> | { valid: boolean; feedback: string },
     maxAttempts: number = 3,
-    targetLanguage: Locale = 'en'
+    targetLanguage: Locale = 'en',
+    previousResponseId?: string
   ): Promise<T> {
     let lastFeedback = ''
 
@@ -231,11 +273,18 @@ This task is complex with many interdependent constraints. Use deep reasoning:
           promptLength: enrichedPrompt.length,
           reasoningEffort: this.reasoningEffort,
           timeoutMs: dynamicTimeout,
-          timeoutSeconds: Math.round(dynamicTimeout / 1000)
+          timeoutSeconds: Math.round(dynamicTimeout / 1000),
+          previousResponseId: previousResponseId || this.lastResponseId
         })
 
         // Generate with AI (with dynamic timeout)
-        const result = await this.complete<T>(enrichedPrompt, targetLanguage, dynamicTimeout)
+        // Pass previousResponseId for multi-turn CoT persistence (only on first attempt)
+        const result = await this.complete<T>(
+          enrichedPrompt,
+          targetLanguage,
+          dynamicTimeout,
+          attempt === 1 ? previousResponseId : undefined  // Only use on first attempt
+        )
 
         // Validate result (await since validation function can be async)
         const validation = await validationFn(result)

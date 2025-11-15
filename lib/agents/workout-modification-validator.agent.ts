@@ -66,11 +66,12 @@ export interface ModificationValidationOutput {
  *
  * Validates user modifications to AI-generated workouts (adding extra sets)
  * Analyzes alignment with training approach and periodization phase
- * Extends BaseAgent to use GPT-5-mini with medium reasoning effort
+ * Extends BaseAgent to use gpt-5-nano for cost-optimized validation
  */
 export class WorkoutModificationValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'medium') // Medium reasoning for nuanced validation
+    super(supabaseClient, 'low', 'low') // Low reasoning for fast validation
+    this.model = 'gpt-5-nano' // Use nano model (-50% cost for simple validation)
   }
 
   get systemPrompt(): string {

@@ -76,8 +76,8 @@ export class ExplanationService {
         const response = await this.openai.responses.create({
           model: 'gpt-5-mini',
           input: prompt,
-          reasoning: { effort: 'minimal' },  // Fast explanations - informative, not critical
-          text: { verbosity: 'low' }         // Keep it concise for mobile UI
+          reasoning: { effort: 'none' },  // Ultra-fast explanations - informative, not critical
+          text: { verbosity: 'low' }      // Keep it concise for mobile UI
         })
 
         const explanation = response.output_text.trim()

@@ -24,6 +24,9 @@ export interface ProgressionInput {
     severity: string
     userNote: string
   }>
+  // Multi-turn CoT persistence (GPT-5.1 optimization)
+  // Pass response ID from previous set for +4.3% accuracy, -30-50% CoT tokens
+  previousResponseId?: string
 }
 
 export interface ProgressionOutput {
@@ -52,4 +55,6 @@ export interface ProgressionOutput {
     warning: string
     suggestion: string
   }>
+  // Response ID for multi-turn CoT persistence (return to caller for next set)
+  responseId?: string
 }
