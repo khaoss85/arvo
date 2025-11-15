@@ -4,10 +4,7 @@ import type { Locale } from '@/i18n'
 
 export interface AudioScriptInput {
   // Workout context
-  workoutRationale?: {
-    overallFocus: string
-    exerciseSequencing: string
-  }
+  workoutRationale?: string // Overall workout focus and exercise sequencing rationale
   exercises: Array<{
     name: string
     sets: number
@@ -149,6 +146,27 @@ CRITICAL GUIDELINES:
     - No corporate speak or robotic phrasing
     - Real human emotion and energy
 
+11. **Experience Level Adaptation**:
+    - Beginners (0-2 years): Emphasize technique over intensity, use simpler cues, encourage patience and learning
+    - Intermediate (3-5 years): Balance technique and intensity, assume knowledge of basic gym terminology
+    - Advanced (6+ years): Focus on performance and pushing limits, use advanced cues, challenge them
+    - Adjust terminology complexity accordingly (e.g., "mind-muscle connection" for beginners vs. "maximize motor unit recruitment" for advanced)
+
+12. **Training Approach Integration**:
+    - Reference the approach's philosophy in workout intro and key moments
+    - Adapt coaching language to match methodology:
+      * FST-7: Emphasize pumps, fascia stretching, volume
+      * Mentzer (HIT): Intensity, going to failure, brief workouts
+      * Kuba: Functional strength, movement quality, athletic performance
+    - Use approach-specific cues when relevant
+    - Maintain consistency with the approach's execution style and tempo philosophy
+
+13. **Workout Rationale Usage**:
+    - In workout intro: Explain overall focus and session purpose from the workout rationale
+    - In exercise transitions: Connect individual exercises to the workout's overarching goal
+    - Create narrative continuity across exercises (e.g., "We started with compound movements, now we're isolating...")
+    - Help the athlete understand the "why" behind the workout structure
+
 ANTI-PATTERNS (What NOT to do):
 - ❌ "Now we will commence the second set of your training protocol"
 - ❌ "This exercise has been selected to optimize your muscular hypertrophy"
@@ -202,8 +220,7 @@ TRAINING APPROACH:
 ${approachContext}
 
 WORKOUT OVERVIEW:
-${input.workoutRationale ? `- Focus: ${input.workoutRationale.overallFocus}` : ''}
-${input.workoutRationale ? `- Exercise Order: ${input.workoutRationale.exerciseSequencing}` : ''}
+${input.workoutRationale ? `- Workout Rationale: ${input.workoutRationale}` : '- No specific rationale provided'}
 - Total Exercises: ${input.exercises.length}
 
 EXERCISES:

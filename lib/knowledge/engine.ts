@@ -112,6 +112,35 @@ Exercise Selection Philosophy:
 - Distribution: ${approach.exerciseSelection?.exercisesPerWorkout?.distribution || 'Balanced'}
         `.trim()
 
+      case 'workout_planning':
+        // Format approach context for audio coaching script generation
+        const approachVars = approach.variables as any
+        const coachingCues = approachVars?.coaching_cues || approachVars?.coachingPhilosophy || 'Focus on controlled execution and progressive overload'
+        const intensityManagement = approachVars?.intensity_management || approachVars?.intensityGuidelines || 'Build intensity progressively across sets'
+        const tempoPhilosophy = approachVars?.tempo_philosophy || approachVars?.tempo?.philosophy ||
+          (approachVars?.tempo?.default ? `Default tempo: ${approachVars.tempo.default}` : 'Controlled, deliberate reps with full range of motion')
+        const setExecutionStyle = approachVars?.set_execution_style || approachVars?.executionStyle ||
+          'Maintain strict form, focus on mind-muscle connection'
+
+        return `
+TRAINING METHODOLOGY: ${approach.name}${approach.creator ? ` by ${approach.creator}` : ''}
+
+PHILOSOPHY:
+${approach.philosophy || 'Evidence-based progressive overload approach'}
+
+COACHING PRINCIPLES:
+${coachingCues}
+
+INTENSITY MANAGEMENT:
+${intensityManagement}
+
+SET EXECUTION STYLE:
+${setExecutionStyle}
+
+TEMPO PHILOSOPHY:
+${tempoPhilosophy}
+        `.trim()
+
       default:
         return JSON.stringify(approach, null, 2)
     }

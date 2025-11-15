@@ -307,7 +307,8 @@ export class WorkoutGeneratorService {
         userId,
         approachId: profile.approach_id,
         userName: undefined, // User name not available in profile schema
-        experienceYears: profile.experience_years || undefined
+        experienceYears: profile.experience_years || undefined,
+        workoutRationale: selection.workoutRationale // Overall workout focus and sequencing
       },
       profile.preferred_language as 'en' | 'it' || 'en',
       supabase
@@ -334,6 +335,7 @@ export class WorkoutGeneratorService {
       approachId: string
       userName?: string
       experienceYears?: number
+      workoutRationale?: string
     },
     targetLanguage: 'en' | 'it',
     supabase: any
@@ -355,6 +357,7 @@ export class WorkoutGeneratorService {
 
       // Prepare input for audio script generator
       const audioInput = {
+        workoutRationale: scriptInput.workoutRationale, // Overall workout focus and exercise sequencing
         exercises: scriptInput.exercises.map((ex) => ({
           name: ex.name || ex.exerciseName,
           sets: ex.sets,
