@@ -151,31 +151,74 @@ IMPORTANT:
       ? imageBase64.split(',')[1]
       : imageBase64
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: 'Identify the gym equipment in this image. Return ONLY the equipment name in English (2-4 words max), nothing else. Examples: "Smith Machine", "Leg Press", "Cable Station", "Dumbbells", "Hex Bar", "T-Bar Row", "Preacher Curl Bench". If you cannot clearly identify gym equipment, return "Unknown Equipment".',
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Data}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 50,
-      temperature: 0.3, // Low temperature for consistent naming
-    })
+    try {
+      const response = await this.openai.responses.create({
+        model: 'gpt-5.1',
+        input: [
+          {
+            type: 'text',
+            text: `You are an expert at identifying gym equipment from photos. Analyze this image carefully.
 
-    const detectedName = response.choices[0]?.message?.content?.trim() || 'Unknown Equipment'
-    return detectedName
+TASK: Identify the gym equipment visible in this photo.
+
+GUIDELINES:
+- Examine the entire image, including partial or angled views
+- Look for distinctive features: shape, handles, weight plates, cables, padding, adjustment mechanisms
+- Consider common gym equipment: machines, free weights, racks, benches, cables, specialty equipment
+- Equipment may be photographed from unusual angles or partially visible
+- Focus on the most prominent piece of equipment if multiple are visible
+
+RESPONSE FORMAT:
+- Return ONLY the equipment name in English
+- Use standard gym equipment terminology
+- Be as specific as possible (e.g., "Lat Pulldown Machine" not just "Machine")
+- If uncertain about the specific model, use the general category (e.g., "Cable Machine", "Leg Press Machine")
+
+EXAMPLES OF VALID RESPONSES:
+✓ "Lat Pulldown Machine"
+✓ "Cable Crossover Station"
+✓ "Leg Press Machine"
+✓ "Smith Machine"
+✓ "Adjustable Bench"
+✓ "Squat Rack"
+✓ "Dumbbells"
+✓ "Barbell"
+✓ "T-Bar Row Machine"
+✓ "Preacher Curl Bench"
+✓ "Hex Bar"
+
+FALLBACK RULES:
+- If the specific equipment is unclear, identify the category: "Chest Press Machine", "Leg Machine", "Cable Station"
+- If multiple pieces visible, name the most prominent one
+- Only return "Unknown Equipment" if the image shows NO gym equipment whatsoever
+
+Analyze the image now and provide the equipment name:`,
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:image/jpeg;base64,${base64Data}`,
+              detail: 'high', // Enable high-resolution image analysis
+            },
+          },
+        ],
+        reasoning: { effort: 'none' }, // Fast mode for simple identification
+        text: { verbosity: 'low' }, // Concise response
+        max_output_tokens: 100,
+      })
+
+      const detectedName = response.output_text?.trim() || 'Unknown Equipment'
+
+      console.log('🏋️ [EQUIPMENT_VALIDATOR] Image recognition result:', {
+        detectedName,
+        responseId: response.id,
+      })
+
+      return detectedName
+    } catch (error) {
+      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment name from image:', error)
+      return 'Unknown Equipment'
+    }
   }
 
   async extractEquipmentDetailsFromImage(imageBase64: string): Promise<EquipmentDetailsFromImage> {
@@ -184,17 +227,24 @@ IMPORTANT:
       ? imageBase64.split(',')[1]
       : imageBase64
 
-    const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Identify the gym equipment in this image and determine which muscle groups it primarily targets.
+    try {
+      const response = await this.openai.responses.create({
+        model: 'gpt-5.1',
+        input: [
+          {
+            type: 'text',
+            text: `You are an expert at identifying gym equipment and analyzing which muscle groups they target.
 
-Return ONLY valid JSON in this exact format:
+TASK: Identify the gym equipment in this image and determine which muscle groups it primarily targets.
+
+GUIDELINES:
+- Examine the entire image carefully, including partial or angled views
+- Identify the most prominent piece of equipment
+- Determine which muscle groups are primarily and secondarily targeted
+- Consider the equipment's typical use and movement patterns
+
+RESPONSE FORMAT:
+Return ONLY valid JSON in this exact format (no markdown, no code blocks, just raw JSON):
 {
   "name": "Equipment Name",
   "primaryMuscles": ["muscle1", "muscle2"],
@@ -247,30 +297,38 @@ Cable Machine:
   "secondaryMuscles": []
 }
 
+Dumbbells:
+{
+  "name": "Dumbbells",
+  "primaryMuscles": ["chest", "back", "shoulders"],
+  "secondaryMuscles": ["biceps", "triceps"]
+}
+
+FALLBACK:
 If you cannot clearly identify gym equipment, return:
 {
   "name": "Unknown Equipment",
   "primaryMuscles": [],
   "secondaryMuscles": []
-}`,
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:image/jpeg;base64,${base64Data}`,
-              },
-            },
-          ],
-        },
-      ],
-      max_tokens: 150,
-      temperature: 0.3,
-      response_format: { type: 'json_object' },
-    })
+}
 
-    const content = response.choices[0]?.message?.content?.trim() || '{}'
+IMPORTANT: Return ONLY the JSON object, nothing else. No explanations, no markdown formatting.`,
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:image/jpeg;base64,${base64Data}`,
+              detail: 'high', // Enable high-resolution image analysis
+            },
+          },
+        ],
+        reasoning: { effort: 'none' }, // Fast mode for simple identification
+        text: { verbosity: 'low' }, // Concise response
+        max_output_tokens: 200,
+      })
 
-    try {
+      const content = response.output_text?.trim() || '{}'
+
       // Clean and sanitize the JSON response before parsing
       let cleanedContent = content
 
@@ -286,9 +344,6 @@ If you cannot clearly identify gym equipment, return:
       }
 
       // Remove control characters from the JSON string
-      // This handles cases where the AI response contains literal newlines, tabs, etc.
-      // Control chars between JSON structural elements are just whitespace
-      // Control chars inside string values (if any) will be removed to preserve JSON validity
       cleanedContent = cleanedContent.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
 
       // Parse the cleaned JSON
@@ -299,17 +354,20 @@ If you cannot clearly identify gym equipment, return:
         throw new Error('Invalid response structure')
       }
 
+      console.log('🏋️ [EQUIPMENT_VALIDATOR] Equipment details extracted:', {
+        name: parsed.name,
+        primaryMuscles: parsed.primaryMuscles.length,
+        secondaryMuscles: parsed.secondaryMuscles?.length || 0,
+        responseId: response.id,
+      })
+
       return {
         name: parsed.name,
         primaryMuscles: parsed.primaryMuscles,
         secondaryMuscles: parsed.secondaryMuscles || [],
       }
     } catch (error) {
-      console.error('Failed to parse equipment details from image:', {
-        error,
-        contentLength: content.length,
-        contentPreview: content.substring(0, 200),
-      })
+      console.error('❌ [EQUIPMENT_VALIDATOR] Failed to extract equipment details from image:', error)
       return {
         name: 'Unknown Equipment',
         primaryMuscles: [],
