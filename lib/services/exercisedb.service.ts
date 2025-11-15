@@ -274,6 +274,10 @@ export class ExerciseDBService {
       'dumbbell row': 'dumbbell one arm row',
       'cable row': 'cable seated row',
       'seated cable row': 'cable seated row',
+      'chest supported row machine': 'lever seated row',
+      'chest-supported row machine': 'lever seated row',
+      'chest supported row': 'lever seated row',
+      'chest-supported row': 'lever seated row',
 
       // Chest fly variations
       'cable pec fly': 'cable chest fly',
@@ -487,7 +491,7 @@ export class ExerciseDBService {
    */
   private static async semanticSearch(
     normalizedName: string,
-    threshold: number = 0.75
+    threshold: number = 0.70
   ): Promise<ExerciseDBExercise | null> {
     // Check if embeddings are available
     if (!this.cache.embeddingsGenerated) {
