@@ -29,6 +29,12 @@ export interface InsightsOutput {
  * Analyzes training data and provides AI-powered insights
  */
 export class InsightsGenerator extends BaseAgent {
+  constructor(supabaseClient?: any) {
+    // Use low reasoning for analytics pattern recognition
+    // Use medium verbosity for educational insights that help users learn
+    super(supabaseClient, 'low', 'medium')
+  }
+
   get systemPrompt(): string {
     return `You are an expert bodybuilding and strength coach analyzing training data.
 

@@ -45,7 +45,8 @@ export class SplitPlanner extends BaseAgent {
 
   constructor(supabaseClient?: any) {
     // Use medium reasoning for complex split planning with multiple constraints
-    super(supabaseClient, 'medium', 'medium')
+    // Use low verbosity for cleaner, more scannable onboarding output
+    super(supabaseClient, 'medium', 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 

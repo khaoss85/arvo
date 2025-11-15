@@ -44,7 +44,11 @@ export interface InsightParserOutput {
 }
 
 export class InsightParserAgent extends BaseAgent {
-  protected reasoningEffort: 'low' | 'medium' | 'high' = 'medium';
+  constructor(supabaseClient?: any) {
+    // Use low reasoning for NLP parsing (90s timeout, down from 240s medium)
+    // Use low verbosity for structured data extraction
+    super(supabaseClient, 'low', 'low')
+  }
 
   get systemPrompt(): string {
     return `You are an expert workout insight analyzer for a bodybuilding training application. Your role is to parse free-form user notes from completed workouts and extract structured insights.

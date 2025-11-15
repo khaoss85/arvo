@@ -70,7 +70,7 @@ export interface ModificationValidationOutput {
  */
 export class WorkoutModificationValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'low', 'low') // Low reasoning for fast validation
+    super(supabaseClient, 'minimal', 'low') // Minimal reasoning for instant validation (30s timeout)
     this.model = 'gpt-5-nano' // Use nano model (-50% cost for simple validation)
   }
 

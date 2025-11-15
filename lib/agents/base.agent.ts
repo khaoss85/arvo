@@ -95,11 +95,12 @@ This task requires immediate response with minimal latency:
       case 'minimal':
         return `
 ⚡ **REASONING GUIDANCE: Minimal Reasoning Mode**
-This task should be handled quickly without extended thinking:
-- Execute directly based on clear patterns
-- Use your training to respond immediately
-- Avoid lengthy analysis or alternative exploration
-- Trust your instincts for straightforward solutions
+This task has well-defined rules and clear validation criteria:
+- Quick pattern matching and validation
+- Direct execution based on clear rules
+- Simple constraint checking (1-2 key checks)
+- Minimal analysis needed for straightforward tasks
+- Budget: ~15-30 seconds of thinking
 `
       case 'low':
         return `

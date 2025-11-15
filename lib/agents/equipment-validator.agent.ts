@@ -27,6 +27,12 @@ export interface EquipmentDetailsFromImage {
 }
 
 export class EquipmentValidator extends BaseAgent {
+  constructor(supabaseClient?: any) {
+    // Use minimal reasoning for quick pattern matching and validation (30s timeout)
+    // Use low verbosity for concise validation feedback
+    super(supabaseClient, 'minimal', 'low')
+  }
+
   get systemPrompt(): string {
     // Build taxonomy reference for AI
     const taxonomyReference = Object.entries(EQUIPMENT_TAXONOMY).map(([category, categoryData]) => {
