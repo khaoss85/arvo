@@ -429,6 +429,8 @@
         "mentalState": "Mental state: {state}",
         "logSetButton": "Log Set",
         "logging": "Logging...",
+        "startSetWithCoaching": "Start Set with Coaching",
+        "logSetManually": "Log Set Manually",
         "skipWarmup": "Skip warmup",
         "skipping": "Skipping...",
         "skipWarmupTitle": "Skip Warmup?",

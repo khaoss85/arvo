@@ -429,6 +429,8 @@
         "mentalState": "Stato mentale: {state}",
         "logSetButton": "Registra Serie",
         "logging": "Registrazione...",
+        "startSetWithCoaching": "Inizia Serie con Coaching",
+        "logSetManually": "Registra Serie Manualmente",
         "skipWarmup": "Salta riscaldamento",
         "skipping": "Saltando...",
         "skipWarmupTitle": "Saltare il Riscaldamento?",
