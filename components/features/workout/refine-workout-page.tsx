@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,8 @@ import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-map
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
+import { SplitReferenceCard } from './split-reference-card'
+import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
 
 interface Exercise {
   name: string
@@ -57,11 +59,15 @@ interface Exercise {
 interface RefineWorkoutPageProps {
   workout: Workout
   userId: string
+  splitPlan?: any
+  sessionDefinition?: any
 }
 
 export function RefineWorkoutPage({
   workout,
-  userId
+  userId,
+  splitPlan,
+  sessionDefinition
 }: RefineWorkoutPageProps) {
   const router = useRouter()
   const t = useTranslations('workout.modals.refineWorkout')
@@ -107,6 +113,20 @@ export function RefineWorkoutPage({
   const [photoMode, setPhotoMode] = useState<Map<number, boolean>>(new Map())
   const [uploadedImages, setUploadedImages] = useState<Map<number, string | null>>(new Map())
   const [extractingNames, setExtractingNames] = useState<Map<number, boolean>>(new Map())
+
+  // Calculate actual muscle group volumes from current exercises
+  const actualVolumes = useMemo(() => {
+    if (!sessionDefinition) return {}
+
+    return calculateMuscleGroupVolumes(
+      exercises.map(ex => ({
+        name: ex.name,
+        sets: ex.sets,
+        primaryMuscles: (ex as any).primaryMuscles,
+        secondaryMuscles: (ex as any).secondaryMuscles
+      }))
+    )
+  }, [exercises, sessionDefinition])
 
   // Initialize exercises when workout changes
   React.useEffect(() => {
@@ -741,6 +761,16 @@ export function RefineWorkoutPage({
             {t('buttons.reorder')}
           </Button>
         </div>
+      )}
+
+      {/* Split Reference - Target vs Actual Volume Comparison */}
+      {sessionDefinition && splitPlan && workout.cycle_day && (
+        <SplitReferenceCard
+          sessionDefinition={sessionDefinition}
+          splitPlan={splitPlan}
+          cycleDay={workout.cycle_day}
+          actualVolumes={actualVolumes}
+        />
       )}
 
       {/* Workout Rationale - Overall plan understanding */}

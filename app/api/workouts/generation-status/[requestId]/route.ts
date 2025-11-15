@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { GenerationCache } from '@/lib/services/generation-cache'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getTranslations } from 'next-intl/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -74,11 +76,15 @@ export async function GET(
     const elapsed = Date.now() - cached.timestamp
     const elapsedSeconds = Math.floor(elapsed / 1000)
 
-    let message = 'Generating workout...'
+    // Get translations for polling messages
+    const locale = await getUserLanguage(user.id)
+    const t = await getTranslations({ locale, namespace: 'api.workouts.generate.polling' })
+
+    let message = t('generating')
     if (elapsedSeconds > 120) {
-      message = 'Almost there...'
+      message = t('almostThere')
     } else if (elapsedSeconds > 60) {
-      message = 'Still generating...'
+      message = t('stillGenerating')
     }
 
     console.log(`[GenerationStatus] In progress: ${requestId}`, {

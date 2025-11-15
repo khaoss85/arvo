@@ -207,3 +207,72 @@ export function extractMovementPattern(exerciseName: string): string {
 
   return 'unknown'
 }
+
+/**
+ * Exercise interface for volume calculation
+ */
+export interface WorkoutExercise {
+  name: string
+  sets: number
+  primaryMuscles?: string[]
+  secondaryMuscles?: string[]
+}
+
+/**
+ * Volume breakdown for a muscle group
+ */
+export interface MuscleVolumeBreakdown {
+  total: number      // Total volume (direct + indirect)
+  direct: number     // Sets from primary muscle involvement
+  indirect: number   // Sets from secondary muscle involvement (counted as 0.5x)
+}
+
+/**
+ * Calculate volume (total sets) per muscle group from workout exercises
+ * Used to compare actual workout volume vs split plan target volume
+ *
+ * @param exercises - Array of workout exercises
+ * @returns Record mapping muscle group to volume breakdown
+ */
+export function calculateMuscleGroupVolumes(exercises: WorkoutExercise[]): Record<string, MuscleVolumeBreakdown> {
+  const volumes: Record<string, { direct: number; indirect: number }> = {}
+
+  for (const exercise of exercises) {
+    // Count sets for primary muscles (full contribution)
+    if (exercise.primaryMuscles && exercise.primaryMuscles.length > 0) {
+      for (const muscle of exercise.primaryMuscles) {
+        if (!volumes[muscle]) {
+          volumes[muscle] = { direct: 0, indirect: 0 }
+        }
+        volumes[muscle].direct += exercise.sets
+      }
+    }
+
+    // Count sets for secondary muscles (partial contribution - 0.5x)
+    // This accounts for indirect/secondary muscle involvement
+    if (exercise.secondaryMuscles && exercise.secondaryMuscles.length > 0) {
+      for (const muscle of exercise.secondaryMuscles) {
+        if (!volumes[muscle]) {
+          volumes[muscle] = { direct: 0, indirect: 0 }
+        }
+        volumes[muscle].indirect += (exercise.sets * 0.5)
+      }
+    }
+  }
+
+  // Convert to MuscleVolumeBreakdown format with rounded values
+  const result: Record<string, MuscleVolumeBreakdown> = {}
+
+  Object.keys(volumes).forEach(muscle => {
+    const direct = Math.round(volumes[muscle].direct)
+    const indirect = Math.round(volumes[muscle].indirect)
+
+    result[muscle] = {
+      direct,
+      indirect,
+      total: direct + indirect
+    }
+  })
+
+  return result
+}
