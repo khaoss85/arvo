@@ -187,21 +187,34 @@ Design a complete training split plan that:
 
 1. **Cycle Structure**:
    - For PPL with 6 days/week: use 8-day cycle (3 on, 1 off, repeat) with A/B variations
+     * Day 1-3: Push A, Pull A, Legs A
+     * Day 4: **REST DAY**
+     * Day 5-7: Push B, Pull B, Legs B
+     * Day 8: **REST DAY**
+     * cycleDays = 8 (includes rest days)
    - For PPL with 3 days/week: use simple 3-day cycle without variations
-   - For Upper/Lower: typically 4-day cycle
-   - For Bro Split: use 10-day cycle (5 workout types: chest, back, shoulders, arms, legs × 2 variations A/B)
+   - For Upper/Lower: typically 4-day cycle (2 on, 1 off, repeat)
+   - For Bro Split: use 10-day cycle (5 workout types: chest, back, shoulders, arms, legs × 2 variations A/B) with 2 rest days
    - For Weak Point Focus: use frequency-based cycle (typically 7-8 days) with ${input.specializationMuscle || 'target muscle'} trained 3-4× per cycle
-   - Determine optimal cycle length based on frequency
+   - **CRITICAL**: cycleDays MUST include rest days. For example, 6 training days + 2 rest days = 8 cycleDays
 
 2. **Sessions**: Create detailed session definitions for each day in the cycle
-   - Assign workout type (push/pull/legs/upper/lower/chest/back/shoulders/arms for bro split)
-   - Assign A or B variation (alternate for variety)
-   - For Bro Split Variation A: focus on strength & compound movements
-   - For Bro Split Variation B: focus on hypertrophy & isolation movements
-   - For Weak Point Focus: ensure ${input.specializationMuscle || 'target muscle'} appears 3-4× with increased volume (1.5× normal)
-   - Define muscle group focus for each session
-   - Set target volume (sets) per muscle group per session
-   - Include 2-3 key principles from the approach for each session
+   - **TRAINING DAYS**: Assign workout type (push/pull/legs/upper/lower/chest/back/shoulders/arms for bro split)
+     * Assign A or B variation (alternate for variety)
+     * For Bro Split Variation A: focus on strength & compound movements
+     * For Bro Split Variation B: focus on hypertrophy & isolation movements
+     * For Weak Point Focus: ensure ${input.specializationMuscle || 'target muscle'} appears 3-4× with increased volume (1.5× normal)
+     * Define muscle group focus for each session
+     * Set target volume (sets) per muscle group per session
+     * Include 2-3 key principles from the approach for each session
+   - **REST DAYS**: MUST be included as explicit session objects with:
+     * name: "Rest"
+     * workoutType: null
+     * variation: null
+     * focus: []
+     * targetVolume: {}
+     * principles: ["Active recovery", "Sleep and nutrition focus"]
+     * exampleExercises: []
 
 3. **Frequency Map**: Calculate how many times per week each muscle group is trained
    - Aim for optimal frequency range (typically 2-3x for most muscles)
@@ -285,7 +298,7 @@ ${input.mesocyclePhase === 'deload' ? `
 
 Output the split plan as JSON with this EXACT structure:
 {
-  "cycleDays": <number>,
+  "cycleDays": <number (MUST include rest days, e.g., 8 for PPL)>,
   "sessions": [
     {
       "day": <number>,
@@ -296,12 +309,23 @@ Output the split plan as JSON with this EXACT structure:
       "targetVolume": {<muscle_group>: <sets>},
       "principles": [<key principles for this session>],
       "exampleExercises": [<optional example exercises>]
+    },
+    // REST DAY EXAMPLE (REQUIRED for rest days):
+    {
+      "day": 4,
+      "name": "Rest",
+      "workoutType": null,
+      "variation": null,
+      "focus": [],
+      "targetVolume": {},
+      "principles": ["Active recovery", "Sleep and nutrition focus"],
+      "exampleExercises": []
     }
   ],
   "frequencyMap": {<muscle_group>: <times per week>},
   "volumeDistribution": {<muscle_group>: <total sets in cycle>},
   "rationale": <string explaining the split design>,
-  "weeklyScheduleExample": [<day-by-day schedule strings>]
+  "weeklyScheduleExample": [<day-by-day schedule strings including rest days>]
 }
 
 **⚠️ REMINDER**: Do NOT include muscle groups with 0 sets in targetVolume, frequencyMap, or volumeDistribution. Only include muscles that are actually being trained (sets > 0).
