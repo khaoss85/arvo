@@ -116,7 +116,9 @@ Always output valid JSON matching the exact structure specified.`
     const cycleHistoryContext = this.buildCycleHistoryContext(input, approach)
 
     // Build caloric phase context (NEW - Item 1)
-    const hasFixedVolume = approach.variables?.volumePerWeek?.isFixed || false
+    // Note: Default to flexible volume (most approaches allow volume modulation)
+    // This matches ExerciseSelector's default (line 665)
+    const hasFixedVolume = false
     const caloricPhaseContext = this.buildCaloricPhaseContext(
       input.caloricPhase,
       input.caloricIntakeKcal,

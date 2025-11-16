@@ -105,6 +105,52 @@ Progression Strategy:
 `
       : ''
 
+    // Build caloric phase context (NEW - Item 2)
+    const hasFixedVolume = false // ProgressionCalculator doesn't change set count
+    const caloricPhaseContext = this.buildCaloricPhaseContext(
+      input.caloricPhase,
+      undefined, // caloricIntakeKcal not needed for progression
+      hasFixedVolume,
+      approach.name
+    )
+
+    // Build cycle fatigue context (NEW - Item 2)
+    const cycleFatigueContext = input.currentCycleFatigue
+      ? `
+=== CURRENT CYCLE FATIGUE STATUS ===
+Workouts Completed in Cycle: ${input.currentCycleFatigue.workoutsCompleted}
+${input.currentCycleFatigue.avgMentalReadiness !== null ? `
+Average Mental Readiness: ${input.currentCycleFatigue.avgMentalReadiness.toFixed(1)}/5.0 ${
+  input.currentCycleFatigue.avgMentalReadiness < 2.5 ? '(😫 FATIGUED - High accumulated fatigue)' :
+  input.currentCycleFatigue.avgMentalReadiness < 3.5 ? '(😐 MODERATE - Some fatigue present)' :
+  '(🔥 FRESH - Good recovery state)'
+}
+
+${input.currentCycleFatigue.avgMentalReadiness < 2.5 ? `
+⚠️ FATIGUE ALERT: User is experiencing accumulated fatigue from this cycle.
+Progression Guidance:
+- Be MORE CONSERVATIVE than normal with load increases
+- Prioritize maintaining current loads with better form
+- Consider suggesting deload if mental readiness continues to decline
+- RIR targets should be 2-3 minimum (stay further from failure)
+- Smaller weight jumps (2.5kg instead of 5kg for compounds)
+` : input.currentCycleFatigue.avgMentalReadiness >= 3.5 ? `
+✅ FRESH STATE: User is well-recovered within this cycle.
+Progression Guidance:
+- Standard or slightly aggressive progression appropriate
+- Can push RIR targets as per approach guidelines
+- Good state for attempting PRs if form is solid
+` : `
+MODERATE FATIGUE: User has some accumulated fatigue but manageable.
+Progression Guidance:
+- Standard progression with attention to form
+- Monitor RIR closely - don't push beyond approach targets
+- Conservative if form starts breaking down
+`}
+` : 'Mental readiness data not available for this cycle'}
+`
+      : ''
+
     // Check for active insights related to this exercise
     const relevantInsights = input.activeInsights?.filter(
       insight => insight.exerciseName === input.exerciseName &&
@@ -152,6 +198,8 @@ ${demographicContext}
 Training approach context:
 ${context}
 ${periodizationContext}
+${caloricPhaseContext}
+${cycleFatigueContext}
 ${insightsContext}
 
 ${approach.variables?.tempo ? `
