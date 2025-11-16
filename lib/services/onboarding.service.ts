@@ -15,6 +15,7 @@ export class OnboardingService {
         weak_points: data.weakPoints,
         equipment_preferences: data.equipmentPreferences as any,
         strength_baseline: data.strengthBaseline as any,
+        first_name: null, // Can be collected later in profile settings
         gender: data.gender || null,
         age: data.age || null,
         weight: data.weight || null,
@@ -32,7 +33,10 @@ export class OnboardingService {
         caloric_phase: null, // No caloric phase yet
         caloric_phase_start_date: null, // No caloric phase start date yet
         caloric_intake_kcal: null, // No caloric intake specified yet
-        preferred_language: 'en' // Default to English, will be auto-detected on first app load
+        preferred_language: 'en', // Default to English, will be auto-detected on first app load
+        audio_coaching_enabled: true, // Audio coaching enabled by default
+        audio_coaching_autoplay: false, // Autoplay disabled by default
+        audio_coaching_speed: 1.0 // Normal speed by default
       })
 
       // Generate first AI-powered workout using the collected preferences

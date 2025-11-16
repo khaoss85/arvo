@@ -7,6 +7,7 @@ import { MemoryConsolidatorAgent } from './memory-consolidator.agent'
 import { CycleStatsService } from '@/lib/services/cycle-stats.service'
 import type { CycleTrendAnalysis, VolumeTrend, MentalReadinessTrend, ConsistencyAnalysis, MuscleBalanceTrend } from '@/lib/types/cycle-trends.types'
 import type { Database } from '@/lib/types/database.types'
+import { MALE_STANDARDS, FEMALE_STANDARDS, LIFT_NAME_MAPPINGS, type ExperienceLevel, type StrengthStandard } from '@/lib/constants/strength-standards'
 
 type WorkoutInsight = Database['public']['Tables']['workout_insights']['Row']
 type UserMemoryEntry = Database['public']['Tables']['user_memory_entries']['Row']
@@ -49,6 +50,7 @@ Your role is to:
 2. Recognize strengths and areas for improvement
 3. Provide actionable, specific recommendations
 4. Be motivating but honest about performance
+5. Personalize feedback using the user's first name when available
 
 Guidelines:
 - Use specific numbers and percentages when possible
@@ -58,6 +60,9 @@ Guidelines:
 - Recommendations should be immediately actionable
 - Consider the user's training approach and weak points
 - Be encouraging but realistic
+- When first name is provided, use it naturally throughout (e.g., "Marco has made excellent progress" instead of "You have made excellent progress")
+- Compare user's performance to strength standards when bodyweight is available
+- Celebrate achievements relative to their strength level (beginner, intermediate, advanced, elite)
 
 Format your response as JSON with these keys:
 - summary: 2-3 sentence overview of progress
@@ -65,6 +70,101 @@ Format your response as JSON with these keys:
 - improvements: Array of 3 areas that need attention
 - recommendations: Array of 3 actionable recommendations
 - nextFocus: Single sentence about what to prioritize this week`
+  }
+
+  /**
+   * Calculate strength level comparison to standards
+   * @returns Object with lift-specific strength levels and overall assessment
+   */
+  private calculateStrengthLevel(
+    prs: Array<{ exerciseName: string; weight: number; reps: number; e1rm: number; exerciseId: string }>,
+    bodyweight: number | null,
+    gender: string | null
+  ): {
+    liftComparisons: Array<{
+      exercise: string
+      e1rm: number
+      level: ExperienceLevel
+      ratio: number
+      nextLevel: ExperienceLevel | null
+      gapToNext: number | null
+    }>
+    overallLevel: ExperienceLevel
+  } | null {
+    if (!bodyweight || bodyweight <= 0 || prs.length === 0) {
+      return null
+    }
+
+    const standards = gender === 'female' ? FEMALE_STANDARDS : MALE_STANDARDS
+    const liftComparisons: Array<{
+      exercise: string
+      e1rm: number
+      level: ExperienceLevel
+      ratio: number
+      nextLevel: ExperienceLevel | null
+      gapToNext: number | null
+    }> = []
+
+    // Map each PR to a standard lift type and calculate level
+    for (const pr of prs.slice(0, 10)) { // Top 10 exercises
+      let liftType: keyof typeof LIFT_NAME_MAPPINGS | null = null
+      const lowerName = pr.exerciseName.toLowerCase()
+
+      // Find matching lift type
+      for (const [type, patterns] of Object.entries(LIFT_NAME_MAPPINGS)) {
+        if (patterns.some(pattern => lowerName.includes(pattern.toLowerCase()))) {
+          liftType = type as keyof typeof LIFT_NAME_MAPPINGS
+          break
+        }
+      }
+
+      if (!liftType) continue // Skip if not a standard lift
+
+      const ratio = pr.e1rm / bodyweight
+      let level: ExperienceLevel = 'beginner'
+      let nextLevel: ExperienceLevel | null = null
+      let gapToNext: number | null = null
+
+      // Determine level by comparing ratio to standards
+      for (let i = standards.length - 1; i >= 0; i--) {
+        const standard = standards[i]
+        const threshold = standard[liftType as keyof StrengthStandard] as number
+
+        if (ratio >= threshold) {
+          level = standard.level
+          // Find next level if not already elite
+          if (i < standards.length - 1) {
+            nextLevel = standards[i + 1].level
+            const nextThreshold = standards[i + 1][liftType as keyof StrengthStandard] as number
+            gapToNext = ((nextThreshold - ratio) * bodyweight)
+          }
+          break
+        }
+      }
+
+      liftComparisons.push({
+        exercise: pr.exerciseName,
+        e1rm: pr.e1rm,
+        level,
+        ratio,
+        nextLevel,
+        gapToNext
+      })
+    }
+
+    if (liftComparisons.length === 0) return null
+
+    // Calculate overall level (most conservative - lowest level among tracked lifts)
+    const levelOrder: ExperienceLevel[] = ['beginner', 'novice', 'intermediate', 'advanced', 'elite']
+    const minLevelIndex = Math.min(
+      ...liftComparisons.map(comp => levelOrder.indexOf(comp.level))
+    )
+    const overallLevel = levelOrder[minLevelIndex]
+
+    return {
+      liftComparisons,
+      overallLevel
+    }
   }
 
   /**
@@ -125,6 +225,7 @@ Format your response as JSON with these keys:
 
       // Build demographic context
       const demographics = {
+        firstName: profile.first_name || null,
         gender: profile.gender || 'Not specified',
         age: profile.age ? `${profile.age} years old` : 'Not specified',
         bodyweight: profile.weight ? `${profile.weight}kg` : 'Not specified',
@@ -139,6 +240,13 @@ Format your response as JSON with these keys:
             ratio: (pr.e1rm / profile.weight!).toFixed(2)
           }))
         : null
+
+      // Calculate strength level comparison to standards
+      const strengthLevel = this.calculateStrengthLevel(
+        topExercises,
+        profile.weight,
+        profile.gender
+      )
 
       // Run memory consolidation to detect patterns
       let consolidationResult: any = null
@@ -218,13 +326,14 @@ Format your response as JSON with these keys:
         mentalReadiness: mentalReadinessData
       }
 
-      const prompt = `Analyze this training data and provide insights:
+      const prompt = `Analyze this training data and provide insights${demographics.firstName ? ` for ${demographics.firstName}` : ''}:
 
 TIME PERIOD: ${context.timeframe}
 TRAINING APPROACH: ${context.trainingApproach}
 TARGETED WEAK POINTS: ${context.weakPoints.join(', ') || 'None specified'}
 
 USER DEMOGRAPHICS:
+${demographics.firstName ? `- Name: ${demographics.firstName}` : ''}
 - Gender: ${context.demographics.gender}
 - Age: ${context.demographics.age}
 - Bodyweight: ${context.demographics.bodyweight}
@@ -236,6 +345,29 @@ ${context.personalRecords.map(pr => `- ${pr.exercise}: ${pr.best} (Est. 1RM: ${p
 ${context.relativeStrength ? `
 RELATIVE STRENGTH (bodyweight multipliers):
 ${context.relativeStrength.map(rs => `- ${rs.exercise}: ${rs.ratio}x BW`).join('\n')}` : ''}
+
+${strengthLevel ? `
+=== STRENGTH LEVEL COMPARISON TO STANDARDS ===
+
+Overall Strength Classification: **${strengthLevel.overallLevel.toUpperCase()}** (based on ${demographics.gender} standards)
+
+Lift-by-Lift Breakdown:
+${strengthLevel.liftComparisons.map(comp => `
+- **${comp.exercise}**: ${comp.level.toUpperCase()} level
+  • Current e1RM: ${Math.round(comp.e1rm)}kg (${comp.ratio.toFixed(2)}x bodyweight)
+  ${comp.nextLevel && comp.gapToNext ? `• To reach ${comp.nextLevel}: Add ~${Math.round(comp.gapToNext)}kg to your 1RM` : '• Already at ELITE level - exceptional strength!'}
+`).join('')}
+
+IMPORTANT INSTRUCTIONS FOR STRENGTH BASELINE:
+- Use this classification to set realistic expectations and celebrate achievements
+- Reference specific lifts when providing feedback (e.g., "${demographics.firstName || 'You'} ${demographics.firstName ? 'has' : 'have'} reached intermediate level on bench press")
+- When suggesting progression, consider their current level (beginners progress faster, advanced lifters slower)
+- Highlight any lifts that are significantly ahead/behind others as potential focus areas
+- Use encouraging language for their current level while providing actionable next steps
+${strengthLevel.overallLevel === 'beginner' || strengthLevel.overallLevel === 'novice' ? '- Emphasize that rapid progress is normal at this stage - leverage newbie gains!' : ''}
+${strengthLevel.overallLevel === 'intermediate' || strengthLevel.overallLevel === 'advanced' ? '- Acknowledge that progress slows at this level - patience and consistency are key' : ''}
+${strengthLevel.overallLevel === 'elite' ? '- Recognize exceptional achievement - focus on maintaining strength and injury prevention' : ''}
+` : ''}
 
 PROGRESS TRENDS:
 ${JSON.stringify(context.progressTrends, null, 2)}
@@ -362,6 +494,7 @@ When providing insights:
 - Use gender-specific strength standards when evaluating progress
 - Reference relative strength (bodyweight ratios) when applicable to provide context
 - Adjust expectations based on training experience level
+${demographics.firstName ? `- IMPORTANT: Use "${demographics.firstName}" (first name) throughout your insights to personalize the feedback. Make it conversational and engaging.` : '- Use "you" throughout the insights to maintain engagement.'}
 ${context.mentalReadiness.hasData && context.mentalReadiness.average < 3 ? '- IMPORTANT: Low mental readiness is a key indicator - recommend deload or recovery focus even if physical metrics look good' : ''}
 ${context.mentalReadiness.hasData && context.mentalReadiness.trend === 'declining' ? '- IMPORTANT: Declining mental readiness trend suggests accumulated fatigue - prioritize recovery strategies' : ''}
 

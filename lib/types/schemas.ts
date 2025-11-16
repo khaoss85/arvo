@@ -60,12 +60,17 @@ export const userProfileSchema = z.object({
   caloric_phase_start_date: z.string().datetime().nullable(),
   caloric_intake_kcal: z.number().int().min(-1500).max(1500).nullable(),
   // Demographic fields for personalized AI training
+  first_name: z.string().max(50).nullable(),
   gender: z.enum(['male', 'female', 'other']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
   weight: z.number().min(0).max(500).nullable(), // kg
   height: z.number().min(0).max(300).nullable(), // cm
   // Language preference for UI and AI-generated content
   preferred_language: z.enum(['en', 'it']).default('en'),
+  // Audio coaching preferences
+  audio_coaching_enabled: z.boolean().default(true),
+  audio_coaching_autoplay: z.boolean().default(false),
+  audio_coaching_speed: z.number().min(0.5).max(2.0).default(1.0),
 });
 
 export const insertUserProfileSchema = userProfileSchema;
