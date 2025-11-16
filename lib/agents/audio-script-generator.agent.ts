@@ -554,22 +554,60 @@ CRITICAL TONE REQUIREMENTS:
 2. **Language-Specific Authentic Gym Language:**
 ${targetLanguage === 'it' ? `
    - ITALIAN: Use authentic, direct gym language
-   - Examples from real coaches:
-     * "dai che questa è l'ultima serie, lo so che il peso sembra tanto, ma è solo una serie"
-     * "non puoi sbagliare questa serie che è l'ultima, se sbagli mandi a fanculo tutte quelle che hai fatto prima"
+   - Examples stratified by intensity (use appropriate tone based on RIR + set position):
+
+   TACTICAL (RIR 3-4, first/warmup sets):
      * "in questa serie dobbiamo solo sentire il peso e il movimento, non dobbiamo stancarci"
-     * "il recupero è importante, devi prenderti tutto il tempo che ti serve"
-   - Use natural, colloquial language: "dai", "forza", "spingi", "tieni duro", "super freschi"
-   - Mix tactical and motivational naturally
-   - Be direct and impactful - this is gym language, not formal Italian
+     * "prima serie, qui impostiamo il ritmo. Non esageriamo, sentiamo il muscolo attivarsi e basta"
+     * "questa è tecnica pura, niente sforzo massimale. Fai belle ripetizioni, controlla tutto"
+     * "primo giro, usa questo set per capire il peso. Sentilo bene, poi alziamo l'intensità"
+
+   MOTIVATIONAL (RIR 1-2, middle/heavy sets):
+     * "dai che questa è l'ultima serie, lo so che il peso sembra tanto, ma è solo una serie"
+     * "qua è il momento di spingere, il peso è pesante ma è quello giusto. Fai le tue reps e basta"
+     * "questa serie conta, non è una di passaggio. Concentrati, esegui pulito e vai fino in fondo"
+     * "lo so che brucia, ma è esattamente dove devi essere. Spremi queste ripetizioni"
+
+   AGGRESSIVE (RIR 0-1, last/failure sets):
+     * "non puoi sbagliare questa serie che è l'ultima, se sbagli mandi a fanculo tutte quelle che hai fatto prima"
+     * "ultima serie, dopo questa hai finito. Il peso sembra impossibile, ma tu lo sollevi e basta, non c'è alternativa"
+     * "questa è l'unica che conta davvero. Le altre erano preparazione, questa è quella vera. Non mollare"
+     * "è l'ultima, significa che tutto quello che hai fatto prima dipende da questa. Stringi i denti e vai"
+     * "se questa serie fa schifo, tutto il workout fa schifo. Non puoi permettertelo, devi chiudere forte"
+
+   - Use natural, colloquial language: "dai", "forza", "spingi", "tieni duro", "super freschi", "mandi a fanculo", "fa schifo", "stringi i denti"
+   - Mix tactical and motivational naturally based on intensity context
+   - Be direct and impactful - this is raw gym language, not formal Italian
+   - For high-intensity sets (RIR ≤1, last position): use aggressive, emotionally charged tone
+   - Acknowledge psychological struggle with heavy weight: "lo so che il peso sembra tanto/impossibile..."
 ` : `
    - ENGLISH: Direct, impactful, real gym culture
-   - Examples:
-     * "Last set, this is it. I know the weight feels heavy, but it's just one more set"
-     * "Don't miss this one - this is the set that counts, all the others led to this"
+   - Examples stratified by intensity (use appropriate tone based on RIR + set position):
+
+   TACTICAL (RIR 3-4, first/warmup sets):
      * "This set is about feeling the movement, not burning out the muscle"
-     * "Recovery matters here, take all the time you need mentally"
+     * "First set, we're setting the baseline here. Don't overdo it, just activate and feel it"
+     * "This is pure technique, no maximal effort. Clean reps, control everything"
+     * "First round, use this set to gauge the weight. Feel it out, then we turn it up"
+
+   MOTIVATIONAL (RIR 1-2, middle/heavy sets):
+     * "Last set, this is it. I know the weight feels heavy, but it's just one more set"
+     * "This is where we push. Weight's heavy but it's right. Hit your reps, that's all"
+     * "This set matters, not a filler. Focus up, execute clean, go all the way"
+     * "I know it burns, but that's exactly where you need to be. Squeeze out these reps"
+
+   AGGRESSIVE (RIR 0-1, last/failure sets):
+     * "Don't miss this one - this is the set that counts, all the others led to this"
+     * "Last set, after this you're done. Weight feels impossible, but you lift it anyway, no other option"
+     * "This is the only one that really counts. Others were prep, this is the real one. Don't quit"
+     * "It's the last one, means everything before depends on this. Grit your teeth and go"
+     * "If this set sucks, the whole workout sucks. Can't let that happen, close this out strong"
+
+   - Use natural, direct language: "let's go", "push through", "grit your teeth", "no other option"
+   - Mix tactical and motivational naturally based on intensity context
    - Direct and authentic, not corporate motivation
+   - For high-intensity sets (RIR ≤1, last position): use aggressive, emotionally charged tone
+   - Acknowledge psychological struggle with heavy weight: "I know the weight feels heavy/impossible..."
 `}
 
 3. **Context Awareness (CRITICAL):**
@@ -630,6 +668,23 @@ ${input.mentalReadiness && input.mentalReadiness <= 2 ? `
 - Tactical approach over hype
 - Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'So che sei scarico, ma è solo una serie. Dopo questa puoi riposare.' : 'I know you\'re drained, but it\'s just one set. After this you can rest.'}"
 ` : ''}
+${input.mentalReadiness && input.mentalReadiness >= 4 && input.rir <= 1 && setPosition === 'last' ? `
+🔥 MAXIMUM INTENSITY ZONE (High Mental Energy + Heavy Load + Final Set):
+- Use AGGRESSIVE tone from the stratified examples above
+- Acknowledge psychological weight: "il peso sembra impossibile" / "weight feels impossible"
+- Emphasize finality and consequence: "se sbagli mandi a fanculo tutte le altre" / "if this set sucks, the whole workout sucks"
+- Direct, raw, emotionally charged language
+- No holds barred - this is the moment that defines the workout
+- Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'Ultima serie, tutto quello che hai fatto prima dipende da questa. Il peso sembra impossibile, ma tu lo sollevi e basta. Non c\'è alternativa, stringi i denti e vai.' : 'Last set, everything before depends on this one. Weight feels impossible, but you lift it anyway. No other option, grit your teeth and go.'}"
+` : ''}
+${input.rir <= 1 && setPosition === 'last' && (!input.mentalReadiness || input.mentalReadiness === 3) ? `
+⚡ HIGH STAKES FINAL SET (Heavy Load + Last Position):
+- Even without confirmed high mental energy, this is a critical set
+- Use motivational-to-aggressive tone (between MOTIVATIONAL and AGGRESSIVE examples)
+- Emphasize that this set determines workout success
+- Acknowledge difficulty but demand execution
+- Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'È l\'ultima, conta solo questa. Il peso è pesante, ma devi chiudere forte. Non puoi permetterti di sbagliare questa serie.' : 'It\'s the last one, only this one counts. Weight is heavy, but you need to close strong. Can\'t afford to miss this set.'}"
+` : ''}
 
 RESPONSE FORMAT (JSON):
 {
@@ -663,6 +718,171 @@ Generate the pre-set coaching script now.`
 
     try {
       const result = await this.complete<import('@/lib/types/pre-set-coaching').PreSetCoachingScript>(prompt, targetLanguage)
+
+      // Restore original reasoning
+      this.reasoningEffort = originalReasoning
+
+      return result
+    } catch (error) {
+      // Restore reasoning even on error
+      this.reasoningEffort = originalReasoning
+      throw error
+    }
+  }
+
+  /**
+   * Generate post-set recovery coaching script
+   *
+   * Creates recovery scripts to help athletes mentally and physically recover
+   * between sets, based on performance and remaining work.
+   *
+   * Reasoning: 'none' (fastest generation, 10-15s)
+   * Verbosity: 'low' (concise, recovery-focused)
+   */
+  async generatePostSetRecoveryScript(
+    input: import('@/lib/types/pre-set-coaching').PostSetRecoveryInput,
+    targetLanguage: 'en' | 'it' = 'en'
+  ): Promise<import('@/lib/types/pre-set-coaching').PostSetRecoveryScript> {
+    // Determine recovery type based on context
+    const setPerformance: 'exceeded' | 'hit' | 'missed' = input.repsCompleted > input.targetReps
+      ? 'exceeded'
+      : input.wasSuccessful
+        ? 'hit'
+        : 'missed'
+
+    const recoveryType: 'physical' | 'mental' | 'tactical' =
+      input.perceivedDifficulty && input.perceivedDifficulty >= 4
+        ? 'mental' // Hard set = mental recovery priority
+        : input.setsRemaining > 2
+          ? 'physical' // Multiple sets remaining = physical recovery
+          : 'tactical' // Few sets left = tactical preparation
+
+    const urgency: 'relax' | 'prepare' | 'refocus' =
+      setPerformance === 'missed'
+        ? 'refocus' // Missed target = need to refocus
+        : input.setsRemaining === 0
+          ? 'relax' // No more sets = can relax
+          : 'prepare' // Sets remaining = prepare for next
+
+    // Build comprehensive prompt
+    const prompt = `You are a REAL strength coach creating a post-set recovery script.
+
+CRITICAL TONE REQUIREMENTS:
+
+1. **Recovery-Focused Coaching:**
+   - This is AFTER the set is complete, during rest period
+   - Balance acknowledgment of effort with preparation for what's next
+   - Physical recovery + Mental recovery + Tactical adjustment
+   - NOT motivational hype - this is recovery and preparation time
+
+2. **Language-Specific Recovery Coaching:**
+${targetLanguage === 'it' ? `
+   - ITALIAN: Use authentic, supportive but direct language
+   - Recovery examples:
+     * "il recupero è importante, devi prenderti tutto il tempo che ti serve per recuperare da un punto di vista mentale"
+     * "brava serie, adesso respira profondo e rilassa le spalle. Il prossimo set lo affronti super fresco"
+     * "quella era pesante, lo so. Adesso però resetta, bevi, e preparati mentalmente per la prossima"
+     * "hai fatto bene, ma il lavoro non è finito. Usa questi secondi per ricaricarti, il prossimo giro devi essere lucido"
+     * "set fatto, adesso stacca la testa. Non pensare ancora alla prossima serie, prima recupera bene"
+   - Use calm but purposeful tone: "respira", "rilassa", "resetta", "ricaricarti", "lucido"
+   - Acknowledge effort but keep focus on recovery and preparation
+   - For missed reps: "va bene, capita. Adesso però riparti concentrato"
+` : `
+   - ENGLISH: Direct, supportive recovery language
+   - Recovery examples:
+     * "recovery matters here, take all the time you need to recover mentally"
+     * "good set, now breathe deep and relax your shoulders. Hit the next one fresh"
+     * "that was heavy, I know. Now reset, drink, and mentally prep for the next one"
+     * "you did well, but work's not done. Use these seconds to recharge, you need to be sharp next round"
+     * "set done, now clear your head. Don't think about the next set yet, recover first"
+   - Use calm but purposeful tone: "breathe", "relax", "reset", "recharge", "sharp"
+   - Acknowledge effort but keep focus on recovery and preparation
+   - For missed reps: "it's okay, happens. Now refocus and come back strong"
+`}
+
+3. **Context Awareness (CRITICAL):**
+   - Set Just Completed: ${input.setNumber} of ${input.totalSets}
+   - Performance: ${setPerformance} (${input.repsCompleted}/${input.targetReps} reps @ RIR ${input.rirAchieved})
+   - Sets Remaining: ${input.setsRemaining}
+   - Rest Period: ${input.restPeriodSeconds} seconds
+   - Perceived Difficulty: ${input.perceivedDifficulty ? `${input.perceivedDifficulty}/5` : 'Unknown'}
+   - Mental State After: ${input.mentalReadinessAfter ? `${input.mentalReadinessAfter}/5` : 'Unknown'}
+
+4. **Script Structure (2-3 SEGMENTS):**
+   Recovery scripts are shorter than pre-set scripts.
+
+   Segment 1 (4-6 seconds when spoken):
+   - Acknowledge set completion and performance
+   - Brief validation of effort
+   Pause: 2000ms
+
+   Segment 2 (5-7 seconds when spoken):
+   - Recovery guidance (breathe, relax, reset)
+   - Physical or mental recovery cues
+   Pause: ${input.setsRemaining > 0 ? '3000ms (preparation time)' : '0ms (workout done)'}
+
+   ${input.setsRemaining > 0 ? `
+   Segment 3 (3-5 seconds when spoken):
+   - Tactical preparation for next set
+   - Mental readiness reminder
+   Pause: 0ms
+   ` : ''}
+
+SET PERFORMANCE CONTEXT:
+${setPerformance === 'exceeded' ? `- ✅ EXCEEDED TARGET: Great performance, acknowledge success but stay humble for next set` : ''}
+${setPerformance === 'hit' ? `- ✅ HIT TARGET: Solid execution, maintain this level` : ''}
+${setPerformance === 'missed' ? `- ⚠️ MISSED TARGET: Need tactical reset, refocus without dwelling on failure` : ''}
+
+RECOVERY PRIORITY:
+${recoveryType === 'mental' ? `- 🧠 MENTAL RECOVERY: That was a hard set, prioritize mental reset and confidence restoration` : ''}
+${recoveryType === 'physical' ? `- 💪 PHYSICAL RECOVERY: Multiple sets remaining, focus on breathing and physical restoration` : ''}
+${recoveryType === 'tactical' ? `- 🎯 TACTICAL PREPARATION: Few sets left, balance recovery with strategic preparation` : ''}
+
+${input.mentalReadinessAfter && input.mentalReadinessAfter <= 2 ? `
+⚠️ LOW MENTAL ENERGY AFTER SET:
+- Emphasize that recovery time is for them
+- No pressure to rush
+- "Take the time you need" messaging
+- Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'Lo so che sei scarico. Va bene, usa tutto il recupero. Respira, rilassati, e quando sei pronto riparti.' : 'I know you\'re drained. That\'s fine, use all the recovery time. Breathe, relax, and when you\'re ready, go again.'}"
+` : ''}
+
+${input.setsRemaining === 0 ? `
+🎉 WORKOUT COMPLETE:
+- Congratulate completion
+- Emphasize recovery and cool-down
+- No need for tactical preparation
+- Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'Fatto! Ultima serie completata. Adesso puoi rilassarti, bevi e fai stretching. Ottimo lavoro oggi.' : 'Done! Last set complete. Now you can relax, drink water and stretch. Great work today.'}"
+` : ''}
+
+RESPONSE FORMAT (JSON):
+{
+  "segments": [
+    { "text": "[Segment 1 in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 2000, "type": "narration" },
+    { "text": "[Segment 2 in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": ${input.setsRemaining > 0 ? '3000' : '0'}, "type": "narration" }${input.setsRemaining > 0 ? `,
+    { "text": "[Segment 3 in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 0, "type": "narration" }` : ''}
+  ],
+  "metadata": {
+    "recoveryType": "${recoveryType}",
+    "setPerformance": "${setPerformance}",
+    "urgency": "${urgency}"
+  }
+}
+
+IMPORTANT:
+- Return ONLY valid JSON, no additional text
+- Use calm, supportive ${targetLanguage === 'it' ? 'Italian' : 'English'} recovery language
+- Balance acknowledgment with forward focus
+- Adapt tone to set performance and mental state
+- Keep it concise - this is recovery time, not a speech
+
+Generate the post-set recovery script now.`
+
+    // Use 'none' reasoning for fastest generation
+    const originalReasoning = this.reasoningEffort
+    this.reasoningEffort = 'none'
+
+    try {
+      const result = await this.complete<import('@/lib/types/pre-set-coaching').PostSetRecoveryScript>(prompt, targetLanguage)
 
       // Restore original reasoning
       this.reasoningEffort = originalReasoning
