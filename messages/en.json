@@ -447,6 +447,7 @@
       "completing": "Completing...",
       "navigating": "Navigating...",
       "required": "Required",
+      "warning": "Warning",
       "aiAnalysisDisclaimer": "AI will analyze your notes. For persistent pain, consult a medical professional.",
       "mentalReadiness": {
         "descriptions": {

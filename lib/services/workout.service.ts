@@ -7,6 +7,7 @@ import {
   type UpdateWorkout,
 } from "@/lib/types/schemas";
 import { SplitPlanService } from "./split-plan.service";
+import { SetLogService } from "./set-log.service";
 
 export class WorkoutService {
   /**
@@ -377,7 +378,7 @@ export class WorkoutService {
     // Check if already completed
     if (workout.completed) {
       console.warn('[WorkoutService] Workout already marked as completed:', id);
-      return workout;
+      return { workout, warnings: [] };
     }
 
     const updateData: any = {
@@ -475,6 +476,32 @@ export class WorkoutService {
       workout: data as unknown as Workout,
       warnings
     };
+  }
+
+  /**
+   * Check if a workout is in "limbo" state (all sets completed but not finalized)
+   * This can happen if user closed browser before completing the workout summary
+   */
+  static async isWorkoutInLimbo(workoutId: string): Promise<boolean> {
+    try {
+      const workout = await this.getById(workoutId);
+      if (!workout || workout.status !== 'draft') {
+        return false;
+      }
+
+      // Check if all sets are completed
+      const sets = await SetLogService.getByWorkoutId(workoutId);
+      if (sets.length === 0) {
+        return false;
+      }
+
+      // Consider workout in limbo if it has sets logged but status is still draft
+      // This indicates the user completed sets but never finalized the workout
+      return sets.length > 0 && workout.status === 'draft';
+    } catch (error) {
+      console.error('[WorkoutService] Failed to check workout limbo state:', error);
+      return false;
+    }
   }
 
   /**

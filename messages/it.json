@@ -447,6 +447,7 @@
       "completing": "Completamento...",
       "navigating": "Reindirizzamento...",
       "required": "Obbligatorio",
+      "warning": "Attenzione",
       "aiAnalysisDisclaimer": "L'IA analizzerà le tue note. Per dolori persistenti, consulta un professionista medico.",
       "mentalReadiness": {
         "descriptions": {
