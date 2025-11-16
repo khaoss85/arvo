@@ -138,6 +138,399 @@ This task is complex with many interdependent constraints. Use deep reasoning:
     }
   }
 
+  /**
+   * Build caloric phase context for AI prompts
+   * Extracted to BaseAgent for DRY - used by ExerciseSelector, ExerciseSubstitution, SplitPlanner, etc.
+   *
+   * @param caloricPhase - Current caloric phase (bulk/cut/maintenance)
+   * @param caloricIntakeKcal - Daily caloric intake (kcal surplus/deficit)
+   * @param hasFixedVolume - Whether the training approach has fixed or flexible volume
+   * @param approachName - Name of the training approach (for examples)
+   * @param approachSetsPerExercise - Approach's sets per exercise guideline (optional)
+   */
+  protected buildCaloricPhaseContext(
+    caloricPhase: 'bulk' | 'cut' | 'maintenance' | null | undefined,
+    caloricIntakeKcal?: number | null,
+    hasFixedVolume: boolean = false,
+    approachName: string = 'your approach',
+    approachSetsPerExercise?: { working?: number } | null
+  ): string {
+    if (!caloricPhase) return ''
+
+    return `
+<caloric_phase_modulation>
+  <current_phase>${caloricPhase.toUpperCase()}</current_phase>
+  ${caloricIntakeKcal ? `<daily_intake>${caloricIntakeKcal > 0 ? 'Surplus' : 'Deficit'}: ${caloricIntakeKcal > 0 ? '+' : ''}${caloricIntakeKcal} kcal</daily_intake>` : ''}
+  <approach_classification>${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}</approach_classification>
+
+  <fundamental_rule>
+    ⚠️ CRITICAL: The guidance below must be applied WITHIN your training approach's constraints (Priority 1), not as absolute rules.
+    If the approach has specific volume limits or progression rules, THOSE TAKE PRIORITY over these guidelines (Priority 4).
+  </fundamental_rule>
+
+${caloricPhase === 'bulk' ? `
+  <bulk_phase>
+    <overview>Caloric surplus for muscle building - enhanced recovery and anabolic environment</overview>
+
+    <volume_guidance approach_type="${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}">
+      ${!hasFixedVolume ? `
+      <if condition="FLEXIBLE_VOLUME">
+        <strategy>Volume modulation</strategy>
+        <adjustment>+15-20% higher volume compared to maintenance baseline</adjustment>
+        <rationale>Enhanced recovery allows more total work within approach's framework</rationale>
+        <example>If approach suggests 12-16 sets for quads → lean toward 15-16 sets</example>
+      </if>
+      ` : ''}
+
+      ${hasFixedVolume ? `
+      <if condition="FIXED_VOLUME">
+        <strategy>Intensity modulation (volume stays FIXED)</strategy>
+        <critical_rule>DO NOT increase set count - respect the approach's set limits</critical_rule>
+        <instead>
+          - Use heavier loads (aggressive week-to-week progression)
+          - Push closer to/beyond failure (within approach's RIR targets)
+          - Apply advanced techniques IF approach supports (rest-pause, drop sets, negatives)
+        </instead>
+        <example>${approachName} in bulk = ${approachSetsPerExercise?.working ? `still ${approachSetsPerExercise.working} sets per exercise` : 'maintain prescribed set count'}, but heavier weights + more aggressive intensity techniques</example>
+      </if>
+      ` : ''}
+    </volume_guidance>
+
+    <exercise_selection>
+      - Compound-focused approaches → prioritize main lifts (squat, bench, deadlift variations)
+      - Balanced approaches → maintain your approach's typical compound/isolation ratio
+      - Follow your approach's exercise priority rules
+      - Use caloric surplus as reason to push harder on approach's key exercises
+    </exercise_selection>
+
+    <rep_ranges>
+      <guideline>Stay within approach's prescribed rep ranges for each exercise type</guideline>
+      <if condition="approach_allows_flexibility">IF approach allows range flexibility → explore lower end for strength emphasis</if>
+      <critical_rule>DO NOT change prescribed ranges; progress via LOAD, not by changing rep prescriptions</critical_rule>
+      <example>If approach says 6-10 reps → use the 6-8 range more often in bulk</example>
+    </rep_ranges>
+
+    <progression_focus>
+      - Aggressive load progression (this is the prime time for PRs)
+      - Prioritize strength gains on approach's main movements
+      - Take advantage of enhanced recovery for progressive overload
+      - User has nutritional support for strength gains
+    </progression_focus>
+  </bulk_phase>
+` : ''}
+${caloricPhase === 'cut' ? `
+  <cut_phase>
+    <overview>Caloric deficit for fat loss while preserving muscle - compromised recovery</overview>
+
+    <volume_guidance approach_type="${hasFixedVolume ? 'FIXED_VOLUME' : 'FLEXIBLE_VOLUME'}">
+      ${!hasFixedVolume ? `
+      <if condition="FLEXIBLE_VOLUME">
+        <strategy>Volume reduction</strategy>
+        <adjustment>-15-20% lower volume compared to maintenance baseline</adjustment>
+        <principle>QUALITY over QUANTITY - fewer sets, executed with precision</principle>
+        <example>If approach suggests 12-16 sets for quads → lean toward 12-13 sets</example>
+      </if>
+      ` : ''}
+
+      ${hasFixedVolume ? `
+      <if condition="FIXED_VOLUME">
+        <strategy>Load/intensity management (volume stays FIXED)</strategy>
+        <critical_rule>Maintain the prescribed set count - DO NOT reduce sets</critical_rule>
+        <instead>
+          - Slightly reduce load if needed to maintain perfect technique (~85-90% of bulk loads)
+          - Focus on maintaining strength rather than pushing absolute limits
+          - Prioritize quality of contraction over maximum weight
+        </instead>
+        <example>${approachName} in cut = ${approachSetsPerExercise?.working ? `still ${approachSetsPerExercise.working} sets per exercise` : 'maintain prescribed set count'}, slightly lighter loads with focus on form</example>
+      </if>
+      ` : ''}
+    </volume_guidance>
+
+    <exercise_selection>
+      <guideline>Within your approach's exercise priority rules, favor higher stimulus-to-fatigue options when possible:</guideline>
+      - Machines and cables when they fit approach's philosophy
+      - Exercise variations that preserve muscle with less systemic fatigue
+      - Example: If approach allows squat variations, prefer Safety Bar Squat or Leg Press over Low Bar Back Squat
+
+      <if condition="compound_focused_approach">
+        - Maintain compound focus but choose slightly less fatiguing variations
+        - Safety Squat Bar, Trap Bar Deadlift, Floor Press = same movement patterns, less CNS demand
+      </if>
+
+      <rule>Respect your approach's exercise distribution rules</rule>
+    </exercise_selection>
+
+    <rep_ranges>
+      <guideline>Stay within approach's prescribed rep ranges</guideline>
+      <if condition="approach_allows_flexibility">Prefer middle-to-upper end (8-12 range) for muscle preservation</if>
+      <critical_rule>DO NOT arbitrarily change to "hypertrophy ranges" if approach specifies different ranges</critical_rule>
+      <focus>Maintain technique and muscle engagement over absolute load</focus>
+    </rep_ranges>
+
+    <progression_focus>
+      - Goal: Maintain strength at ~85-90% of bulking performance
+      - Expect slight strength decrease (normal and acceptable in deficit)
+      - Prioritize muscle retention over load progression
+      - This is NOT the time for PRs unless they happen naturally
+    </progression_focus>
+
+    <critical_principle>
+      Minimum effective dose WITHIN approach's framework:
+      - Apply your approach's minimum effective volume
+      - Every extra set costs recovery you don't have
+      - Strategic modulation is smart training
+    </critical_principle>
+  </cut_phase>
+` : ''}
+${caloricPhase === 'maintenance' ? `
+  <maintenance_phase>
+    <overview>Balanced caloric intake for sustainable training - optimal baseline</overview>
+
+    <volume_guidance>
+      <strategy>Apply your approach's standard baseline volume guidelines</strategy>
+      <adjustment>No caloric-driven adjustments needed</adjustment>
+    </volume_guidance>
+
+    <exercise_selection>
+      - Follow your approach's exercise priority rules
+      - No special adjustments for caloric phase
+    </exercise_selection>
+
+    <rep_ranges>
+      - Use your approach's prescribed rep ranges
+      - No modifications needed
+    </rep_ranges>
+
+    <progression_focus>
+      - Steady, sustainable progress within approach's progression rules
+      - Focus on technique refinement and consistency
+      - Sustainable long-term training
+    </progression_focus>
+
+    <principle>This is your sustainable baseline - apply your approach as designed.</principle>
+  </maintenance_phase>
+` : ''}
+</caloric_phase_modulation>
+`
+  }
+
+  /**
+   * Build active insights context for AI prompts
+   * Extracted to BaseAgent for DRY - used by ExerciseSelector, ExerciseSubstitution, ProgressionCalculator, etc.
+   *
+   * @param insights - Array of active user insights (pain, technique issues, injuries)
+   */
+  protected buildInsightsContext(
+    insights?: Array<{
+      id: string
+      type: string
+      severity: 'critical' | 'warning' | 'caution' | 'info'
+      exerciseName?: string | null
+      userNote: string
+      metadata?: Record<string, any> | null
+    }>
+  ): string {
+    if (!insights || insights.length === 0) return ''
+
+    return `
+=== ⚠️ ACTIVE USER INSIGHTS (MUST CONSIDER) ===
+
+The user has reported the following issues that you MUST take into account:
+
+${insights.map(insight => {
+  let actionText = '';
+  if (insight.severity === 'critical') {
+    actionText = '🚫 CRITICAL - MUST AVOID COMPLETELY';
+  } else if (insight.severity === 'warning') {
+    actionText = '⚠️ WARNING - STRONGLY AVOID, FIND SUBSTITUTE';
+  } else if (insight.severity === 'caution') {
+    actionText = '⚡ CAUTION - PREFER ALTERNATIVE IF POSSIBLE';
+  } else {
+    actionText = 'ℹ️ INFO - INFORMATIONAL ONLY';
+  }
+
+  let text = `
+**Insight ID: ${insight.id}**
+Type: ${insight.type}
+Severity: ${insight.severity} - ${actionText}
+${insight.exerciseName ? `Exercise: ${insight.exerciseName}` : 'General'}
+User Note: "${insight.userNote}"`;
+
+  if (insight.metadata) {
+    const meta = insight.metadata as any;
+    if (meta.affectedMuscles && meta.affectedMuscles.length > 0) {
+      text += `\nAffected Muscles: ${meta.affectedMuscles.join(', ')}`;
+    }
+    if (meta.suggestedActions && meta.suggestedActions.length > 0) {
+      text += `\nSuggested Actions:\n${meta.suggestedActions.slice(0, 3).map((a: string) => `  - ${a}`).join('\n')}`;
+    }
+    if (meta.relatedExercises && meta.relatedExercises.length > 0) {
+      text += `\nRelated Exercises: ${meta.relatedExercises.join(', ')}`;
+    }
+  }
+
+  return text;
+}).join('\n\n')}
+
+**ACTION REQUIRED:**
+- Document EVERY change you make due to these insights in the "insightInfluencedChanges" array
+- Include the insight ID, what you changed, and why
+`
+  }
+
+  /**
+   * Build active memories context for AI prompts
+   * Extracted to BaseAgent for DRY - used by ExerciseSelector, ExerciseSubstitution, etc.
+   *
+   * @param memories - Array of learned user preferences and patterns
+   */
+  protected buildMemoriesContext(
+    memories?: Array<{
+      id: string
+      category: string
+      title: string
+      description?: string | null
+      confidenceScore: number
+      relatedExercises: string[]
+      relatedMuscles: string[]
+    }>
+  ): string {
+    if (!memories || memories.length === 0) return ''
+
+    // Group memories by category
+    const byCategory: Record<string, any[]> = {};
+    memories.forEach(mem => {
+      if (!byCategory[mem.category]) byCategory[mem.category] = [];
+      byCategory[mem.category].push(mem);
+    });
+
+    return `
+=== 🧠 LEARNED USER PREFERENCES & PATTERNS ===
+
+The system has learned the following about this user's preferences:
+
+${Object.entries(byCategory).map(([category, mems]) => {
+  return `
+**${category.toUpperCase()}**
+${mems.map(mem => {
+  const conf = (mem.confidenceScore * 100).toFixed(0);
+  let confidenceLevel = '';
+  if (mem.confidenceScore >= 0.8) {
+    confidenceLevel = '🔥 STRONG';
+  } else if (mem.confidenceScore >= 0.6) {
+    confidenceLevel = '💪 MODERATE';
+  } else {
+    confidenceLevel = '🔹 WEAK';
+  }
+
+  let text = `- Memory ID: ${mem.id}
+  ${confidenceLevel} (${conf}% confidence)
+  "${mem.title}"`;
+
+  if (mem.description) {
+    text += `\n  Details: ${mem.description}`;
+  }
+  if (mem.relatedExercises.length > 0) {
+    text += `\n  Related Exercises: ${mem.relatedExercises.join(', ')}`;
+  }
+  if (mem.relatedMuscles.length > 0) {
+    text += `\n  Related Muscles: ${mem.relatedMuscles.join(', ')}`;
+  }
+
+  return text;
+}).join('\n\n')}`;
+}).join('\n')}
+
+**ACTION REQUIRED:**
+- When memories have high confidence (≥80%), PRIORITIZE those preferences strongly
+- When memories have moderate confidence (60-79%), CONSIDER them as secondary factors
+- Document your memory-influenced choices in "insightInfluencedChanges" array
+- Include the memory ID, what you chose, and why
+`
+  }
+
+  /**
+   * Normalize muscle name to canonical format with fuzzy matching fallback
+   * Handles anatomical variants, typos, and unknown muscle names
+   *
+   * @param muscleName - Raw muscle name from user input or AI output
+   * @returns Canonical muscle name (or best-guess if unknown)
+   */
+  protected normalizeMuscleToCanonical(muscleName: string): string {
+    const normalized = muscleName.toLowerCase().trim();
+
+    // Common canonical names (extend as needed)
+    const canonicalMap: Record<string, string> = {
+      // Chest
+      'pectorals': 'chest',
+      'pecs': 'chest',
+      'pectoralis major': 'chest',
+      'upper chest': 'chest',
+      'lower chest': 'chest',
+
+      // Back
+      'latissimus dorsi': 'lats',
+      'latissimus': 'lats',
+      'lat': 'lats',
+      'upper back': 'upper_back',
+      'middle back': 'mid_back',
+      'lower back': 'lower_back',
+      'erector spinae': 'lower_back',
+      'trapezius': 'traps',
+      'rhomboids': 'mid_back',
+
+      // Shoulders
+      'deltoids': 'delts',
+      'anterior deltoid': 'front_delts',
+      'lateral deltoid': 'side_delts',
+      'posterior deltoid': 'rear_delts',
+
+      // Arms
+      'biceps brachii': 'biceps',
+      'triceps brachii': 'triceps',
+      'forearms': 'forearms',
+
+      // Legs
+      'quadriceps': 'quads',
+      'quadriceps femoris': 'quads',
+      'hamstrings': 'hamstrings',
+      'glutes': 'glutes',
+      'gluteus maximus': 'glutes',
+      'calves': 'calves',
+      'gastrocnemius': 'calves',
+      'soleus': 'calves',
+
+      // Core
+      'abdominals': 'abs',
+      'rectus abdominis': 'abs',
+      'obliques': 'obliques'
+    };
+
+    // Direct match
+    if (canonicalMap[normalized]) {
+      return canonicalMap[normalized];
+    }
+
+    // Fuzzy matching for common patterns
+    if (normalized.includes('chest') || normalized.includes('pec')) return 'chest';
+    if (normalized.includes('lat')) return 'lats';
+    if (normalized.includes('trap')) return 'traps';
+    if (normalized.includes('delt') || normalized.includes('shoulder')) return 'delts';
+    if (normalized.includes('bicep')) return 'biceps';
+    if (normalized.includes('tricep')) return 'triceps';
+    if (normalized.includes('quad')) return 'quads';
+    if (normalized.includes('ham')) return 'hamstrings';
+    if (normalized.includes('glute')) return 'glutes';
+    if (normalized.includes('calf') || normalized.includes('calve')) return 'calves';
+    if (normalized.includes('ab') || normalized.includes('core')) return 'abs';
+
+    // Log unknown muscle for monitoring
+    console.warn('[BaseAgent] Unknown muscle name encountered:', muscleName);
+
+    // Return original as fallback
+    return normalized;
+  }
+
   protected async complete<T>(
     userPrompt: string,
     targetLanguage: Locale = 'en',

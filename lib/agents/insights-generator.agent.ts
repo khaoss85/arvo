@@ -4,10 +4,13 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { insightService, type ActiveInsight } from '@/lib/services/insight.service'
 import { memoryService, type ActiveMemory } from '@/lib/services/memory.service'
 import { MemoryConsolidatorAgent } from './memory-consolidator.agent'
+import { CycleStatsService } from '@/lib/services/cycle-stats.service'
+import type { CycleTrendAnalysis, VolumeTrend, MentalReadinessTrend, ConsistencyAnalysis, MuscleBalanceTrend } from '@/lib/types/cycle-trends.types'
 import type { Database } from '@/lib/types/database.types'
 
 type WorkoutInsight = Database['public']['Tables']['workout_insights']['Row']
 type UserMemoryEntry = Database['public']['Tables']['user_memory_entries']['Row']
+type CycleCompletion = Database['public']['Tables']['cycle_completions']['Row']
 
 export interface InsightsOutput {
   summary: string
@@ -22,6 +25,9 @@ export interface InsightsOutput {
     insightId: string
     reason: string
   }>
+  // NEW: Multi-cycle trend analysis
+  cycleTrends?: CycleTrendAnalysis
+  cycleCount?: number
 }
 
 /**
@@ -97,6 +103,25 @@ Format your response as JSON with these keys:
       const trends = this.calculateTrends(progressData)
       const volumeTrend = this.calculateVolumeTrend(volumeData)
       const consistency = this.calculateConsistency(volumeData)
+
+      // Load cycle history for multi-cycle trend analysis
+      let cycleHistory: CycleCompletion[] = []
+      let cycleTrends: CycleTrendAnalysis | null = null
+
+      try {
+        if (profile.active_split_plan_id) {
+          cycleHistory = await CycleStatsService.getAllCycleCompletions(userId)
+
+          if (cycleHistory.length >= 2) {
+            // Calculate multi-cycle trends
+            cycleTrends = this.calculateCycleTrends(cycleHistory)
+            console.log(`[InsightsGenerator] Loaded ${cycleHistory.length} cycles for trend analysis`)
+          }
+        }
+      } catch (error) {
+        console.error('[InsightsGenerator] Failed to load cycle history (non-critical):', error)
+        // Continue without cycle analysis - non-critical
+      }
 
       // Build demographic context
       const demographics = {
@@ -269,6 +294,69 @@ ${context.mentalReadiness.hasData ? `
 ${context.mentalReadiness.average < 3 ? '⚠️ ALERT: Consistently low mental readiness may indicate overtraining or burnout' : ''}
 ` : 'No mental readiness data tracked yet'}
 
+${cycleTrends ? `
+=== MULTI-CYCLE TREND ANALYSIS (${cycleHistory.length} Completed Cycles) ===
+
+VOLUME PROGRESSION TREND:
+- Trend: ${cycleTrends.volumeProgression.trend.toUpperCase()}
+- Change per cycle: ${cycleTrends.volumeProgression.percentChangePerCycle > 0 ? '+' : ''}${cycleTrends.volumeProgression.percentChangePerCycle.toFixed(1)}%
+- Average volume per cycle: ${Math.round(cycleTrends.volumeProgression.averageVolume)}kg
+- Latest cycle volume: ${Math.round(cycleTrends.volumeProgression.latestVolume)}kg
+- Cycles analyzed: ${cycleTrends.volumeProgression.cyclesAnalyzed}
+
+MENTAL READINESS MULTI-CYCLE TREND:
+- Trend: ${cycleTrends.mentalReadinessTrend.trend.toUpperCase()}
+${cycleTrends.mentalReadinessTrend.average !== null ? `- Average across cycles: ${cycleTrends.mentalReadinessTrend.average.toFixed(1)}/5` : ''}
+${cycleTrends.mentalReadinessTrend.latest !== null ? `- Latest cycle average: ${cycleTrends.mentalReadinessTrend.latest.toFixed(1)}/5` : ''}
+${cycleTrends.mentalReadinessTrend.changeFromFirst !== null ? `- Change from first cycle: ${cycleTrends.mentalReadinessTrend.changeFromFirst > 0 ? '+' : ''}${cycleTrends.mentalReadinessTrend.changeFromFirst.toFixed(1)} points` : ''}
+
+WORKOUT CONSISTENCY ACROSS CYCLES:
+- Rating: ${cycleTrends.workoutConsistency.rating.toUpperCase()}
+- Average workouts per cycle: ${cycleTrends.workoutConsistency.averageWorkoutsPerCycle.toFixed(1)}
+- Coefficient of variation: ${cycleTrends.workoutConsistency.coefficientOfVariation.toFixed(1)}% (lower = more consistent)
+- Latest cycle workouts: ${cycleTrends.workoutConsistency.latestCycleWorkouts}
+
+MUSCLE GROUP BALANCE TRENDS:
+${Object.entries(cycleTrends.muscleBalanceTrends)
+  .sort(([, a], [, b]) => Math.abs(b.percentChange) - Math.abs(a.percentChange))
+  .slice(0, 8)
+  .map(([muscle, trend]) =>
+    `- ${muscle}: ${trend.trend.toUpperCase()} (${trend.percentChange > 0 ? '+' : ''}${trend.percentChange.toFixed(1)}% change, avg ${Math.round(trend.averageVolume)} sets/cycle, latest ${Math.round(trend.latestVolume)} sets)`
+  ).join('\n')}
+
+RECENT CYCLE HISTORY (Last 3 cycles):
+${cycleHistory.slice(0, 3).map(cycle => {
+  const volumeByMuscle = cycle.volume_by_muscle_group as Record<string, number> || {}
+  const topMuscles = Object.entries(volumeByMuscle)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3)
+    .map(([muscle, vol]) => `${muscle} (${Math.round(vol)} sets)`)
+    .join(', ')
+
+  return `
+Cycle #${cycle.cycle_number} (completed ${new Date(cycle.completed_at).toLocaleDateString()}):
+  • Total Volume: ${Math.round(cycle.total_volume)}kg
+  • Workouts Completed: ${cycle.total_workouts_completed}
+  • Mental Readiness: ${cycle.avg_mental_readiness !== null ? cycle.avg_mental_readiness.toFixed(1) + '/5' : 'Not tracked'}
+  • Top 3 Muscles: ${topMuscles || 'No data'}`
+}).join('\n')}
+
+CYCLE-BASED RECOMMENDATIONS:
+${cycleTrends.recommendations.map(rec => `⚠️ ${rec}`).join('\n')}
+
+IMPORTANT INSTRUCTIONS FOR CYCLE ANALYSIS:
+- Compare current ${days}-day period to multi-cycle historical trends
+- Identify if user is adapting well (volume ↑ + mental readiness stable/improving = good)
+- Flag potential overtraining (volume ↑ + mental readiness ↓ = warning sign)
+- Highlight muscle groups needing attention based on balance trends
+- Reference specific cycle numbers and completion dates for context
+- Use historical patterns to validate or question current period data
+- Provide recommendations that account for long-term progression patterns
+
+Example insight format:
+"Over your last ${cycleHistory.length} cycles, volume has increased ${Math.abs(cycleTrends.volumeProgression.percentChangePerCycle).toFixed(1)}% per cycle while mental readiness ${cycleTrends.mentalReadinessTrend.trend === 'declining' ? 'declined' : cycleTrends.mentalReadinessTrend.trend === 'improving' ? 'improved' : 'stayed stable'}. This ${cycleTrends.mentalReadinessTrend.trend === 'declining' && cycleTrends.volumeProgression.trend === 'increasing' ? 'suggests accumulated fatigue - consider deload' : 'indicates healthy adaptation to training stress'}."
+` : ''}
+
 When providing insights:
 - Consider age for recovery recommendations (older athletes may need more recovery)
 - Use gender-specific strength standards when evaluating progress
@@ -286,7 +374,10 @@ Provide insights in JSON format with keys: summary, strengths (array of 3), impr
         ...response,
         activeInsights,
         consolidatedMemories: activeMemories,
-        proposedResolutions: consolidationResult?.insightsToResolve || []
+        proposedResolutions: consolidationResult?.insightsToResolve || [],
+        // Add cycle trends if available
+        cycleTrends: cycleTrends || undefined,
+        cycleCount: cycleHistory.length > 0 ? cycleHistory.length : undefined
       }
     } catch (error) {
       console.error('Failed to generate insights:', error)
@@ -449,5 +540,231 @@ Provide insights in JSON format with keys: summary, strengths (array of 3), impr
         totalWorkouts: 0
       }
     }
+  }
+
+  /**
+   * Calculate multi-cycle trends from cycle completion history
+   */
+  private calculateCycleTrends(cycleHistory: CycleCompletion[]): CycleTrendAnalysis {
+    if (cycleHistory.length < 2) {
+      return {
+        volumeProgression: {
+          trend: 'insufficient_data',
+          percentChangePerCycle: 0,
+          averageVolume: 0,
+          latestVolume: 0,
+          cyclesAnalyzed: cycleHistory.length
+        },
+        mentalReadinessTrend: {
+          trend: 'insufficient_data',
+          average: null,
+          latest: null,
+          changeFromFirst: null
+        },
+        workoutConsistency: {
+          rating: 'inconsistent',
+          averageWorkoutsPerCycle: 0,
+          coefficientOfVariation: 0,
+          latestCycleWorkouts: 0
+        },
+        muscleBalanceTrends: {},
+        recommendations: []
+      }
+    }
+
+    const volumeProgression = this.analyzeVolumeProgression(cycleHistory)
+    const mentalReadinessTrend = this.analyzeMentalReadinessTrend(cycleHistory)
+    const workoutConsistency = this.analyzeWorkoutConsistency(cycleHistory)
+    const muscleBalanceTrends = this.analyzeMuscleBalance(cycleHistory)
+
+    return {
+      volumeProgression,
+      mentalReadinessTrend,
+      workoutConsistency,
+      muscleBalanceTrends,
+      recommendations: this.generateCycleTrendRecommendations({
+        volumeProgression,
+        mentalReadinessTrend,
+        workoutConsistency,
+        muscleBalanceTrends
+      })
+    }
+  }
+
+  /**
+   * Analyze volume progression across cycles using linear regression
+   */
+  private analyzeVolumeProgression(cycles: CycleCompletion[]): VolumeTrend {
+    const volumes = cycles.map(c => c.total_volume).reverse() // Oldest to newest
+
+    // Calculate linear regression
+    const n = volumes.length
+    const xSum = (n * (n - 1)) / 2 // Sum of 0, 1, 2, ...n-1
+    const ySum = volumes.reduce((sum, v) => sum + v, 0)
+    const xySum = volumes.reduce((sum, v, i) => sum + i * v, 0)
+    const xSquaredSum = (n * (n - 1) * (2 * n - 1)) / 6
+
+    const slope = (n * xySum - xSum * ySum) / (n * xSquaredSum - xSum * xSum)
+    const avgVolume = ySum / n
+    const percentChangePerCycle = avgVolume > 0 ? (slope / avgVolume) * 100 : 0
+
+    return {
+      trend: (percentChangePerCycle > 5 ? 'increasing'
+        : percentChangePerCycle < -5 ? 'decreasing'
+        : 'stable') as 'increasing' | 'decreasing' | 'stable' | 'insufficient_data',
+      percentChangePerCycle,
+      averageVolume: avgVolume,
+      latestVolume: volumes[volumes.length - 1],
+      cyclesAnalyzed: n
+    }
+  }
+
+  /**
+   * Analyze mental readiness trend across cycles
+   */
+  private analyzeMentalReadinessTrend(cycles: CycleCompletion[]): MentalReadinessTrend {
+    const readinessValues = cycles
+      .map(c => c.avg_mental_readiness)
+      .filter((mr): mr is number => mr !== null)
+      .reverse() // Oldest to newest
+
+    if (readinessValues.length < 2) {
+      return {
+        trend: 'insufficient_data' as const,
+        average: null,
+        latest: null,
+        changeFromFirst: null
+      }
+    }
+
+    const average = readinessValues.reduce((sum, v) => sum + v, 0) / readinessValues.length
+    const latest = readinessValues[readinessValues.length - 1]
+    const first = readinessValues[0]
+    const changeFromFirst = latest - first
+
+    return {
+      trend: (changeFromFirst > 0.5 ? 'improving'
+        : changeFromFirst < -0.5 ? 'declining'
+        : 'stable') as 'improving' | 'declining' | 'stable' | 'insufficient_data',
+      average,
+      latest,
+      changeFromFirst
+    }
+  }
+
+  /**
+   * Analyze workout consistency across cycles
+   */
+  private analyzeWorkoutConsistency(cycles: CycleCompletion[]): ConsistencyAnalysis {
+    const workoutCounts = cycles.map(c => c.total_workouts_completed)
+    const average = workoutCounts.reduce((sum, c) => sum + c, 0) / workoutCounts.length
+    const stdDev = Math.sqrt(
+      workoutCounts.reduce((sum, c) => sum + Math.pow(c - average, 2), 0) / workoutCounts.length
+    )
+    const coefficientOfVariation = average > 0 ? (stdDev / average) * 100 : 0
+
+    return {
+      rating: (coefficientOfVariation < 15 ? 'excellent'
+        : coefficientOfVariation < 25 ? 'good'
+        : coefficientOfVariation < 35 ? 'moderate'
+        : 'inconsistent') as 'excellent' | 'good' | 'moderate' | 'inconsistent',
+      averageWorkoutsPerCycle: average,
+      coefficientOfVariation,
+      latestCycleWorkouts: workoutCounts[0] // Most recent is first
+    }
+  }
+
+  /**
+   * Analyze muscle balance trends across cycles
+   */
+  private analyzeMuscleBalance(cycles: CycleCompletion[]): Record<string, MuscleBalanceTrend> {
+    const muscleBalanceTrends: Record<string, MuscleBalanceTrend> = {}
+
+    // Get all muscle groups across all cycles
+    const allMuscles = new Set<string>()
+    cycles.forEach(cycle => {
+      const volumeByMuscle = cycle.volume_by_muscle_group as Record<string, number>
+      Object.keys(volumeByMuscle || {}).forEach(muscle => allMuscles.add(muscle))
+    })
+
+    // Analyze each muscle group
+    allMuscles.forEach(muscle => {
+      const volumes = cycles
+        .map(c => {
+          const volumeByMuscle = c.volume_by_muscle_group as Record<string, number>
+          return volumeByMuscle?.[muscle] || 0
+        })
+        .reverse() // Oldest to newest
+
+      const average = volumes.reduce((sum, v) => sum + v, 0) / volumes.length
+      const latest = volumes[volumes.length - 1]
+      const first = volumes[0]
+      const percentChange = first > 0 ? ((latest - first) / first) * 100 : 0
+
+      muscleBalanceTrends[muscle] = {
+        trend: (percentChange > 15 ? 'increasing'
+          : percentChange < -15 ? 'decreasing'
+          : 'stable') as 'increasing' | 'decreasing' | 'stable',
+        averageVolume: average,
+        latestVolume: latest,
+        percentChange,
+        cyclesAnalyzed: volumes.length
+      }
+    })
+
+    return muscleBalanceTrends
+  }
+
+  /**
+   * Generate recommendations based on cycle trends
+   */
+  private generateCycleTrendRecommendations(trends: {
+    volumeProgression: VolumeTrend
+    mentalReadinessTrend: MentalReadinessTrend
+    workoutConsistency: ConsistencyAnalysis
+    muscleBalanceTrends: Record<string, MuscleBalanceTrend>
+  }): string[] {
+    const recommendations: string[] = []
+
+    // Volume recommendations
+    if (trends.volumeProgression.trend === 'decreasing') {
+      recommendations.push('Volume declining across cycles - consider addressing recovery or motivation')
+    } else if (trends.volumeProgression.trend === 'increasing' &&
+               trends.volumeProgression.percentChangePerCycle > 20) {
+      recommendations.push('Volume increasing rapidly (+20%/cycle) - monitor recovery to avoid overtraining')
+    }
+
+    // Mental readiness recommendations
+    if (trends.mentalReadinessTrend.trend === 'declining') {
+      recommendations.push('Mental readiness declining across cycles - prioritize recovery and stress management')
+    }
+
+    // Critical warning for volume increase + mental readiness decline
+    if (trends.volumeProgression.trend === 'increasing' &&
+        trends.mentalReadinessTrend.trend === 'declining') {
+      recommendations.push('CRITICAL: Volume increasing while mental readiness declining - deload recommended')
+    }
+
+    // Consistency recommendations
+    if (trends.workoutConsistency.rating === 'inconsistent') {
+      recommendations.push('Workout consistency variable - aim for more predictable training schedule')
+    }
+
+    // Muscle balance recommendations
+    const muscleEntries = Object.entries(trends.muscleBalanceTrends)
+    const increasingMuscles = muscleEntries.filter((entry): entry is [string, MuscleBalanceTrend] => entry[1].trend === 'increasing')
+    const decreasingMuscles = muscleEntries.filter((entry): entry is [string, MuscleBalanceTrend] => entry[1].trend === 'decreasing')
+
+    if (increasingMuscles.length > 0 && decreasingMuscles.length > 0) {
+      const topIncreasing = increasingMuscles.sort((a, b) => b[1].percentChange - a[1].percentChange)[0]
+      const topDecreasing = decreasingMuscles.sort((a, b) => a[1].percentChange - b[1].percentChange)[0]
+
+      recommendations.push(
+        `Muscle imbalance: ${topIncreasing[0]} increasing (${topIncreasing[1].percentChange.toFixed(0)}%) while ` +
+        `${topDecreasing[0]} decreasing (${topDecreasing[1].percentChange.toFixed(0)}%)`
+      )
+    }
+
+    return recommendations
   }
 }

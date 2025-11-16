@@ -31,11 +31,16 @@ export interface SplitPlannerInput {
   experienceYears?: number | null
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
+  userHeight?: number | null // cm (for work capacity estimation)
+  userWeight?: number | null // kg (for recovery capacity estimation)
   // Schedule constraints
   preferredRestDay?: number // 1-7, where 1 = Monday
   // Periodization context
   mesocycleWeek?: number | null // Current week of mesocycle (1-12)
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Caloric phase context (NEW - Item 1)
+  caloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
+  caloricIntakeKcal?: number | null // Daily surplus/deficit (-1500 to +1500)
   // Cycle history context (NEW)
   recentCycleCompletions?: CycleCompletionSummary[]
   cycleComparison?: CycleComparisonData | null
@@ -110,6 +115,16 @@ Always output valid JSON matching the exact structure specified.`
     // Build cycle history context (NEW)
     const cycleHistoryContext = this.buildCycleHistoryContext(input, approach)
 
+    // Build caloric phase context (NEW - Item 1)
+    const hasFixedVolume = approach.variables?.volumePerWeek?.isFixed || false
+    const caloricPhaseContext = this.buildCaloricPhaseContext(
+      input.caloricPhase,
+      input.caloricIntakeKcal,
+      hasFixedVolume,
+      approach.name,
+      approach.variables?.setsPerExercise
+    )
+
     const prompt = `
 Create a complete training split plan for this user.
 
@@ -181,6 +196,7 @@ Equipment Available: ${input.equipmentAvailable.join(', ')}
 ${demographicContext}
 ${constraintContext}
 ${cycleHistoryContext}
+${caloricPhaseContext}
 
 === TASK ===
 Design a complete training split plan that:
@@ -347,6 +363,14 @@ Output the split plan as JSON with this EXACT structure:
 
     if (input.userGender) {
       parts.push(`Gender: ${input.userGender}`)
+    }
+
+    if (input.userHeight) {
+      parts.push(`Height: ${input.userHeight} cm`)
+    }
+
+    if (input.userWeight) {
+      parts.push(`Weight: ${input.userWeight} kg`)
     }
 
     return parts.length > 0 ? parts.join('\n') : 'No demographic data provided'

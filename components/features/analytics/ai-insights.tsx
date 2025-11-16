@@ -1,6 +1,7 @@
 'use client'
 
-import { TrendingUp, Target, Award, AlertCircle, Sparkles } from 'lucide-react'
+import { TrendingUp, TrendingDown, Target, Award, AlertCircle, Sparkles } from 'lucide-react'
+import type { CycleTrendAnalysis } from '@/lib/types/cycle-trends.types'
 
 interface AIInsightsProps {
   insights: {
@@ -9,6 +10,8 @@ interface AIInsightsProps {
     improvements: string[]
     recommendations: string[]
     nextFocus: string
+    cycleTrends?: CycleTrendAnalysis
+    cycleCount?: number
   }
   loading?: boolean
   className?: string
@@ -108,6 +111,86 @@ export function AIInsights({ insights, loading = false, className = '' }: AIInsi
           ))}
         </ul>
       </div>
+
+      {/* Multi-Cycle Trends (if available) */}
+      {insights.cycleTrends && insights.cycleCount && insights.cycleCount >= 2 && (
+        <div className="mb-6 pt-4 border-t border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span className="font-semibold text-gray-900 dark:text-white">
+              Multi-Cycle Trends ({insights.cycleCount} cycles)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Volume Progression */}
+            <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg border border-blue-100 dark:border-blue-900">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Volume</div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold capitalize">
+                  {insights.cycleTrends.volumeProgression.trend}
+                </span>
+                {insights.cycleTrends.volumeProgression.trend === 'increasing' && (
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                )}
+                {insights.cycleTrends.volumeProgression.trend === 'decreasing' && (
+                  <TrendingDown className="w-3 h-3 text-red-500" />
+                )}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                {insights.cycleTrends.volumeProgression.percentChangePerCycle > 0 ? '+' : ''}
+                {insights.cycleTrends.volumeProgression.percentChangePerCycle.toFixed(1)}% per cycle
+              </div>
+            </div>
+
+            {/* Mental Readiness Trend */}
+            <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg border border-blue-100 dark:border-blue-900">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Mental State</div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold capitalize">
+                  {insights.cycleTrends.mentalReadinessTrend.trend}
+                </span>
+                {insights.cycleTrends.mentalReadinessTrend.trend === 'improving' && (
+                  <TrendingUp className="w-3 h-3 text-green-500" />
+                )}
+                {insights.cycleTrends.mentalReadinessTrend.trend === 'declining' && (
+                  <TrendingDown className="w-3 h-3 text-red-500" />
+                )}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Avg: {insights.cycleTrends.mentalReadinessTrend.average?.toFixed(1) || 'N/A'}/5
+              </div>
+            </div>
+
+            {/* Workout Consistency */}
+            <div className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg border border-blue-100 dark:border-blue-900">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Consistency</div>
+              <div className="text-sm font-semibold capitalize">
+                {insights.cycleTrends.workoutConsistency.rating}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                {insights.cycleTrends.workoutConsistency.averageWorkoutsPerCycle.toFixed(1)} workouts/cycle
+              </div>
+            </div>
+
+            {/* Top Muscle Trend */}
+            {Object.entries(insights.cycleTrends.muscleBalanceTrends)
+              .sort(([, a], [, b]) => Math.abs(b.percentChange) - Math.abs(a.percentChange))
+              .slice(0, 1)
+              .map(([muscle, trend]) => (
+                <div key={muscle} className="p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg border border-blue-100 dark:border-blue-900">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Top Change</div>
+                  <div className="text-sm font-semibold capitalize">{muscle}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
+                    {trend.trend === 'increasing' && <TrendingUp className="w-3 h-3 text-green-500" />}
+                    {trend.trend === 'decreasing' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                    {trend.percentChange > 0 ? '+' : ''}{trend.percentChange.toFixed(0)}%
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Next Focus */}
       <div className="pt-4 border-t border-blue-200 dark:border-blue-800">

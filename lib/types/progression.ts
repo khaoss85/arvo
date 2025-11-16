@@ -14,6 +14,13 @@ export interface ProgressionInput {
   // Periodization context
   mesocycleWeek?: number | null
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Caloric phase context (NEW - Item 2)
+  caloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
+  // Cycle fatigue context (NEW - Item 2)
+  currentCycleFatigue?: {
+    avgMentalReadiness: number | null  // Average mental readiness for current cycle
+    workoutsCompleted: number  // Number of workouts completed in current cycle
+  }
   // Exercise context for insight filtering
   exerciseName?: string
   // Active insights (NEW - for pain/injury awareness)
