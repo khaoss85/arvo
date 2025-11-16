@@ -28,6 +28,11 @@ export interface SubstitutionInput {
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
   caloricPhase?: 'bulk' | 'cut' | 'maintenance'
   caloricIntakeKcal?: number | null  // Daily caloric surplus (+) or deficit (-)
+  // Cycle fatigue context (NEW - Item 7)
+  currentCycleProgress?: {
+    volumeByMuscle: Record<string, number>
+    avgMentalReadiness: number | null
+  }
   // Optional: reason for substitution (for future conversational expansion)
   substitutionReason?: string
   // Active insights and memories (NEW)
@@ -138,6 +143,41 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
       ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}${input.caloricIntakeKcal ? ` (${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal/day)` : ''}`
       : ''
 
+    // Build cycle fatigue context (NEW - Item 7)
+    const cycleFatigueContext = input.currentCycleProgress?.avgMentalReadiness !== null &&
+                                 input.currentCycleProgress?.avgMentalReadiness !== undefined
+      ? `
+=== CYCLE FATIGUE STATUS ===
+Average Mental Readiness: ${input.currentCycleProgress.avgMentalReadiness.toFixed(1)}/5.0 ${
+  input.currentCycleProgress.avgMentalReadiness < 2.5 ? '(😫 FATIGUED)' :
+  input.currentCycleProgress.avgMentalReadiness < 3.5 ? '(😐 MODERATE FATIGUE)' :
+  '(🔥 FRESH)'
+}
+
+${input.currentCycleProgress.avgMentalReadiness < 2.5 ? `
+⚠️ FATIGUE ALERT: User is fatigued within this cycle.
+Substitution Guidance:
+- PRIORITIZE machines and cables over free weights (lower CNS demand)
+- Avoid high-skill, high-fatigue movements (heavy squats, deadlifts)
+- Prefer exercises with built-in safety (Smith machine, leg press, chest press machine)
+- Example: Barbell Squat → Leg Press or Safety Bar Squat
+- Example: Barbell Bench → Machine Chest Press or Dumbbell Bench (lighter)
+` : input.currentCycleProgress.avgMentalReadiness >= 3.5 ? `
+✅ FRESH STATE: User is well-recovered.
+Substitution Guidance:
+- Can suggest demanding free weight alternatives
+- Technical exercises acceptable (barbell variations, complex movements)
+- No special fatigue considerations needed
+` : `
+MODERATE FATIGUE: User has some fatigue but manageable.
+Substitution Guidance:
+- Balance between free weights and machines
+- Prefer slightly lower-skill alternatives when possible
+- Standard substitution logic applies
+`}
+`
+      : ''
+
     // Build substitution reason context
     const reasonContext = input.substitutionReason
       ? `Reason for Substitution: ${input.substitutionReason}`
@@ -190,6 +230,7 @@ ${weakPointsContext}
 ${demographicContext}
 ${periodizationContext}
 ${caloricPhaseContext}
+${cycleFatigueContext}
 ${reasonContext}
 ${insightsContext}
 ${memoriesContext}

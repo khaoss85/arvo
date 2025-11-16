@@ -23,6 +23,11 @@ export interface ModificationValidationInput {
     currentWeeklyVolumeByMuscle?: Record<string, number> // sets this week so far (Phase 3)
     mesocycleWeek?: number
     mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
+    // Cycle fatigue context (NEW - Item 8)
+    currentCycleProgress?: {
+      avgMentalReadiness: number | null
+      workoutsCompleted: number
+    }
   }
 
   // User context
@@ -135,6 +140,39 @@ Focus on helping users make informed decisions while respecting their autonomy.`
     const approachContext = this.buildApproachContext(approach)
     const periodizationContext = this.buildPeriodizationContext(input, approach)
 
+    // Build cycle fatigue context (NEW - Item 8)
+    const cycleFatigueContext = input.workoutContext.currentCycleProgress?.avgMentalReadiness !== null &&
+                                 input.workoutContext.currentCycleProgress?.avgMentalReadiness !== undefined
+      ? `
+Cycle Fatigue Status:
+- Average Mental Readiness: ${input.workoutContext.currentCycleProgress.avgMentalReadiness.toFixed(1)}/5.0 ${
+  input.workoutContext.currentCycleProgress.avgMentalReadiness < 2.5 ? '(😫 FATIGUED)' :
+  input.workoutContext.currentCycleProgress.avgMentalReadiness < 3.5 ? '(😐 MODERATE)' :
+  '(🔥 FRESH)'
+}
+- Workouts Completed: ${input.workoutContext.currentCycleProgress.workoutsCompleted}
+
+${input.workoutContext.currentCycleProgress.avgMentalReadiness < 2.5 ? `
+⚠️ FATIGUE ALERT: User is fatigued. Adding volume now risks overtraining.
+Validation Guidance:
+- STRONGLY discourage volume additions (use "not_recommended")
+- Suggest deload or rest instead
+- Warning message: "You're fatigued - adding volume now risks overtraining and injury"
+` : input.workoutContext.currentCycleProgress.avgMentalReadiness >= 3.5 ? `
+✅ FRESH STATE: User is well-recovered.
+Validation Guidance:
+- Volume additions more acceptable
+- Standard validation logic applies
+` : `
+MODERATE FATIGUE: Some accumulated fatigue.
+Validation Guidance:
+- Be conservative with volume additions
+- Use "caution" if adding volume
+- Suggest monitoring recovery closely
+`}
+`
+      : ''
+
     const prompt = `
 === MODIFICATION REQUEST ===
 Exercise: ${input.exerciseInfo.name} (${input.exerciseInfo.equipmentVariant || 'standard'})
@@ -150,6 +188,7 @@ Fatigue Level: ${input.exerciseInfo.stimulusToFatigueRatio || 'Not specified'}
 Workout Type: ${input.workoutContext.workoutType}
 Total Exercises: ${input.workoutContext.totalExercises}
 ${periodizationContext}
+${cycleFatigueContext}
 
 === USER CONTEXT ===
 Experience Years: ${input.userContext.experienceYears ?? 'Not specified'}
