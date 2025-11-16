@@ -495,21 +495,6 @@
     },
     "execution": {
       "loadingWorkout": "Caricamento allenamento...",
-      "setLogger": "Registra Serie",
-      "reps": "Reps",
-      "weight": "Peso",
-      "rir": "RIR",
-      "logSet": "Registra Serie",
-      "nextExercise": "Esercizio Successivo",
-      "previousExercise": "Esercizio Precedente",
-      "finishWorkout": "Termina Allenamento",
-      "mentalReadiness": {
-        "drained": "Esausto",
-        "struggling": "In Difficoltà",
-        "neutral": "Neutrale",
-        "engaged": "Concentrato",
-        "lockedIn": "Super Carico"
-      },
       "setLogger": {
         "warmup": "Riscaldamento {current}/{total}",
         "workingSet": "Serie {current}/{total}",
@@ -535,6 +520,20 @@
         "skipWarmupTitle": "Saltare il Riscaldamento?",
         "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro.",
         "confirmSkip": "Salta alle Serie"
+      },
+      "reps": "Reps",
+      "weight": "Peso",
+      "rir": "RIR",
+      "logSet": "Registra Serie",
+      "nextExercise": "Esercizio Successivo",
+      "previousExercise": "Esercizio Precedente",
+      "finishWorkout": "Termina Allenamento",
+      "mentalReadiness": {
+        "drained": "Esausto",
+        "struggling": "In Difficoltà",
+        "neutral": "Neutrale",
+        "engaged": "Concentrato",
+        "lockedIn": "Super Carico"
       },
       "progress": {
         "title": "Progresso Allenamento",
@@ -3497,5 +3496,37 @@
         }
       }
     }
+  },
+  "muscleGroups": {
+    "chest": "Petto",
+    "chest_upper": "Petto Alto",
+    "chest_lower": "Petto Basso",
+    "chest_total_assist": "Petto (Assist)",
+    "shoulders": "Spalle",
+    "shoulders_front": "Deltoidi Anteriori",
+    "shoulders_side": "Deltoidi Laterali",
+    "shoulders_rear": "Deltoidi Posteriori",
+    "front_delts": "Deltoidi Anteriori",
+    "side_delts": "Deltoidi Laterali",
+    "rear_delts": "Deltoidi Posteriori",
+    "triceps": "Tricipiti",
+    "triceps_long": "Tricipiti (Capo Lungo)",
+    "triceps_lateral": "Tricipiti (Capo Laterale)",
+    "triceps_medial": "Tricipiti (Capo Mediale)",
+    "back": "Schiena",
+    "upper_back": "Schiena Alta",
+    "back_width": "Schiena Larghezza",
+    "back_thickness": "Schiena Spessore",
+    "lats": "Dorsali",
+    "traps": "Trapezi",
+    "biceps": "Bicipiti",
+    "forearms": "Avambracci",
+    "quads": "Quadricipiti",
+    "hamstrings": "Femorali",
+    "glutes": "Glutei",
+    "calves": "Polpacci",
+    "abs": "Addominali",
+    "obliques": "Obliqui",
+    "lowerBack": "Lombare"
   }
 }

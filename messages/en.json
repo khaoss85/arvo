@@ -495,21 +495,6 @@
     },
     "execution": {
       "loadingWorkout": "Loading workout...",
-      "setLogger": "Set Logger",
-      "reps": "Reps",
-      "weight": "Weight",
-      "rir": "RIR",
-      "logSet": "Log Set",
-      "nextExercise": "Next Exercise",
-      "previousExercise": "Previous Exercise",
-      "finishWorkout": "Finish Workout",
-      "mentalReadiness": {
-        "drained": "Drained",
-        "struggling": "Struggling",
-        "neutral": "Neutral",
-        "engaged": "Engaged",
-        "lockedIn": "Locked In"
-      },
       "setLogger": {
         "warmup": "Warmup {current}/{total}",
         "workingSet": "Set {current}/{total}",
@@ -535,6 +520,20 @@
         "skipWarmupTitle": "Skip Warmup?",
         "skipWarmupConfirm": "Skip all {count} warmup {count, plural, one {set} other {sets}}? You can go straight to your working sets.",
         "confirmSkip": "Skip to Working Sets"
+      },
+      "reps": "Reps",
+      "weight": "Weight",
+      "rir": "RIR",
+      "logSet": "Log Set",
+      "nextExercise": "Next Exercise",
+      "previousExercise": "Previous Exercise",
+      "finishWorkout": "Finish Workout",
+      "mentalReadiness": {
+        "drained": "Drained",
+        "struggling": "Struggling",
+        "neutral": "Neutral",
+        "engaged": "Engaged",
+        "lockedIn": "Locked In"
       },
       "progress": {
         "title": "Workout Progress",
@@ -3497,5 +3496,37 @@
         }
       }
     }
+  },
+  "muscleGroups": {
+    "chest": "Chest",
+    "chest_upper": "Upper Chest",
+    "chest_lower": "Lower Chest",
+    "chest_total_assist": "Chest (Assisted)",
+    "shoulders": "Shoulders",
+    "shoulders_front": "Front Delts",
+    "shoulders_side": "Side Delts",
+    "shoulders_rear": "Rear Delts",
+    "front_delts": "Front Delts",
+    "side_delts": "Side Delts",
+    "rear_delts": "Rear Delts",
+    "triceps": "Triceps",
+    "triceps_long": "Triceps (Long Head)",
+    "triceps_lateral": "Triceps (Lateral Head)",
+    "triceps_medial": "Triceps (Medial Head)",
+    "back": "Back",
+    "upper_back": "Upper Back",
+    "back_width": "Back Width",
+    "back_thickness": "Back Thickness",
+    "lats": "Lats",
+    "traps": "Traps",
+    "biceps": "Biceps",
+    "forearms": "Forearms",
+    "quads": "Quads",
+    "hamstrings": "Hamstrings",
+    "glutes": "Glutes",
+    "calves": "Calves",
+    "abs": "Abs",
+    "obliques": "Obliques",
+    "lowerBack": "Lower Back"
   }
 }

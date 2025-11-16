@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
-import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
+import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
+import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Play, Eye, Moon, ArrowRight, Loader2 } from 'lucide-react'
@@ -99,6 +100,7 @@ function VarianceIndicator({ variance }: { variance: VolumeComparison }) {
 
 export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorkout, onRefreshTimeline, onSkipRestDay }: TimelineDayCardProps) {
   const t = useTranslations('dashboard.dayCard')
+  const getMuscleGroupLabel = useMuscleGroupLabel()
   const { day, status, session, completedWorkout, preGeneratedWorkout } = dayData
   const styles = STATUS_STYLES[status]
   const router = useRouter()

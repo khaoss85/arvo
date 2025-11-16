@@ -4,7 +4,8 @@ import { useTranslations } from 'next-intl'
 import type { SessionDefinition } from '@/lib/services/split-plan.service'
 import type { SplitPlan } from '@/lib/types/schemas'
 import type { MuscleVolumeBreakdown } from '@/lib/utils/workout-helpers'
-import { getWorkoutTypeIcon, getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
+import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
+import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 import { cn } from '@/lib/utils/cn'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
@@ -26,6 +27,7 @@ export function SplitReferenceCard({
   actualVolumes
 }: SplitReferenceCardProps) {
   const t = useTranslations('workout.splitReference')
+  const getMuscleGroupLabel = useMuscleGroupLabel()
 
   const workoutTypeIcon = getWorkoutTypeIcon(sessionDefinition.workoutType)
 

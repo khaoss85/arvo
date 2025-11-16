@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils/cn'
-import { getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
+import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 import type { MuscleVolumeProgress } from '@/lib/actions/volume-progress-actions'
 import { useTranslations } from 'next-intl'
 import { TrendingUp, BarChart3, ChevronRight } from 'lucide-react'
@@ -18,6 +18,7 @@ interface VolumeSummaryTimelineCardProps {
  */
 export function VolumeSummaryTimelineCard({ progressData }: VolumeSummaryTimelineCardProps) {
   const t = useTranslations('dashboard.volumeProgress')
+  const getMuscleGroupLabel = useMuscleGroupLabel()
   const [modalOpen, setModalOpen] = useState(false)
 
   // Show top 4 muscle groups by target volume (most important ones)

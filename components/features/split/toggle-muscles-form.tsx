@@ -7,6 +7,7 @@ import { validateSplitChangeAction, toggleMuscleInSessionAction } from '@/app/ac
 import type { SplitChangeValidationInput, SplitChangeValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import { ValidationConfirmDialog } from './validation-confirm-dialog'
 import { MUSCLE_GROUPS } from '@/lib/services/muscle-groups.service'
+import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 import { useUIStore } from '@/lib/stores/ui.store'
 
 interface ToggleMusclesFormProps {
@@ -27,6 +28,7 @@ interface ToggleMusclesFormProps {
 
 export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], onSuccess }: ToggleMusclesFormProps) {
   const t = useTranslations('dashboard.splitCustomization.toggle')
+  const getMuscleGroupLabel = useMuscleGroupLabel()
   const { addToast } = useUIStore()
 
   // Filter out completed days - can't modify workouts that have already been done
@@ -177,7 +179,7 @@ export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], o
                   key={idx}
                   className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm font-medium"
                 >
-                  {MUSCLE_GROUPS[muscle as keyof typeof MUSCLE_GROUPS] || muscle}
+                  {getMuscleGroupLabel(muscle)}
                 </span>
               ))
             ) : (
@@ -203,7 +205,7 @@ export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], o
             <option value="">{t('chooseMuscle')}</option>
             {availableMuscles.map((muscleKey) => (
               <option key={muscleKey} value={muscleKey}>
-                {MUSCLE_GROUPS[muscleKey as keyof typeof MUSCLE_GROUPS]}
+                {getMuscleGroupLabel(muscleKey)}
               </option>
             ))}
           </select>
@@ -223,9 +225,9 @@ export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], o
               : 'text-red-900 dark:text-red-100'
           }`}>
             {autoAction === 'add' ? (
-              <>➕ {t('willAdd', { muscle: MUSCLE_GROUPS[selectedMuscle as keyof typeof MUSCLE_GROUPS] })}</>
+              <>➕ {t('willAdd', { muscle: getMuscleGroupLabel(selectedMuscle) })}</>
             ) : (
-              <>➖ {t('willRemove', { muscle: MUSCLE_GROUPS[selectedMuscle as keyof typeof MUSCLE_GROUPS] })}</>
+              <>➖ {t('willRemove', { muscle: getMuscleGroupLabel(selectedMuscle) })}</>
             )}
           </p>
         </div>

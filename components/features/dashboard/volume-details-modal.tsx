@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { getMuscleGroupLabel } from '@/lib/services/muscle-groups.service'
+import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 import type { MuscleVolumeProgress } from '@/lib/actions/volume-progress-actions'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils/cn'
@@ -30,6 +30,7 @@ export function VolumeDetailsModal({
   overallPercentage
 }: VolumeDetailsModalProps) {
   const t = useTranslations('dashboard.volumeProgress')
+  const getMuscleGroupLabel = useMuscleGroupLabel()
 
   const getBarColor = (pct: number) => {
     if (pct < 50) return 'bg-red-500 dark:bg-red-600'
