@@ -47,7 +47,10 @@ export class WorkoutGeneratorService {
     // Get server Supabase client for server-side operations
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
     const supabase = await getSupabaseServerClient()
-    const exerciseSelector = new ExerciseSelector(supabase, 'medium')
+
+    // Use low reasoning for faster exercise selection (90s vs 240s timeout)
+    // Medium reasoning was too slow for synchronous workout generation (appears stuck during generation)
+    const exerciseSelector = new ExerciseSelector(supabase, 'low')
 
     // Get user profile
     const profile = await UserProfileService.getByUserIdServer(userId)
