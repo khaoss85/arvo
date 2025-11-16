@@ -3,6 +3,7 @@ import { AudioScriptGeneratorAgent } from '@/lib/agents/audio-script-generator.a
 import { WorkoutService } from './workout.service'
 import { UserProfileService } from './user-profile.service'
 import { SplitPlanService } from './split-plan.service'
+import { CycleStatsService } from './cycle-stats.service'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import {
   getNextWorkoutType,
@@ -175,6 +176,39 @@ export class WorkoutGeneratorService {
       relatedMuscles: memory.related_muscles || []
     }))
 
+    // Calculate current cycle progress for fatigue-aware exercise selection
+    let currentCycleProgress: {
+      volumeByMuscle: Record<string, number>
+      workoutsCompleted: number
+      avgMentalReadiness: number | null
+    } | undefined
+
+    try {
+      // Only calculate cycle progress if user has an active split plan
+      if (profile.active_split_plan_id) {
+        const cycleStats = await CycleStatsService.calculateCycleStats(
+          userId,
+          profile.active_split_plan_id
+        )
+
+        // Extract relevant fields for exercise selection
+        currentCycleProgress = {
+          volumeByMuscle: cycleStats.volumeByMuscleGroup,
+          workoutsCompleted: cycleStats.totalWorkoutsCompleted,
+          avgMentalReadiness: cycleStats.avgMentalReadiness
+        }
+
+        console.log(`[WorkoutGenerator] Cycle progress loaded:`, {
+          workouts: currentCycleProgress.workoutsCompleted,
+          avgMR: currentCycleProgress.avgMentalReadiness?.toFixed(1),
+          muscles: Object.keys(currentCycleProgress.volumeByMuscle).length
+        })
+      }
+    } catch (error) {
+      console.error('[WorkoutGenerator] Failed to load cycle progress (non-critical):', error)
+      // Continue without cycle progress - it's optional context for AI
+    }
+
     // Select exercises using AI
     const selection = await exerciseSelector.selectExercises({
       workoutType,
@@ -197,6 +231,8 @@ export class WorkoutGeneratorService {
       // Active insights and memories for AI safety and personalization
       activeInsights: transformedInsights,
       activeMemories: transformedMemories,
+      // Current cycle progress for fatigue-aware exercise selection
+      currentCycleProgress: currentCycleProgress,
       ...sessionContext
     })
 

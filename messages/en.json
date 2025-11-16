@@ -2168,6 +2168,23 @@
           "frequency": "After every set"
         }
       },
+      "cycleIntelligence": {
+        "title": "Cycle Intelligence",
+        "description": "Learns from every cycle you complete · AI Agent",
+        "previousCycleLabel": "PREVIOUS CYCLE STATS:",
+        "analyzing": "AI analyzing history...",
+        "newSplitLabel": "NEW SPLIT ADAPTATIONS:",
+        "adaptations": "Intelligent Adaptations:",
+        "reasoning": {
+          "volume": "✓ Volume reduced 10% after detecting declining readiness",
+          "recovery": "✓ Shorter, more frequent sessions to improve recovery",
+          "balance": "✓ Extra focus on chest/shoulders (under-trained last cycle)"
+        },
+        "stats": {
+          "learns": "Learns from: Last 3 cycles",
+          "compares": "Compares: Volume + Recovery"
+        }
+      },
       "safetyFirst": {
         "title": "Safety-First: Insights Integration",
         "description": "Every AI agent reads active insights and adapts automatically",
@@ -2319,6 +2336,17 @@
         },
         "badge": "Powered by: UI + AI validation"
       },
+      "adaptivePlanning": {
+        "title": "Adaptive Split Planning",
+        "description": "Training plans that evolve with you · AI Agent",
+        "detail": "Your next split learns from previous cycles. Volume, recovery, and muscle balance automatically optimized based on real performance data.",
+        "features": {
+          "cycleAware": "Considers last 3 cycles when planning",
+          "volumeOptimization": "Progressive volume based on recovery trends",
+          "recoveryBased": "Auto-adjusts frequency if fatigue detected"
+        },
+        "badge": "Powered by: Cycle Intelligence"
+      },
       "realExample": {
         "title": "Real-World Scenario: Heavy Squat Session",
         "timeline": {
@@ -2372,6 +2400,7 @@
         "aiReasoning": "AI Reasoning (GPT-5)",
         "setBySetProgression": "Set-by-set progression",
         "patternLearning": "Pattern learning",
+        "learnsFromCycles": "Learns from your training cycles",
         "naturalLanguageNotes": "Natural language notes → AI insights",
         "biomechanicalAdjustments": "Biomechanical adjustments",
         "volumeTracking": "Volume tracking (MEV/MAV/MRV)",
@@ -2485,6 +2514,18 @@
       "intelligentPrevention": {
         "title": "Intelligent prevention:",
         "description": "The system tracks progress stalls, mental readiness trends, and volume accumulation. When multiple biomarkers suggest fatigue, it recommends a deload before performance degrades."
+      },
+      "cycleComparison": {
+        "title": "Cycle-to-Cycle Progress Tracking",
+        "description": "See how each training cycle compares to the last",
+        "totalVolume": "Total Volume",
+        "mentalReadiness": "Avg Mental Readiness",
+        "workoutsCompleted": "Workouts Completed",
+        "vsPrevious": "Previous cycle",
+        "aiInsight": {
+          "bold": "AI noticed improvement:",
+          "text": "Higher volume with better recovery shows your capacity is increasing. Next cycle can push slightly harder while maintaining these recovery metrics."
+        }
       },
       "comparisonNote": {
         "bold": "Excel can't do this.",

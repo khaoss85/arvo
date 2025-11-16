@@ -40,6 +40,13 @@ export function ComparisonTable() {
       personalTrainer: true,
     },
     {
+      name: t('features.learnsFromCycles'),
+      arvo: true,
+      excel: false,
+      genericApps: false,
+      personalTrainer: "partial",
+    },
+    {
       name: t('features.naturalLanguageNotes'),
       arvo: true,
       excel: false,

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Droplet, Volume2, Zap, CheckCircle, Clock, Activity } from "lucide-react";
+import { Droplet, Volume2, Zap, CheckCircle, Clock, Activity, TrendingUp } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
 export function AICoachingFeatures() {
@@ -53,6 +53,21 @@ export function AICoachingFeatures() {
       color: "text-orange-600 dark:text-orange-400",
       bgColor: "bg-orange-50 dark:bg-orange-950/20",
       borderColor: "border-orange-200 dark:border-orange-900",
+    },
+    {
+      icon: TrendingUp,
+      title: t('adaptivePlanning.title'),
+      description: t('adaptivePlanning.description'),
+      detail: t('adaptivePlanning.detail'),
+      badge: t('adaptivePlanning.badge'),
+      features: [
+        t('adaptivePlanning.features.cycleAware'),
+        t('adaptivePlanning.features.volumeOptimization'),
+        t('adaptivePlanning.features.recoveryBased'),
+      ],
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-950/20",
+      borderColor: "border-green-200 dark:border-green-900",
     },
   ];
 
@@ -111,7 +126,7 @@ export function AICoachingFeatures() {
         </motion.div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {features.map((feature, index) => (
             <motion.div
               key={index}

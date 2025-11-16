@@ -29,7 +29,7 @@ export interface ExerciseSelectionInput {
   // Caloric phase context
   caloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
   caloricIntakeKcal?: number | null  // Daily caloric surplus (+) or deficit (-)
-  // Insights and Memories (NEW)
+  // Insights and Memories
   activeInsights?: Array<{
     id: string
     type: string
@@ -47,6 +47,12 @@ export interface ExerciseSelectionInput {
     relatedExercises: string[]
     relatedMuscles: string[]
   }>
+  // Current cycle progress for fatigue-aware selection (NEW)
+  currentCycleProgress?: {
+    volumeByMuscle: Record<string, number>
+    workoutsCompleted: number
+    avgMentalReadiness: number | null
+  }
 }
 
 export interface WarmupSet {
@@ -309,6 +315,150 @@ export class ExerciseSelector extends BaseAgent {
     // 'low' reasoning reduces retry failures and improves first-attempt success rate
     super(supabaseClient, reasoningEffort || 'low', 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
+  }
+
+  /**
+   * Build cycle fatigue context for AI prompt
+   * Provides exercise selection rules based on current cycle fatigue/mental readiness
+   */
+  private buildCycleFatigueContext(input: ExerciseSelectionInput, approach: any): string {
+    if (!input.currentCycleProgress) {
+      return '' // No cycle data available
+    }
+
+    const { avgMentalReadiness, volumeByMuscle, workoutsCompleted } = input.currentCycleProgress
+
+    let context = '\n=== 💪 CURRENT CYCLE FATIGUE CONTEXT ===\n\n'
+    context += `Workouts completed this cycle: ${workoutsCompleted}\n`
+
+    // Mental readiness analysis and exercise selection rules
+    if (avgMentalReadiness !== null) {
+      const mr = avgMentalReadiness
+      const mrEmoji = mr <= 2 ? '🔴' : mr <= 3 ? '🟡' : '🟢'
+
+      context += `\nCycle average mental readiness: ${mrEmoji} ${mr.toFixed(1)}/5.0\n`
+
+      // Fatigue-aware exercise selection rules
+      if (mr < 2.5) {
+        context += `\n⚠️ **HIGH FATIGUE STATE** - User experiencing accumulated fatigue\n\n`
+        context += `**MANDATORY EXERCISE SELECTION ADJUSTMENTS:**\n`
+        context += `1. Equipment Priority:\n`
+        context += `   ✅ PRIORITIZE: Machines, cables, Smith machine (lower systemic fatigue)\n`
+        context += `   ⚠️ REDUCE: Heavy barbell compounds (high CNS demand)\n`
+        context += `   ❌ AVOID: Deadlift variations, heavy squats unless essential to approach\n\n`
+
+        context += `2. Exercise Complexity:\n`
+        context += `   ✅ PREFER: Bilateral/stable movements (leg press vs barbell squat)\n`
+        context += `   ⚠️ CAUTION: Unilateral exercises (require more stability/focus)\n`
+        context += `   ❌ AVOID: Olympic lift variations, complex movement patterns\n\n`
+
+        context += `3. RIR Adjustment:\n`
+        context += `   • Keep RIR higher: 3-4 (far from failure)\n`
+        context += `   • Focus on volume maintenance, NOT intensity pushing\n`
+        context += `   • Reduce working sets if approach allows flexibility\n\n`
+
+        context += `4. Exercise Order:\n`
+        context += `   • Start with most stable/safe exercises\n`
+        context += `   • Save machine work for later in workout (when fatigued)\n`
+        context += `   • Consider reducing total exercise variety (fewer movements, more sets each)\n\n`
+
+        context += `**Rationale:** High fatigue impairs recovery and increases injury risk. Priority is maintaining muscle stimulus while managing systemic stress.\n`
+
+      } else if (mr < 3.5) {
+        context += `\n📊 **MODERATE FATIGUE STATE** - Normal training stress\n\n`
+        context += `**EXERCISE SELECTION GUIDELINES:**\n`
+        context += `1. Balanced approach:\n`
+        context += `   • Mix of free weights and machines\n`
+        context += `   • Standard approach-based exercise distribution\n`
+        context += `   • Normal RIR targets (2-3)\n\n`
+
+        context += `2. Minor adjustments:\n`
+        context += `   • Slight preference for higher stimulus-to-fatigue exercises\n`
+        context += `   • Consider user equipment preferences more heavily\n`
+        context += `   • Standard volume targets\n\n`
+
+        context += `**Rationale:** User is in sustainable training zone. Apply approach principles normally.\n`
+
+      } else {
+        // High mental readiness (> 3.5)
+        context += `\n✅ **HIGH READINESS STATE** - User is fresh and recovered\n\n`
+        context += `**EXERCISE SELECTION OPPORTUNITIES:**\n`
+        context += `1. Equipment Priority:\n`
+        context += `   ✅ EMBRACE: Challenging free weights, barbell compounds\n`
+        context += `   ✅ CONSIDER: Olympic lift variations if approach supports\n`
+        context += `   ✅ UTILIZE: Complex movement patterns (good time for skill work)\n\n`
+
+        context += `2. Intensity Pushing:\n`
+        context += `   • Lower RIR targets: 1-2 (closer to failure)\n`
+        context += `   • Consider advanced techniques if approach supports (drop sets, rest-pause)\n`
+        context += `   • Explore top end of volume ranges if approach allows\n\n`
+
+        context += `3. Exercise Complexity:\n`
+        context += `   • Good time for unilateral exercises (require stability/focus)\n`
+        context += `   • Consider exercise variations that challenge coordination\n`
+        context += `   • Prioritize exercises with steep learning curve\n\n`
+
+        context += `**Rationale:** High readiness = enhanced work capacity and recovery. Capitalize on this window for quality volume.\n`
+      }
+    }
+
+    // Volume landmarks analysis (check if approaching MAV/MRV)
+    if (volumeByMuscle && Object.keys(volumeByMuscle).length > 0) {
+      context += `\n=== 📊 CYCLE VOLUME ACCUMULATION ===\n\n`
+
+      // Get volume landmarks from approach if available
+      const volumeLandmarks = approach.volumeLandmarks as Record<string, { MEV: number; MAV: number; MRV: number }> | undefined
+
+      const approachingMAV: string[] = []
+      const approachingMRV: string[] = []
+
+      for (const [muscle, currentVolume] of Object.entries(volumeByMuscle)) {
+        if (volumeLandmarks && volumeLandmarks[muscle]) {
+          const { MAV, MRV } = volumeLandmarks[muscle]
+          const percentOfMAV = (currentVolume / MAV) * 100
+          const percentOfMRV = (currentVolume / MRV) * 100
+
+          if (percentOfMAV >= 80) {
+            approachingMAV.push(`${muscle} (${currentVolume} sets, ${percentOfMAV.toFixed(0)}% of MAV)`)
+          }
+
+          if (percentOfMRV >= 70) {
+            approachingMRV.push(`${muscle} (${currentVolume} sets, ${percentOfMRV.toFixed(0)}% of MRV)`)
+          }
+        }
+      }
+
+      if (approachingMRV.length > 0) {
+        context += `⚠️ **MUSCLES APPROACHING MRV** (Maximum Recoverable Volume):\n`
+        approachingMRV.forEach(m => context += `   • ${m}\n`)
+        context += `\n**ACTION REQUIRED:**\n`
+        context += `   • REDUCE sets for these muscles (aim for maintenance volume)\n`
+        context += `   • Select lower-fatigue exercise variations (machines vs free weights)\n`
+        context += `   • Consider SKIPPING direct work if muscle is secondary to other exercises\n`
+        context += `   • This is a recovery-protective measure - user is at overtraining threshold\n\n`
+      } else if (approachingMAV.length > 0) {
+        context += `📊 **MUSCLES APPROACHING MAV** (Maximum Adaptive Volume):\n`
+        approachingMAV.forEach(m => context += `   • ${m}\n`)
+        context += `\n**GUIDELINE:**\n`
+        context += `   • Use conservative end of volume ranges for these muscles\n`
+        context += `   • Prioritize quality over quantity (perfect reps, mind-muscle connection)\n`
+        context += `   • Slight preference for higher stimulus-to-fatigue exercises\n`
+        context += `   • User is nearing optimal volume - don't push beyond MAV unless approach requires\n\n`
+      } else {
+        context += `✅ All muscle groups within healthy volume ranges (below MAV threshold)\n`
+        context += `   • Normal exercise selection applies\n`
+        context += `   • User has volume headroom for quality training\n\n`
+      }
+    }
+
+    context += `\n**INTEGRATION WITH APPROACH:**\n`
+    context += `These fatigue-aware adjustments should be applied WITHIN the ${approach.name} methodology.\n`
+    context += `• Approach constraints (sets per exercise, periodization) remain ABSOLUTE (Priority 1)\n`
+    context += `• Fatigue adjustments guide exercise SELECTION and intensity, not total volume structure\n`
+    context += `• Example: If approach requires 4 sets per exercise, keep 4 sets but choose machines instead of barbells when fatigued\n`
+    context += `\n${'='.repeat(60)}\n`
+
+    return context
   }
 
   get systemPrompt() {
@@ -621,6 +771,9 @@ ${input.caloricPhase === 'maintenance' ? `
 `
       : ''
 
+    // Build cycle fatigue context (fatigue-aware exercise selection)
+    const cycleFatigueContext = this.buildCycleFatigueContext(input, approach)
+
     // Build session context if provided (for split-based workouts)
     const sessionContext = input.sessionFocus || input.targetVolume || input.sessionPrinciples
       ? `
@@ -766,6 +919,7 @@ ${romEmphasisContext}
 ${stimulusToFatigueContext}
 ${periodizationContext}
 ${caloricPhaseContext}
+${cycleFatigueContext}
 ${sessionContext}
 
 User weak points: ${input.weakPoints.join(', ') || 'None specified'}

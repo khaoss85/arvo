@@ -2168,6 +2168,23 @@
           "frequency": "Dopo ogni serie"
         }
       },
+      "cycleIntelligence": {
+        "title": "Intelligenza del Ciclo",
+        "description": "Impara da ogni ciclo che completi · Agente AI",
+        "previousCycleLabel": "STATISTICHE CICLO PRECEDENTE:",
+        "analyzing": "AI analizza la cronologia...",
+        "newSplitLabel": "ADATTAMENTI NUOVA SPLIT:",
+        "adaptations": "Adattamenti Intelligenti:",
+        "reasoning": {
+          "volume": "✓ Volume ridotto del 10% dopo rilevamento calo prontezza",
+          "recovery": "✓ Sessioni più brevi e frequenti per migliorare recupero",
+          "balance": "✓ Focus extra su petto/spalle (sotto-allenati ciclo scorso)"
+        },
+        "stats": {
+          "learns": "Impara da: Ultimi 3 cicli",
+          "compares": "Confronta: Volume + Recupero"
+        }
+      },
       "safetyFirst": {
         "title": "Safety-First: Integrazione Insights",
         "description": "Ogni agente AI legge gli insight attivi e si adatta automaticamente",
@@ -2319,6 +2336,17 @@
         },
         "badge": "Powered by: UI + validazione AI"
       },
+      "adaptivePlanning": {
+        "title": "Pianificazione Split Adattiva",
+        "description": "Piani di allenamento che evolvono con te · Agente AI",
+        "detail": "La tua prossima split impara dai cicli precedenti. Volume, recupero e bilanciamento muscolare ottimizzati automaticamente basandosi su dati di performance reali.",
+        "features": {
+          "cycleAware": "Considera gli ultimi 3 cicli nella pianificazione",
+          "volumeOptimization": "Volume progressivo basato su trend di recupero",
+          "recoveryBased": "Auto-regola la frequenza se rileva affaticamento"
+        },
+        "badge": "Powered by: Intelligenza del Ciclo"
+      },
       "realExample": {
         "title": "Scenario Reale: Sessione Squat Pesante",
         "timeline": {
@@ -2372,6 +2400,7 @@
         "aiReasoning": "Ragionamento AI (GPT-5)",
         "setBySetProgression": "Progressione serie per serie",
         "patternLearning": "Apprendimento di pattern",
+        "learnsFromCycles": "Impara dai tuoi cicli di allenamento",
         "naturalLanguageNotes": "Note in linguaggio naturale → insight AI",
         "biomechanicalAdjustments": "Aggiustamenti biomeccanici",
         "volumeTracking": "Tracciamento volume (MEV/MAV/MRV)",
@@ -2485,6 +2514,18 @@
       "intelligentPrevention": {
         "title": "Prevenzione intelligente:",
         "description": "Il sistema traccia stalli di progresso, trend di prontezza mentale e accumulo di volume. Quando molteplici biomarker suggeriscono affaticamento, raccomanda uno scarico prima che la performance si degradi."
+      },
+      "cycleComparison": {
+        "title": "Tracciamento Progressi Ciclo-a-Ciclo",
+        "description": "Vedi come ogni ciclo di allenamento si confronta con il precedente",
+        "totalVolume": "Volume Totale",
+        "mentalReadiness": "Prontezza Mentale Media",
+        "workoutsCompleted": "Allenamenti Completati",
+        "vsPrevious": "Ciclo precedente",
+        "aiInsight": {
+          "bold": "L'AI ha notato miglioramenti:",
+          "text": "Volume maggiore con miglior recupero mostra che la tua capacità sta aumentando. Il prossimo ciclo può spingere leggermente di più mantenendo queste metriche di recupero."
+        }
       },
       "comparisonNote": {
         "bold": "Excel non può farlo.",

@@ -31,5 +31,5 @@ export default async function DashboardPage() {
   const volumeProgressResult = await getVolumeProgressAction(user.id);
   const volumeProgress = volumeProgressResult.success && volumeProgressResult.data ? volumeProgressResult.data : [];
 
-  return <DashboardClient user={user} workouts={workouts} volumeProgress={volumeProgress} />;
+  return <DashboardClient user={user} profile={profile} workouts={workouts} volumeProgress={volumeProgress} />;
 }

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { BarChart3, AlertTriangle, TrendingDown } from "lucide-react";
+import { BarChart3, AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
 export function VolumeTrackingVisual() {
@@ -199,13 +199,89 @@ export function VolumeTrackingVisual() {
           </Card>
         </motion.div>
 
+        {/* Cycle-to-Cycle Comparison */}
+        <motion.div
+          className="mt-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Card className="border-2 border-primary-200 dark:border-primary-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                {t('cycleComparison.title')}
+              </CardTitle>
+              <CardDescription>
+                {t('cycleComparison.description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-4">
+                {/* Volume Comparison */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-xs text-muted-foreground mb-2">{t('cycleComparison.totalVolume')}</div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-bold text-foreground">28,450kg</div>
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
+                      <TrendingUp className="w-4 h-4" />
+                      +12%
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('cycleComparison.vsPrevious')}: 25,400kg
+                  </div>
+                </div>
+
+                {/* Mental Readiness */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-xs text-muted-foreground mb-2">{t('cycleComparison.mentalReadiness')}</div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-bold text-foreground">3.8/5</div>
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
+                      <TrendingUp className="w-4 h-4" />
+                      +0.6
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('cycleComparison.vsPrevious')}: 3.2/5
+                  </div>
+                </div>
+
+                {/* Workouts Completed */}
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="text-xs text-muted-foreground mb-2">{t('cycleComparison.workoutsCompleted')}</div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-2xl font-bold text-foreground">21</div>
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-semibold">
+                      <TrendingUp className="w-4 h-4" />
+                      +3
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {t('cycleComparison.vsPrevious')}: 18
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Insight */}
+              <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-950/20 rounded-md text-sm border border-primary-200 dark:border-primary-800">
+                <p className="text-primary-900 dark:text-primary-200">
+                  <strong>{t('cycleComparison.aiInsight.bold')}</strong> {t('cycleComparison.aiInsight.text')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Comparison Note */}
         <motion.div
           className="mt-8 text-center"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
         >
           <div className="inline-block bg-background border-2 border-primary-200 dark:border-primary-800 rounded-lg p-4 max-w-3xl">
             <p className="text-sm text-muted-foreground">

@@ -1,6 +1,24 @@
 import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 
+export interface CycleCompletionSummary {
+  cycleNumber: number
+  completedAt: string
+  totalVolume: number
+  totalWorkoutsCompleted: number
+  avgMentalReadiness: number | null
+  totalSets: number
+  volumeByMuscleGroup: Record<string, number>
+  workoutsByType: Record<string, number>
+}
+
+export interface CycleComparisonData {
+  volumeDelta: number // Percentage change
+  workoutsDelta: number // Absolute change
+  mentalReadinessDelta: number | null // Absolute change
+  setsDelta: number // Absolute change
+}
+
 export interface SplitPlannerInput {
   userId: string
   approachId: string
@@ -18,6 +36,9 @@ export interface SplitPlannerInput {
   // Periodization context
   mesocycleWeek?: number | null // Current week of mesocycle (1-12)
   mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition' | null
+  // Cycle history context (NEW)
+  recentCycleCompletions?: CycleCompletionSummary[]
+  cycleComparison?: CycleComparisonData | null
 }
 
 export interface SessionDefinition {
@@ -84,6 +105,9 @@ Always output valid JSON matching the exact structure specified.`
 
     // Build constraint context
     const constraintContext = this.buildConstraintContext(input)
+
+    // Build cycle history context (NEW)
+    const cycleHistoryContext = this.buildCycleHistoryContext(input, approach)
 
     const prompt = `
 Create a complete training split plan for this user.
@@ -155,6 +179,7 @@ Weak Points: ${input.weakPoints.join(', ') || 'None specified'}
 Equipment Available: ${input.equipmentAvailable.join(', ')}
 ${demographicContext}
 ${constraintContext}
+${cycleHistoryContext}
 
 === TASK ===
 Design a complete training split plan that:
@@ -311,5 +336,164 @@ Output the split plan as JSON with this EXACT structure:
     }
 
     return parts.length > 0 ? `\nSchedule Constraints:\n${parts.join('\n')}` : ''
+  }
+
+  private buildCycleHistoryContext(input: SplitPlannerInput, approach: any): string {
+    if (!input.recentCycleCompletions || input.recentCycleCompletions.length === 0) {
+      return ''
+    }
+
+    const formatDate = (isoString: string) => {
+      const date = new Date(isoString)
+      const now = new Date()
+      const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 0) return 'today'
+      if (diffDays === 1) return 'yesterday'
+      if (diffDays < 7) return `${diffDays} days ago`
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+      return `${Math.floor(diffDays / 30)} months ago`
+    }
+
+    let context = '\n=== USER\'S CYCLE PERFORMANCE HISTORY ===\n'
+    context += 'IMPORTANT: Use this historical data to inform your split design. Learn from what worked and what didn\'t.\n\n'
+
+    // Show recent cycles
+    input.recentCycleCompletions.forEach((cycle, idx) => {
+      const cycleAge = idx === 0 ? '🔵 MOST RECENT CYCLE' : `Cycle ${idx + 1} ago`
+
+      context += `**Cycle #${cycle.cycleNumber} (${cycleAge})**\n`
+      context += `Completed: ${formatDate(cycle.completedAt)}\n`
+      context += `Total Volume: ${cycle.totalVolume.toFixed(0)}kg\n`
+      context += `Workouts Completed: ${Object.values(cycle.workoutsByType).reduce((a, b) => a + b, 0)}\n`
+      context += `Average Mental Readiness: ${cycle.avgMentalReadiness?.toFixed(1) || 'N/A'}/5.0 ${
+        cycle.avgMentalReadiness
+          ? cycle.avgMentalReadiness >= 4 ? '😊 (user was fresh and engaged)'
+          : cycle.avgMentalReadiness >= 3 ? '😐 (moderate fatigue)'
+          : cycle.avgMentalReadiness >= 2 ? '😓 (high fatigue)'
+          : '😰 (very high fatigue - user struggled)'
+          : ''
+      }\n`
+      context += `Total Sets: ${cycle.totalSets}\n\n`
+
+      // Volume distribution
+      const sortedMuscles = Object.entries(cycle.volumeByMuscleGroup)
+        .sort((a, b) => b[1] - a[1])
+
+      context += `Volume Distribution by Muscle Group:\n`
+      sortedMuscles.forEach(([muscle, sets]) => {
+        const mev = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mev || 10
+        const mav = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mav || 20
+        const mrv = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mrv || 26
+
+        let status = ''
+        if (sets < mev) status = ' ⚠️ BELOW MEV (under-trained)'
+        else if (sets >= mev && sets < mav) status = ' ✓ Maintenance volume'
+        else if (sets >= mav && sets < mrv) status = ' ✅ Optimal growth zone (MAV)'
+        else status = ' ⚠️ APPROACHING MRV (risk of overtraining)'
+
+        context += `  - ${muscle}: ${sets} sets${status}\n`
+      })
+
+      // Workout types
+      context += `\nWorkout Types Distribution:\n`
+      Object.entries(cycle.workoutsByType).forEach(([type, count]) => {
+        context += `  - ${type}: ${count} workouts\n`
+      })
+
+      context += '\n---\n\n'
+    })
+
+    // Add comparison analysis if available
+    if (input.cycleComparison && input.recentCycleCompletions.length >= 2) {
+      context += '**📊 PERFORMANCE TREND (Current vs Previous Cycle)**\n'
+      context += `- Volume Change: ${input.cycleComparison.volumeDelta > 0 ? '+' : ''}${input.cycleComparison.volumeDelta.toFixed(1)}%\n`
+      context += `- Workouts Change: ${input.cycleComparison.workoutsDelta > 0 ? '+' : ''}${input.cycleComparison.workoutsDelta}\n`
+      context += `- Mental Readiness Change: ${
+        input.cycleComparison.mentalReadinessDelta !== null
+          ? `${input.cycleComparison.mentalReadinessDelta > 0 ? '+' : ''}${input.cycleComparison.mentalReadinessDelta.toFixed(1)} points`
+          : 'N/A'
+      }\n`
+      context += `- Sets Change: ${input.cycleComparison.setsDelta > 0 ? '+' : ''}${input.cycleComparison.setsDelta}\n\n`
+
+      // Add AI guidance based on trends
+      context += '**🎯 CRITICAL INSTRUCTIONS BASED ON CYCLE HISTORY**\n\n'
+
+      // Scenario 1: Volume declining + Mental readiness declining (overtraining or burnout)
+      if (input.cycleComparison.volumeDelta < -10 && input.cycleComparison.mentalReadinessDelta && input.cycleComparison.mentalReadinessDelta < -0.5) {
+        context += '⚠️ **ALERT: DECLINING PERFORMANCE DETECTED**\n'
+        context += `Volume is DECLINING (-${Math.abs(input.cycleComparison.volumeDelta).toFixed(1)}%) AND mental readiness is DROPPING (-${Math.abs(input.cycleComparison.mentalReadinessDelta).toFixed(1)} points).\n\n`
+        context += 'DIAGNOSIS: User is likely experiencing overtraining, burnout, or life stress.\n\n'
+        context += 'ACTION FOR NEW SPLIT:\n'
+        context += '- Reduce volume by 15-20% from last cycle\'s peak\n'
+        context += '- Increase frequency slightly (shorter, more frequent sessions for better recovery)\n'
+        context += '- Add explicit strategic deload week every 4-6 weeks\n'
+        context += '- Focus on exercise variety and enjoyment to boost mental engagement\n'
+        context += '- Consider recommending a full deload week BEFORE starting this new split\n\n'
+      }
+
+      // Scenario 2: Volume increasing + Mental readiness declining (overreaching)
+      if (input.cycleComparison.volumeDelta > 10 && input.cycleComparison.mentalReadinessDelta && input.cycleComparison.mentalReadinessDelta < -0.5) {
+        context += '⚠️ **ALERT: OVERREACHING DETECTED**\n'
+        context += `Volume is INCREASING (+${input.cycleComparison.volumeDelta.toFixed(1)}%) but mental readiness is DECLINING (-${Math.abs(input.cycleComparison.mentalReadinessDelta).toFixed(1)} points).\n\n`
+        context += 'DIAGNOSIS: User pushed too hard too fast. Poor recovery or excessive volume accumulation.\n\n'
+        context += 'ACTION FOR NEW SPLIT:\n'
+        context += '- CAP volume at current levels (do NOT increase further)\n'
+        context += '- Optimize recovery: redistribute volume across more sessions if possible\n'
+        context += '- Prioritize exercise variety to maintain engagement and reduce monotony\n'
+        context += '- Consider starting with a strategic deload (50% volume reduction for 1 week)\n\n'
+      }
+
+      // Scenario 3: Volume increasing + Mental readiness improving (positive adaptation)
+      if (input.cycleComparison.volumeDelta > 5 && input.cycleComparison.mentalReadinessDelta && input.cycleComparison.mentalReadinessDelta > 0.3) {
+        context += '✅ **EXCELLENT: POSITIVE ADAPTATION DETECTED**\n'
+        context += `Volume is INCREASING (+${input.cycleComparison.volumeDelta.toFixed(1)}%) AND mental readiness is IMPROVING (+${input.cycleComparison.mentalReadinessDelta.toFixed(1)} points).\n\n`
+        context += 'DIAGNOSIS: User is responding exceptionally well to training. Recovery is excellent.\n\n'
+        context += 'ACTION FOR NEW SPLIT:\n'
+        context += '- Continue progressive overload: increase volume by another 5-10% (approaching MAV)\n'
+        context += '- Consider introducing advanced techniques (drop sets, myoreps, rest-pause) if appropriate for phase\n'
+        context += '- Maintain current split structure as it\'s clearly working well\n'
+        context += '- User can handle more challenging exercise variations\n\n'
+      }
+
+      // Check for under-trained muscles
+      const lastCycle = input.recentCycleCompletions[0]
+      const underTrainedMuscles = Object.entries(lastCycle.volumeByMuscleGroup)
+        .filter(([muscle, sets]) => {
+          const mev = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mev || 10
+          return sets < mev
+        })
+        .map(([muscle]) => muscle)
+
+      if (underTrainedMuscles.length > 0) {
+        context += '⚠️ **UNDER-TRAINED MUSCLES DETECTED**\n'
+        underTrainedMuscles.forEach(muscle => {
+          const sets = lastCycle.volumeByMuscleGroup[muscle]
+          const mev = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mev || 10
+          context += `- ${muscle}: ${sets} sets (below MEV of ${mev} sets)\n`
+        })
+        context += '\nACTION: Increase volume for these muscles to at least MEV in the new split.\n\n'
+      }
+
+      // Check for over-trained muscles (approaching MRV)
+      const overTrainedMuscles = Object.entries(lastCycle.volumeByMuscleGroup)
+        .filter(([muscle, sets]) => {
+          const mrv = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mrv || 26
+          return sets >= mrv * 0.9
+        })
+        .map(([muscle]) => muscle)
+
+      if (overTrainedMuscles.length > 0) {
+        context += '⚠️ **MUSCLES APPROACHING MRV (OVERTRAINING RISK)**\n'
+        overTrainedMuscles.forEach(muscle => {
+          const sets = lastCycle.volumeByMuscleGroup[muscle]
+          const mrv = approach.volumeLandmarks?.muscleGroups?.[muscle]?.mrv || 26
+          context += `- ${muscle}: ${sets} sets (approaching MRV of ${mrv} sets)\n`
+        })
+        context += '\nACTION: Reduce volume for these muscles or schedule a deload to avoid overtraining.\n\n'
+      }
+    }
+
+    return context
   }
 }

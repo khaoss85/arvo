@@ -46,7 +46,7 @@ export function AIShowcase() {
         </motion.div>
 
         <motion.div
-          className="grid md:grid-cols-3 gap-6"
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -272,8 +272,66 @@ export function AIShowcase() {
             </Card>
           </motion.div>
 
-          {/* Example 4: Insights & Safety Integration */}
-          <motion.div variants={itemVariants} className="md:col-span-3">
+          {/* Example 4: Cycle Intelligence */}
+          <motion.div variants={itemVariants}>
+            <Card className="h-full border-2 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      {t('cycleIntelligence.title')}
+                    </CardTitle>
+                    <CardDescription className="mt-2">
+                      {t('cycleIntelligence.description')}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Previous Cycle Stats */}
+                <div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('cycleIntelligence.previousCycleLabel')}</div>
+                  <div className="bg-muted rounded-md p-3 text-sm font-mono space-y-1">
+                    <div><span className="text-primary-600 dark:text-primary-400">totalVolume:</span> 28,450 kg</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">mentalReadiness:</span> 2.8/5</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">workouts:</span> 18</div>
+                    <div><span className="text-orange-600 dark:text-orange-400">trend:</span> "declining_readiness"</div>
+                  </div>
+                </div>
+
+                {/* AI Analyzing */}
+                <div className="flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <Brain className="w-5 h-5 text-primary-500 animate-pulse" />
+                    <span className="text-xs text-muted-foreground">{t('cycleIntelligence.analyzing')}</span>
+                  </div>
+                </div>
+
+                {/* New Split Suggestion */}
+                <div>
+                  <div className="text-xs font-mono text-muted-foreground mb-2">{t('cycleIntelligence.newSplitLabel')}</div>
+                  <div className="bg-background rounded-md p-3 text-sm font-mono space-y-2 border border-green-300 dark:border-green-700">
+                    <div className="text-green-600 dark:text-green-400">{`// ${t('cycleIntelligence.adaptations')}`}</div>
+                    <div className="pl-2 space-y-1 text-xs">
+                      <div className="text-muted-foreground">{t('cycleIntelligence.reasoning.volume')}</div>
+                      <div className="text-muted-foreground">{t('cycleIntelligence.reasoning.recovery')}</div>
+                      <div className="text-muted-foreground">{t('cycleIntelligence.reasoning.balance')}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="pt-2 flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                  <span>{t('cycleIntelligence.stats.learns')}</span>
+                  <span>{t('cycleIntelligence.stats.compares')}</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Example 5: Insights & Safety Integration */}
+          <motion.div variants={itemVariants} className="md:col-span-2 lg:col-span-4">
             <Card className="border-2 border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-950/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
