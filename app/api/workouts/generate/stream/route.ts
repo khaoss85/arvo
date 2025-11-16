@@ -6,6 +6,7 @@ import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationCache } from '@/lib/services/generation-cache'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
+import { GenerationQueueService } from '@/lib/services/generation-queue.service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -56,8 +57,8 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Helper to send progress update with ETA
-          const sendProgress = (
+          // Helper to send progress update with ETA (updates both stream and database)
+          const sendProgress = async (
             phase: string,
             progress: number,
             message: string,
@@ -72,16 +73,52 @@ export async function POST(request: NextRequest) {
               ...(detail && { detail })
             })
             controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+
+            // Also update database queue (non-blocking, errors logged but not thrown)
+            if (generationRequestId) {
+              try {
+                await GenerationQueueService.updateProgress({
+                  requestId: generationRequestId,
+                  progressPercent: progress,
+                  currentPhase: message
+                })
+              } catch (error) {
+                console.warn('[WorkoutGenerate] Failed to update queue progress:', error)
+                // Don't throw - progress updates are non-critical
+              }
+            }
           }
 
-          // Check cache for previous interrupted generation (idempotency + reconnection)
+          // Check database queue for previous generation (survives server restarts)
+          let queueEntry = null
           if (generationRequestId) {
-            const cached = GenerationCache.get(generationRequestId)
+            queueEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
 
+            if (queueEntry?.status === 'completed' && queueEntry.workout_id) {
+              // Previous generation completed - return the result
+              console.log(`[WorkoutGenerate] Returning completed generation from database: ${generationRequestId}`)
+
+              // Fetch the workout
+              const { WorkoutService } = await import('@/lib/services/workout.service')
+              const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
+
+              if (workout) {
+                await sendProgress('complete', 100, tProgress('workoutReady'))
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                  phase: 'complete',
+                  workout,
+                  insightInfluencedChanges: [] // Not stored in queue entry
+                })}\n\n`))
+                safeClose(controller)
+                return
+              }
+            }
+
+            // Check in-memory cache as well (faster for immediate reconnections)
+            const cached = GenerationCache.get(generationRequestId)
             if (cached?.status === 'complete') {
-              // Previous generation completed while client was disconnected
               console.log(`[WorkoutGenerate] Returning cached result: ${generationRequestId}`)
-              sendProgress('complete', 100, tProgress('workoutReady'))
+              await sendProgress('complete', 100, tProgress('workoutReady'))
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({
                 phase: 'complete',
                 workout: cached.workout,
@@ -91,7 +128,23 @@ export async function POST(request: NextRequest) {
               return
             }
 
-            // Mark as started (for polling fallback)
+            // Create or update database queue entry
+            if (!queueEntry) {
+              // Create new queue entry
+              queueEntry = await GenerationQueueService.createServer({
+                userId,
+                requestId: generationRequestId,
+                targetCycleDay: targetCycleDay ?? null,
+                context: { type: 'workout', targetCycleDay }
+              })
+              console.log(`[WorkoutGenerate] Created queue entry: ${queueEntry.id}`)
+            } else if (queueEntry.status === 'pending' || queueEntry.status === 'in_progress') {
+              // Resume existing generation - mark as started
+              await GenerationQueueService.markAsStarted(generationRequestId)
+              console.log(`[WorkoutGenerate] Resuming generation: ${generationRequestId}`)
+            }
+
+            // Mark as started in cache (for polling fallback)
             GenerationCache.start(generationRequestId)
           }
 
@@ -118,11 +171,11 @@ export async function POST(request: NextRequest) {
           }
 
           // Milestone 1: Starting (0%)
-          sendProgress('profile', 0, tProgress('starting'), getRemainingEta(0))
+          await sendProgress('profile', 0, tProgress('starting'), getRemainingEta(0))
 
           try {
             // Milestone 2: Loading profile (10%)
-            sendProgress('profile', 10, tProgress('loadingProfile'), getRemainingEta(10))
+            await sendProgress('profile', 10, tProgress('loadingProfile'), getRemainingEta(10))
 
             // Determine if we're generating for current day or future day
             let result
@@ -133,18 +186,18 @@ export async function POST(request: NextRequest) {
               const currentCycleDay = profile?.current_cycle_day || 1
 
               // Milestone 3: Profile loaded (20%)
-              sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
+              await sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
 
               // Milestone 4: Planning workout split (30%)
-              sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
+              await sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
 
               // Milestone 5: AI analyzing exercises (45%)
-              sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
+              await sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
 
               if (targetCycleDay === currentCycleDay) {
                 // Current day: use generateWorkout with status='ready'
                 // Milestone 6: AI selecting best exercises (55%)
-                sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+                await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
 
                 result = await WorkoutGeneratorService.generateWorkout(userId, {
                   targetCycleDay,
@@ -153,7 +206,7 @@ export async function POST(request: NextRequest) {
               } else if (targetCycleDay > currentCycleDay) {
                 // Future day: use generateDraftWorkout
                 // Milestone 6: AI selecting exercises for future day (55%)
-                sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+                await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
 
                 result = await WorkoutGeneratorService.generateDraftWorkout(
                   userId,
@@ -167,16 +220,16 @@ export async function POST(request: NextRequest) {
               profile = await UserProfileService.getByUserIdServer(userId)
 
               // Milestone 3: Profile loaded (20%)
-              sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
+              await sendProgress('profile', 20, tProgress('loadingProfile'), getRemainingEta(20))
 
               // Milestone 4: Planning workout (30%)
-              sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
+              await sendProgress('split', 30, tProgress('planningWorkout'), getRemainingEta(30))
 
               // Milestone 5: AI analyzing (45%)
-              sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
+              await sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
 
               // Milestone 6: AI selecting (55%)
-              sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+              await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
 
               result = await WorkoutGeneratorService.generateWorkout(userId, {
                 status: 'ready'
@@ -184,16 +237,16 @@ export async function POST(request: NextRequest) {
             }
 
             // Milestone 7: Optimizing workout (75%)
-            sendProgress('optimization', 75, tProgress('optimizing'), getRemainingEta(75))
+            await sendProgress('optimization', 75, tProgress('optimizing'), getRemainingEta(75))
 
             // Milestone 8: Analyzing performance history (85%)
-            sendProgress('optimization', 85, tProgress('analyzingHistory'), getRemainingEta(85))
+            await sendProgress('optimization', 85, tProgress('analyzingHistory'), getRemainingEta(85))
 
             // Milestone 9: Finalizing workout (95%)
-            sendProgress('finalize', 95, tProgress('finalizing'), getRemainingEta(95))
+            await sendProgress('finalize', 95, tProgress('finalizing'), getRemainingEta(95))
 
             // Milestone 10: Complete (100%)
-            sendProgress('complete', 100, tProgress('workoutReady'), 0)
+            await sendProgress('complete', 100, tProgress('workoutReady'), 0)
             const completeData = JSON.stringify({
               phase: 'complete',
               workout: result.workout,
@@ -201,13 +254,26 @@ export async function POST(request: NextRequest) {
             })
             controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
 
-            // Cache the completed generation (for reconnection/polling)
+            // Save completion to cache and database
             if (generationRequestId) {
+              // Cache the completed generation (for reconnection/polling)
               GenerationCache.complete(
                 generationRequestId,
                 result.workout,
                 result.insightInfluencedChanges || []
               )
+
+              // Mark as completed in database queue (survives server restarts)
+              try {
+                await GenerationQueueService.markAsCompleted({
+                  requestId: generationRequestId,
+                  workoutId: result.workout.id
+                })
+                console.log(`[WorkoutGenerate] Marked generation as completed in database: ${generationRequestId}`)
+              } catch (error) {
+                console.error('[WorkoutGenerate] Failed to mark as completed in database:', error)
+                // Don't throw - workout was generated successfully
+              }
 
               // Track successful generation metrics for ETA improvement
               await GenerationMetricsService.completeGeneration(generationRequestId, true)
@@ -231,12 +297,24 @@ export async function POST(request: NextRequest) {
             timestamp: new Date().toISOString()
           })
 
-          // Cache the error (for polling fallback)
+          // Save error to cache and database
           if (generationRequestId) {
-            GenerationCache.error(
-              generationRequestId,
-              error instanceof Error ? error.message : 'Generation failed'
-            )
+            const errorMessage = error instanceof Error ? error.message : 'Generation failed'
+
+            // Cache the error (for polling fallback)
+            GenerationCache.error(generationRequestId, errorMessage)
+
+            // Mark as failed in database queue (survives server restarts)
+            try {
+              await GenerationQueueService.markAsFailed({
+                requestId: generationRequestId,
+                errorMessage
+              })
+              console.log(`[WorkoutGenerate] Marked generation as failed in database: ${generationRequestId}`)
+            } catch (dbError) {
+              console.error('[WorkoutGenerate] Failed to mark as failed in database:', dbError)
+              // Don't throw - error already occurred
+            }
           }
 
           // Provide user-friendly error messages based on error type

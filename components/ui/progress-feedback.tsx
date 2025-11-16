@@ -51,14 +51,55 @@ export function ProgressFeedback({
   const [detail, setDetail] = useState<string | null>(null) // Additional details
 
   // Polling fallback for mobile disconnections
-  const [generationRequestId] = useState(() => {
-    // Generate UUID only once per component mount
+  const [generationRequestId, setGenerationRequestId] = useState(() => {
+    // Generate UUID only once per component mount (may be replaced if resuming)
     return crypto.randomUUID()
   })
   const [pollingMode, setPollingMode] = useState(false)
+  const [resumedFromDatabase, setResumedFromDatabase] = useState(false)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Polling logic (activated on SSE failure)
+  // Check on mount if there's an active generation to resume (database queue)
+  useEffect(() => {
+    const checkActiveGeneration = async () => {
+      try {
+        const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
+        const { getUserId } = await import('@/lib/utils/get-user-id')
+
+        const userId = await getUserId()
+        if (!userId) return
+
+        const activeGeneration = await GenerationQueueService.getActiveGeneration(userId)
+
+        if (activeGeneration && (activeGeneration.status === 'pending' || activeGeneration.status === 'in_progress')) {
+          console.log('[ProgressFeedback] Found active generation to resume:', {
+            requestId: activeGeneration.request_id,
+            progress: activeGeneration.progress_percent,
+            phase: activeGeneration.current_phase
+          })
+
+          // Use the request ID from the active generation
+          setGenerationRequestId(activeGeneration.request_id)
+
+          // Resume from where it left off
+          setProgress(activeGeneration.progress_percent)
+          if (activeGeneration.current_phase) {
+            setMessage(activeGeneration.current_phase)
+          }
+          setPhase(getPhaseFromProgress(activeGeneration.progress_percent))
+          setResumedFromDatabase(true)
+          setPollingMode(true) // Start polling immediately
+        }
+      } catch (error) {
+        console.error('[ProgressFeedback] Failed to check for active generation:', error)
+        // Don't block normal flow - just log the error
+      }
+    }
+
+    checkActiveGeneration()
+  }, []) // Run once on mount
+
+  // Polling logic (activated on SSE failure or resume from database)
   useEffect(() => {
     if (!pollingMode || !generationRequestId) return
 
@@ -123,6 +164,12 @@ export function ProgressFeedback({
   }, [pollingMode, generationRequestId, onComplete, onError])
 
   useEffect(() => {
+    // Skip SSE if we resumed from database (already polling)
+    if (resumedFromDatabase) {
+      console.log('[ProgressFeedback] Skipping SSE - resumed from database, using polling')
+      return
+    }
+
     // AbortController for cleanup and extended timeout
     const abortController = new AbortController()
 
@@ -232,10 +279,10 @@ export function ProgressFeedback({
       clearTimeout(timeoutId)
       abortController.abort()
     }
-    // Only depend on endpoint to avoid re-fetching when requestBody reference changes
+    // Only depend on endpoint and resumedFromDatabase to avoid re-fetching when requestBody reference changes
     // requestBody values are already captured in the fetch call above
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint])
+  }, [endpoint, resumedFromDatabase])
 
   const currentPhaseData = activePhases.find(p => p.id === phase) || activePhases[0]
   const currentPhaseIndex = activePhases.findIndex(p => p.id === phase)
