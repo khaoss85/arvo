@@ -945,9 +945,25 @@ COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
   * Isolation exercises (curls, raises, flyes) do NOT need warmup sets
 - setGuidance: For ALL exercises, provide per-set technical and mental focus for EACH working set:
   * technicalFocus: What to focus on technically (e.g., "Full ROM", "Squeeze at top", "Control the eccentric")
-  * mentalFocus: Mental approach for that set (e.g., "Stay controlled", "Push through fatigue", "Quality over speed")
-  * Progression across sets: early sets focus on technique, later sets on intensity and mental toughness
-  * Keep VERY brief (max 5-6 words each)
+  * mentalFocus: VISUALIZATION-BASED mental imagery specific to exercise execution
+    - Use imagery/visualization verbs (IT): "immagina", "visualizza", "pensa a", "senti come se"
+    - Use imagery/visualization verbs (EN): "imagine", "visualize", "think of", "feel as if"
+    - Make it EXERCISE-SPECIFIC (different cue for each exercise), examples:
+      * Peck Deck (IT): "Immagina di portare i bicipiti vicini mentre tieni il petto il più alto possibile"
+      * Peck Deck (EN): "Imagine bringing your biceps close together while keeping your chest as high as possible"
+      * Lat Pulldown (IT): "Visualizza i gomiti che tirano dietro al busto, non le mani verso il basso"
+      * Lat Pulldown (EN): "Visualize your elbows pulling behind your torso, not your hands pulling down"
+      * Leg Press (IT): "Senti come se spingessi il pavimento lontano da te, non il peso in alto"
+      * Leg Press (EN): "Feel as if you're pushing the floor away from you, not pushing the weight up"
+      * Cable Face Pull (IT): "Pensa a separare le mani il più possibile, come se aprissi una porta scorrevole"
+      * Cable Fly (IT): "Visualizza di abbracciare un grande albero davanti a te"
+      * Dumbbell Row (IT): "Immagina di portare il gomito il più indietro possibile, verso il soffitto"
+    - Vary by set intensity and number:
+      * Early sets (1-2): Connection cues (IT: "Senti il muscolo attivarsi", EN: "Feel the muscle activate")
+      * Middle sets (3-4): Intensity cues (IT: "Visualizza il muscolo contrarsi forte", EN: "Visualize the muscle contracting hard")
+      * Final sets: Power/explosive cues (IT: "Immagina potenza esplosiva attraverso il movimento", EN: "Imagine explosive power through the movement")
+  * Progression across sets: early sets focus on mind-muscle connection imagery, later sets on power/intensity imagery
+  * Keep concise but descriptive (8-15 words for visualization cues)
 
 Select 4-6 exercises following the approach philosophy.
 

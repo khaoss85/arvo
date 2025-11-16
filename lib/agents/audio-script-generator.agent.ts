@@ -628,7 +628,10 @@ ${targetLanguage === 'it' ? `
    Pause: 1000ms
 
    Segment 2 (7-10 seconds when spoken):
-   - Mental approach based on set position/intensity
+   - VISUALIZATION-BASED mental imagery (use mentalFocus if provided)
+   - Help athlete understand HOW to think about executing the exercise correctly
+   - Examples (IT): "Per fare bene questo esercizio devi immaginare di portare i bicipiti vicini mentre tieni il petto il più alto possibile"
+   - Examples (EN): "To nail this exercise, visualize driving your elbows behind your torso, not pulling with your hands"
    - Reference previous performance if relevant
    - Acknowledge mental state if low
    Pause: 2000ms (mental digestion time)
