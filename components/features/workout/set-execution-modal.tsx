@@ -42,7 +42,6 @@ export function SetExecutionModal({
   onSetComplete,
 }: SetExecutionModalProps) {
   const [executionState, setExecutionState] = useState<SetExecutionState | null>(null)
-  const [isStarting, setIsStarting] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
   const [actualReps, setActualReps] = useState(targetReps)
 
@@ -69,8 +68,7 @@ export function SetExecutionModal({
 
   // Start set when modal opens
   useEffect(() => {
-    if (isOpen && !isStarting) {
-      setIsStarting(true)
+    if (isOpen) {
       setShowCompletionDialog(false)
 
       // Generate AI cue pools and start set
@@ -136,17 +134,13 @@ export function SetExecutionModal({
             language,
             setNumber,
           })
-        } finally {
-          setIsStarting(false)
         }
       }
 
-      // Small delay before starting for UX, then generate and start
-      setTimeout(() => {
-        startSetWithPools()
-      }, 500)
+      // Start immediately
+      startSetWithPools()
     }
-  }, [isOpen, tempo, targetReps, exerciseName, language, setNumber, isStarting])
+  }, [isOpen, tempo, targetReps, exerciseName, language, setNumber])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -264,15 +258,7 @@ export function SetExecutionModal({
 
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto">
-          {isStarting ? (
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center space-y-4">
-                <div className="text-4xl animate-pulse">
-                  {language === 'it' ? 'Preparati...' : 'Get ready...'}
-                </div>
-              </div>
-            </div>
-          ) : showCompletionDialog ? (
+          {showCompletionDialog ? (
             /* Completion Dialog */
             <div className="flex items-center justify-center min-h-[400px] p-6">
               <div className="text-center space-y-6 max-w-md">
@@ -336,7 +322,7 @@ export function SetExecutionModal({
         </div>
 
         {/* Control Buttons (only show during active execution) */}
-        {!isStarting && !showCompletionDialog && executionState?.isActive && (
+        {!showCompletionDialog && executionState?.isActive && (
           <div className="p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <div className="grid grid-cols-3 gap-4">
               <Button
