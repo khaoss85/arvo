@@ -7,6 +7,7 @@ import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationCache } from '@/lib/services/generation-cache'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
 import { GenerationQueueService } from '@/lib/services/generation-queue.service'
+import { ProgressSimulator } from '@/lib/utils/progress-simulator'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -196,22 +197,45 @@ export async function POST(request: NextRequest) {
 
               if (targetCycleDay === currentCycleDay) {
                 // Current day: use generateWorkout with status='ready'
-                // Milestone 6: AI selecting best exercises (55%)
-                await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+                // Start progress simulation during AI call (45% → 75%)
+                const simulator = new ProgressSimulator()
+                const aiStartProgress = 45
+                const aiEndProgress = 75
+                // Estimate AI duration as 30% of total estimated duration (or 120s default)
+                const estimatedAiDuration = estimatedDuration ? Math.floor(estimatedDuration * 0.3) : 120000
 
-                result = await WorkoutGeneratorService.generateWorkout(userId, {
-                  targetCycleDay,
-                  status: 'ready'
+                simulator.start(aiStartProgress, aiEndProgress, estimatedAiDuration, async (progress) => {
+                  await sendProgress('ai', progress, tProgress('aiSelecting'), getRemainingEta(progress))
                 })
+
+                try {
+                  result = await WorkoutGeneratorService.generateWorkout(userId, {
+                    targetCycleDay,
+                    status: 'ready'
+                  })
+                } finally {
+                  simulator.stop()
+                }
               } else if (targetCycleDay > currentCycleDay) {
                 // Future day: use generateDraftWorkout
-                // Milestone 6: AI selecting exercises for future day (55%)
-                await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+                // Start progress simulation during AI call (45% → 75%)
+                const simulator = new ProgressSimulator()
+                const aiStartProgress = 45
+                const aiEndProgress = 75
+                const estimatedAiDuration = estimatedDuration ? Math.floor(estimatedDuration * 0.3) : 120000
 
-                result = await WorkoutGeneratorService.generateDraftWorkout(
-                  userId,
-                  targetCycleDay
-                )
+                simulator.start(aiStartProgress, aiEndProgress, estimatedAiDuration, async (progress) => {
+                  await sendProgress('ai', progress, tProgress('aiSelecting'), getRemainingEta(progress))
+                })
+
+                try {
+                  result = await WorkoutGeneratorService.generateDraftWorkout(
+                    userId,
+                    targetCycleDay
+                  )
+                } finally {
+                  simulator.stop()
+                }
               } else {
                 throw new Error(tErrors('cannotGeneratePastDay', { current: currentCycleDay, target: targetCycleDay }))
               }
@@ -228,12 +252,23 @@ export async function POST(request: NextRequest) {
               // Milestone 5: AI analyzing (45%)
               await sendProgress('ai', 45, tProgress('aiAnalyzing'), getRemainingEta(45))
 
-              // Milestone 6: AI selecting (55%)
-              await sendProgress('ai', 55, tProgress('aiSelecting'), getRemainingEta(55))
+              // Start progress simulation during AI call (45% → 75%)
+              const simulator = new ProgressSimulator()
+              const aiStartProgress = 45
+              const aiEndProgress = 75
+              const estimatedAiDuration = estimatedDuration ? Math.floor(estimatedDuration * 0.3) : 120000
 
-              result = await WorkoutGeneratorService.generateWorkout(userId, {
-                status: 'ready'
+              simulator.start(aiStartProgress, aiEndProgress, estimatedAiDuration, async (progress) => {
+                await sendProgress('ai', progress, tProgress('aiSelecting'), getRemainingEta(progress))
               })
+
+              try {
+                result = await WorkoutGeneratorService.generateWorkout(userId, {
+                  status: 'ready'
+                })
+              } finally {
+                simulator.stop()
+              }
             }
 
             // Milestone 7: Optimizing workout (75%)

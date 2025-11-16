@@ -4,6 +4,7 @@ import type { SplitType } from '@/lib/services/muscle-groups.service'
 import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
+import { ProgressSimulator } from '@/lib/utils/progress-simulator'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -122,20 +123,36 @@ export async function POST(request: NextRequest) {
           if (data.splitType && data.weeklyFrequency) {
             sendProgress('split', 40, tProgress('planningWorkout'), getRemainingEta(40))
             sendProgress('split', 50, tProgress('analyzingApproach'), getRemainingEta(50))
-            sendProgress('split', 60, tProgress('generatingSplit'), getRemainingEta(60))
+
+            // Start progress simulation during AI call (50% → 90%)
+            const simulator = new ProgressSimulator()
+            const aiStartProgress = 50
+            const aiEndProgress = 90
+            // Estimate AI duration as 40% of total estimated duration (or 120s default)
+            const estimatedAiDuration = estimatedDuration ? Math.floor(estimatedDuration * 0.4) : 120000
+
+            simulator.start(aiStartProgress, aiEndProgress, estimatedAiDuration, async (progress) => {
+              sendProgress('split', progress, tProgress('generatingSplit'), getRemainingEta(progress))
+            })
 
             const { generateSplitPlanAction } = await import('@/app/actions/split-actions')
-            const splitResult = await generateSplitPlanAction({
-              userId: data.userId,
-              approachId: data.approachId,
-              splitType: data.splitType,
-              weeklyFrequency: data.weeklyFrequency,
-              weakPoints: data.weakPoints || [],
-              equipmentAvailable: data.availableEquipment || [],
-              experienceYears: data.confirmedExperience || null,
-              userAge: data.age || null,
-              userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
-            }, splitGenerationRequestId) // Pass requestId for resume capability
+            let splitResult
+
+            try {
+              splitResult = await generateSplitPlanAction({
+                userId: data.userId,
+                approachId: data.approachId,
+                splitType: data.splitType,
+                weeklyFrequency: data.weeklyFrequency,
+                weakPoints: data.weakPoints || [],
+                equipmentAvailable: data.availableEquipment || [],
+                experienceYears: data.confirmedExperience || null,
+                userAge: data.age || null,
+                userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
+              }, splitGenerationRequestId) // Pass requestId for resume capability
+            } finally {
+              simulator.stop()
+            }
 
             if (splitResult?.success && splitResult.data) {
               splitPlanId = splitResult.data.splitPlan.id
