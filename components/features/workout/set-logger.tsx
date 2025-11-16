@@ -9,6 +9,7 @@ import { ConfirmDialog } from './confirm-dialog'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
 import { Target } from 'lucide-react'
 import { audioCoachingService } from '@/lib/services/audio-coaching.service'
+import type { PreSetCoachingScript } from '@/lib/types/pre-set-coaching'
 
 interface SetLoggerProps {
   exercise: ExerciseExecution
@@ -125,6 +126,8 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [isSkipping, setIsSkipping] = useState(false)
   const [showSkipWarmupDialog, setShowSkipWarmupDialog] = useState(false)
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false)
+  const [cachedScripts, setCachedScripts] = useState<Map<string, PreSetCoachingScript>>(new Map())
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -146,15 +149,77 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   }
 
   const handleStartAudioCoaching = async () => {
-    // Generate simple audio script for set execution
-    const script = {
-      id: `set-${setNumber}-coaching`,
-      type: 'set_execution' as const,
-      text: `Set ${setNumber}. ${exercise.exerciseName}. ${reps} reps at ${weight} kilograms. Let's go!`,
-      priority: 8,
-    }
+    setIsGeneratingScript(true)
 
-    audioCoachingService.enqueue(script)
+    try {
+      // Build cache key based on context
+      const intensity = rir <= 1 ? 'heavy' : rir <= 3 ? 'moderate' : 'light'
+      const position =
+        setNumber === 1
+          ? 'first'
+          : setNumber === (isWarmup ? remainingWarmupSets : exercise.targetSets)
+            ? 'last'
+            : 'middle'
+      const cacheKey = `${exercise.exerciseName}-${isWarmup ? 'warmup' : 'working'}-${position}-${intensity}-${locale}`
+
+      // Check cache first
+      let script = cachedScripts.get(cacheKey)
+
+      if (!script) {
+        // Generate new script via API
+        const response = await fetch('/api/audio/pre-set-coaching', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            exerciseName: exercise.exerciseName,
+            setNumber: workingSetNumber || setNumber,
+            totalSets: isWarmup ? remainingWarmupSets : exercise.targetSets,
+            isWarmup,
+            weight,
+            reps,
+            rir,
+            tempo: exercise.tempo,
+            technicalFocus: isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus,
+            mentalFocus: currentGuidance?.mentalFocus,
+            previousSets: exercise.completedSets.slice(-2).map((s) => ({
+              weight: s.weight,
+              reps: s.reps,
+              rir: s.rir,
+              mentalReadiness: s.mentalReadiness,
+            })),
+            mentalReadiness,
+            language: locale,
+          }),
+        })
+
+        if (!response.ok) throw new Error('Failed to generate script')
+
+        script = await response.json()
+
+        // Cache for session
+        setCachedScripts((prev) => new Map(prev).set(cacheKey, script!))
+      }
+
+      // Enqueue script for playback
+      audioCoachingService.enqueue({
+        id: `pre-set-${setNumber}-${Date.now()}`,
+        type: 'pre_set',
+        segments: script.segments,
+        priority: 9, // High priority for immediate playback
+      })
+    } catch (error) {
+      console.error('Failed to generate pre-set coaching:', error)
+
+      // Fallback to simple script
+      audioCoachingService.enqueue({
+        id: `set-${setNumber}-fallback`,
+        type: 'set_execution',
+        text: `Set ${setNumber}. ${exercise.exerciseName}. ${reps} reps at ${weight} kilograms. Let's go!`,
+        priority: 8,
+      })
+    } finally {
+      setIsGeneratingScript(false)
+    }
   }
 
   const handleSkipWarmup = () => {
@@ -396,11 +461,14 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       {!isWarmup && (
         <Button
           onClick={handleStartAudioCoaching}
+          disabled={isGeneratingScript}
           variant="outline"
-          className="w-full h-12 text-base flex items-center justify-center gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+          className="w-full h-12 text-base flex items-center justify-center gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:opacity-50"
         >
           <Target className="h-4 w-4" />
-          {t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
+          {isGeneratingScript
+            ? t('setLogger.generatingCoaching', { defaultValue: 'Generating Coaching...' })
+            : t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
         </Button>
       )}
 

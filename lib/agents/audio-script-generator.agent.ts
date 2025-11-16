@@ -484,4 +484,193 @@ Generate the cue pools now for this specific set.`
 
     return await this.complete<RealtimeCuePools>(prompt, targetLanguage)
   }
+
+  /**
+   * Generate motivational pre-set coaching script
+   *
+   * Creates highly contextual, motivational audio scripts for pre-set preparation.
+   * Uses rich context (set position, intensity, previous performance) to generate
+   * scripts that feel like a real coach who knows exactly where you are in your workout.
+   *
+   * Reasoning: 'minimal' (fast generation, 15-30s)
+   * Verbosity: 'low' (concise, impactful scripts)
+   */
+  async generatePreSetCoachingScript(
+    input: import('@/lib/types/pre-set-coaching').PreSetCoachingInput,
+    targetLanguage: 'en' | 'it' = 'en'
+  ): Promise<import('@/lib/types/pre-set-coaching').PreSetCoachingScript> {
+    // Calculate context
+    const setPosition = input.setNumber === 1 ? 'first'
+      : input.setNumber === input.totalSets ? 'last'
+      : 'middle'
+
+    const intensity = input.rir <= 1 ? 'heavy'
+      : input.rir <= 3 ? 'moderate'
+      : 'light'
+
+    const intensityPercent = Math.round(100 - (input.rir * 2.5))
+
+    const scriptType = input.rir === 0 ? 'motivational' // Failure set
+      : input.rir >= 4 ? 'recovery' // Technique/recovery set
+      : 'tactical' // Standard working set
+
+    // Format previous performance if available
+    let previousContext = 'No previous sets completed yet (this is the first set)'
+    if (input.previousSets && input.previousSets.length > 0) {
+      const lastSet = input.previousSets[input.previousSets.length - 1]
+      const trend = input.previousSets.length > 1
+        ? lastSet.weight > input.previousSets[0].weight ? 'weight increasing'
+          : lastSet.weight < input.previousSets[0].weight ? 'weight decreasing'
+            : 'weight stable'
+        : ''
+
+      previousContext = `Previous set: ${lastSet.weight}kg × ${lastSet.reps} reps @ RIR ${lastSet.rir}${trend ? ` (${trend})` : ''}${lastSet.mentalReadiness ? `, Mental: ${lastSet.mentalReadiness}/5` : ''}`
+    }
+
+    // Mental readiness context
+    const mentalLabels: Record<number, { en: string; it: string }> = {
+      1: { en: 'Drained/Exhausted', it: 'Scarico/Esausto' },
+      2: { en: 'Struggling', it: 'In difficoltà' },
+      3: { en: 'Neutral', it: 'Neutrale' },
+      4: { en: 'Engaged/Ready', it: 'Pronto/Motivato' },
+      5: { en: 'Locked In/Peak', it: 'Al massimo/Concentrato' },
+    }
+
+    const mentalContext = input.mentalReadiness
+      ? `Mental Readiness: ${input.mentalReadiness}/5 (${mentalLabels[input.mentalReadiness][targetLanguage]})`
+      : 'No mental readiness data'
+
+    // Build comprehensive prompt
+    const prompt = `You are a REAL strength coach creating a pre-set coaching script.
+
+CRITICAL TONE REQUIREMENTS:
+
+1. **Direct, Real Coach Energy:**
+   - Sound like a training partner in the trenches, NOT a motivational speaker
+   - Simple but powerful words
+   - No corporate speak, no clichés, no over-the-top motivation
+   - Tactical + motivational blend
+
+2. **Language-Specific Authentic Gym Language:**
+${targetLanguage === 'it' ? `
+   - ITALIAN: Use authentic, direct gym language
+   - Examples from real coaches:
+     * "dai che questa è l'ultima serie, lo so che il peso sembra tanto, ma è solo una serie"
+     * "non puoi sbagliare questa serie che è l'ultima, se sbagli mandi a fanculo tutte quelle che hai fatto prima"
+     * "in questa serie dobbiamo solo sentire il peso e il movimento, non dobbiamo stancarci"
+     * "il recupero è importante, devi prenderti tutto il tempo che ti serve"
+   - Use natural, colloquial language: "dai", "forza", "spingi", "tieni duro", "super freschi"
+   - Mix tactical and motivational naturally
+   - Be direct and impactful - this is gym language, not formal Italian
+` : `
+   - ENGLISH: Direct, impactful, real gym culture
+   - Examples:
+     * "Last set, this is it. I know the weight feels heavy, but it's just one more set"
+     * "Don't miss this one - this is the set that counts, all the others led to this"
+     * "This set is about feeling the movement, not burning out the muscle"
+     * "Recovery matters here, take all the time you need mentally"
+   - Direct and authentic, not corporate motivation
+`}
+
+3. **Context Awareness (CRITICAL):**
+   - Set Position: ${setPosition} (${input.setNumber} of ${input.totalSets})
+   - ${input.isWarmup ? 'WARMUP SET - Focus on movement quality, not intensity' : `WORKING SET - Performance matters`}
+   - Intensity: ${intensity} (RIR ${input.rir} = ~${intensityPercent}% intensity)
+   - Previous Performance: ${previousContext}
+   - Mental State: ${mentalContext}
+   - ${input.technicalFocus ? `Technical Focus: ${input.technicalFocus}` : ''}
+   - ${input.mentalFocus ? `Mental Focus: ${input.mentalFocus}` : ''}
+
+4. **Script Structure (SEGMENTED OUTPUT REQUIRED):**
+   Return exactly 3-4 segments with specific pauses:
+
+   Segment 1 (5-7 seconds when spoken):
+   - Set context and position
+   - Weight and reps plan
+   Pause: 1000ms
+
+   Segment 2 (7-10 seconds when spoken):
+   - Mental approach based on set position/intensity
+   - Reference previous performance if relevant
+   - Acknowledge mental state if low
+   Pause: 2000ms (mental digestion time)
+
+   Segment 3 (7-10 seconds when spoken):
+   - Technical focus and tempo breakdown (if applicable)
+   - Key movement cues
+   Pause: 3000ms (positioning time)
+
+   Segment 4 (3-4 seconds when spoken):
+   - Brief, powerful closing
+   - Countdown or "ready, go" style
+   Pause: 0ms (immediate start)
+
+SET CONTEXT:
+- Exercise: ${input.exerciseName}
+- Set: ${input.setNumber} of ${input.totalSets} ${input.isWarmup ? '(WARMUP)' : '(WORKING SET)'}
+- Plan: ${input.weight}kg × ${input.reps} reps @ RIR ${input.rir}
+- Tempo: ${input.tempo || 'No specific tempo requirement'}
+
+INTENSITY CONTEXT:
+${input.rir === 0 ? '- ⚠️ FAILURE SET: Going to absolute limit, expect to exceed target reps if possible' : ''}
+${input.rir === 1 ? '- HEAVY SET: Near-maximal effort, 1 rep left in reserve - respect the weight' : ''}
+${input.rir >= 4 ? '- RECOVERY/TECHNIQUE SET: Quality over intensity, don\'t burn out' : ''}
+${input.rir === 2 || input.rir === 3 ? '- MODERATE INTENSITY: Controlled effort, building volume' : ''}
+
+SET POSITION GUIDANCE:
+${setPosition === 'first' ? '- First set: Set the standard, establish technique, fresh energy' : ''}
+${setPosition === 'middle' ? '- Middle set: Fatigue building but maintain quality, this is volume work' : ''}
+${setPosition === 'last' ? '- LAST SET: Final push, empty the tank, leave nothing behind - this is what counts' : ''}
+${input.isWarmup ? '- Warmup: Prepare the pattern, activate the muscle, no need to push hard' : ''}
+
+${input.mentalReadiness && input.mentalReadiness <= 2 ? `
+⚠️ LOW MENTAL ENERGY DETECTED:
+- Acknowledge the fatigue/struggle
+- Emphasize "just this one set"
+- Tactical approach over hype
+- Example${targetLanguage === 'it' ? ' (IT)' : ' (EN)'}: "${targetLanguage === 'it' ? 'So che sei scarico, ma è solo una serie. Dopo questa puoi riposare.' : 'I know you\'re drained, but it\'s just one set. After this you can rest.'}"
+` : ''}
+
+RESPONSE FORMAT (JSON):
+{
+  "segments": [
+    { "text": "[Segment 1 text in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 1000, "type": "narration" },
+    { "text": "[Segment 2 text in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 2000, "type": "narration" },
+    { "text": "[Segment 3 text in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 3000, "type": "narration" },
+    { "text": "[Segment 4 text in ${targetLanguage === 'it' ? 'Italian' : 'English'}]", "pauseAfter": 0, "type": "countdown" }
+  ],
+  "metadata": {
+    "setPosition": "${setPosition}",
+    "intensity": "${intensity}",
+    "scriptType": "${scriptType}"
+  }
+}
+
+IMPORTANT:
+- Return ONLY valid JSON, no additional text
+- Use authentic ${targetLanguage === 'it' ? 'Italian' : 'English'} gym language
+- Be direct and impactful like the examples provided
+- Adapt tone to mental readiness and set position
+- Include tempo breakdown naturally if tempo is specified
+- Keep each segment concise but powerful
+
+Generate the pre-set coaching script now.`
+
+    // Use 'minimal' reasoning for faster generation (15-30s vs 90s)
+    const originalReasoning = this.reasoningEffort
+    this.reasoningEffort = 'minimal'
+
+    try {
+      const result = await this.complete<import('@/lib/types/pre-set-coaching').PreSetCoachingScript>(prompt, targetLanguage)
+
+      // Restore original reasoning
+      this.reasoningEffort = originalReasoning
+
+      return result
+    } catch (error) {
+      // Restore reasoning even on error
+      this.reasoningEffort = originalReasoning
+      throw error
+    }
+  }
 }

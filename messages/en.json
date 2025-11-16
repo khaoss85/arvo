@@ -430,6 +430,7 @@
         "logSetButton": "Log Set",
         "logging": "Logging...",
         "startSetWithCoaching": "Execute Set with Coaching",
+        "generatingCoaching": "Generating Coaching...",
         "logSetManually": "Log Set Manually",
         "skipWarmup": "Skip warmup",
         "skipping": "Skipping...",

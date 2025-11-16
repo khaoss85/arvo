@@ -274,4 +274,172 @@ Required JSON structure:
 
     return context
   }
+
+  /**
+   * Validate split customization (swap days, toggle muscles, change variation)
+   */
+  async validateSplitChange(input: SplitChangeValidationInput): Promise<SplitChangeValidationOutput> {
+    // Load training approach
+    const approach = await this.knowledge.loadApproach(input.userContext.approachId)
+
+    // Build context
+    const approachContext = this.buildApproachContext(approach)
+
+    // Build modification-specific context
+    let modificationDetails = ''
+    if (input.modificationType === 'swap_days') {
+      modificationDetails = `
+=== SWAP DAYS REQUEST ===
+From: Day ${input.details.fromDay} - ${input.details.fromSession?.name || 'Unknown'} (${input.details.fromSession?.workoutType || 'Unknown'})
+  Focus: ${input.details.fromSession?.focus?.join(', ') || 'None'}
+
+To: Day ${input.details.toDay} - ${input.details.toSession?.name || 'Unknown'} (${input.details.toSession?.workoutType || 'Unknown'})
+  Focus: ${input.details.toSession?.focus?.join(', ') || 'None'}
+
+Cycle Length: ${input.splitContext.cycleDays} days
+      `
+    } else if (input.modificationType === 'toggle_muscle') {
+      modificationDetails = `
+=== ${input.details.action === 'add' ? 'ADD' : 'REMOVE'} MUSCLE REQUEST ===
+Day ${input.details.cycleDay}: ${input.details.sessionName || 'Unknown'} (${input.details.workoutType || 'Unknown'})
+Muscle Group: ${input.details.muscleGroup}
+Current Focus: ${input.details.currentFocus?.join(', ') || 'None'}
+New Focus: ${input.details.newFocus?.join(', ') || 'None'}
+
+Cycle Length: ${input.splitContext.cycleDays} days
+Current Weekly Frequency (${input.details.muscleGroup}): ${input.details.muscleGroup && input.splitContext.currentFrequencyMap?.[input.details.muscleGroup] || 0}x/week
+      `
+    } else if (input.modificationType === 'change_variation') {
+      modificationDetails = `
+=== CHANGE VARIATION REQUEST ===
+Day ${input.details.cycleDay}: ${input.details.sessionName || 'Unknown'} (${input.details.workoutType || 'Unknown'})
+From: Variation ${input.details.currentVariation}
+To: Variation ${input.details.newVariation}
+
+Cycle Length: ${input.splitContext.cycleDays} days
+      `
+    }
+
+    const prompt = `
+${modificationDetails}
+
+=== USER CONTEXT ===
+Experience Years: ${input.userContext.experienceYears ?? 'Not specified'}
+Age: ${input.userContext.userAge ?? 'Not specified'}
+Weak Points: ${input.userContext.weakPoints?.join(', ') || 'None specified'}
+Mesocycle Week: ${input.userContext.mesocycleWeek ?? 'Not specified'}
+Mesocycle Phase: ${input.userContext.mesocyclePhase ?? 'Not specified'}
+
+=== TRAINING APPROACH GUIDELINES ===
+${approachContext}
+
+=== YOUR TASK ===
+Validate if this split modification aligns with the training approach and user's goals.
+
+For SWAP DAYS, consider:
+1. Recovery: Will swapping reduce recovery time between similar muscle groups?
+2. Frequency: Does swap maintain optimal frequency for all muscles?
+3. Periodization: Does the swap fit the current phase?
+4. Fatigue: Will consecutive intense sessions compromise performance?
+
+For TOGGLE MUSCLE, consider:
+1. Volume Landmarks: Will removing muscle drop below MEV? Will adding exceed MRV?
+2. Frequency: Will the change violate frequency guidelines?
+3. Weak Points: Does this align with user's weak point priorities?
+4. Balance: Will the split remain balanced?
+
+For CHANGE VARIATION, consider:
+1. Periodization: Does the variation match the current phase/week?
+2. Exercise Diversity: Will this maintain proper exercise variety?
+3. Recovery: Does variation timing support adequate stimulus variation?
+
+Provide concise, gym-friendly validation (max 50 words for reasoning).
+
+Required JSON structure:
+{
+  "validation": "approved" | "caution" | "not_recommended",
+  "rationale": "string (1-2 sentences, max 50 words, gym-friendly)",
+  "warnings": ["string (max 20 words each)"],
+  "suggestions": ["string (max 30 words each)"],
+  "volumeImpact": {
+    "muscleGroup": "string (optional)",
+    "before": "number (optional)",
+    "after": "number (optional)",
+    "status": "string (optional, e.g., 'Within MAV range')"
+  }
+}
+`
+
+    return await this.complete<SplitChangeValidationOutput>(prompt)
+  }
+}
+
+/**
+ * Input for split change validation
+ */
+export interface SplitChangeValidationInput {
+  modificationType: 'swap_days' | 'toggle_muscle' | 'change_variation'
+
+  details: {
+    // For swap_days
+    fromDay?: number
+    toDay?: number
+    fromSession?: {
+      name: string
+      workoutType: string
+      focus: string[]
+      variation: 'A' | 'B'
+    }
+    toSession?: {
+      name: string
+      workoutType: string
+      focus: string[]
+      variation: 'A' | 'B'
+    }
+
+    // For toggle_muscle
+    cycleDay?: number
+    sessionName?: string
+    workoutType?: string
+    muscleGroup?: string
+    action?: 'add' | 'remove'
+    currentFocus?: string[]
+    newFocus?: string[]
+
+    // For change_variation
+    currentVariation?: 'A' | 'B'
+    newVariation?: 'A' | 'B'
+  }
+
+  splitContext: {
+    cycleDays: number
+    currentFrequencyMap?: Record<string, number> // muscle -> frequency/week
+    volumeDistribution?: Record<string, number> // muscle -> total sets/cycle
+  }
+
+  userContext: {
+    userId: string
+    approachId: string
+    experienceYears?: number
+    userAge?: number
+    weakPoints?: string[]
+    mesocycleWeek?: number
+    mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
+  }
+}
+
+/**
+ * Output for split change validation
+ */
+export interface SplitChangeValidationOutput {
+  validation: 'approved' | 'caution' | 'not_recommended'
+  rationale: string // 1-2 sentences, max 50 words, gym-friendly
+  warnings: string[] // Each max 20 words
+  suggestions: string[] // Each max 30 words
+  volumeImpact?: {
+    muscleGroup?: string
+    before?: number
+    after?: number
+    status?: string // e.g., "Within MAV range", "Below MEV", "Exceeds MRV"
+  }
 }

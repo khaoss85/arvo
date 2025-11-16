@@ -1,5 +1,5 @@
 // This file is auto-generated from the Supabase database schema
-// Last updated: 2025-11-14
+// Last updated: 2025-11-16
 
 export type Json =
   | string
@@ -123,6 +123,56 @@ export type Database = {
             columns: ["workout_id"]
             isOneToOne: false
             referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      split_modifications: {
+        Row: {
+          ai_validation: Json
+          created_at: string
+          details: Json
+          id: string
+          modification_type: string
+          previous_state: Json
+          split_plan_id: string
+          updated_at: string
+          user_id: string
+          user_override: boolean
+          user_reason: string | null
+        }
+        Insert: {
+          ai_validation: Json
+          created_at?: string
+          details: Json
+          id?: string
+          modification_type: string
+          previous_state: Json
+          split_plan_id: string
+          updated_at?: string
+          user_id: string
+          user_override?: boolean
+          user_reason?: string | null
+        }
+        Update: {
+          ai_validation?: Json
+          created_at?: string
+          details?: Json
+          id?: string
+          modification_type?: string
+          previous_state?: Json
+          split_plan_id?: string
+          updated_at?: string
+          user_id?: string
+          user_override?: boolean
+          user_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "split_modifications_split_plan_id_fkey"
+            columns: ["split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -380,6 +430,9 @@ export type Database = {
           active_split_plan_id: string | null
           age: number | null
           approach_id: string | null
+          audio_coaching_autoplay: boolean
+          audio_coaching_enabled: boolean
+          audio_coaching_speed: number
           available_equipment: string[] | null
           created_at: string | null
           current_cycle_day: number | null
@@ -405,6 +458,9 @@ export type Database = {
           active_split_plan_id?: string | null
           age?: number | null
           approach_id?: string | null
+          audio_coaching_autoplay?: boolean
+          audio_coaching_enabled?: boolean
+          audio_coaching_speed?: number
           available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
@@ -430,6 +486,9 @@ export type Database = {
           active_split_plan_id?: string | null
           age?: number | null
           approach_id?: string | null
+          audio_coaching_autoplay?: boolean
+          audio_coaching_enabled?: boolean
+          audio_coaching_speed?: number
           available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
@@ -600,6 +659,7 @@ export type Database = {
       workouts: {
         Row: {
           approach_id: string | null
+          audio_scripts: Json | null
           completed: boolean | null
           completed_at: string | null
           created_at: string | null
@@ -626,6 +686,7 @@ export type Database = {
         }
         Insert: {
           approach_id?: string | null
+          audio_scripts?: Json | null
           completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
@@ -652,6 +713,7 @@ export type Database = {
         }
         Update: {
           approach_id?: string | null
+          audio_scripts?: Json | null
           completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
@@ -739,6 +801,30 @@ export type Database = {
           related_muscles: string[]
           times_confirmed: number
           title: string
+        }[]
+      }
+      get_last_split_modification: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          details: Json
+          id: string
+          modification_type: string
+          previous_state: Json
+          split_plan_id: string
+        }[]
+      }
+      get_recent_split_modifications: {
+        Args: { p_limit?: number; p_user_id: string }
+        Returns: {
+          ai_validation: Json
+          created_at: string
+          details: Json
+          id: string
+          modification_type: string
+          split_plan_id: string
+          user_override: boolean
+          user_reason: string
         }[]
       }
       update_insight_relevance_scores: { Args: never; Returns: undefined }

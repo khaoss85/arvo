@@ -399,4 +399,219 @@ export class SplitPlanService {
 
     return data as SplitPlan;
   }
+
+  /**
+   * Swap two sessions in a split plan cycle
+   * Returns updated sessions array (does NOT save to DB - caller must update)
+   */
+  static swapSessions(
+    splitPlan: SplitPlan,
+    day1: number,
+    day2: number
+  ): SessionDefinition[] {
+    const sessions = (splitPlan.sessions as unknown as SessionDefinition[]).slice();
+
+    // Find session indices
+    const index1 = sessions.findIndex((s) => s.day === day1);
+    const index2 = sessions.findIndex((s) => s.day === day2);
+
+    if (index1 === -1 || index2 === -1) {
+      throw new Error(`Invalid cycle days: ${day1} or ${day2} not found`);
+    }
+
+    // Swap the day numbers (keep sessions in same array position)
+    const temp = sessions[index1].day;
+    sessions[index1] = { ...sessions[index1], day: day2 };
+    sessions[index2] = { ...sessions[index2], day: temp };
+
+    return sessions;
+  }
+
+  /**
+   * Toggle muscle group in/out of a session's focus
+   * Returns updated sessions array (does NOT save to DB - caller must update)
+   */
+  static toggleMuscleFocus(
+    splitPlan: SplitPlan,
+    cycleDay: number,
+    muscleGroup: string,
+    add: boolean
+  ): SessionDefinition[] {
+    const sessions = (splitPlan.sessions as unknown as SessionDefinition[]).slice();
+
+    const sessionIndex = sessions.findIndex((s) => s.day === cycleDay);
+    if (sessionIndex === -1) {
+      throw new Error(`Session for cycle day ${cycleDay} not found`);
+    }
+
+    const session = { ...sessions[sessionIndex] };
+    const currentFocus = session.focus || [];
+
+    if (add) {
+      // Add muscle if not already present
+      if (!currentFocus.includes(muscleGroup)) {
+        session.focus = [...currentFocus, muscleGroup];
+      }
+    } else {
+      // Remove muscle
+      session.focus = currentFocus.filter((m) => m !== muscleGroup);
+
+      // Also remove from targetVolume if present
+      if (session.targetVolume && session.targetVolume[muscleGroup]) {
+        const newTargetVolume = { ...session.targetVolume };
+        delete newTargetVolume[muscleGroup];
+        session.targetVolume = newTargetVolume;
+      }
+    }
+
+    sessions[sessionIndex] = session;
+    return sessions;
+  }
+
+  /**
+   * Change session variation (A <-> B)
+   * Returns updated sessions array (does NOT save to DB - caller must update)
+   */
+  static changeSessionVariation(
+    splitPlan: SplitPlan,
+    cycleDay: number,
+    newVariation: 'A' | 'B'
+  ): SessionDefinition[] {
+    const sessions = (splitPlan.sessions as unknown as SessionDefinition[]).slice();
+
+    const sessionIndex = sessions.findIndex((s) => s.day === cycleDay);
+    if (sessionIndex === -1) {
+      throw new Error(`Session for cycle day ${cycleDay} not found`);
+    }
+
+    const session = { ...sessions[sessionIndex] };
+    session.variation = newVariation;
+
+    // Update session name to reflect new variation
+    session.name = session.name.replace(/[AB]$/, newVariation);
+
+    sessions[sessionIndex] = session;
+    return sessions;
+  }
+
+  /**
+   * Sync workouts after split modification
+   * Invalidates or swaps existing workouts based on modification type
+   */
+  static async syncWorkoutsAfterModification(
+    splitPlanId: string,
+    modification: {
+      type: 'swap_days' | 'toggle_muscle' | 'change_variation';
+      details: Record<string, any>;
+    }
+  ): Promise<{ invalidated: number; swapped: number }> {
+    const supabase = getSupabaseBrowserClient();
+
+    let invalidatedCount = 0;
+    let swappedCount = 0;
+
+    if (modification.type === 'swap_days') {
+      const { day1, day2 } = modification.details;
+
+      // Get workouts for both days
+      const { data: workouts } = await supabase
+        .from('workouts')
+        .select('id, cycle_day')
+        .eq('split_plan_id', splitPlanId)
+        .in('cycle_day', [day1, day2]);
+
+      if (workouts && workouts.length > 0) {
+        // Swap cycle_day for existing workouts
+        for (const workout of workouts) {
+          const newCycleDay = workout.cycle_day === day1 ? day2 : day1;
+          await supabase
+            .from('workouts')
+            .update({ cycle_day: newCycleDay })
+            .eq('id', workout.id);
+          swappedCount++;
+        }
+      }
+    } else if (modification.type === 'toggle_muscle' || modification.type === 'change_variation') {
+      const { cycleDay } = modification.details;
+
+      // Invalidate workouts for affected day (set to 'draft' status)
+      const { data: affectedWorkouts } = await supabase
+        .from('workouts')
+        .select('id')
+        .eq('split_plan_id', splitPlanId)
+        .eq('cycle_day', cycleDay)
+        .in('status', ['ready', 'in_progress']);
+
+      if (affectedWorkouts && affectedWorkouts.length > 0) {
+        for (const workout of affectedWorkouts) {
+          await supabase
+            .from('workouts')
+            .update({ status: 'draft' })
+            .eq('id', workout.id);
+          invalidatedCount++;
+        }
+      }
+    }
+
+    return { invalidated: invalidatedCount, swapped: swappedCount };
+  }
+
+  /**
+   * Server-side: Sync workouts after split modification
+   */
+  static async syncWorkoutsAfterModificationServer(
+    splitPlanId: string,
+    modification: {
+      type: 'swap_days' | 'toggle_muscle' | 'change_variation';
+      details: Record<string, any>;
+    }
+  ): Promise<{ invalidated: number; swapped: number }> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    let invalidatedCount = 0;
+    let swappedCount = 0;
+
+    if (modification.type === 'swap_days') {
+      const { day1, day2 } = modification.details;
+
+      const { data: workouts } = await supabase
+        .from('workouts')
+        .select('id, cycle_day')
+        .eq('split_plan_id', splitPlanId)
+        .in('cycle_day', [day1, day2]);
+
+      if (workouts && workouts.length > 0) {
+        for (const workout of workouts) {
+          const newCycleDay = workout.cycle_day === day1 ? day2 : day1;
+          await supabase
+            .from('workouts')
+            .update({ cycle_day: newCycleDay })
+            .eq('id', workout.id);
+          swappedCount++;
+        }
+      }
+    } else if (modification.type === 'toggle_muscle' || modification.type === 'change_variation') {
+      const { cycleDay } = modification.details;
+
+      const { data: affectedWorkouts } = await supabase
+        .from('workouts')
+        .select('id')
+        .eq('split_plan_id', splitPlanId)
+        .eq('cycle_day', cycleDay)
+        .in('status', ['ready', 'in_progress']);
+
+      if (affectedWorkouts && affectedWorkouts.length > 0) {
+        for (const workout of affectedWorkouts) {
+          await supabase
+            .from('workouts')
+            .update({ status: 'draft' })
+            .eq('id', workout.id);
+          invalidatedCount++;
+        }
+      }
+    }
+
+    return { invalidated: invalidatedCount, swapped: swappedCount };
+  }
 }

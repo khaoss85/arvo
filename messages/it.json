@@ -430,6 +430,7 @@
         "logSetButton": "Registra Serie",
         "logging": "Registrazione...",
         "startSetWithCoaching": "Esegui Serie con Coaching",
+        "generatingCoaching": "Generazione Coaching...",
         "logSetManually": "Registra Serie Manualmente",
         "skipWarmup": "Salta riscaldamento",
         "skipping": "Saltando...",
