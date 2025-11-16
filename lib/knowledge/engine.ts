@@ -70,27 +70,15 @@ export class KnowledgeEngine {
     includeModificationHistory?: boolean
     modificationHistoryLimit?: number
   }) {
-    // Fetch user profile
+    // Fetch user profile with all context data
     const { data: profile, error: profileError } = await this.supabase
-      .from('profiles')
-      .select('age, experience_years, weak_points')
-      .eq('id', userId)
+      .from('user_profiles')
+      .select('approach_id, age, experience_years, weak_points, current_mesocycle_week, mesocycle_phase')
+      .eq('user_id', userId)
       .single()
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError)
-    }
-
-    // Fetch active split for mesocycle context
-    const { data: activeSplit, error: splitError } = await this.supabase
-      .from('split_plans')
-      .select('approach_id, current_mesocycle_week, current_mesocycle_phase')
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .single()
-
-    if (splitError) {
-      console.error('Error fetching active split:', splitError)
     }
 
     const context: {
@@ -104,12 +92,12 @@ export class KnowledgeEngine {
       modificationHistory?: any[]
     } = {
       userId,
-      approachId: activeSplit?.approach_id,
+      approachId: profile?.approach_id,
       experienceYears: profile?.experience_years,
       userAge: profile?.age,
       weakPoints: profile?.weak_points || [],
-      mesocycleWeek: activeSplit?.current_mesocycle_week,
-      mesocyclePhase: activeSplit?.current_mesocycle_phase,
+      mesocycleWeek: profile?.current_mesocycle_week,
+      mesocyclePhase: profile?.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | undefined,
     }
 
     // Include modification history if requested
