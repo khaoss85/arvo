@@ -236,6 +236,7 @@ export class AudioCoachingService {
           this.setState('playing')
         },
         onEnd: () => {
+          this.setState('idle')
           resolve()
           // Automatically play next in queue
           this.playNext()
@@ -269,6 +270,7 @@ export class AudioCoachingService {
     }
 
     // After all segments complete, play next in queue
+    this.setState('idle')
     this.playNext()
   }
 
