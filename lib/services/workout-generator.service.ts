@@ -345,7 +345,7 @@ export class WorkoutGeneratorService {
         exercises: exercisesWithTargets,
         userId,
         approachId: profile.approach_id,
-        userName: undefined, // User name not available in profile schema
+        userName: profile.first_name || undefined, // User's first name for personalized audio coaching
         experienceYears: profile.experience_years || undefined,
         workoutRationale: selection.workoutRationale // Overall workout focus and sequencing
       },
