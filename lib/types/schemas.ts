@@ -47,6 +47,10 @@ export const userProfileSchema = z.object({
   // Split planning fields
   active_split_plan_id: z.string().uuid().nullable(),
   current_cycle_day: z.number().int().min(1).nullable(),
+  // Cycle completion tracking fields
+  cycles_completed: z.number().int().min(0).nullable(),
+  current_cycle_start_date: z.string().datetime().nullable(),
+  last_cycle_completed_at: z.string().datetime().nullable(),
   // Mesocycle tracking fields
   current_mesocycle_week: z.number().int().min(1).max(12).nullable(),
   mesocycle_phase: z.enum(['accumulation', 'intensification', 'deload', 'transition']).nullable(),
@@ -142,6 +146,36 @@ export const insertCaloricPhaseHistorySchema = caloricPhaseHistorySchema.omit({
 });
 
 export const updateCaloricPhaseHistorySchema = insertCaloricPhaseHistorySchema.partial();
+
+// Cycle Completions Schema
+export const cycleCompletionSchema = z.object({
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  split_plan_id: z.string().uuid(),
+  cycle_number: z.number().int().min(1),
+  completed_at: z.string().datetime(),
+  total_volume: z.number().min(0),
+  total_workouts_completed: z.number().int().min(0),
+  avg_mental_readiness: z.number().min(1).max(5).nullable(),
+  total_sets: z.number().int().min(0),
+  total_duration_seconds: z.number().int().min(0).nullable(),
+  volume_by_muscle_group: z.record(z.string(), z.number()).nullable(),
+  workouts_by_type: z.record(z.string(), z.number()).nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCycleCompletionSchema = cycleCompletionSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCycleCompletionSchema = insertCycleCompletionSchema.partial();
 
 // DEPRECATED: Old exercises table (dropped in migration)
 // Kept for backwards compatibility with existing code
@@ -263,3 +297,7 @@ export type UpdateExerciseGeneration = z.infer<typeof updateExerciseGenerationSc
 export type CaloricPhaseHistory = z.infer<typeof caloricPhaseHistorySchema>;
 export type InsertCaloricPhaseHistory = z.infer<typeof insertCaloricPhaseHistorySchema>;
 export type UpdateCaloricPhaseHistory = z.infer<typeof updateCaloricPhaseHistorySchema>;
+
+export type CycleCompletion = z.infer<typeof cycleCompletionSchema>;
+export type InsertCycleCompletion = z.infer<typeof insertCycleCompletionSchema>;
+export type UpdateCycleCompletion = z.infer<typeof updateCycleCompletionSchema>;

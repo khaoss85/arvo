@@ -57,11 +57,65 @@ export async function generateSplitPlanAction(
       }
     }
 
+    // Fetch cycle history to provide context for AI split planning
+    let cycleHistory = null
+    let cycleComparison = null
+
+    try {
+      const allCycles = await CycleStatsService.getAllCycleCompletions(input.userId)
+
+      if (allCycles.length > 0) {
+        // Get last 3 cycles for context
+        const recentCycles = allCycles.slice(0, 3)
+
+        cycleHistory = recentCycles.map(cycle => ({
+          cycleNumber: cycle.cycle_number,
+          completedAt: cycle.completed_at,
+          totalVolume: cycle.total_volume,
+          totalWorkoutsCompleted: cycle.total_workouts_completed,
+          avgMentalReadiness: cycle.avg_mental_readiness,
+          totalSets: cycle.total_sets,
+          volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
+          workoutsByType: (cycle.workouts_by_type as Record<string, number>) || {},
+        }))
+
+        // Get comparison between last two cycles if available
+        if (allCycles.length >= 2) {
+          const lastCycle = allCycles[0]
+          const previousCycle = allCycles[1]
+
+          const volumeDelta = previousCycle.total_volume > 0
+            ? ((lastCycle.total_volume - previousCycle.total_volume) / previousCycle.total_volume) * 100
+            : 0
+
+          const mentalReadinessDelta = (lastCycle.avg_mental_readiness !== null && previousCycle.avg_mental_readiness !== null)
+            ? lastCycle.avg_mental_readiness - previousCycle.avg_mental_readiness
+            : null
+
+          cycleComparison = {
+            volumeDelta,
+            workoutsDelta: lastCycle.total_workouts_completed - previousCycle.total_workouts_completed,
+            mentalReadinessDelta,
+            setsDelta: lastCycle.total_sets - previousCycle.total_sets,
+          }
+        }
+
+        console.log(`[GenerateSplit] Loaded ${cycleHistory.length} cycles for context`)
+      }
+    } catch (error) {
+      console.error('[GenerateSplit] Failed to load cycle history (non-critical):', error)
+      // Continue without cycle history - it's optional context
+    }
+
     // Use SplitPlanner agent with server client
     const splitPlanner = new SplitPlanner(supabase)
 
-    // Generate split plan using AI
-    const splitPlanData = await splitPlanner.planSplit(input, targetLanguage)
+    // Generate split plan using AI (with cycle history context if available)
+    const splitPlanData = await splitPlanner.planSplit({
+      ...input,
+      recentCycleCompletions: cycleHistory || undefined,
+      cycleComparison: cycleComparison || undefined,
+    }, targetLanguage)
 
     // Create split plan in database
     const splitPlanBase = {

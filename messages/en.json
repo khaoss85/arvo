@@ -264,6 +264,31 @@
         "finalize": "Finalizing"
       },
       "phaseOf": "Phase {current} of {total}"
+    },
+    "cycleProgress": "Cycle #{cycleNumber} • Day {currentDay}",
+    "CycleCompletion": {
+      "title": "Cycle #{cycleNumber} Completed!",
+      "subtitle": "You completed a full cycle of {splitName}",
+      "stats": {
+        "totalVolume": "Total Volume",
+        "workouts": "Workouts",
+        "mentalReadiness": "Avg Mental Readiness",
+        "totalSets": "Total Sets"
+      },
+      "comparisonNote": "Compared to previous cycle",
+      "actions": {
+        "continue": "Continue with {splitName}",
+        "changeSplit": "Change Split"
+      }
+    },
+    "SplitSelection": {
+      "title": "Select Split",
+      "description": "Choose which training program you want to follow for the next cycle",
+      "current": "Current",
+      "cycleDays": "{days, plural, one {# day} other {# days}}",
+      "created": "Created on {date}",
+      "select": "Select",
+      "noSplits": "No splits available. Create a new split to get started."
     }
   },
   "workout": {

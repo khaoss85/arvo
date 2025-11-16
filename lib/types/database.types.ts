@@ -1,6 +1,3 @@
-// This file is auto-generated from the Supabase database schema
-// Last updated: 2025-11-16
-
 export type Json =
   | string
   | number
@@ -17,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      cycle_completions: {
+        Row: {
+          avg_mental_readiness: number | null
+          completed_at: string
+          created_at: string | null
+          cycle_number: number
+          id: string
+          split_plan_id: string
+          total_duration_seconds: number | null
+          total_sets: number
+          total_volume: number
+          total_workouts_completed: number
+          updated_at: string | null
+          user_id: string
+          volume_by_muscle_group: Json | null
+          workouts_by_type: Json | null
+        }
+        Insert: {
+          avg_mental_readiness?: number | null
+          completed_at?: string
+          created_at?: string | null
+          cycle_number: number
+          id?: string
+          split_plan_id: string
+          total_duration_seconds?: number | null
+          total_sets: number
+          total_volume: number
+          total_workouts_completed: number
+          updated_at?: string | null
+          user_id: string
+          volume_by_muscle_group?: Json | null
+          workouts_by_type?: Json | null
+        }
+        Update: {
+          avg_mental_readiness?: number | null
+          completed_at?: string
+          created_at?: string | null
+          cycle_number?: number
+          id?: string
+          split_plan_id?: string
+          total_duration_seconds?: number | null
+          total_sets?: number
+          total_volume?: number
+          total_workouts_completed?: number
+          updated_at?: string | null
+          user_id?: string
+          volume_by_muscle_group?: Json | null
+          workouts_by_type?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cycle_completions_split_plan_id_fkey"
+            columns: ["split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_generations: {
         Row: {
           animation_url: string | null
@@ -436,13 +492,16 @@ export type Database = {
           available_equipment: string[] | null
           created_at: string | null
           current_cycle_day: number | null
+          current_cycle_start_date: string | null
           current_mesocycle_week: number | null
           custom_equipment: Json | null
+          cycles_completed: number | null
           equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
           gender: string | null
           height: number | null
+          last_cycle_completed_at: string | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
           preferred_language: string
@@ -464,13 +523,16 @@ export type Database = {
           available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
+          current_cycle_start_date?: string | null
           current_mesocycle_week?: number | null
           custom_equipment?: Json | null
+          cycles_completed?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string | null
           height?: number | null
+          last_cycle_completed_at?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_language?: string
@@ -492,13 +554,16 @@ export type Database = {
           available_equipment?: string[] | null
           created_at?: string | null
           current_cycle_day?: number | null
+          current_cycle_start_date?: string | null
           current_mesocycle_week?: number | null
           custom_equipment?: Json | null
+          cycles_completed?: number | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string | null
           height?: number | null
+          last_cycle_completed_at?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_language?: string
@@ -587,6 +652,65 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      workout_generation_queue: {
+        Row: {
+          completed_at: string | null
+          context: Json | null
+          created_at: string | null
+          current_phase: string | null
+          error_message: string | null
+          id: string
+          progress_percent: number | null
+          request_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["generation_status"]
+          target_cycle_day: number | null
+          updated_at: string | null
+          user_id: string
+          workout_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          current_phase?: string | null
+          error_message?: string | null
+          id?: string
+          progress_percent?: number | null
+          request_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["generation_status"]
+          target_cycle_day?: number | null
+          updated_at?: string | null
+          user_id: string
+          workout_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          context?: Json | null
+          created_at?: string | null
+          current_phase?: string | null
+          error_message?: string | null
+          id?: string
+          progress_percent?: number | null
+          request_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["generation_status"]
+          target_cycle_day?: number | null
+          updated_at?: string | null
+          user_id?: string
+          workout_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_generation_queue_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_insights: {
         Row: {
@@ -775,6 +899,23 @@ export type Database = {
         Args: { check_date?: string; start_date: string }
         Returns: number
       }
+      cleanup_old_generations: { Args: never; Returns: undefined }
+      complete_cycle: {
+        Args: {
+          p_avg_mental_readiness: number
+          p_cycle_number: number
+          p_next_cycle_day: number
+          p_split_plan_id: string
+          p_total_duration_seconds: number
+          p_total_sets: number
+          p_total_volume: number
+          p_total_workouts_completed: number
+          p_user_id: string
+          p_volume_by_muscle_group: Json
+          p_workouts_by_type: Json
+        }
+        Returns: Json
+      }
       get_active_insights: {
         Args: { p_min_relevance?: number; p_user_id: string }
         Returns: {
@@ -830,6 +971,7 @@ export type Database = {
       update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {
+      generation_status: "pending" | "in_progress" | "completed" | "failed"
       split_type:
         | "push_pull_legs"
         | "upper_lower"
@@ -977,6 +1119,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      generation_status: ["pending", "in_progress", "completed", "failed"],
       split_type: [
         "push_pull_legs",
         "upper_lower",

@@ -23,6 +23,9 @@ export class OnboardingService {
         preferred_split: null, // Default split, can be updated later
         active_split_plan_id: null, // No split plan yet
         current_cycle_day: null, // No active cycle yet
+        cycles_completed: null, // No cycles completed yet
+        current_cycle_start_date: null, // No cycle started yet
+        last_cycle_completed_at: null, // No cycles completed yet
         current_mesocycle_week: null, // No mesocycle started yet
         mesocycle_phase: null, // No phase yet
         mesocycle_start_date: null, // No start date yet

@@ -1,20 +1,93 @@
 'use client'
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { SplitCycleTimeline } from "./split-cycle-timeline"
 import { RecentWorkoutCard } from "./recent-workout-card"
+import { CycleCompletionModal } from "./cycle-completion-modal"
+import { SplitSelectionDialog } from "./split-selection-dialog"
 import type { User } from "@supabase/supabase-js"
 import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
+import type { UserProfile } from "@/lib/types/schemas"
+import { getLastCycleCompletionAction, getCycleComparisonAction, changeSplitPlanAction, getActiveSplitPlanAction, getAllSplitPlansAction } from "@/app/actions/split-actions"
 
 interface DashboardClientProps {
   user: User
+  profile: UserProfile
   workouts: any[]
   volumeProgress: MuscleVolumeProgress[]
 }
 
-export function DashboardClient({ user, workouts, volumeProgress }: DashboardClientProps) {
+export function DashboardClient({ user, profile, workouts, volumeProgress }: DashboardClientProps) {
   const t = useTranslations("dashboard")
+  const [showCompletionModal, setShowCompletionModal] = useState(false)
+  const [showSplitSelection, setShowSplitSelection] = useState(false)
+  const [cycleStats, setCycleStats] = useState<any>(null)
+  const [splitPlanName, setSplitPlanName] = useState<string>("")
+  const [availableSplits, setAvailableSplits] = useState<any[]>([])
+
+  // Check if cycle was recently completed (within last 5 minutes)
+  useEffect(() => {
+    const checkCycleCompletion = async () => {
+      if (!profile.last_cycle_completed_at) return
+
+      const completedAt = new Date(profile.last_cycle_completed_at)
+      const now = new Date()
+      const diffMinutes = (now.getTime() - completedAt.getTime()) / (1000 * 60)
+
+      // Show modal if cycle completed in the last 5 minutes and not dismissed
+      const dismissed = sessionStorage.getItem(`cycle-completed-${profile.last_cycle_completed_at}`)
+      if (diffMinutes < 5 && !dismissed) {
+        // Fetch cycle stats and comparison
+        const result = await getCycleComparisonAction(user.id)
+        if (result.success && result.data) {
+          setCycleStats(result.data)
+
+          // Fetch split plan name
+          const splitResult = await getActiveSplitPlanAction(user.id)
+          if (splitResult.success && splitResult.data) {
+            setSplitPlanName(splitResult.data.split_type.replace(/_/g, ' '))
+          }
+
+          setShowCompletionModal(true)
+        }
+      }
+    }
+
+    checkCycleCompletion()
+  }, [profile.last_cycle_completed_at, user.id])
+
+  const handleContinue = () => {
+    // Mark modal as dismissed
+    if (profile.last_cycle_completed_at) {
+      sessionStorage.setItem(`cycle-completed-${profile.last_cycle_completed_at}`, 'true')
+    }
+    setShowCompletionModal(false)
+  }
+
+  const handleChangeSplit = async () => {
+    // Fetch available splits
+    const result = await getAllSplitPlansAction(user.id)
+    if (result.success && result.data) {
+      setAvailableSplits(result.data)
+      setShowCompletionModal(false)
+      setShowSplitSelection(true)
+    }
+  }
+
+  const handleSelectSplit = async (splitId: string) => {
+    const result = await changeSplitPlanAction(user.id, splitId)
+    if (result.success) {
+      setShowSplitSelection(false)
+      // Mark modal as dismissed
+      if (profile.last_cycle_completed_at) {
+        sessionStorage.setItem(`cycle-completed-${profile.last_cycle_completed_at}`, 'true')
+      }
+      // Reload page to show new split
+      window.location.reload()
+    }
+  }
   // Get the 5 most recent completed workouts, ordered by completion date
   const completedWorkouts = workouts
     .filter(w => w.completed && w.completed_at)
@@ -31,6 +104,14 @@ export function DashboardClient({ user, workouts, volumeProgress }: DashboardCli
               <p className="mt-2 text-gray-600 dark:text-gray-400">
                 {t("welcome", { email: user.email || "" })}
               </p>
+              {profile.active_split_plan_id && profile.current_cycle_day && (
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
+                  {t("cycleProgress", {
+                    cycleNumber: (profile.cycles_completed || 0) + 1,
+                    currentDay: profile.current_cycle_day
+                  })}
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <Link
@@ -92,6 +173,36 @@ export function DashboardClient({ user, workouts, volumeProgress }: DashboardCli
           )}
         </section>
       </div>
+
+      {/* Cycle Completion Modal */}
+      {showCompletionModal && cycleStats && (
+        <CycleCompletionModal
+          open={showCompletionModal}
+          onOpenChange={setShowCompletionModal}
+          cycleNumber={cycleStats.cycleNumber}
+          splitPlanName={splitPlanName}
+          stats={{
+            totalVolume: cycleStats.currentStats.totalVolume,
+            totalWorkouts: cycleStats.currentStats.totalWorkoutsCompleted,
+            avgMentalReadiness: cycleStats.currentStats.avgMentalReadiness,
+            totalSets: cycleStats.currentStats.totalSets,
+          }}
+          comparison={cycleStats.comparison}
+          onContinue={handleContinue}
+          onChangeSplit={handleChangeSplit}
+        />
+      )}
+
+      {/* Split Selection Dialog */}
+      {showSplitSelection && (
+        <SplitSelectionDialog
+          open={showSplitSelection}
+          onOpenChange={setShowSplitSelection}
+          splits={availableSplits}
+          currentSplitId={profile.active_split_plan_id}
+          onSelect={handleSelectSplit}
+        />
+      )}
     </div>
   )
 }

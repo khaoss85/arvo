@@ -6,6 +6,7 @@ import {
   type InsertSplitPlan,
   type UpdateSplitPlan,
 } from "@/lib/types/schemas";
+import { CycleStatsService } from "@/lib/services/cycle-stats.service";
 
 export interface SessionDefinition {
   day: number; // Position in cycle (1 to cycle_days)
@@ -199,7 +200,7 @@ export class SplitPlanService {
     // Get current state
     const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
-      .select("current_cycle_day, active_split_plan_id")
+      .select("current_cycle_day, active_split_plan_id, current_cycle_start_date, cycles_completed")
       .eq("user_id", userId)
       .single();
 
@@ -237,23 +238,67 @@ export class SplitPlanService {
     // Calculate next cycle day (wraps around)
     const currentDay = profile.current_cycle_day || 1;
     const nextDay = currentDay >= splitPlan.cycle_days ? 1 : currentDay + 1;
+    const wrappedAround = nextDay === 1 && currentDay >= splitPlan.cycle_days;
 
     console.log('[SplitPlanService] advanceCycle - Advancing:', {
       from: currentDay,
       to: nextDay,
       totalCycleDays: splitPlan.cycle_days,
-      wrappedAround: nextDay === 1
+      wrappedAround
     });
 
-    // Update user profile
-    const { error: updateError } = await supabase
-      .from("user_profiles")
-      .update({ current_cycle_day: nextDay })
-      .eq("user_id", userId);
+    // Handle cycle advancement
+    if (wrappedAround) {
+      console.log('[SplitPlanService] advanceCycle - Cycle completing, using atomic transaction...');
 
-    if (updateError) {
-      console.error('[SplitPlanService] advanceCycle - Failed to update profile:', updateError);
-      throw new Error(`Failed to advance cycle: ${updateError.message}`);
+      try {
+        // Calculate cycle statistics using CycleStatsService
+        const stats = await CycleStatsService.calculateCycleStats(
+          userId,
+          profile.active_split_plan_id!
+        );
+
+        const cycleNumber = (profile.cycles_completed || 0) + 1;
+
+        // Use atomic RPC function to complete cycle (inserts completion + updates profile)
+        const { data: result, error: rpcError } = await supabase.rpc('complete_cycle', {
+          p_user_id: userId,
+          p_split_plan_id: profile.active_split_plan_id!,
+          p_cycle_number: cycleNumber,
+          p_next_cycle_day: nextDay,
+          p_total_volume: stats.totalVolume,
+          p_total_workouts_completed: stats.totalWorkoutsCompleted,
+          p_avg_mental_readiness: stats.avgMentalReadiness ?? 0,
+          p_total_sets: stats.totalSets,
+          p_total_duration_seconds: stats.totalDurationSeconds,
+          p_volume_by_muscle_group: stats.volumeByMuscleGroup,
+          p_workouts_by_type: stats.workoutsByType,
+        });
+
+        const typedResult = result as { success: boolean; error?: string } | null;
+
+        if (rpcError || !typedResult?.success) {
+          const errorMsg = typedResult?.error || rpcError?.message || 'Unknown error';
+          console.error('[SplitPlanService] advanceCycle - Atomic completion failed:', errorMsg);
+          throw new Error(`Failed to complete cycle atomically: ${errorMsg}`);
+        }
+
+        console.log('[SplitPlanService] advanceCycle - Cycle completion saved atomically:', result);
+      } catch (error) {
+        console.error('[SplitPlanService] advanceCycle - Error in atomic cycle completion:', error);
+        throw error; // Throw to prevent inconsistent state
+      }
+    } else {
+      // Normal cycle advancement (not wrapping around)
+      const { error: updateError } = await supabase
+        .from("user_profiles")
+        .update({ current_cycle_day: nextDay })
+        .eq("user_id", userId);
+
+      if (updateError) {
+        console.error('[SplitPlanService] advanceCycle - Failed to update profile:', updateError);
+        throw new Error(`Failed to advance cycle: ${updateError.message}`);
+      }
     }
 
     console.log('[SplitPlanService] advanceCycle - Successfully advanced to day:', nextDay);

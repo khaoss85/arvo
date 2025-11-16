@@ -264,6 +264,31 @@
         "finalize": "Finalizzazione"
       },
       "phaseOf": "Fase {current} di {total}"
+    },
+    "cycleProgress": "Ciclo #{cycleNumber} • Giorno {currentDay}",
+    "CycleCompletion": {
+      "title": "Ciclo #{cycleNumber} Completato!",
+      "subtitle": "Hai completato un ciclo completo di {splitName}",
+      "stats": {
+        "totalVolume": "Volume Totale",
+        "workouts": "Allenamenti",
+        "mentalReadiness": "Mental Readiness Media",
+        "totalSets": "Serie Totali"
+      },
+      "comparisonNote": "Rispetto al ciclo precedente",
+      "actions": {
+        "continue": "Continua con {splitName}",
+        "changeSplit": "Cambia Split"
+      }
+    },
+    "SplitSelection": {
+      "title": "Seleziona Split",
+      "description": "Scegli quale programma di allenamento vuoi seguire per il prossimo ciclo",
+      "current": "Attuale",
+      "cycleDays": "{days, plural, one {# giorno} other {# giorni}}",
+      "created": "Creato il {date}",
+      "select": "Seleziona",
+      "noSplits": "Nessuna split disponibile. Crea una nuova split per iniziare."
     }
   },
   "workout": {
