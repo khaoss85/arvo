@@ -42,14 +42,73 @@ export async function GET(
       )
     }
 
-    // Check generation cache
+    // Check generation cache (in-memory, fast)
     const cached = GenerationCache.get(requestId)
 
     if (!cached) {
-      console.log(`[GenerationStatus] Not found: ${requestId}`)
+      // Cache miss - fallback to database queue (survives restarts/timeouts)
+      console.log(`[GenerationStatus] Cache miss, checking database: ${requestId}`)
+
+      const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
+      const queueEntry = await GenerationQueueService.getByRequestIdServer(requestId)
+
+      if (!queueEntry) {
+        console.log(`[GenerationStatus] Not found in cache or database: ${requestId}`)
+        return Response.json({
+          status: 'not_found',
+          message: 'Generation request not found or expired'
+        })
+      }
+
+      // Found in database - return status
+      if (queueEntry.status === 'completed' && queueEntry.workout_id) {
+        // Fetch the completed workout
+        const { WorkoutService } = await import('@/lib/services/workout.service')
+        const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
+
+        if (!workout) {
+          console.error(`[GenerationStatus] Workout not found for completed generation: ${queueEntry.workout_id}`)
+          return Response.json({
+            status: 'error',
+            error: 'Workout not found'
+          })
+        }
+
+        console.log(`[GenerationStatus] Completed (from database): ${requestId}`, {
+          workoutId: workout.id
+        })
+
+        return Response.json({
+          status: 'complete',
+          workout,
+          insightInfluencedChanges: [] // Not stored in queue entry
+        })
+      }
+
+      if (queueEntry.status === 'failed') {
+        console.log(`[GenerationStatus] Failed (from database): ${requestId}`, {
+          error: queueEntry.error_message
+        })
+        return Response.json({
+          status: 'error',
+          error: queueEntry.error_message || 'Generation failed'
+        })
+      }
+
+      // Still in progress - return database state
+      console.log(`[GenerationStatus] In progress (from database): ${requestId}`, {
+        progress: queueEntry.progress_percent,
+        phase: queueEntry.current_phase
+      })
+
+      const locale = await getUserLanguage(user.id)
+      const t = await getTranslations({ locale, namespace: 'api.workouts.generate.polling' })
+
       return Response.json({
-        status: 'not_found',
-        message: 'Generation request not found or expired'
+        status: 'in_progress',
+        progress: queueEntry.progress_percent,
+        phase: queueEntry.current_phase,
+        message: queueEntry.current_phase || t('generating')
       })
     }
 
