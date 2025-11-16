@@ -532,8 +532,14 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
               <div className="p-4 bg-accent/50 space-y-3">
                 {Object.entries(rationales).map(([key, value]: [string, any]) => (
                   <div key={key} className="bg-background p-3 rounded border">
-                    <div className="text-sm font-semibold mb-1 capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    <div className="text-sm font-semibold mb-1">
+                      {key
+                        .replace(/_/g, ' ')
+                        .replace(/([A-Z])/g, ' $1')
+                        .trim()
+                        .split(' ')
+                        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                        .join(' ')}
                     </div>
                     <div className="text-xs text-muted-foreground">{value}</div>
                   </div>

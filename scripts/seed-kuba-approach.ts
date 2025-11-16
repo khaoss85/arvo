@@ -88,7 +88,7 @@ const kubaApproach = {
 
   // === KUBA METHODOLOGY ENHANCEMENTS ===
 
-  volumeLandmarks: {
+  volume_landmarks: {
     muscleGroups: {
       chest: { mev: 10, mav: 18, mrv: 22 },
       back: { mev: 12, mav: 20, mrv: 25 },
@@ -103,7 +103,7 @@ const kubaApproach = {
     }
   },
 
-  frequencyGuidelines: {
+  frequency_guidelines: {
     minPerWeek: 2,
     maxPerWeek: 4,
     optimalRange: [2, 3],
@@ -116,7 +116,7 @@ const kubaApproach = {
     }
   },
 
-  romEmphasis: {
+  rom_emphasis: {
     lengthened: 60,
     shortened: 20,
     fullRange: 20,
@@ -129,7 +129,7 @@ const kubaApproach = {
     ]
   },
 
-  exerciseSelectionPrinciples: {
+  exercise_selection_principles: {
     movementPatterns: {
       horizontalPush: [
         'flat barbell bench press',
@@ -214,7 +214,7 @@ const kubaApproach = {
     ]
   },
 
-  stimulusToFatigue: {
+  stimulus_to_fatigue: {
     principles: [
       'Not all volume is equal - distinguish effective sets from junk volume',
       'High S:F exercises provide maximal stimulus with manageable fatigue',
@@ -254,7 +254,7 @@ const kubaApproach = {
     applicationGuidelines: 'In accumulation phases and later weeks of mesocycle, favor high S:F exercises. Early in block with fresh state, moderate S:F exercises are fine. Reserve low S:F for specific strength goals or periodically.'
   },
 
-  advancedTechniques: {
+  advanced_techniques: {
     myoreps: {
       when: 'During intensification phase or when plateau occurs in isolation exercises',
       how: 'Perform activation set to near failure, rest 5 deep breaths (15 sec), perform mini-sets of 3-5 reps until cannot reach target, accumulate total reps',
@@ -277,14 +277,41 @@ const kubaApproach = {
     }
   },
 
-  splitVariations: {
+  split_variations: {
     variationStrategy: 'Alternate A and B workouts for each muscle group to provide varied stimulus, prevent staleness, and balance development. A workouts focus on volume with moderate load, B workouts emphasize heavier tension.',
     variationLabels: ['A', 'B'],
     rotationLogic: 'In 8-day microcycle (3 on, 1 off, repeat), rotate Push A → Pull A → Legs A → Rest → Push B → Pull B → Legs B → Rest. Each muscle group trained every 4 days (2x per cycle).'
   },
 
   periodization: {
+    model: 'Linear Periodization with Mesocycles',
+    cycleDuration: '6 weeks',
     mesocycleLength: 6,
+    phases: {
+      accumulation: {
+        description: 'Build volume tolerance, perfect technique, emphasize high stimulus-to-fatigue exercises, progress reps before adding weight',
+        weeks: 4,
+        volumeMultiplier: 1.0,
+        intensityMultiplier: 0.85,
+        focus: 'Volume and technique mastery'
+      },
+      intensification: {
+        description: 'Push intensity, introduce advanced techniques (rest-pause sets, drop sets, myoreps on isolation), peak performance',
+        weeks: 2,
+        volumeMultiplier: 0.9,
+        intensityMultiplier: 1.0,
+        focus: 'Intensity and advanced techniques',
+        techniquesIntroduced: ['rest-pause sets', 'drop sets', 'myoreps on isolation']
+      },
+      deload: {
+        description: 'Every 6 weeks after intensification. Reduce volume by 50%, keep weights similar but reduce sets by half, maintain RIR at 3-4',
+        frequency: 'Every 6 weeks (after intensification)',
+        volumeReduction: 50,
+        intensityMaintenance: 'Keep weights similar but reduce sets by half, maintain RIR at 3-4',
+        duration: '1 week'
+      }
+    },
+    // Legacy fields for backward compatibility
     accumulationPhase: {
       weeks: 4,
       volumeMultiplier: 1.0,
