@@ -55,7 +55,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const workingSetNumber = isWarmup ? 0 : setNumber - remainingWarmupSets
 
   // Get guidance for current working set
-  const currentGuidance = !isWarmup && exercise.setGuidance?.find(g => g.setNumber === workingSetNumber)
+  const currentGuidance = !isWarmup ? exercise.setGuidance?.find(g => g.setNumber === workingSetNumber) : undefined
 
   // Get effective target weight from actual performance or target
   const getEffectiveTargetWeight = useCallback(() => {
@@ -204,7 +204,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       audioCoachingService.enqueue({
         id: `pre-set-${setNumber}-${Date.now()}`,
         type: 'pre_set',
-        segments: script.segments,
+        segments: script!.segments,
         priority: 9, // High priority for immediate playback
       })
     } catch (error) {
