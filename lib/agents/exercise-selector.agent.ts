@@ -159,32 +159,85 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
   'pectorals': 'chest',
   'pecs': 'chest',
   'pec': 'chest',
-  'clavicular pectoralis': 'chest_upper',
-  'sternal pectoralis': 'chest_lower',
-  'upper chest': 'chest_upper',
-  'lower chest': 'chest_lower',
 
-  // Shoulders variations
+  // Chest upper variations (clavicular region)
+  'clavicular pectoralis': 'chest_upper',
+  'clavicular pec': 'chest_upper',
+  'clavicular pecs': 'chest_upper',
+  'upper pectoralis': 'chest_upper',
+  'upper pectoralis major': 'chest_upper',
+  'upper pec': 'chest_upper',
+  'upper pecs': 'chest_upper',
+  'pectoralis upper': 'chest_upper',
+  'upper chest': 'chest_upper',
+  'chest upper': 'chest_upper',  // Handles "chest_upper" after underscore → space conversion
+  'incline chest': 'chest_upper',
+
+  // Chest lower variations (sternal region)
+  'sternal pectoralis': 'chest_lower',
+  'sternal pec': 'chest_lower',
+  'sternal pecs': 'chest_lower',
+  'lower pectoralis': 'chest_lower',
+  'lower pectoralis major': 'chest_lower',
+  'lower pec': 'chest_lower',
+  'lower pecs': 'chest_lower',
+  'pectoralis lower': 'chest_lower',
+  'lower chest': 'chest_lower',
+  'chest lower': 'chest_lower',  // Handles "chest_lower" after underscore → space conversion
+  'decline chest': 'chest_lower',
+
+  // Shoulders variations (generic deltoid)
   'deltoid': 'shoulders',
   'deltoids': 'shoulders',
   'shoulder': 'shoulders', // singular after plural removal
-  'anterior deltoid': 'shoulders',
-  'lateral deltoid': 'shoulders',
-  'posterior deltoid': 'shoulders',
-  'front deltoid': 'shoulders',
-  'middle deltoid': 'shoulders',
-  'rear deltoid': 'shoulders',
-  'front delt': 'shoulders',
-  'side delt': 'shoulders',
-  'rear delt': 'shoulders',
   'delts': 'shoulders',
 
-  // Triceps variations
+  // Shoulders front variations (anterior deltoid)
+  'anterior deltoid': 'shoulders_front',
+  'anterior delt': 'shoulders_front',
+  'front deltoid': 'shoulders_front',
+  'front delt': 'shoulders_front',
+  'shoulders front': 'shoulders_front',  // Handles "shoulders_front" after underscore → space conversion
+  'front shoulders': 'shoulders_front',
+
+  // Shoulders side variations (lateral/middle deltoid)
+  'lateral deltoid': 'shoulders_side',
+  'lateral delt': 'shoulders_side',
+  'middle deltoid': 'shoulders_side',
+  'side deltoid': 'shoulders_side',
+  'side delt': 'shoulders_side',
+  'shoulders side': 'shoulders_side',  // Handles "shoulders_side" after underscore → space conversion
+  'side shoulders': 'shoulders_side',
+
+  // Shoulders rear variations (posterior deltoid)
+  'posterior deltoid': 'shoulders_rear',
+  'posterior delt': 'shoulders_rear',
+  'rear deltoid': 'shoulders_rear',
+  'rear delt': 'shoulders_rear',
+  'shoulders rear': 'shoulders_rear',  // Handles "shoulders_rear" after underscore → space conversion
+  'rear shoulders': 'shoulders_rear',
+
+  // Triceps variations (generic)
   'triceps brachii': 'triceps',
   'tricep': 'triceps',
-  'long head triceps': 'triceps',
-  'lateral head triceps': 'triceps',
-  'medial head triceps': 'triceps',
+
+  // Triceps long head variations
+  'long head triceps': 'triceps_long',
+  'triceps long head': 'triceps_long',
+  'triceps long': 'triceps_long',  // Handles "triceps_long" after underscore → space conversion
+  'long head': 'triceps_long',
+
+  // Triceps lateral head variations
+  'lateral head triceps': 'triceps_lateral',
+  'triceps lateral head': 'triceps_lateral',
+  'triceps lateral': 'triceps_lateral',  // Handles "triceps_lateral" after underscore → space conversion
+  'lateral head': 'triceps_lateral',
+
+  // Triceps medial head variations
+  'medial head triceps': 'triceps_medial',
+  'triceps medial head': 'triceps_medial',
+  'triceps medial': 'triceps_medial',  // Handles "triceps_medial" after underscore → space conversion
+  'medial head': 'triceps_medial',
 
   // Back/Lats variations
   'latissimus dorsi': 'lats',
@@ -1717,71 +1770,85 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
       const normalizeMuscleForVolume = (muscle: string): string => {
         const normalized = muscle.toLowerCase().trim()
-          .replace(/_/g, ' ')  // Replace underscores with spaces first
 
-        // Check mapping table (exact match)
+        // STEP 1: Try exact match with original format (preserves underscores from canonical keys)
+        // This handles canonical muscle keys like "chest_lower", "chest_upper", etc.
         if (ANATOMICAL_TO_CANONICAL[normalized]) {
           return ANATOMICAL_TO_CANONICAL[normalized]
         }
 
-        // Check with plural removed (e.g., "deltoids" → "deltoid" → "shoulders")
+        // STEP 2: Check with plural removed (e.g., "deltoids" → "deltoid" → "shoulders")
         const withoutPlural = normalized.replace(/s$/, '')
         if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
           return ANATOMICAL_TO_CANONICAL[withoutPlural]
         }
 
-        // Intelligent fallback: pattern matching for common muscle group keywords
+        // STEP 3: Try with underscores replaced by spaces (handles anatomical variations)
+        // This catches variants like "lower chest", "upper chest" that AI might generate
+        const spacedNormalized = normalized.replace(/_/g, ' ')
+        if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
+          return ANATOMICAL_TO_CANONICAL[spacedNormalized]
+        }
+
+        // STEP 4: Check spaced version without plural
+        const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
+        if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
+          return ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
+        }
+
+        // STEP 5: Intelligent fallback - pattern matching for common muscle group keywords
         // This handles unknown variants, typos, or new AI-generated terms
-        if (normalized.includes('back')) {
-          console.warn(`⚠️ [FALLBACK] Unknown back variant "${muscle}" → upper_back`, { normalized })
+        // Use spacedNormalized for pattern matching (works with both underscore and space formats)
+        if (spacedNormalized.includes('back')) {
+          console.warn(`⚠️ [FALLBACK] Unknown back variant "${muscle}" → upper_back`, { normalized: spacedNormalized })
           return 'upper_back'
         }
-        if (normalized.includes('delt')) {
-          console.warn(`⚠️ [FALLBACK] Unknown deltoid variant "${muscle}" → shoulders`, { normalized })
+        if (spacedNormalized.includes('delt')) {
+          console.warn(`⚠️ [FALLBACK] Unknown deltoid variant "${muscle}" → shoulders`, { normalized: spacedNormalized })
           return 'shoulders'
         }
-        if (normalized.includes('pect')) {
-          console.warn(`⚠️ [FALLBACK] Unknown pectoral variant "${muscle}" → chest`, { normalized })
+        if (spacedNormalized.includes('pect')) {
+          console.warn(`⚠️ [FALLBACK] Unknown pectoral variant "${muscle}" → chest`, { normalized: spacedNormalized })
           return 'chest'
         }
-        if (normalized.includes('quad')) {
-          console.warn(`⚠️ [FALLBACK] Unknown quadriceps variant "${muscle}" → quads`, { normalized })
+        if (spacedNormalized.includes('quad')) {
+          console.warn(`⚠️ [FALLBACK] Unknown quadriceps variant "${muscle}" → quads`, { normalized: spacedNormalized })
           return 'quads'
         }
-        if (normalized.includes('ham')) {
-          console.warn(`⚠️ [FALLBACK] Unknown hamstring variant "${muscle}" → hamstrings`, { normalized })
+        if (spacedNormalized.includes('ham')) {
+          console.warn(`⚠️ [FALLBACK] Unknown hamstring variant "${muscle}" → hamstrings`, { normalized: spacedNormalized })
           return 'hamstrings'
         }
-        if (normalized.includes('glut')) {
-          console.warn(`⚠️ [FALLBACK] Unknown glute variant "${muscle}" → glutes`, { normalized })
+        if (spacedNormalized.includes('glut')) {
+          console.warn(`⚠️ [FALLBACK] Unknown glute variant "${muscle}" → glutes`, { normalized: spacedNormalized })
           return 'glutes'
         }
-        if (normalized.includes('calf') || normalized.includes('calv')) {
-          console.warn(`⚠️ [FALLBACK] Unknown calf variant "${muscle}" → calves`, { normalized })
+        if (spacedNormalized.includes('calf') || spacedNormalized.includes('calv')) {
+          console.warn(`⚠️ [FALLBACK] Unknown calf variant "${muscle}" → calves`, { normalized: spacedNormalized })
           return 'calves'
         }
-        if (normalized.includes('tricep')) {
-          console.warn(`⚠️ [FALLBACK] Unknown tricep variant "${muscle}" → triceps`, { normalized })
+        if (spacedNormalized.includes('tricep')) {
+          console.warn(`⚠️ [FALLBACK] Unknown tricep variant "${muscle}" → triceps`, { normalized: spacedNormalized })
           return 'triceps'
         }
-        if (normalized.includes('bicep')) {
-          console.warn(`⚠️ [FALLBACK] Unknown bicep variant "${muscle}" → biceps`, { normalized })
+        if (spacedNormalized.includes('bicep')) {
+          console.warn(`⚠️ [FALLBACK] Unknown bicep variant "${muscle}" → biceps`, { normalized: spacedNormalized })
           return 'biceps'
         }
-        if (normalized.includes('lat')) {
-          console.warn(`⚠️ [FALLBACK] Unknown lat variant "${muscle}" → lats`, { normalized })
+        if (spacedNormalized.includes('lat')) {
+          console.warn(`⚠️ [FALLBACK] Unknown lat variant "${muscle}" → lats`, { normalized: spacedNormalized })
           return 'lats'
         }
-        if (normalized.includes('trap')) {
-          console.warn(`⚠️ [FALLBACK] Unknown trap variant "${muscle}" → traps`, { normalized })
+        if (spacedNormalized.includes('trap')) {
+          console.warn(`⚠️ [FALLBACK] Unknown trap variant "${muscle}" → traps`, { normalized: spacedNormalized })
           return 'traps'
         }
-        if (normalized.includes('ab') || normalized.includes('abdominal')) {
-          console.warn(`⚠️ [FALLBACK] Unknown abs variant "${muscle}" → abs`, { normalized })
+        if (spacedNormalized.includes('ab') || spacedNormalized.includes('abdominal')) {
+          console.warn(`⚠️ [FALLBACK] Unknown abs variant "${muscle}" → abs`, { normalized: spacedNormalized })
           return 'abs'
         }
-        if (normalized.includes('oblique')) {
-          console.warn(`⚠️ [FALLBACK] Unknown oblique variant "${muscle}" → obliques`, { normalized })
+        if (spacedNormalized.includes('oblique')) {
+          console.warn(`⚠️ [FALLBACK] Unknown oblique variant "${muscle}" → obliques`, { normalized: spacedNormalized })
           return 'obliques'
         }
 
@@ -1789,13 +1856,14 @@ Return ONLY valid JSON (no markdown, no code blocks):
         console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscle name encountered (no fallback matched):', {
           original: muscle,
           normalized: normalized,
+          spacedNormalized: spacedNormalized,
           withoutPlural: withoutPlural,
-          returning: withoutPlural,
+          returning: spacedWithoutPlural,
           timestamp: new Date().toISOString(),
           hint: 'Consider adding to ANATOMICAL_TO_CANONICAL mapping if this is an anatomical name'
         })
 
-        return withoutPlural
+        return spacedWithoutPlural
       }
 
       const actualVolume = calculateMuscleVolume(result.exercises)
