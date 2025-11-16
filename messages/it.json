@@ -122,7 +122,76 @@
       "targetVolume": "Volume Target:",
       "moreMuscleGroups": "+{count} gruppi muscolari in più",
       "keyPrinciples": "Principi Chiave:",
-      "helperText": "Clicca \"Genera l'Allenamento di Oggi\" qui sotto per creare questa sessione con esercizi selezionati dall'AI."
+      "helperText": "Clicca \"Genera l'Allenamento di Oggi\" qui sotto per creare questa sessione con esercizi selezionati dall'AI.",
+      "customize": "Personalizza",
+      "undo": "Annulla",
+      "undoing": "Annullamento...",
+      "confirmUndo": "Sei sicuro di voler annullare l'ultima modifica?"
+    },
+    "splitCustomization": {
+      "title": "Personalizza Split",
+      "subtitle": "Modifica il tuo piano di allenamento con AI validation",
+      "tabs": {
+        "swapDays": "Scambia Giorni",
+        "toggleMuscles": "Gestisci Muscoli",
+        "changeVariation": "Cambia Variazione"
+      },
+      "swap": {
+        "description": "Scambia due giorni del tuo split per adattarlo meglio ai tuoi impegni.",
+        "fromDay": "Dal Giorno",
+        "toDay": "Al Giorno",
+        "selectDay": "Seleziona un giorno",
+        "dayNumber": "Giorno {day}",
+        "preview": "Anteprima Scambio:",
+        "variation": "Var. {variation}",
+        "validating": "Validazione...",
+        "swapDays": "Scambia Giorni"
+      },
+      "toggle": {
+        "description": "Aggiungi o rimuovi gruppi muscolari da una sessione.",
+        "selectDay": "Seleziona Giorno",
+        "chooseDay": "Scegli un giorno",
+        "dayNumber": "Giorno {day}",
+        "currentFocus": "Focus Attuale:",
+        "noMuscles": "Nessun muscolo specificato",
+        "selectMuscle": "Seleziona Muscolo",
+        "chooseMuscle": "Scegli un muscolo",
+        "willAdd": "Aggiungerà {muscle}",
+        "willRemove": "Rimuoverà {muscle}",
+        "validating": "Validazione...",
+        "addMuscle": "Aggiungi Muscolo",
+        "removeMuscle": "Rimuovi Muscolo"
+      },
+      "variation": {
+        "description": "Cambia la variazione di una sessione (A ↔ B) per variare gli stimoli.",
+        "selectDay": "Seleziona Giorno",
+        "chooseDay": "Scegli un giorno",
+        "dayNumber": "Giorno {day}",
+        "changePreview": "Anteprima Cambio:",
+        "currentVariation": "Attuale",
+        "newVariation": "Nuova",
+        "variationInfo": "Le variazioni A e B usano esercizi diversi per lo stesso focus muscolare.",
+        "validating": "Validazione...",
+        "changeVariation": "Cambia Variazione"
+      },
+      "validation": {
+        "level": {
+          "approved": "Modifica Approvata",
+          "caution": "Procedi con Cautela",
+          "not_recommended": "Non Raccomandato"
+        },
+        "warnings": "Avvertenze:",
+        "suggestions": "Suggerimenti:",
+        "volumeImpact": "Impatto sul Volume:",
+        "sets": "serie",
+        "reasonLabel": "Motivo della modifica",
+        "optional": "opzionale",
+        "reasonPlaceholder": "Spiega perché vuoi fare questa modifica...",
+        "reasonHelper": "Questo aiuterà l'AI a migliorare le raccomandazioni future.",
+        "cancel": "Annulla",
+        "confirm": "Conferma e Applica",
+        "applying": "Applicazione..."
+      }
     },
     "timeline": {
       "loadingSplitTimeline": "Caricamento timeline split...",
@@ -376,6 +445,8 @@
       "mentalReadinessRequired": "Seleziona il tuo stato mentale prima di completare l'allenamento",
       "completeWorkout": "Completa Allenamento",
       "completing": "Completamento...",
+      "navigating": "Reindirizzamento...",
+      "required": "Obbligatorio",
       "aiAnalysisDisclaimer": "L'IA analizzerà le tue note. Per dolori persistenti, consulta un professionista medico.",
       "mentalReadiness": {
         "descriptions": {
@@ -392,7 +463,8 @@
         "failedToAdvanceCycle": "Impossibile avanzare il ciclo di allenamento. Riprova.",
         "networkError": "Errore di rete. Controlla la connessione e riprova.",
         "failedToCompleteWorkout": "Impossibile completare l'allenamento",
-        "failedToSaveNotes": "Impossibile salvare le note. Riprova."
+        "failedToSaveNotes": "Impossibile salvare le note. Riprova.",
+        "failedToNavigate": "Impossibile tornare alla dashboard. Ricarica la pagina."
       }
     },
     "execution": {

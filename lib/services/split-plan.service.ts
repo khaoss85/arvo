@@ -429,14 +429,18 @@ export class SplitPlanService {
 
   /**
    * Toggle muscle group in/out of a session's focus
-   * Returns updated sessions array (does NOT save to DB - caller must update)
+   * Returns updated sessions, frequency_map, and volume_distribution
    */
   static toggleMuscleFocus(
     splitPlan: SplitPlan,
     cycleDay: number,
     muscleGroup: string,
     add: boolean
-  ): SessionDefinition[] {
+  ): {
+    sessions: SessionDefinition[];
+    frequencyMap: Record<string, number>;
+    volumeDistribution: Record<string, number>;
+  } {
     const sessions = (splitPlan.sessions as unknown as SessionDefinition[]).slice();
 
     const sessionIndex = sessions.findIndex((s) => s.day === cycleDay);
@@ -465,7 +469,14 @@ export class SplitPlanService {
     }
 
     sessions[sessionIndex] = session;
-    return sessions;
+
+    // Recalculate frequency and volume distribution
+    const { frequencyMap, volumeDistribution } = this.recalculateFrequencyAndVolume(
+      sessions,
+      splitPlan.cycle_days
+    );
+
+    return { sessions, frequencyMap, volumeDistribution };
   }
 
   /**
@@ -492,6 +503,42 @@ export class SplitPlanService {
 
     sessions[sessionIndex] = session;
     return sessions;
+  }
+
+  /**
+   * Recalculate frequency_map and volume_distribution from sessions
+   * Used after modifying sessions to keep summary fields in sync
+   */
+  static recalculateFrequencyAndVolume(
+    sessions: SessionDefinition[],
+    cycleDays: number
+  ): {
+    frequencyMap: Record<string, number>;
+    volumeDistribution: Record<string, number>;
+  } {
+    const frequencyMap: Record<string, number> = {};
+    const volumeDistribution: Record<string, number> = {};
+
+    // Count occurrences and sum volumes for each muscle
+    for (const session of sessions) {
+      for (const muscle of session.focus || []) {
+        // Count frequency (how many times this muscle appears in cycle)
+        frequencyMap[muscle] = (frequencyMap[muscle] || 0) + 1;
+
+        // Sum volume (total sets for this muscle in cycle)
+        const sets = session.targetVolume?.[muscle] || 0;
+        volumeDistribution[muscle] = (volumeDistribution[muscle] || 0) + sets;
+      }
+    }
+
+    // Convert frequency count to weekly frequency
+    // Formula: (occurrences_in_cycle * 7) / cycle_days
+    for (const muscle in frequencyMap) {
+      const occurrences = frequencyMap[muscle];
+      frequencyMap[muscle] = Math.round((occurrences * 7) / cycleDays * 10) / 10; // Round to 1 decimal
+    }
+
+    return { frequencyMap, volumeDistribution };
   }
 
   /**

@@ -334,7 +334,7 @@ export class WorkoutService {
       completedAt?: Date;
       mentalReadinessOverall?: number;
     }
-  ): Promise<Workout> {
+  ): Promise<{ workout: Workout; warnings: string[] }> {
     console.log('[WorkoutService] Starting markAsCompletedWithStats', {
       workoutId: id,
       stats,
@@ -438,6 +438,8 @@ export class WorkoutService {
       completed_at: data.completed_at
     });
 
+    const warnings: string[] = [];
+
     // If this workout is part of a split plan, advance the cycle
     if (workout.split_plan_id && workout.user_id) {
       console.log('[WorkoutService] Workout is part of split plan, advancing cycle...', {
@@ -449,21 +451,30 @@ export class WorkoutService {
         await SplitPlanService.advanceCycle(workout.user_id);
         console.log('[WorkoutService] Split plan cycle advanced successfully');
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('[WorkoutService] Failed to advance split cycle:', {
           userId: workout.user_id,
           splitPlanId: workout.split_plan_id,
-          error: error instanceof Error ? error.message : String(error),
+          error: errorMessage,
           stack: error instanceof Error ? error.stack : undefined
         });
         // Don't throw - workout completion is more important than cycle advancement
         // The workout is already marked as completed, so we don't want to fail the entire operation
+        // But we'll return a warning so the UI can inform the user
+        warnings.push(`Failed to advance to next training day: ${errorMessage}`);
       }
     } else {
       console.log('[WorkoutService] Workout is not part of a split plan, skipping cycle advancement');
     }
 
-    console.log('[WorkoutService] markAsCompletedWithStats completed successfully');
-    return data as unknown as Workout;
+    console.log('[WorkoutService] markAsCompletedWithStats completed successfully', {
+      warnings: warnings.length > 0 ? warnings : 'none'
+    });
+
+    return {
+      workout: data as unknown as Workout,
+      warnings
+    };
   }
 
   /**

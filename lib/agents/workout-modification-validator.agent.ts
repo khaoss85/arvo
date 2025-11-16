@@ -276,6 +276,14 @@ Required JSON structure:
   }
 
   /**
+   * Public method to build complete user context
+   * Exposed to allow server actions to enrich user context before validation
+   */
+  async buildCompleteUserContext(userId: string) {
+    return await this.knowledge.buildUserContext(userId)
+  }
+
+  /**
    * Validate split customization (swap days, toggle muscles, change variation)
    */
   async validateSplitChange(input: SplitChangeValidationInput): Promise<SplitChangeValidationOutput> {

@@ -110,6 +110,7 @@ export async function getNextWorkoutPreviewAction(userId: string) {
         cycleDay,
         totalCycleDays: splitPlan.cycle_days,
         splitType: splitPlan.split_type,
+        sessions: splitPlan.sessions as any[], // Include all sessions for customization dialog
       }
     }
   } catch (error: any) {

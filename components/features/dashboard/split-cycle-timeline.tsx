@@ -8,6 +8,9 @@ import type { MuscleVolumeProgress } from '@/lib/actions/volume-progress-actions
 import { TimelineDayCard } from './timeline-day-card'
 import { VolumeSummaryTimelineCard } from './volume-summary-timeline-card'
 import { useUIStore } from '@/lib/stores/ui.store'
+import { CustomizeSplitDialog } from '@/components/features/split/customize-split-dialog'
+import { undoLastModificationAction, getRecentModificationsAction } from '@/app/actions/split-customization-actions'
+import { Button } from '@/components/ui/button'
 
 interface SplitCycleTimelineProps {
   userId: string
@@ -17,12 +20,16 @@ interface SplitCycleTimelineProps {
 
 export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }: SplitCycleTimelineProps) {
   const t = useTranslations('dashboard.timeline')
+  const tSplit = useTranslations('dashboard.splitCycle')
   const tLegend = useTranslations('dashboard.timeline.legend')
   const [data, setData] = useState<SplitTimelineData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { addToast } = useUIStore()
+  const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false)
+  const [hasModifications, setHasModifications] = useState(false)
+  const [undoing, setUndoing] = useState(false)
 
   const loadTimelineData = useCallback(async () => {
     setLoading(true)
@@ -78,9 +85,52 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
     }
   }, [userId, loadTimelineData, addToast])
 
+  const checkForModifications = useCallback(async () => {
+    try {
+      const result = await getRecentModificationsAction(userId, 1)
+      if (result.success && result.data && result.data.length > 0) {
+        setHasModifications(true)
+      } else {
+        setHasModifications(false)
+      }
+    } catch (error) {
+      console.error('Failed to check modifications:', error)
+      setHasModifications(false)
+    }
+  }, [userId])
+
+  const handleUndo = useCallback(async () => {
+    if (!window.confirm(tSplit('confirmUndo') || 'Are you sure you want to undo the last modification?')) {
+      return
+    }
+
+    setUndoing(true)
+    try {
+      const result = await undoLastModificationAction(userId)
+      if (result.success) {
+        addToast(result.data?.message || 'Modifica annullata con successo', 'success')
+        await loadTimelineData()
+        await checkForModifications()
+      } else {
+        addToast(result.error || 'Failed to undo modification', 'error')
+      }
+    } catch (error) {
+      console.error('Failed to undo:', error)
+      addToast('Failed to undo modification', 'error')
+    } finally {
+      setUndoing(false)
+    }
+  }, [userId, loadTimelineData, checkForModifications, addToast, tSplit])
+
+  const handleCustomizationComplete = useCallback(async () => {
+    await loadTimelineData()
+    await checkForModifications()
+  }, [loadTimelineData, checkForModifications])
+
   useEffect(() => {
     loadTimelineData()
-  }, [loadTimelineData])
+    checkForModifications()
+  }, [loadTimelineData, checkForModifications])
 
   // Refresh timeline when page becomes visible (user returns from workout)
   useEffect(() => {
@@ -153,6 +203,34 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
             <p className="text-purple-100 dark:text-purple-200 text-sm">
               {splitPlan.split_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </p>
+          </div>
+          <div className="flex gap-2">
+            {hasModifications && (
+              <Button
+                onClick={handleUndo}
+                disabled={undoing}
+                variant="outline"
+                size="sm"
+                className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+              >
+                {undoing ? (
+                  <>
+                    <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    {tSplit('undoing')}
+                  </>
+                ) : (
+                  <>↩️ {tSplit('undo')}</>
+                )}
+              </Button>
+            )}
+            <Button
+              onClick={() => setCustomizeDialogOpen(true)}
+              variant="outline"
+              size="sm"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+            >
+              ⚙️ {tSplit('customize')}
+            </Button>
           </div>
         </div>
 
@@ -245,6 +323,19 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
           <span>{tLegend('rest')}</span>
         </div>
       </div>
+
+      {/* Customize Split Dialog */}
+      <CustomizeSplitDialog
+        open={customizeDialogOpen}
+        onOpenChange={setCustomizeDialogOpen}
+        userId={userId}
+        splitPlanData={{
+          cycleDays: splitPlan.cycle_days,
+          sessions: splitPlan.sessions as any[]
+        }}
+        completedDays={days.filter(d => d.status === 'completed').map(d => d.day)}
+        onModificationComplete={handleCustomizationComplete}
+      />
     </div>
   )
 }

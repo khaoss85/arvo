@@ -42,6 +42,8 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const [mentalReadinessSelected, setMentalReadinessSelected] = useState<number | null>(overallMentalReadiness)
   const [workoutNotes, setWorkoutNotes] = useState<string>('')
   const [savingNotes, setSavingNotes] = useState(false)
+  const [completingWorkout, setCompletingWorkout] = useState(false)
+  const [navigating, setNavigating] = useState(false)
 
   // Ref to prevent duplicate API calls during save
   const savingNotesRef = useRef(false)
@@ -109,6 +111,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       timestamp: new Date().toISOString()
     })
 
+    setCompletingWorkout(true)
     try {
       // Save mental readiness to store
       console.log('[WorkoutSummary] Saving mental readiness to store:', mentalReadinessSelected)
@@ -124,13 +127,24 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         }
       })
 
-      await WorkoutService.markAsCompletedWithStats(workoutId, {
+      const result = await WorkoutService.markAsCompletedWithStats(workoutId, {
         totalVolume: stats.totalVolume,
         duration: stats.duration,
         mentalReadinessOverall: mentalReadinessSelected
       })
 
-      console.log('[WorkoutSummary] Workout marked as completed successfully')
+      console.log('[WorkoutSummary] Workout marked as completed successfully', {
+        warnings: result.warnings
+      })
+
+      // Show warnings if any (e.g., failed to advance cycle)
+      if (result.warnings.length > 0) {
+        console.warn('[WorkoutSummary] Completion completed with warnings:', result.warnings)
+        // Show warnings in a non-blocking way
+        setTimeout(() => {
+          alert(`⚠️ ${t('warning')}: ${result.warnings.join('\n')}`)
+        }, 500)
+      }
 
       // Generate AI summary with mental readiness data
       console.log('[WorkoutSummary] Generating AI summary...')
@@ -166,6 +180,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         : `${t('errors.failedToCompleteWorkout')}: ${errorMessage}`
 
       alert(specificError)
+      setCompletingWorkout(false)
     }
   }
 
@@ -320,13 +335,20 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   }
 
   const handleFinish = async () => {
-    // Save notes before finishing
-    if (workoutNotes.trim()) {
-      await handleSaveNotes()
-    }
+    setNavigating(true)
+    try {
+      // Save notes before finishing
+      if (workoutNotes.trim()) {
+        await handleSaveNotes()
+      }
 
-    reset()
-    router.push('/dashboard')
+      reset()
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('[WorkoutSummary] Failed to navigate back to dashboard:', error)
+      alert(t('errors.failedToNavigate'))
+      setNavigating(false)
+    }
   }
 
   return (
@@ -345,8 +367,14 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {/* Mental Readiness Selector - Required before completion */}
         {!aiSummary && (
           <div className="mb-8">
-            <h3 className="text-lg font-medium text-white mb-3 text-center">{t('mentalReadinessTitle')}</h3>
-            <p className="text-sm text-gray-400 mb-4 text-center">{t('mentalReadinessDescription')}</p>
+            <div className="bg-purple-900/30 border border-purple-700/50 rounded-lg p-4 mb-4">
+              <h3 className="text-lg font-semibold text-white mb-2 text-center flex items-center justify-center gap-2">
+                <span className="text-purple-400">⚡</span>
+                {t('mentalReadinessTitle')}
+                <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full">{t('required')}</span>
+              </h3>
+              <p className="text-sm text-gray-300 text-center">{t('mentalReadinessDescription')}</p>
+            </div>
 
             <div className="grid grid-cols-5 gap-3">
               {[1, 2, 3, 4, 5].map((value) => {
@@ -378,10 +406,19 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
             <Button
               onClick={handleCompleteSummary}
-              disabled={!mentalReadinessSelected || !stats}
+              disabled={!mentalReadinessSelected || !stats || completingWorkout}
               className="w-full h-12 mt-6 bg-green-600 hover:bg-green-700 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {mentalReadinessSelected ? t('completeWorkoutButton') : t('selectMentalState')}
+              {completingWorkout ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>{t('completing')}</span>
+                </div>
+              ) : mentalReadinessSelected ? (
+                t('completeWorkoutButton')
+              ) : (
+                t('selectMentalState')
+              )}
             </Button>
           </div>
         )}
@@ -551,9 +588,17 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {aiSummary && (
           <Button
             onClick={handleFinish}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={navigating}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {t('backToDashboard')}
+            {navigating ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>{t('navigating')}</span>
+              </div>
+            ) : (
+              t('backToDashboard')
+            )}
           </Button>
         )}
       </div>

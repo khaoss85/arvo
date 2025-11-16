@@ -9,6 +9,9 @@ import {
   getWorkoutTypeIcon,
   type WorkoutType
 } from '@/lib/services/muscle-groups.service'
+import { CustomizeSplitDialog } from '@/components/features/split/customize-split-dialog'
+import { undoLastModificationAction, getRecentModificationsAction } from '@/app/actions/split-customization-actions'
+import { useUIStore } from '@/lib/stores/ui.store'
 
 interface SplitCycleViewProps {
   userId: string
@@ -24,13 +27,24 @@ interface NextWorkoutData {
   cycleDay: number
   totalCycleDays: number
   splitType: string
+  sessions?: Array<{
+    day: number
+    name: string
+    workoutType: string
+    focus: string[]
+    variation: 'A' | 'B'
+  }>
 }
 
 export function SplitCycleView({ userId }: SplitCycleViewProps) {
   const t = useTranslations('dashboard.splitCycle')
+  const { addToast } = useUIStore()
   const [data, setData] = useState<NextWorkoutData | null>(null)
   const [loading, setLoading] = useState(true)
   const [advancing, setAdvancing] = useState(false)
+  const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false)
+  const [hasModifications, setHasModifications] = useState(false)
+  const [undoing, setUndoing] = useState(false)
 
   const loadNextWorkout = async () => {
     setLoading(true)
@@ -49,8 +63,23 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
     }
   }
 
+  const checkForModifications = async () => {
+    try {
+      const result = await getRecentModificationsAction(userId, 1)
+      if (result.success && result.data && result.data.length > 0) {
+        setHasModifications(true)
+      } else {
+        setHasModifications(false)
+      }
+    } catch (error) {
+      console.error('Failed to check modifications:', error)
+      setHasModifications(false)
+    }
+  }
+
   useEffect(() => {
     loadNextWorkout()
+    checkForModifications()
   }, [userId])
 
   const handleAdvanceCycle = async () => {
@@ -66,6 +95,36 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
     } finally {
       setAdvancing(false)
     }
+  }
+
+  const handleUndo = async () => {
+    if (!window.confirm(t('confirmUndo') || 'Are you sure you want to undo the last modification?')) {
+      return
+    }
+
+    setUndoing(true)
+    try {
+      const result = await undoLastModificationAction(userId)
+      if (result.success) {
+        addToast(result.data?.message || 'Modifica annullata con successo', 'success')
+        // Reload data
+        await loadNextWorkout()
+        await checkForModifications()
+      } else {
+        addToast(result.error || 'Failed to undo modification', 'error')
+      }
+    } catch (error) {
+      console.error('Failed to undo:', error)
+      addToast('Failed to undo modification', 'error')
+    } finally {
+      setUndoing(false)
+    }
+  }
+
+  const handleCustomizationComplete = async () => {
+    // Reload data after customization
+    await loadNextWorkout()
+    await checkForModifications()
   }
 
   // Don't show anything if no split plan
@@ -102,23 +161,50 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
             {data?.splitType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </p>
         </div>
-        <Button
-          onClick={handleAdvanceCycle}
-          disabled={advancing}
-          variant="outline"
-          className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-        >
-          {advancing ? (
-            <>
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-              {t('advancing')}
-            </>
-          ) : (
-            <>
-              {t('skipToNextDay')}
-            </>
+        <div className="flex gap-2">
+          {hasModifications && (
+            <Button
+              onClick={handleUndo}
+              disabled={undoing}
+              variant="outline"
+              size="sm"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+            >
+              {undoing ? (
+                <>
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  {t('undoing')}
+                </>
+              ) : (
+                <>↩️ {t('undo')}</>
+              )}
+            </Button>
           )}
-        </Button>
+          <Button
+            onClick={() => setCustomizeDialogOpen(true)}
+            variant="outline"
+            size="sm"
+            className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+          >
+            ⚙️ {t('customize')}
+          </Button>
+          <Button
+            onClick={handleAdvanceCycle}
+            disabled={advancing}
+            variant="outline"
+            size="sm"
+            className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
+          >
+            {advancing ? (
+              <>
+                <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                {t('advancing')}
+              </>
+            ) : (
+              <>{t('skipToNextDay')}</>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Cycle Progress */}
@@ -224,6 +310,20 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       <p className="mt-4 text-sm text-purple-100 dark:text-purple-200">
         {t('helperText')}
       </p>
+
+      {/* Customize Split Dialog */}
+      {data && data.sessions && (
+        <CustomizeSplitDialog
+          open={customizeDialogOpen}
+          onOpenChange={setCustomizeDialogOpen}
+          userId={userId}
+          splitPlanData={{
+            cycleDays: data.totalCycleDays,
+            sessions: data.sessions
+          }}
+          onModificationComplete={handleCustomizationComplete}
+        />
+      )}
     </div>
   )
 }

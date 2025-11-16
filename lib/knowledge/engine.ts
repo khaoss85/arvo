@@ -42,6 +42,85 @@ export class KnowledgeEngine {
     }
   }
 
+  /**
+   * Get recent split modification history for a user
+   * Used to provide AI context about user's customization patterns
+   */
+  async getSplitModificationHistory(userId: string, limit: number = 20) {
+    const { data, error } = await this.supabase
+      .from('split_modifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('Error fetching split modification history:', error)
+      return []
+    }
+
+    return data || []
+  }
+
+  /**
+   * Build comprehensive user context for AI validation
+   * Includes user profile data and optionally modification history
+   */
+  async buildUserContext(userId: string, options?: {
+    includeModificationHistory?: boolean
+    modificationHistoryLimit?: number
+  }) {
+    // Fetch user profile
+    const { data: profile, error: profileError } = await this.supabase
+      .from('profiles')
+      .select('age, experience_years, weak_points')
+      .eq('id', userId)
+      .single()
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError)
+    }
+
+    // Fetch active split for mesocycle context
+    const { data: activeSplit, error: splitError } = await this.supabase
+      .from('split_plans')
+      .select('approach_id, current_mesocycle_week, current_mesocycle_phase')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single()
+
+    if (splitError) {
+      console.error('Error fetching active split:', splitError)
+    }
+
+    const context: {
+      userId: string
+      approachId?: string
+      experienceYears?: number
+      userAge?: number
+      weakPoints?: string[]
+      mesocycleWeek?: number
+      mesocyclePhase?: 'accumulation' | 'intensification' | 'deload' | 'transition'
+      modificationHistory?: any[]
+    } = {
+      userId,
+      approachId: activeSplit?.approach_id,
+      experienceYears: profile?.experience_years,
+      userAge: profile?.age,
+      weakPoints: profile?.weak_points || [],
+      mesocycleWeek: activeSplit?.current_mesocycle_week,
+      mesocyclePhase: activeSplit?.current_mesocycle_phase,
+    }
+
+    // Include modification history if requested
+    if (options?.includeModificationHistory) {
+      const limit = options?.modificationHistoryLimit || 20
+      context.modificationHistory = await this.getSplitModificationHistory(userId, limit)
+    }
+
+    return context
+  }
+
   formatContextForAI(approach: TrainingApproach, aspect: string): string {
     // Format specific aspect of approach for AI context
     switch (aspect) {

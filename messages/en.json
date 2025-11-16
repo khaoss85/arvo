@@ -122,7 +122,76 @@
       "targetVolume": "Target Volume:",
       "moreMuscleGroups": "+{count} more muscle groups",
       "keyPrinciples": "Key Principles:",
-      "helperText": "Click \"Generate Today's Workout\" below to create this session with AI-selected exercises."
+      "helperText": "Click \"Generate Today's Workout\" below to create this session with AI-selected exercises.",
+      "customize": "Customize",
+      "undo": "Undo",
+      "undoing": "Undoing...",
+      "confirmUndo": "Are you sure you want to undo the last modification?"
+    },
+    "splitCustomization": {
+      "title": "Customize Split",
+      "subtitle": "Modify your training plan with AI validation",
+      "tabs": {
+        "swapDays": "Swap Days",
+        "toggleMuscles": "Manage Muscles",
+        "changeVariation": "Change Variation"
+      },
+      "swap": {
+        "description": "Swap two days in your split to better fit your schedule.",
+        "fromDay": "From Day",
+        "toDay": "To Day",
+        "selectDay": "Select a day",
+        "dayNumber": "Day {day}",
+        "preview": "Swap Preview:",
+        "variation": "Var. {variation}",
+        "validating": "Validating...",
+        "swapDays": "Swap Days"
+      },
+      "toggle": {
+        "description": "Add or remove muscle groups from a session.",
+        "selectDay": "Select Day",
+        "chooseDay": "Choose a day",
+        "dayNumber": "Day {day}",
+        "currentFocus": "Current Focus:",
+        "noMuscles": "No muscles specified",
+        "selectMuscle": "Select Muscle",
+        "chooseMuscle": "Choose a muscle",
+        "willAdd": "Will add {muscle}",
+        "willRemove": "Will remove {muscle}",
+        "validating": "Validating...",
+        "addMuscle": "Add Muscle",
+        "removeMuscle": "Remove Muscle"
+      },
+      "variation": {
+        "description": "Change a session's variation (A ↔ B) to vary training stimulus.",
+        "selectDay": "Select Day",
+        "chooseDay": "Choose a day",
+        "dayNumber": "Day {day}",
+        "changePreview": "Change Preview:",
+        "currentVariation": "Current",
+        "newVariation": "New",
+        "variationInfo": "Variations A and B use different exercises for the same muscle focus.",
+        "validating": "Validating...",
+        "changeVariation": "Change Variation"
+      },
+      "validation": {
+        "level": {
+          "approved": "Modification Approved",
+          "caution": "Proceed with Caution",
+          "not_recommended": "Not Recommended"
+        },
+        "warnings": "Warnings:",
+        "suggestions": "Suggestions:",
+        "volumeImpact": "Volume Impact:",
+        "sets": "sets",
+        "reasonLabel": "Reason for modification",
+        "optional": "optional",
+        "reasonPlaceholder": "Explain why you want to make this change...",
+        "reasonHelper": "This will help the AI improve future recommendations.",
+        "cancel": "Cancel",
+        "confirm": "Confirm and Apply",
+        "applying": "Applying..."
+      }
     },
     "timeline": {
       "loadingSplitTimeline": "Loading split timeline...",
@@ -376,6 +445,8 @@
       "mentalReadinessRequired": "Please select your mental state before completing the workout",
       "completeWorkout": "Complete Workout",
       "completing": "Completing...",
+      "navigating": "Navigating...",
+      "required": "Required",
       "aiAnalysisDisclaimer": "AI will analyze your notes. For persistent pain, consult a medical professional.",
       "mentalReadiness": {
         "descriptions": {
@@ -392,7 +463,8 @@
         "failedToAdvanceCycle": "Failed to advance training cycle. Please try again.",
         "networkError": "Network error. Check your connection and try again.",
         "failedToCompleteWorkout": "Failed to complete workout",
-        "failedToSaveNotes": "Failed to save notes. Please try again."
+        "failedToSaveNotes": "Failed to save notes. Please try again.",
+        "failedToNavigate": "Failed to return to dashboard. Please refresh the page."
       }
     },
     "execution": {

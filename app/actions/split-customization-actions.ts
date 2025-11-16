@@ -7,8 +7,6 @@ import {
   type SplitChangeValidationInput,
   type SplitChangeValidationOutput,
 } from '@/lib/agents/workout-modification-validator.agent'
-import { getUserLanguage } from '@/lib/utils/get-user-language'
-import type { SplitPlan } from '@/lib/types/schemas'
 
 /**
  * Validate a split modification using AI
@@ -18,7 +16,24 @@ export async function validateSplitChangeAction(input: SplitChangeValidationInpu
     const supabase = await getSupabaseServerClient()
     const validator = new WorkoutModificationValidator(supabase)
 
-    const validation = await validator.validateSplitChange(input)
+    // Fetch complete user context for AI validation using public method
+    const userContext = await validator.buildCompleteUserContext(input.userContext.userId)
+
+    // Populate input with real user context data
+    const enrichedInput: SplitChangeValidationInput = {
+      ...input,
+      userContext: {
+        userId: input.userContext.userId,
+        approachId: userContext.approachId || '',
+        experienceYears: userContext.experienceYears,
+        userAge: userContext.userAge,
+        weakPoints: userContext.weakPoints,
+        mesocycleWeek: userContext.mesocycleWeek,
+        mesocyclePhase: userContext.mesocyclePhase,
+      }
+    }
+
+    const validation = await validator.validateSplitChange(enrichedInput)
 
     return {
       success: true,
@@ -56,11 +71,23 @@ export async function swapCycleDaysAction(
       }
     }
 
+    // Query affected workouts BEFORE modification for undo
+    const { data: affectedWorkouts } = await supabase
+      .from('workouts')
+      .select('id, cycle_day, status')
+      .eq('split_plan_id', splitPlan.id)
+      .in('cycle_day', [day1, day2])
+
     // Store previous state for undo
     const previousState = {
       sessions: splitPlan.sessions,
       frequency_map: splitPlan.frequency_map,
       volume_distribution: splitPlan.volume_distribution,
+      affected_workouts: affectedWorkouts?.map(w => ({
+        id: w.id,
+        cycle_day: w.cycle_day,
+        status: w.status,
+      })) || [],
     }
 
     // Swap sessions
@@ -144,11 +171,23 @@ export async function toggleMuscleInSessionAction(
       }
     }
 
+    // Query affected workouts BEFORE modification for undo
+    const { data: affectedWorkouts } = await supabase
+      .from('workouts')
+      .select('id, cycle_day, status')
+      .eq('split_plan_id', splitPlan.id)
+      .eq('cycle_day', cycleDay)
+
     // Store previous state for undo
     const previousState = {
       sessions: splitPlan.sessions,
       frequency_map: splitPlan.frequency_map,
       volume_distribution: splitPlan.volume_distribution,
+      affected_workouts: affectedWorkouts?.map(w => ({
+        id: w.id,
+        cycle_day: w.cycle_day,
+        status: w.status,
+      })) || [],
     }
 
     const session = SplitPlanService.getSessionForDay(splitPlan, cycleDay)
@@ -160,17 +199,22 @@ export async function toggleMuscleInSessionAction(
     }
 
     // Toggle muscle focus
-    const updatedSessions = SplitPlanService.toggleMuscleFocus(
-      splitPlan,
-      cycleDay,
-      muscleGroup,
-      add
-    )
+    const { sessions: updatedSessions, frequencyMap, volumeDistribution } =
+      SplitPlanService.toggleMuscleFocus(
+        splitPlan,
+        cycleDay,
+        muscleGroup,
+        add
+      )
 
-    // Update split plan
+    // Update split plan with sessions, frequency_map, and volume_distribution
     const { data: updated, error: updateError } = await supabase
       .from('split_plans')
-      .update({ sessions: updatedSessions as any })
+      .update({
+        sessions: updatedSessions as any,
+        frequency_map: frequencyMap as any,
+        volume_distribution: volumeDistribution as any,
+      })
       .eq('id', splitPlan.id)
       .select()
       .single()
@@ -247,11 +291,23 @@ export async function changeSessionVariationAction(
       }
     }
 
+    // Query affected workouts BEFORE modification for undo
+    const { data: affectedWorkouts } = await supabase
+      .from('workouts')
+      .select('id, cycle_day, status')
+      .eq('split_plan_id', splitPlan.id)
+      .eq('cycle_day', cycleDay)
+
     // Store previous state for undo
     const previousState = {
       sessions: splitPlan.sessions,
       frequency_map: splitPlan.frequency_map,
       volume_distribution: splitPlan.volume_distribution,
+      affected_workouts: affectedWorkouts?.map(w => ({
+        id: w.id,
+        cycle_day: w.cycle_day,
+        status: w.status,
+      })) || [],
     }
 
     const session = SplitPlanService.getSessionForDay(splitPlan, cycleDay)
@@ -365,18 +421,31 @@ export async function undoLastModificationAction(userId: string) {
       throw new Error(`Failed to restore previous state: ${updateError.message}`)
     }
 
+    // Restore affected workouts if present
+    const affectedWorkouts = previousState.affected_workouts || []
+    if (affectedWorkouts.length > 0) {
+      for (const workout of affectedWorkouts) {
+        await supabase
+          .from('workouts')
+          .update({
+            cycle_day: workout.cycle_day,
+            status: workout.status,
+          })
+          .eq('id', workout.id)
+      }
+    }
+
     // Delete the modification log
     await supabase
       .from('split_modifications')
       .delete()
       .eq('id', lastMod.id)
 
-    // TODO: Also restore workouts if needed
-
     return {
       success: true,
       data: {
         message: 'Ultima modifica annullata con successo',
+        workoutsRestored: affectedWorkouts.length,
       },
     }
   } catch (error: any) {
