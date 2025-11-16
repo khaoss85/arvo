@@ -492,7 +492,7 @@ Generate the cue pools now for this specific set.`
    * Uses rich context (set position, intensity, previous performance) to generate
    * scripts that feel like a real coach who knows exactly where you are in your workout.
    *
-   * Reasoning: 'minimal' (fast generation, 15-30s)
+   * Reasoning: 'none' (fastest generation, 10-15s)
    * Verbosity: 'low' (concise, impactful scripts)
    */
   async generatePreSetCoachingScript(
@@ -656,9 +656,10 @@ IMPORTANT:
 
 Generate the pre-set coaching script now.`
 
-    // Use 'minimal' reasoning for faster generation (15-30s vs 90s)
+    // Use 'none' reasoning for fastest generation (10-15s vs 90s)
+    // Script generation is creative/straightforward, doesn't need reasoning
     const originalReasoning = this.reasoningEffort
-    this.reasoningEffort = 'minimal'
+    this.reasoningEffort = 'none'
 
     try {
       const result = await this.complete<import('@/lib/types/pre-set-coaching').PreSetCoachingScript>(prompt, targetLanguage)
