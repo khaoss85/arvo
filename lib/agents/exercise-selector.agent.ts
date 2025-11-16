@@ -1565,19 +1565,33 @@ Required JSON structure:
 
     const normalized = exercises.map(ex => {
       const normalizedPrimaryMuscles = ex.primaryMuscles?.map(muscle => {
-        const normalized = muscle.toLowerCase().trim().replace(/_/g, ' ')
+        const normalized = muscle.toLowerCase().trim()
 
-        // Try exact match first
+        // STEP 1: Try exact match with original format (preserves underscores)
         if (ANATOMICAL_TO_CANONICAL[normalized]) {
           totalNormalizations++
           return ANATOMICAL_TO_CANONICAL[normalized]
         }
 
-        // Try without plural
+        // STEP 2: Try without plural
         const withoutPlural = normalized.replace(/s$/, '')
         if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
           totalNormalizations++
           return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        }
+
+        // STEP 3: Try with underscores replaced by spaces (anatomical variations)
+        const spacedNormalized = normalized.replace(/_/g, ' ')
+        if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[spacedNormalized]
+        }
+
+        // STEP 4: Try spaced version without plural
+        const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
+        if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
         }
 
         // Unknown muscle - track it
@@ -1586,19 +1600,33 @@ Required JSON structure:
       })
 
       const normalizedSecondaryMuscles = ex.secondaryMuscles?.map(muscle => {
-        const normalized = muscle.toLowerCase().trim().replace(/_/g, ' ')
+        const normalized = muscle.toLowerCase().trim()
 
-        // Try exact match first
+        // STEP 1: Try exact match with original format (preserves underscores)
         if (ANATOMICAL_TO_CANONICAL[normalized]) {
           totalNormalizations++
           return ANATOMICAL_TO_CANONICAL[normalized]
         }
 
-        // Try without plural
+        // STEP 2: Try without plural
         const withoutPlural = normalized.replace(/s$/, '')
         if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
           totalNormalizations++
           return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        }
+
+        // STEP 3: Try with underscores replaced by spaces (anatomical variations)
+        const spacedNormalized = normalized.replace(/_/g, ' ')
+        if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[spacedNormalized]
+        }
+
+        // STEP 4: Try spaced version without plural
+        const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
+        if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
+          totalNormalizations++
+          return ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
         }
 
         // Unknown muscle - track it
