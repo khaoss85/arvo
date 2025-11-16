@@ -1945,7 +1945,9 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
         for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
           const normalizedActual = normalizeMuscleForVolume(actualMuscle)
-          if (normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)) {
+          // Use exact match instead of .includes() to avoid false positives
+          // (e.g., "chest_lower".includes("chest") = true would incorrectly match)
+          if (normalizedActual === normalizedTarget) {
             actualSets += sets
           }
         }
@@ -2033,7 +2035,9 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
         for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
           const normalizedActual = normalizeMuscleForVolume(actualMuscle)
-          if (normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)) {
+          // Use exact match instead of .includes() to avoid false positives
+          // (e.g., "chest_lower".includes("chest") = true would incorrectly match)
+          if (normalizedActual === normalizedTarget) {
             actualSets += sets
           }
         }
