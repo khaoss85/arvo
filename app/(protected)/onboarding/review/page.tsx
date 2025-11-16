@@ -33,6 +33,7 @@ export default function ReviewPage() {
   const [customExperience, setCustomExperience] = useState<number | null>(null)
   const [isEditingExperience, setIsEditingExperience] = useState(false)
   const [showMedicalDisclaimer, setShowMedicalDisclaimer] = useState(false)
+  const [checkingForCompletedSetup, setCheckingForCompletedSetup] = useState(true)
 
   useEffect(() => {
     setStep(7)
@@ -53,6 +54,39 @@ export default function ReviewPage() {
       }
     }
   }, [data.approachId, data.strengthBaseline, data.gender, data.weight, setStep])
+
+  // Check on mount if onboarding was already completed (resume check)
+  useEffect(() => {
+    const checkForCompletedSetup = async () => {
+      if (!user?.id) {
+        setCheckingForCompletedSetup(false)
+        return
+      }
+
+      try {
+        const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
+
+        // Check if there's a completed split generation for this user
+        const activeGeneration = await GenerationQueueService.getActiveGeneration(user.id)
+
+        if (activeGeneration?.status === 'completed' && activeGeneration.split_plan_id) {
+          console.log('[ReviewPage] Found completed onboarding setup, redirecting to dashboard...')
+
+          // Clear onboarding state and redirect
+          reset()
+          router.push('/dashboard')
+          return
+        }
+      } catch (error) {
+        console.error('[ReviewPage] Failed to check for completed setup:', error)
+        // Don't block the UI - just log error
+      } finally {
+        setCheckingForCompletedSetup(false)
+      }
+    }
+
+    checkForCompletedSetup()
+  }, [user?.id, router, reset])
 
   const loadApproach = async () => {
     if (!data.approachId) return
@@ -125,6 +159,17 @@ export default function ReviewPage() {
     const num = value === '' ? null : parseFloat(value)
     if (num !== null && num < 0) return // Validation
     setCustomExperience(num)
+  }
+
+  // Show loading while checking for completed setup
+  if (checkingForCompletedSetup) {
+    return (
+      <div className="max-w-3xl mx-auto py-8">
+        <p className="text-center text-gray-600 dark:text-gray-400">
+          {t('loading')}
+        </p>
+      </div>
+    )
   }
 
   if (!data.approachId) {

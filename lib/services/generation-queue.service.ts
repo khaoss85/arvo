@@ -18,6 +18,7 @@ export interface GenerationQueueEntry {
   progress_percent: number
   current_phase: string | null
   workout_id: string | null
+  split_plan_id: string | null
   error_message: string | null
   context: Record<string, any>
   started_at: string | null
@@ -47,6 +48,11 @@ export interface CompleteGenerationInput {
 export interface FailGenerationInput {
   requestId: string
   errorMessage: string
+}
+
+export interface CompleteSplitInput {
+  requestId: string
+  splitPlanId: string
 }
 
 export class GenerationQueueService {
@@ -276,6 +282,34 @@ export class GenerationQueueService {
     if (error) {
       console.error('[GenerationQueueService] Failed to mark as failed:', error)
       throw new Error(`Failed to mark generation as failed: ${error.message}`)
+    }
+
+    return data as GenerationQueueEntry
+  }
+
+  /**
+   * Mark split generation as completed (server-side)
+   */
+  static async markSplitAsCompleted(input: CompleteSplitInput): Promise<GenerationQueueEntry> {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('workout_generation_queue')
+      .update({
+        status: 'completed',
+        progress_percent: 100,
+        current_phase: 'Split generation complete',
+        split_plan_id: input.splitPlanId,
+        completed_at: new Date().toISOString()
+      })
+      .eq('request_id', input.requestId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[GenerationQueueService] Failed to mark split as completed:', error)
+      throw new Error(`Failed to mark split generation as completed: ${error.message}`)
     }
 
     return data as GenerationQueueEntry

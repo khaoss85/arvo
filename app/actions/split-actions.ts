@@ -4,16 +4,58 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { SplitTimelineService } from '@/lib/services/split-timeline.service'
+import { CycleStatsService } from '@/lib/services/cycle-stats.service'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
+import { GenerationQueueService } from '@/lib/services/generation-queue.service'
 
 /**
  * Generate a new split plan using AI
  * Server action to access OpenAI API key
  */
-export async function generateSplitPlanAction(input: SplitPlannerInput) {
+export async function generateSplitPlanAction(
+  input: SplitPlannerInput,
+  generationRequestId?: string
+) {
   try {
     const supabase = await getSupabaseServerClient()
     const targetLanguage = await getUserLanguage(input.userId)
+
+    // Check if this generation already completed (resume check)
+    if (generationRequestId) {
+      const queueEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
+
+      if (queueEntry?.status === 'completed' && queueEntry.split_plan_id) {
+        console.log(`[GenerateSplit] Returning completed split: ${generationRequestId}`)
+
+        // Fetch the completed split plan
+        const { data: splitPlan } = await supabase
+          .from('split_plans')
+          .select('*')
+          .eq('id', queueEntry.split_plan_id)
+          .single()
+
+        if (splitPlan) {
+          return {
+            success: true,
+            data: {
+              splitPlan,
+              rationale: null, // Not stored in queue entry
+              weeklyScheduleExample: null, // Not stored in queue entry
+            }
+          }
+        }
+      }
+
+      // Create queue entry (marks intent to generate)
+      if (!queueEntry) {
+        await GenerationQueueService.createServer({
+          userId: input.userId,
+          requestId: generationRequestId,
+          context: { type: 'split', splitType: input.splitType }
+        })
+        console.log(`[GenerateSplit] Created queue entry: ${generationRequestId}`)
+      }
+    }
 
     // Use SplitPlanner agent with server client
     const splitPlanner = new SplitPlanner(supabase)
@@ -45,6 +87,20 @@ export async function generateSplitPlanAction(input: SplitPlannerInput) {
 
     const splitPlan = await SplitPlanService.createServer(splitPlanData_final)
 
+    // Mark as completed in queue
+    if (generationRequestId && splitPlan?.id) {
+      try {
+        await GenerationQueueService.markSplitAsCompleted({
+          requestId: generationRequestId,
+          splitPlanId: splitPlan.id
+        })
+        console.log(`[GenerateSplit] Marked as completed: ${generationRequestId}`)
+      } catch (error) {
+        console.error('[GenerateSplit] Failed to mark as completed:', error)
+        // Don't throw - split was generated successfully
+      }
+    }
+
     return {
       success: true,
       data: {
@@ -55,6 +111,20 @@ export async function generateSplitPlanAction(input: SplitPlannerInput) {
     }
   } catch (error: any) {
     console.error('Error generating split plan:', error)
+
+    // Mark as failed in queue
+    if (generationRequestId) {
+      try {
+        await GenerationQueueService.markAsFailed({
+          requestId: generationRequestId,
+          errorMessage: error?.message || 'Split generation failed'
+        })
+        console.log(`[GenerateSplit] Marked as failed: ${generationRequestId}`)
+      } catch (dbError) {
+        console.error('[GenerateSplit] Failed to mark as failed:', dbError)
+      }
+    }
+
     return {
       success: false,
       error: error?.message || 'Failed to generate split plan'
@@ -272,6 +342,7 @@ export async function activateSplitPlanAction(
       .update({
         active_split_plan_id: splitPlanId,
         current_cycle_day: 1,
+        current_cycle_start_date: new Date().toISOString(),
       })
       .eq('user_id', userId)
 
@@ -304,6 +375,119 @@ export async function getSplitTimelineDataAction(userId: string) {
     return {
       success: false,
       error: error?.message || 'Failed to get split timeline data'
+    }
+  }
+}
+
+/**
+ * Get the last completed cycle for a user
+ */
+export async function getLastCycleCompletionAction(userId: string) {
+  try {
+    const lastCycle = await CycleStatsService.getLastCycleCompletion(userId)
+
+    return {
+      success: true,
+      data: lastCycle
+    }
+  } catch (error: any) {
+    console.error('Error getting last cycle completion:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get last cycle completion'
+    }
+  }
+}
+
+/**
+ * Get current cycle stats with comparison to previous cycle
+ */
+export async function getCycleComparisonAction(userId: string) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get user profile
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("active_split_plan_id, cycles_completed")
+      .eq("user_id", userId)
+      .single()
+
+    if (!profile?.active_split_plan_id) {
+      return {
+        success: false,
+        error: 'No active split plan found'
+      }
+    }
+
+    // Calculate current cycle stats
+    const currentStats = await CycleStatsService.calculateCycleStats(
+      userId,
+      profile.active_split_plan_id
+    )
+
+    // Get comparison with previous cycle
+    const comparison = await CycleStatsService.getComparisonWithPreviousCycle(
+      currentStats,
+      userId
+    )
+
+    return {
+      success: true,
+      data: {
+        currentStats,
+        comparison,
+        cycleNumber: (profile.cycles_completed || 0) + 1
+      }
+    }
+  } catch (error: any) {
+    console.error('Error getting cycle comparison:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to get cycle comparison'
+    }
+  }
+}
+
+/**
+ * Change the active split plan and reset cycle tracking
+ */
+export async function changeSplitPlanAction(
+  userId: string,
+  newSplitPlanId: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Deactivate all other plans
+    await SplitPlanService.deactivateAll(userId)
+
+    // Activate the new plan
+    await supabase
+      .from('split_plans')
+      .update({ active: true })
+      .eq('id', newSplitPlanId)
+      .eq('user_id', userId)
+
+    // Update user profile with new split and reset cycle tracking
+    await supabase
+      .from('user_profiles')
+      .update({
+        active_split_plan_id: newSplitPlanId,
+        current_cycle_day: 1,
+        current_cycle_start_date: new Date().toISOString(),
+      })
+      .eq('user_id', userId)
+
+    return {
+      success: true,
+      data: null
+    }
+  } catch (error: any) {
+    console.error('Error changing split plan:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to change split plan'
     }
   }
 }

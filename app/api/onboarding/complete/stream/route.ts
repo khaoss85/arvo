@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       async start(controller) {
         // Initialize generation tracking
         const generationRequestId = crypto.randomUUID()
+        const splitGenerationRequestId = crypto.randomUUID() // Separate ID for split generation tracking
 
         try {
           // Get user language for i18n
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
               experienceYears: data.confirmedExperience || null,
               userAge: data.age || null,
               userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
-            })
+            }, splitGenerationRequestId) // Pass requestId for resume capability
 
             if (splitResult?.success && splitResult.data) {
               splitPlanId = splitResult.data.splitPlan.id
