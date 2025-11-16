@@ -6,9 +6,9 @@ import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/w
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmDialog } from './confirm-dialog'
-import { SetExecutionModal } from './set-execution-modal'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
 import { Target } from 'lucide-react'
+import { audioCoachingService } from '@/lib/services/audio-coaching.service'
 
 interface SetLoggerProps {
   exercise: ExerciseExecution
@@ -125,7 +125,6 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [isSkipping, setIsSkipping] = useState(false)
   const [showSkipWarmupDialog, setShowSkipWarmupDialog] = useState(false)
-  const [showSetExecutionModal, setShowSetExecutionModal] = useState(false)
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -146,17 +145,16 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     }
   }
 
-  const handleSetExecutionComplete = async (actualReps: number) => {
-    // Update reps with actual completed reps from guided execution
-    setReps(actualReps)
-    // Auto-fill RIR based on target (user can adjust after)
-    // If completed all target reps, default to RIR 1-2
-    if (actualReps >= (exercise.targetReps?.[1] || exercise.targetReps?.[0] || reps)) {
-      setRir(1)
-    } else {
-      setRir(2)
+  const handleStartAudioCoaching = async () => {
+    // Generate simple audio script for set execution
+    const script = {
+      id: `set-${setNumber}-coaching`,
+      type: 'set_execution' as const,
+      text: `Set ${setNumber}. ${exercise.exerciseName}. ${reps} reps at ${weight} kilograms. Let's go!`,
+      priority: 8,
     }
-    setShowSetExecutionModal(false)
+
+    audioCoachingService.enqueue(script)
   }
 
   const handleSkipWarmup = () => {
@@ -394,10 +392,10 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
       </Button>
 
-      {/* Secondary CTA: Execute Set with Coaching - Only for working sets with tempo */}
-      {!isWarmup && exercise.tempo && (
+      {/* Secondary CTA: Execute Set with Audio Coaching - Only for working sets */}
+      {!isWarmup && (
         <Button
-          onClick={() => setShowSetExecutionModal(true)}
+          onClick={handleStartAudioCoaching}
           variant="outline"
           className="w-full h-12 text-base flex items-center justify-center gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
         >
@@ -417,21 +415,6 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         cancelText={tCommon('buttons.cancel')}
         type="warning"
       />
-
-      {/* Set Execution Modal - Guided tempo-based set execution */}
-      {!isWarmup && exercise.tempo && (
-        <SetExecutionModal
-          isOpen={showSetExecutionModal}
-          onClose={() => setShowSetExecutionModal(false)}
-          exerciseName={exercise.exerciseName}
-          tempo={exercise.tempo}
-          targetReps={reps}
-          targetWeight={weight}
-          setNumber={workingSetNumber}
-          language={locale as 'en' | 'it'}
-          onSetComplete={handleSetExecutionComplete}
-        />
-      )}
     </div>
   )
 }
