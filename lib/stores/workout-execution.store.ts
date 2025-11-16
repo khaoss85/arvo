@@ -170,7 +170,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               }))
 
             const mapped = {
-              exerciseId: ex.id || null,
+              exerciseId: ex.id || crypto.randomUUID(), // Generate UUID if not present for caching
               exerciseName: ex.exerciseName || ex.name,
               equipmentVariant: ex.equipmentVariant || ex.equipment,
               targetSets: ex.sets || 2,

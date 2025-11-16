@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus } from 'lucide-react'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import { validationCache } from '@/lib/utils/validation-cache'
+import { getCachedExplanation, setCachedExplanation } from '@/lib/utils/exercise-explanation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 import {
   calculateRestTimerLimits,
@@ -51,6 +52,7 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
+  const locale = useLocale()
   const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
@@ -376,6 +378,23 @@ export function ExerciseCard({
       return
     }
 
+    // Try to get from localStorage cache if exerciseId is available
+    if (exercise.exerciseId) {
+      const cached = getCachedExplanation(
+        exercise.exerciseName,
+        exercise.exerciseId,
+        approachId,
+        locale
+      )
+
+      if (cached) {
+        setExerciseExplanation(cached)
+        setShowExerciseExplanation(true)
+        return
+      }
+    }
+
+    // Cache miss or no exerciseId - fetch from API
     setLoadingExerciseExplanation(true)
     const result = await explainExerciseSelectionAction(
       userId,
@@ -388,6 +407,17 @@ export function ExerciseCard({
     if (result.success && result.explanation) {
       setExerciseExplanation(result.explanation)
       setShowExerciseExplanation(true)
+
+      // Cache the result if exerciseId is available
+      if (exercise.exerciseId) {
+        setCachedExplanation(
+          exercise.exerciseName,
+          exercise.exerciseId,
+          approachId,
+          locale,
+          result.explanation
+        )
+      }
     }
     setLoadingExerciseExplanation(false)
   }
