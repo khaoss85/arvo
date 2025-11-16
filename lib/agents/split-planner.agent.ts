@@ -65,9 +65,10 @@ export class SplitPlanner extends BaseAgent {
   protected supabase: any
 
   constructor(supabaseClient?: any) {
-    // Use medium reasoning for complex split planning with multiple constraints
+    // Use low reasoning for faster split generation (90s vs 240s timeout)
+    // Medium reasoning was too slow for onboarding UX (appeared stuck at 60%)
     // Use low verbosity for cleaner, more scannable onboarding output
-    super(supabaseClient, 'medium', 'low')
+    super(supabaseClient, 'low', 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 
