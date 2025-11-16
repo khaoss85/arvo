@@ -385,25 +385,26 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         )}
       </div>
 
-      {/* Start Set with Coaching Button - Only for working sets with tempo */}
-      {!isWarmup && exercise.tempo && (
-        <Button
-          onClick={() => setShowSetExecutionModal(true)}
-          className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center justify-center gap-2"
-        >
-          <Target className="h-5 w-5" />
-          {t('setLogger.startSetWithCoaching', { defaultValue: 'Start Set with Coaching' })}
-        </Button>
-      )}
-
-      {/* Log Button */}
+      {/* Primary CTA: Log Set Button */}
       <Button
         onClick={handleLogSet}
         disabled={isLogging}
         className="w-full h-14 text-lg bg-green-600 hover:bg-green-700 text-white font-medium"
       >
-        {isLogging ? t('setLogger.logging') : (exercise.tempo && !isWarmup ? t('setLogger.logSetManually', { defaultValue: 'Log Set Manually' }) : t('setLogger.logSetButton'))}
+        {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
       </Button>
+
+      {/* Secondary CTA: Execute Set with Coaching - Only for working sets with tempo */}
+      {!isWarmup && exercise.tempo && (
+        <Button
+          onClick={() => setShowSetExecutionModal(true)}
+          variant="outline"
+          className="w-full h-12 text-base flex items-center justify-center gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+        >
+          <Target className="h-4 w-4" />
+          {t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
+        </Button>
+      )}
 
       {/* Skip Warmup Confirmation Dialog */}
       <ConfirmDialog

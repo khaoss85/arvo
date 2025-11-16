@@ -18,7 +18,6 @@ import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
-import { AudioCoachButton } from './audio-coach-button'
 import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
 import { getHydrationSuggestionAction } from '@/app/actions/hydration-actions'
 import type { HydrationOutput } from '@/lib/types/hydration'
@@ -692,13 +691,6 @@ export function ExerciseCard({
                 <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-400" />
               )}
             </button>
-            {nextSetScript && (
-              <AudioCoachButton
-                script={nextSetScript}
-                size="sm"
-                variant="icon"
-              />
-            )}
           </div>
           <span className="text-sm text-gray-400">
             {t('exercise.exerciseNumber', { current: exerciseIndex + 1, total: totalExercises })}
