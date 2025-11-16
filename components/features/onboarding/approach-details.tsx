@@ -389,7 +389,21 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                 {progression?.setProgression && (
                   <div className="bg-background p-3 rounded border">
                     <div className="text-sm font-semibold mb-1">{tVars('setProgressionStrategy')}</div>
-                    <div className="text-sm">{progression.setProgression}</div>
+                    <div className="text-sm">
+                      {typeof progression.setProgression === 'string'
+                        ? progression.setProgression
+                        : progression.setProgression.strategy?.replace(/_/g, ' ') || 'N/A'}
+                    </div>
+                    {typeof progression.setProgression === 'object' && progression.setProgression.conditions && (
+                      <div className="mt-2 flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">
+                        <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-900 dark:text-blue-200">
+                          {typeof progression.setProgression.conditions === 'string'
+                            ? progression.setProgression.conditions
+                            : JSON.stringify(progression.setProgression.conditions)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
                 {progression?.deloadTriggers && (
