@@ -329,6 +329,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
         open={customizeDialogOpen}
         onOpenChange={setCustomizeDialogOpen}
         userId={userId}
+        currentSplitType={splitPlan.split_type}
         splitPlanData={{
           cycleDays: splitPlan.cycle_days,
           sessions: splitPlan.sessions as any[]

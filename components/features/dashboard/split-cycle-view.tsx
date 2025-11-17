@@ -317,6 +317,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
           open={customizeDialogOpen}
           onOpenChange={setCustomizeDialogOpen}
           userId={userId}
+          currentSplitType={data.splitType as any}
           splitPlanData={{
             cycleDays: data.totalCycleDays,
             sessions: data.sessions

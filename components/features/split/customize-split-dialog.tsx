@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button'
 import { SwapDaysForm } from './swap-days-form'
 import { ToggleMusclesForm } from './toggle-muscles-form'
 import { ChangeVariationForm } from './change-variation-form'
+import { ChangeSplitTypeForm } from './change-split-type-form'
+import type { SplitType } from '@/lib/types/split.types'
 
 interface CustomizeSplitDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   userId: string
+  currentSplitType: SplitType
   splitPlanData: {
     cycleDays: number
     sessions: Array<{
@@ -26,12 +29,13 @@ interface CustomizeSplitDialogProps {
   onModificationComplete?: () => void
 }
 
-type Tab = 'swap' | 'toggle' | 'variation'
+type Tab = 'swap' | 'toggle' | 'variation' | 'splitType'
 
 export function CustomizeSplitDialog({
   open,
   onOpenChange,
   userId,
+  currentSplitType,
   splitPlanData,
   completedDays = [],
   onModificationComplete
@@ -42,7 +46,8 @@ export function CustomizeSplitDialog({
   const tabs: Array<{ id: Tab; label: string; icon: string }> = [
     { id: 'swap', label: t('tabs.swapDays'), icon: '🔄' },
     { id: 'toggle', label: t('tabs.toggleMuscles'), icon: '💪' },
-    { id: 'variation', label: t('tabs.changeVariation'), icon: '🔀' }
+    { id: 'variation', label: t('tabs.changeVariation'), icon: '🔀' },
+    { id: 'splitType', label: t('tabs.changeSplitType'), icon: '🔄' }
   ]
 
   return (
@@ -108,6 +113,17 @@ export function CustomizeSplitDialog({
               userId={userId}
               splitPlanData={splitPlanData}
               completedDays={completedDays}
+              onSuccess={() => {
+                onModificationComplete?.()
+                onOpenChange(false)
+              }}
+            />
+          )}
+
+          {activeTab === 'splitType' && (
+            <ChangeSplitTypeForm
+              userId={userId}
+              currentSplitType={currentSplitType}
               onSuccess={() => {
                 onModificationComplete?.()
                 onOpenChange(false)
