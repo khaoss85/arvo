@@ -62,8 +62,8 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
         // Show success toast
         addToast(
           nextDay
-            ? `✓ Passato al Giorno ${nextDay}`
-            : '✓ Avanzato al prossimo giorno',
+            ? t('actions.advancedToDay', { nextDay })
+            : t('actions.advancedToNext'),
           'success'
         )
         // Reload timeline data to reflect the new current day
@@ -72,14 +72,14 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
         // Show error toast with specific message
         console.error('[SplitCycleTimeline] handleSkipRestDay - Operation failed:', result.error)
         addToast(
-          `✗ Impossibile saltare il giorno di riposo: ${result.error || 'Errore sconosciuto'}`,
+          t('errors.cannotSkipRest', { error: result.error || t('errors.unknownError') }),
           'error'
         )
       }
     } catch (err) {
       console.error('[SplitCycleTimeline] handleSkipRestDay - Exception:', err)
       addToast(
-        `✗ Errore inaspettato: ${err instanceof Error ? err.message : 'Errore sconosciuto'}`,
+        t('errors.unexpectedError', { message: err instanceof Error ? err.message : t('errors.unknownError') }),
         'error'
       )
     }
@@ -108,7 +108,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
     try {
       const result = await undoLastModificationAction(userId)
       if (result.success) {
-        addToast(result.data?.message || 'Modifica annullata con successo', 'success')
+        addToast(result.data?.message || tSplit('undoSuccess'), 'success')
         await loadTimelineData()
         await checkForModifications()
       } else {

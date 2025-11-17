@@ -118,9 +118,9 @@ export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], o
       )
 
       if (result.success) {
-        addToast(result.data?.message || 'Muscolo modificato con successo', 'success')
+        addToast(result.data?.message || t('success'), 'success')
         onSuccess()
-      } else {
+      } else{
         addToast(result.error || 'Failed to toggle muscle', 'error')
       }
     } catch (error) {
@@ -141,7 +141,7 @@ export function ToggleMusclesForm({ userId, splitPlanData, completedDays = [], o
       {availableSessions.length === 0 && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
           <p className="text-sm text-yellow-900 dark:text-yellow-100">
-            ⚠️ Non ci sono giorni disponibili. Tutti i giorni sono già stati completati.
+            {t('warnings.noDaysAvailable')}
           </p>
         </div>
       )}

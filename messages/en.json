@@ -53,6 +53,32 @@
         "optimization": "Optimizing workout",
         "finalize": "Finalizing"
       }
+    },
+    "equipment": {
+      "preview": {
+        "errors": {
+          "noAnimations": "No animation available for this equipment",
+          "loadingFailed": "Error loading animations",
+          "loadingFailedDescription": "We couldn't load the examples for this equipment.",
+          "animationUnavailable": "Animation unavailable"
+        },
+        "usage": {
+          "singleExample": "Example of use",
+          "multipleExamples": "examples of use"
+        },
+        "representative": "Representative exercise",
+        "ariaLabels": {
+          "close": "Close",
+          "goToExercise": "Go to exercise {index}",
+          "previousExercise": "Previous exercise",
+          "nextExercise": "Next exercise"
+        },
+        "instructions": {
+          "desktopSwipe": "Use arrows or swipe to see other exercises",
+          "mobileSwipe": "Swipe to see other exercises",
+          "description": "This is an example exercise you can perform with this equipment"
+        }
+      }
     }
   },
   "auth": {
@@ -129,7 +155,8 @@
       "customize": "Customize",
       "undo": "Undo",
       "undoing": "Undoing...",
-      "confirmUndo": "Are you sure you want to undo the last modification?"
+      "confirmUndo": "Are you sure you want to undo the last modification?",
+      "undoSuccess": "Modification undone successfully"
     },
     "splitCustomization": {
       "title": "Customize Split",
@@ -149,7 +176,13 @@
         "preview": "Swap Preview:",
         "variation": "Var. {variation}",
         "validating": "Validating...",
-        "swapDays": "Swap Days"
+        "swapDays": "Swap Days",
+        "success": "Days swapped successfully",
+        "warnings": {
+          "notEnoughDays": "⚠️ There are not enough days available to swap.",
+          "allDaysCompleted": "All days have already been completed.",
+          "needOneMoreDay": "At least one more uncompleted day is needed."
+        }
       },
       "toggle": {
         "description": "Add or remove muscle groups from a session.",
@@ -164,7 +197,11 @@
         "willRemove": "Will remove {muscle}",
         "validating": "Validating...",
         "addMuscle": "Add Muscle",
-        "removeMuscle": "Remove Muscle"
+        "removeMuscle": "Remove Muscle",
+        "success": "Muscle modified successfully",
+        "warnings": {
+          "noDaysAvailable": "⚠️ No days available. All days have already been completed."
+        }
       },
       "variation": {
         "description": "Change a session's variation (A ↔ B) to vary training stimulus.",
@@ -176,7 +213,11 @@
         "newVariation": "New",
         "variationInfo": "Variations A and B use different exercises for the same muscle focus.",
         "validating": "Validating...",
-        "changeVariation": "Change Variation"
+        "changeVariation": "Change Variation",
+        "success": "Variation changed successfully",
+        "warnings": {
+          "noDaysAvailable": "⚠️ No days available. All days have already been completed."
+        }
       },
       "changeSplitType": {
         "description": "Change your split type with AI-driven recommendations based on your current progress.",
@@ -344,6 +385,15 @@
         "preGenerated": "Pre-Generated",
         "upcoming": "Upcoming",
         "rest": "Rest"
+      },
+      "actions": {
+        "advancedToDay": "✓ Advanced to Day {nextDay}",
+        "advancedToNext": "✓ Advanced to next day"
+      },
+      "errors": {
+        "cannotSkipRest": "✗ Cannot skip rest day: {error}",
+        "unknownError": "Unknown error",
+        "unexpectedError": "✗ Unexpected error: {message}"
       }
     },
     "dayCard": {

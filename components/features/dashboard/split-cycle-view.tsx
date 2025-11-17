@@ -106,11 +106,11 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
     try {
       const result = await undoLastModificationAction(userId)
       if (result.success) {
-        addToast(result.data?.message || 'Modifica annullata con successo', 'success')
+        addToast(result.data?.message || t('undoSuccess'), 'success')
         // Reload data
         await loadNextWorkout()
         await checkForModifications()
-      } else {
+      } else{
         addToast(result.error || 'Failed to undo modification', 'error')
       }
     } catch (error) {

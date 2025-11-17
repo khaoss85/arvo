@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getRepresentativeExercises, type ExerciseExample } from '@/lib/constants/equipment-exercise-mapping'
@@ -24,6 +25,7 @@ export function EquipmentPreviewModal({
   isOpen,
   onClose,
 }: EquipmentPreviewModalProps) {
+  const t = useTranslations('components.equipment.preview')
   const [exercises, setExercises] = useState<ExerciseWithGif[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -56,13 +58,13 @@ export function EquipmentPreviewModal({
         const hasAnyGif = exercisesWithGifs.some((ex) => ex.gifUrl !== null)
 
         if (!hasAnyGif) {
-          setError('Nessuna animazione disponibile per questa attrezzatura')
+          setError(t('errors.noAnimations'))
         } else {
           setExercises(exercisesWithGifs)
         }
       } catch (err) {
         console.error('[EquipmentPreviewModal] Error fetching GIFs:', err)
-        setError('Errore nel caricamento delle animazioni')
+        setError(t('errors.loadingFailed'))
       } finally {
         setIsLoading(false)
       }
@@ -157,15 +159,15 @@ export function EquipmentPreviewModal({
                 </h3>
                 <p className="text-sm text-gray-400 mt-0.5">
                   {hasMultipleExercises
-                    ? `${exercises.length} esempi di utilizzo`
-                    : 'Esempio di utilizzo'}
+                    ? `${exercises.length} ${t('usage.multipleExamples')}`
+                    : t('usage.singleExample')}
                 </p>
               </div>
 
               <button
                 onClick={onClose}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
-                aria-label="Chiudi"
+                aria-label={t('ariaLabels.close')}
               >
                 <X className="w-5 h-5 text-gray-300" />
               </button>
@@ -187,7 +189,7 @@ export function EquipmentPreviewModal({
                     </div>
                     <p className="text-gray-400 mb-2">{error}</p>
                     <p className="text-sm text-gray-500 max-w-xs">
-                      Non siamo riusciti a caricare gli esempi per questa attrezzatura.
+                      {t('errors.loadingFailedDescription')}
                     </p>
                   </div>
                 )}
@@ -199,8 +201,8 @@ export function EquipmentPreviewModal({
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-medium text-gray-300">
                           {hasMultipleExercises
-                            ? `Esercizio ${currentIndex + 1} di ${exercises.length}`
-                            : 'Esercizio rappresentativo'}
+                            ? `Exercise ${currentIndex + 1} of ${exercises.length}`
+                            : t('representative')}
                         </h4>
                         {hasMultipleExercises && (
                           <div className="flex gap-1">
@@ -213,7 +215,7 @@ export function EquipmentPreviewModal({
                                     ? 'bg-blue-500 w-6'
                                     : 'bg-gray-600 hover:bg-gray-500'
                                 }`}
-                                aria-label={`Vai all'esercizio ${idx + 1}`}
+                                aria-label={t('ariaLabels.goToExercise', { index: idx + 1 })}
                               />
                             ))}
                           </div>
@@ -231,14 +233,14 @@ export function EquipmentPreviewModal({
                           <button
                             onClick={goToPrevious}
                             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 rounded-full p-2 transition-colors hidden sm:flex items-center justify-center"
-                            aria-label="Esercizio precedente"
+                            aria-label={t('ariaLabels.previousExercise')}
                           >
                             <ChevronLeft className="w-5 h-5 text-white" />
                           </button>
                           <button
                             onClick={goToNext}
                             className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-gray-800/90 hover:bg-gray-700 rounded-full p-2 transition-colors hidden sm:flex items-center justify-center"
-                            aria-label="Esercizio successivo"
+                            aria-label={t('ariaLabels.nextExercise')}
                           >
                             <ChevronRight className="w-5 h-5 text-white" />
                           </button>
@@ -280,7 +282,7 @@ export function EquipmentPreviewModal({
                                 <span className="text-2xl">🎬</span>
                               </div>
                               <p className="text-gray-400 mb-2">
-                                Animazione non disponibile
+                                {t('errors.animationUnavailable')}
                               </p>
                               <p className="text-sm text-gray-500 max-w-xs">
                                 per {currentExercise.name}
@@ -296,14 +298,14 @@ export function EquipmentPreviewModal({
                       {hasMultipleExercises ? (
                         <>
                           <span className="hidden sm:inline">
-                            Usa le frecce o scorri per vedere altri esercizi
+                            {t('instructions.desktopSwipe')}
                           </span>
                           <span className="sm:hidden">
-                            Scorri per vedere altri esercizi
+                            {t('instructions.mobileSwipe')}
                           </span>
                         </>
                       ) : (
-                        'Questo è un esempio di esercizio che puoi eseguire con questa attrezzatura'
+                        t('instructions.description')
                       )}
                     </div>
                   </div>
