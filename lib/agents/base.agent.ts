@@ -7,14 +7,14 @@ export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
   protected supabase: any
-  protected reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' = 'low'
+  protected reasoningEffort: 'none' | 'low' | 'medium' | 'high' = 'low'
   protected verbosity: 'low' | 'medium' | 'high' = 'low'
   protected model: string = process.env.OPENAI_MODEL || 'gpt-5-mini'
   protected lastResponseId?: string  // Track response ID for multi-turn CoT persistence
 
   constructor(
     supabaseClient?: any,
-    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high',
+    reasoningEffort?: 'none' | 'low' | 'medium' | 'high',
     verbosity?: 'low' | 'medium' | 'high'
   ) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
@@ -55,8 +55,6 @@ export abstract class BaseAgent {
     switch (this.reasoningEffort) {
       case 'none':
         return 15000      // 15s - ultra-fast responses, no extended reasoning (GPT-5.1 fastest mode)
-      case 'minimal':
-        return 30000      // 30s - instant responses, minimal reasoning (legacy GPT-5 fast mode)
       case 'low':
         return 90000      // 90s - fast, standard constraints
       case 'medium':
@@ -91,16 +89,6 @@ This task requires immediate response with minimal latency:
 - No extended thinking or analysis needed
 - Direct execution for well-defined tasks
 - Optimized for speed-critical gym/real-time use cases
-`
-      case 'minimal':
-        return `
-⚡ **REASONING GUIDANCE: Minimal Reasoning Mode**
-This task has well-defined rules and clear validation criteria:
-- Quick pattern matching and validation
-- Direct execution based on clear rules
-- Simple constraint checking (1-2 key checks)
-- Minimal analysis needed for straightforward tasks
-- Budget: ~15-30 seconds of thinking
 `
       case 'low':
         return `
@@ -557,7 +545,7 @@ ${mems.map(mem => {
       const combinedInput = `${this.systemPrompt}${languageInstruction}${reasoningGuidance}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
 
       // Add timeout safety to prevent indefinite hangs
-      // Use reasoning-based timeout (15s for 'none', 30s for 'minimal', 90s for 'low', etc)
+      // Use reasoning-based timeout (15s for 'none', 90s for 'low', etc)
       const AI_TIMEOUT_MS = customTimeoutMs || this.getTimeoutForReasoning()
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => {

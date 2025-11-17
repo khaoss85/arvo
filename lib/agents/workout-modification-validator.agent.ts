@@ -75,7 +75,7 @@ export interface ModificationValidationOutput {
  */
 export class WorkoutModificationValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'minimal', 'low') // Minimal reasoning for instant validation (30s timeout)
+    super(supabaseClient, 'none', 'low') // None reasoning for instant validation (15s timeout)
     this.model = 'gpt-5-mini' // Better quality validation with balanced cost
   }
 

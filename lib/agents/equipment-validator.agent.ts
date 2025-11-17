@@ -28,9 +28,9 @@ export interface EquipmentDetailsFromImage {
 
 export class EquipmentValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    // Use minimal reasoning for quick pattern matching and validation (30s timeout)
+    // Use none reasoning for quick pattern matching and validation (15s timeout)
     // Use low verbosity for concise validation feedback
-    super(supabaseClient, 'minimal', 'low')
+    super(supabaseClient, 'none', 'low')
   }
 
   get systemPrompt(): string {

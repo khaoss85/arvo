@@ -8,7 +8,7 @@
 export type AIMetricEvent = {
   agentName: string
   operationType: 'workout_generation' | 'split_planning' | 'equipment_validation' | 'exercise_suggestion' | 'other'
-  reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high'
+  reasoningEffort: 'none' | 'low' | 'medium' | 'high'
   model?: string  // e.g., 'gpt-5-mini', 'gpt-5.1'
   attemptNumber: number
   maxAttempts: number
@@ -139,7 +139,7 @@ class AIMetricsCollector {
       avgAttempts: number
     }> = {}
 
-    for (const effort of ['none', 'minimal', 'low', 'medium', 'high'] as const) {
+    for (const effort of ['none', 'low', 'medium', 'high'] as const) {
       const effortGroups = requestGroups.filter(group =>
         group[0].reasoningEffort === effort
       )
@@ -192,7 +192,7 @@ class AIMetricsCollector {
     const successfulFirstAttempts = filteredEvents.filter(e => e.success).length
 
     const byReasoningEffort: Record<string, number> = {}
-    for (const effort of ['none', 'minimal', 'low', 'medium', 'high'] as const) {
+    for (const effort of ['none', 'low', 'medium', 'high'] as const) {
       const effortEvents = filteredEvents.filter(e => e.reasoningEffort === effort)
       const effortSuccesses = effortEvents.filter(e => e.success).length
       byReasoningEffort[effort] = effortEvents.length > 0
