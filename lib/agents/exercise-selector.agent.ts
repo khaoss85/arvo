@@ -362,7 +362,7 @@ const ANATOMICAL_TO_CANONICAL: Record<string, string> = {
 export class ExerciseSelector extends BaseAgent {
   protected supabase: any
 
-  constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high') {
+  constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'low' | 'medium' | 'high') {
     // Use 'low' reasoning for workout generation (90s timeout, basic constraint checking)
     // ExerciseSelector has complex multi-constraint optimization (volume targets, periodization, insights)
     // 'low' reasoning reduces retry failures and improves first-attempt success rate
@@ -509,6 +509,62 @@ export class ExerciseSelector extends BaseAgent {
     context += `• Approach constraints (sets per exercise, periodization) remain ABSOLUTE (Priority 1)\n`
     context += `• Fatigue adjustments guide exercise SELECTION and intensity, not total volume structure\n`
     context += `• Example: If approach requires 4 sets per exercise, keep 4 sets but choose machines instead of barbells when fatigued\n`
+
+    // Add consecutive days fatigue adjustment section
+    context += `\n\n=== 🔴 CONSECUTIVE TRAINING DAYS FATIGUE ADJUSTMENT ===\n\n`
+    context += `**CRITICAL RULE**: When user is on 3rd or 4th consecutive training day, apply additional systemic fatigue adjustments:\n\n`
+
+    context += `**HOW TO IDENTIFY:**\n`
+    context += `- Check workout history or split pattern to determine if this is day 3+ of consecutive training\n`
+    context += `- If split pattern shows: Day 1 (train) → Day 2 (train) → Day 3 (train) → Current Day = 3rd consecutive\n`
+    context += `- Bro Split patterns like "5 days in a row" = high risk for systemic fatigue\n\n`
+
+    context += `**MANDATORY ADJUSTMENTS ON 3RD-4TH CONSECUTIVE DAY:**\n\n`
+
+    context += `1. **RIR Increase (OVERRIDE normal targets):**\n`
+    context += `   • ADD +1 RIR to ALL exercises (if normal RIR = 2, use RIR = 3)\n`
+    context += `   • Rationale: CNS recovery is compromised, need submaximal loading\n`
+    context += `   • Example: Instead of RIR 1-2, use RIR 2-3\n\n`
+
+    context += `2. **Volume Reduction (within allowed tolerance):**\n`
+    context += `   • REDUCE volume targets by 10% (still within ±20% tolerance)\n`
+    context += `   • Example: If target = 12 sets → aim for 11 sets instead of 12-14\n`
+    context += `   • Rationale: Systemic fatigue accumulation needs volume management\n\n`
+
+    context += `3. **Equipment Priority Shift:**\n`
+    context += `   • STRONGLY PRIORITIZE machines and cables over free weights\n`
+    context += `   • AVOID barbell compounds requiring maximal stability\n`
+    context += `   • Example: Use leg press instead of barbell squat, machine rows instead of barbell rows\n`
+    context += `   • Rationale: Stability and coordination decline with accumulated fatigue\n\n`
+
+    context += `4. **Advanced Techniques Ban:**\n`
+    context += `   • DO NOT use advanced techniques (drop sets, rest-pause, myoreps)\n`
+    context += `   • Even in Intensification phase, standard sets only\n`
+    context += `   • Rationale: Advanced techniques require peak nervous system function\n\n`
+
+    context += `5. **Exercise Selection Priorities:**\n`
+    context += `   • Choose bilateral over unilateral (less stability demand)\n`
+    context += `   • Choose guided movements over free-path (less coordination)\n`
+    context += `   • Shorter ROM exercises acceptable (partial reps on machines OK)\n`
+    context += `   • Simpler movement patterns (avoid complex multi-joint movements)\n\n`
+
+    context += `**DAY 5+ CONSECUTIVE (SHOULD NOT HAPPEN):**\n`
+    context += `If you detect 5+ consecutive days in split pattern:\n`
+    context += `⚠️ WARNING: This violates optimal split design principles\n`
+    context += `• Apply ALL adjustments above with MAXIMUM conservatism\n`
+    context += `• Consider recommending a rest day after this session\n`
+    context += `• Flag this as suboptimal split design in any feedback\n\n`
+
+    context += `**EXCEPTION - Fresh Cycle Start:**\n`
+    context += `If this is the first 2-3 workouts of a NEW cycle (workouts completed ≤ 3):\n`
+    context += `• Consecutive days rules are LESS critical (user is fresh from rest)\n`
+    context += `• Apply standard fatigue rules based on mental readiness instead\n\n`
+
+    context += `**PRIORITY INTEGRATION:**\n`
+    context += `Consecutive days adjustments are Priority 3 (between mental readiness and caloric phase).\n`
+    context += `They supplement mental readiness data, not replace it.\n`
+    context += `If both mental readiness is LOW (<2.5) AND on consecutive day 3-4: Apply BOTH sets of rules (most conservative approach).\n`
+
     context += `\n${'='.repeat(60)}\n`
 
     return context
@@ -649,6 +705,32 @@ Exercise Selection Strategy:
 - This is when advanced techniques (drop sets, myoreps, rest-pause) are most appropriate
 Advanced Techniques Available (from approach):
 ${approach.advancedTechniques ? Object.entries(approach.advancedTechniques).map(([name, t]: [string, any]) => `- ${name}: ${t.when || 'N/A'}`).join('\n') : 'None specified'}
+
+**🔴 JOINT-SPARING RIR MODULATION (MANDATORY in Intensification):**
+
+Even in intensification phase, certain muscle groups require HIGHER RIR targets to protect joint health:
+
+1. **ELBOW-STRESS EXERCISES (Arm Isolation):**
+   - Biceps curls (all variations): RIR 2-3 (NOT 0-1)
+   - Triceps extensions/pushdowns: RIR 2-3 (NOT 0-1)
+   - Rationale: Tendons need sub-maximal loads in high-volume phases. Going to failure on isolation causes disproportionate tendon stress vs muscle stimulus.
+   - Exception: Compound arm work (close-grip bench, chin-ups) can use RIR 1-2
+
+2. **SHOULDER-STRESS EXERCISES (Lateral/Front Raises):**
+   - Lateral raises: RIR 2-3 (even with machines)
+   - Front raises: RIR 3-4 (already hit heavily by chest pressing)
+   - Overhead pressing: RIR 1-2 is OK (compound movement, better force distribution)
+   - Rationale: Shoulder capsule accumulates stress from ALL upper body work. Deltoid isolation to failure increases injury risk.
+
+3. **ACCUMULATION PHASE EXCEPTION:**
+   - If session variation is 'A' (Accumulation/Strength bias): RIR 1-2 is acceptable across all exercises
+   - Rationale: Lower volume + heavier loads = less inflammatory stress
+   - Variation 'B' (Hypertrophy/Intensification) = MUST follow joint-sparing rules above
+
+**Implementation:**
+- When selecting exercises, if exercise targets biceps/triceps isolation OR lateral/front delts, automatically set RIR to 2-3
+- Override approach's default RIR for these specific exercise types ONLY
+- All other exercises follow approach's normal RIR guidelines
 ` : ''}
 ${input.mesocyclePhase === 'deload' ? `
 Phase Focus: Active recovery and maintenance

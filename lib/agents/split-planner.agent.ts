@@ -144,6 +144,29 @@ Frequency Guidelines:
 - Muscle-Specific: ${JSON.stringify(approach.frequencyGuidelines.muscleSpecific, null, 2)}
 ` : ''}
 
+=== MUSCLE GROUP BALANCE RULES (MANDATORY) ===
+
+**🔴 CRITICAL: These ratios are MANDATORY for injury prevention and balanced development.**
+
+When designing splits, you MUST ensure these minimum volume ratios across the full cycle:
+
+1. **Posterior Chain Balance:**
+   - Hamstrings volume MUST be ≥60% of Quads volume
+   - Glutes volume MUST be ≥40% of Quads volume
+   - Example: If Quads = 20 sets/cycle → Hamstrings ≥12 sets, Glutes ≥8 sets
+   - Rationale: Prevents quad-dominant imbalances, protects knee health, maintains hip function
+
+2. **Upper Back Balance:**
+   - Upper Back + Lats volume MUST be ≥80% of Chest volume
+   - Rear Delts volume MUST be ≥50% of Front Delts volume (including indirect work from chest pressing)
+   - Example: If Chest = 15 sets/cycle → Upper Back + Lats ≥12 sets
+   - Rationale: Maintains shoulder health, prevents postural dysfunction, balances horizontal pressing
+
+3. **Validation:**
+   - Calculate these ratios BEFORE finalizing the split
+   - If ratios are not met, INCREASE volume for under-represented muscle groups
+   - Do NOT reduce volume of primary muscles to meet ratios - always ADD volume where needed
+
 ${approach.splitVariations ? `
 Split Variation Strategy:
 ${approach.splitVariations.variationStrategy || 'No variation strategy specified'}
@@ -215,6 +238,16 @@ Design a complete training split plan that:
    - For Bro Split: use 10-day cycle (5 workout types: chest, back, shoulders, arms, legs × 2 variations A/B) with 2 rest days
    - For Weak Point Focus: use frequency-based cycle (typically 7-8 days) with ${input.specializationMuscle || 'target muscle'} trained 3-4× per cycle
    - **CRITICAL**: cycleDays MUST include rest days. For example, 6 training days + 2 rest days = 8 cycleDays
+
+   **🔴 CONSECUTIVE TRAINING DAYS LIMITS (MANDATORY):**
+   - **Maximum 4 consecutive training days** for any user under 45 years old
+   - **Maximum 3 consecutive training days** if user age >45 OR if recent cycle history shows mental readiness trend <3.0
+   - **ALWAYS place a rest day before OR after leg sessions** (never have leg day on 4th+ consecutive training day)
+   - **Recommended patterns:**
+     * For PPL: 3 on → 1 off → 3 on → 1 off (IDEAL)
+     * For Bro Split: 3 on → 1 off → 3 on → 1 off → 2 on (avoid 5 consecutive days)
+     * For Upper/Lower: 2 on → 1 off → 2 on → 1 off
+   - **Rationale**: 5+ consecutive training days cause systemic fatigue accumulation that compromises performance on high-demand sessions (legs, back) and increases injury risk. CNS, hormonal, and joint recovery require strategic rest placement.
 
 2. **Sessions**: Create detailed session definitions for each day in the cycle
    - **TRAINING DAYS**: Assign workout type (push/pull/legs/upper/lower/chest/back/shoulders/arms for bro split)
@@ -313,6 +346,34 @@ ${input.mesocyclePhase === 'deload' ? `
 - Maintain exercise selection but reduce sets significantly
 - Intensity: ${approach.periodization?.deloadPhase?.intensityMaintenance || 'Reduce both volume and intensity'}
 ` : ''}
+
+=== POST-GENERATION VALIDATION CHECKLIST ===
+
+**🔴 CRITICAL: Before returning the split plan, YOU MUST verify ALL of these conditions:**
+
+□ **Muscle Balance Ratios:**
+   - Hamstrings volume ≥ 60% of Quads volume across full cycle
+   - Glutes volume ≥ 40% of Quads volume across full cycle
+   - (Upper Back + Lats) volume ≥ 80% of Chest volume across full cycle
+   - Rear Delts volume ≥ 50% of Front Delts volume (including chest press indirect work)
+
+□ **Consecutive Days Limits:**
+   - No more than 4 consecutive training days (3 if age >45 or mental readiness <3.0)
+   - At least 1 rest day per 4-5 training days
+   - Leg sessions are NOT placed on 4th or 5th consecutive training day
+
+□ **Volume Ranges:**
+   - Each trained muscle group is within MEV-MRV range from approach landmarks
+   - No muscle group exceeds 90% of MRV (overtraining risk)
+   - All weak points receive at least MAV volume
+
+□ **Cycle Structure:**
+   - cycleDays includes ALL rest days in count
+   - Rest days are explicit session objects with workoutType: null
+   - Cycle is practical and fits user's weekly frequency
+
+**⚠️ IF ANY CHECK FAILS: You MUST redesign the split to pass all checks before returning.**
+Do NOT return a split that fails validation. Calculate the ratios, verify the pattern, and iterate until all checks pass.
 
 Output the split plan as JSON with this EXACT structure:
 {
