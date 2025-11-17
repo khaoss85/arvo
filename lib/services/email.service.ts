@@ -1,7 +1,5 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface WaitlistEntry {
   id: string;
   email: string;
@@ -15,6 +13,14 @@ interface WaitlistEntry {
 }
 
 export class EmailService {
+  private static getResendClient(): Resend {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    return new Resend(apiKey);
+  }
+
   private static getFromAddress(name: string): string {
     const domain = process.env.EMAIL_FROM_DOMAIN || 'resend.dev';
     return `${name} <onboarding@${domain}>`;
@@ -33,6 +39,7 @@ export class EmailService {
         return;
       }
 
+      const resend = this.getResendClient();
       const { data, error } = await resend.emails.send({
         from: this.getFromAddress('ARVO Waitlist'),
         to: [adminEmail],
@@ -83,6 +90,7 @@ export class EmailService {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const referralUrl = `${appUrl}/join/${entry.referral_code}`;
 
+      const resend = this.getResendClient();
       const { data, error } = await resend.emails.send({
         from: this.getFromAddress('ARVO'),
         to: [entry.email],
@@ -150,6 +158,7 @@ export class EmailService {
    */
   static async sendApprovalEmail(entry: WaitlistEntry, magicLink: string) {
     try {
+      const resend = this.getResendClient();
       const { data, error } = await resend.emails.send({
         from: this.getFromAddress('ARVO'),
         to: [entry.email],
