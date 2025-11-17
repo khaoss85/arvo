@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/utils/auth.server";
-import { HeroSection } from "@/components/features/landing/hero-section";
-import { AIShowcase } from "@/components/features/landing/ai-showcase";
+import { HeroSectionPro } from "@/components/features/landing-pro/hero-section-pro";
+import { CoachingShowcase } from "@/components/features/landing-pro/coaching-showcase";
+import { ProblemSolution } from "@/components/features/landing-pro/problem-solution";
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
 import { VolumeTrackingVisual } from "@/components/features/landing/volume-tracking-visual";
@@ -14,17 +15,15 @@ import { FAQSection } from "@/components/features/landing/faq-section";
 import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
 
-export default async function Home() {
+export default async function ProPage() {
   const user = await getUser();
   const isAuthenticated = !!user;
 
-  // Check if waitlist mode is enabled via env variable
-  const showWaitlist = process.env.NEXT_PUBLIC_WAITLIST_ENABLED === 'true';
-
   return (
     <main className="min-h-screen">
-      <HeroSection isAuthenticated={isAuthenticated} />
-      <AIShowcase />
+      <HeroSectionPro isAuthenticated={isAuthenticated} />
+      <ProblemSolution />
+      <CoachingShowcase />
       <SmartRestTimer />
       <NotesIntelligence />
       <VolumeTrackingVisual />
@@ -34,8 +33,8 @@ export default async function Home() {
       <EquipmentVision />
       <MethodologiesSection />
       <ComparisonTable />
-      <FAQSection />
-      <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
+      <FAQSection variant="pro" />
+      <CTASection isAuthenticated={isAuthenticated} />
       <Footer />
     </main>
   );

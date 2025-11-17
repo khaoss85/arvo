@@ -5,12 +5,14 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { WaitlistForm } from "./waitlist-form";
 
 interface CTASectionProps {
   isAuthenticated: boolean;
+  showWaitlist?: boolean; // If true, show waitlist form instead of normal CTA
 }
 
-export function CTASection({ isAuthenticated }: CTASectionProps) {
+export function CTASection({ isAuthenticated, showWaitlist = false }: CTASectionProps) {
   const t = useTranslations('landing.cta');
 
   return (
@@ -33,46 +35,83 @@ export function CTASection({ isAuthenticated }: CTASectionProps) {
           {/* Headline */}
           <div className="space-y-4">
             <h2 className="text-3xl md:text-5xl font-bold">
-              {t('title.part1')}{" "}
-              <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                {t('title.part2')}
-              </span>
+              {showWaitlist && !isAuthenticated ? (
+                <>
+                  Join the{" "}
+                  <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
+                    Waitlist
+                  </span>
+                </>
+              ) : (
+                <>
+                  {t('title.part1')}{" "}
+                  <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
+                    {t('title.part2')}
+                  </span>
+                </>
+              )}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('subtitle')}
+              {showWaitlist && !isAuthenticated
+                ? "Be among the first to experience AI-powered training. Early access for serious lifters who want to transform their training."
+                : t('subtitle')}
             </p>
           </div>
 
-          {/* Features Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
-            <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ {t('features.onboarding')}
-            </div>
-            <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ {t('features.instantGeneration')}
-            </div>
-            <div className="px-4 py-2 rounded-full bg-background border border-border">
-              ✓ {t('features.freeToStart')}
-            </div>
-          </div>
+          {showWaitlist && !isAuthenticated ? (
+            <>
+              {/* Waitlist Benefits */}
+              <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ Early access to AI coach
+                </div>
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ Skip the line by inviting friends
+                </div>
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ Unlock premium features
+                </div>
+              </div>
 
-          {/* CTA Button */}
-          <div className="pt-4">
-            <Link href={isAuthenticated ? "/dashboard" : "/login"}>
-              <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? t('button.dashboard') : t('button.startWorkout')}
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
+              {/* Waitlist Form */}
+              <div className="pt-4">
+                <WaitlistForm inline />
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Features Pills */}
+              <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ {t('features.onboarding')}
+                </div>
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ {t('features.instantGeneration')}
+                </div>
+                <div className="px-4 py-2 rounded-full bg-background border border-border">
+                  ✓ {t('features.freeToStart')}
+                </div>
+              </div>
 
-          {/* Technical Note */}
-          <p className="text-xs text-muted-foreground/70 max-w-2xl mx-auto">
-            {t('technical.noCreditCard')}{" "}
-            {t('technical.magicLink')}
-            <br />
-            {t('technical.privacyFirst')}
-          </p>
+              {/* CTA Button */}
+              <div className="pt-4">
+                <Link href={isAuthenticated ? "/dashboard" : "/login"}>
+                  <Button size="lg" className="text-base px-8 h-12 group">
+                    {isAuthenticated ? t('button.dashboard') : t('button.startWorkout')}
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Technical Note */}
+              <p className="text-xs text-muted-foreground/70 max-w-2xl mx-auto">
+                {t('technical.noCreditCard')}{" "}
+                {t('technical.magicLink')}
+                <br />
+                {t('technical.privacyFirst')}
+              </p>
+            </>
+          )}
         </motion.div>
       </div>
     </section>

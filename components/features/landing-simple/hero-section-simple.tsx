@@ -4,15 +4,16 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
-interface HeroSectionProps {
+interface HeroSectionSimpleProps {
   isAuthenticated: boolean;
 }
 
-export function HeroSection({ isAuthenticated }: HeroSectionProps) {
-  const t = useTranslations('landing.hero');
+export function HeroSectionSimple({ isAuthenticated }: HeroSectionSimpleProps) {
+  const t = useTranslations('landingSimple.hero');
+
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-geometric-pattern px-4 py-20">
       <div className="container max-w-6xl mx-auto">
@@ -35,7 +36,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                {t('title.aiCoach')}
+                {t('title.appThinks')}
               </span>
               <br />
               {t('title.subtitle')}
@@ -62,7 +63,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             {t('description.main')}
             <br />
             <span className="text-sm md:text-base mt-2 inline-block">
-              {t('description.methods')}
+              {t('description.sub')}
             </span>
           </motion.p>
 
@@ -74,14 +75,14 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              <Sparkles className="inline-block w-4 h-4 mr-1" />
-              {t('stats.agents')}
+              <Heart className="inline-block w-4 h-4 mr-1" />
+              {t('stats.users')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              {t('stats.exercises')}
+              {t('stats.simple')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              {t('stats.methods')}
+              {t('stats.results')}
             </div>
           </motion.div>
 
@@ -101,7 +102,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
 
             <button
               onClick={() => {
-                document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('simple-showcase')?.scrollIntoView({ behavior: 'smooth' });
               }}
               className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
             >
@@ -116,7 +117,7 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.5 }}
           >
-            {t('technical.powered')}
+            {t('technical.noScience')}
             <br />
             {t('technical.promise')}
           </motion.p>

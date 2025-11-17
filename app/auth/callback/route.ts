@@ -33,9 +33,35 @@ export async function GET(request: Request) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
+    if (!error && data.user && data.user.email) {
+      // Track waitlist conversion if user came from waitlist
+      try {
+        const { data: waitlistEntry } = await supabase
+          .from('waitlist_entries')
+          .select('id, status')
+          .eq('email', data.user.email)
+          .single();
+
+        if (waitlistEntry && waitlistEntry.status !== 'converted') {
+          // Update waitlist entry to mark as converted
+          await supabase
+            .from('waitlist_entries')
+            .update({
+              status: 'converted',
+              converted_user_id: data.user.id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', waitlistEntry.id);
+
+          console.log('Waitlist conversion tracked for:', data.user.email);
+        }
+      } catch (conversionError) {
+        // Log error but don't block the auth flow
+        console.error('Error tracking waitlist conversion:', conversionError);
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

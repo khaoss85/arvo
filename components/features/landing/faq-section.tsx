@@ -6,11 +6,15 @@ import { ChevronDown } from "lucide-react";
 import { useTranslations } from 'next-intl';
 import { useState } from "react";
 
-export function FAQSection() {
+interface FAQSectionProps {
+  variant?: 'default' | 'pro';
+}
+
+export function FAQSection({ variant = 'default' }: FAQSectionProps) {
   const t = useTranslations('landing.faq');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const faqKeys = [
+  const baseFaqKeys = [
     'offline',
     'customEquipment',
     'injury',
@@ -19,6 +23,16 @@ export function FAQSection() {
     'dataOwnership',
     'pricing',
   ] as const;
+
+  const proFaqKeys = [
+    'contestPrep',
+    'periodization',
+    'customPrograms',
+  ] as const;
+
+  const faqKeys = variant === 'pro'
+    ? [...proFaqKeys, ...baseFaqKeys]
+    : baseFaqKeys;
 
   return (
     <section className="py-24 px-4 bg-background">

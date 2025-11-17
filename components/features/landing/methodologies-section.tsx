@@ -1,12 +1,15 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import { BookOpen, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, Zap, Droplets, TrendingUp, Mountain, ChevronDown } from "lucide-react";
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 export function MethodologiesSection() {
   const t = useTranslations('landing.methodologies');
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <section className="py-24 px-4 bg-muted/30">
@@ -270,6 +273,142 @@ export function MethodologiesSection() {
             </Card>
           </motion.div>
         </div>
+
+        {/* Expand Button */}
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => setExpanded(!expanded)}
+            className="group"
+          >
+            {expanded ? t('collapseButton') : t('expandButton')}
+            <ChevronDown className={`ml-2 w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          </Button>
+        </div>
+
+        {/* Additional Methods (Expandable) */}
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4 }}
+              className="overflow-hidden"
+            >
+              <div className="grid md:grid-cols-3 gap-6 mt-8">
+                {/* FST-7 */}
+                <Card className="border-2 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Droplets className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      <CardTitle>{t('fst7.name')}</CardTitle>
+                    </div>
+                    <CardDescription>{t('fst7.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="bg-primary-50 dark:bg-primary-950/20 rounded-md p-2 border border-primary-200 dark:border-primary-800">
+                      <div className="text-xs font-semibold text-primary-700 dark:text-primary-300">
+                        {t('fst7.creator')}
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('fst7.principles.sevenSets', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('fst7.principles.shortRest', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('fst7.principles.hydration', { bold: (chunks) => <span className="font-semibold">{chunks}</span> })}</div>
+                      </div>
+                    </div>
+                    <div className="bg-background rounded-md p-2 text-xs border italic text-muted-foreground">
+                      {t('fst7.philosophyQuote')}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Y3T */}
+                <Card className="border-2 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      <CardTitle>{t('y3t.name')}</CardTitle>
+                    </div>
+                    <CardDescription>{t('y3t.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="bg-primary-50 dark:bg-primary-950/20 rounded-md p-2 border border-primary-200 dark:border-primary-800">
+                      <div className="text-xs font-semibold text-primary-700 dark:text-primary-300">
+                        {t('y3t.creator')}
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('y3t.principles.week1Heavy', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('y3t.principles.week2Hybrid', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('y3t.principles.week3Hell', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                    </div>
+                    <div className="bg-background rounded-md p-2 text-xs border italic text-muted-foreground">
+                      {t('y3t.philosophyQuote')}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t('y3t.usedBy')}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Mountain Dog */}
+                <Card className="border-2 hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Mountain className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                      <CardTitle>{t('mountainDog.name')}</CardTitle>
+                    </div>
+                    <CardDescription>{t('mountainDog.description')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="bg-primary-50 dark:bg-primary-950/20 rounded-md p-2 border border-primary-200 dark:border-primary-800">
+                      <div className="text-xs font-semibold text-primary-700 dark:text-primary-300">
+                        {t('mountainDog.creator')}
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('mountainDog.principles.fourPhases', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('mountainDog.principles.chainsAndBands', { bold: (chunks) => <span className="font-semibold">{chunks}</span> })}</div>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary-500 mt-1.5 shrink-0" />
+                        <div>{t.rich('mountainDog.principles.loadedStretching', { mono: (chunks) => <span className="font-mono text-primary-600 dark:text-primary-400">{chunks}</span> })}</div>
+                      </div>
+                    </div>
+                    <div className="bg-background rounded-md p-2 text-xs border italic text-muted-foreground">
+                      {t('mountainDog.philosophyQuote')}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Bottom Note */}
         <motion.div

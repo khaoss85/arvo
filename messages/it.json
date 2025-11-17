@@ -202,40 +202,80 @@
             "description": "Ciclo di 6 giorni con frequenza 2x per muscolo. Volume e recupero bilanciati.",
             "structure": "Giorno 1: Push (Petto, Spalle, Tricipiti) • Giorno 2: Pull (Dorso, Bicipiti) • Giorno 3: Gambe • Giorno 4: Push • Giorno 5: Pull • Giorno 6: Gambe",
             "bestFor": "Atleti intermedi/avanzati che cercano frequenza e volume bilanciati. Ideale per ipertrofia e forza.",
-            "pros": ["Frequenza 2x settimanale per muscolo", "Recupero bilanciato", "Giorni di riposo flessibili"],
-            "cons": ["Richiede 6 giorni di allenamento", "Può risultare ripetitivo", "Non ideale per principianti"]
+            "pros": [
+              "Frequenza 2x settimanale per muscolo",
+              "Recupero bilanciato",
+              "Giorni di riposo flessibili"
+            ],
+            "cons": [
+              "Richiede 6 giorni di allenamento",
+              "Può risultare ripetitivo",
+              "Non ideale per principianti"
+            ]
           },
           "upper_lower": {
             "name": "Upper/Lower",
             "description": "Ciclo di 4 giorni con frequenza 2x. Volume maggiore per sessione, efficiente.",
             "structure": "Giorno 1: Upper Body • Giorno 2: Lower Body • Giorno 3: Upper Body • Giorno 4: Lower Body",
             "bestFor": "Tutti i livelli. Perfetto per chi ha giorni limitati ma vuole alta frequenza.",
-            "pros": ["Efficiente nel tempo", "Frequenza 2x settimanale", "Struttura semplice"],
-            "cons": ["Sessioni lunghe", "Specificità muscolare limitata", "Accumulo fatica"]
+            "pros": [
+              "Efficiente nel tempo",
+              "Frequenza 2x settimanale",
+              "Struttura semplice"
+            ],
+            "cons": [
+              "Sessioni lunghe",
+              "Specificità muscolare limitata",
+              "Accumulo fatica"
+            ]
           },
           "full_body": {
             "name": "Full Body",
             "description": "Ciclo di 3 giorni con frequenza 3x. Massima frequenza, eccellente per principianti.",
             "structure": "Giorno 1: Full Body (tutti i muscoli principali) • Giorno 2: Full Body • Giorno 3: Full Body",
             "bestFor": "Principianti o chi ha poco tempo. Massimizza la frequenza con minimo impegno.",
-            "pros": ["Frequenza 3x settimanale", "Uso efficiente del tempo", "Ottimo per apprendimento tecnica"],
-            "cons": ["Volume inferiore per muscolo", "Può sembrare affrettato", "Non ideale per specializzazione"]
+            "pros": [
+              "Frequenza 3x settimanale",
+              "Uso efficiente del tempo",
+              "Ottimo per apprendimento tecnica"
+            ],
+            "cons": [
+              "Volume inferiore per muscolo",
+              "Può sembrare affrettato",
+              "Non ideale per specializzazione"
+            ]
           },
           "bro_split": {
             "name": "Bro Split",
             "description": "Ciclo di 5 giorni con frequenza 1x. Volume molto alto per sessione, per atleti avanzati.",
             "structure": "Giorno 1: Petto • Giorno 2: Dorso • Giorno 3: Spalle • Giorno 4: Braccia • Giorno 5: Gambe",
             "bestFor": "Atleti avanzati che prediligono alto volume e dedicano giornate ai singoli muscoli.",
-            "pros": ["Volume massimo per muscolo", "Focus mentale su un'area", "Intensità flessibile"],
-            "cons": ["Solo frequenza 1x", "Sessioni più lunghe", "Non ottimale per principianti"]
+            "pros": [
+              "Volume massimo per muscolo",
+              "Focus mentale su un'area",
+              "Intensità flessibile"
+            ],
+            "cons": [
+              "Solo frequenza 1x",
+              "Sessioni più lunghe",
+              "Non ottimale per principianti"
+            ]
           },
           "weak_point_focus": {
             "name": "Focus Punto Debole",
             "description": "Ciclo personalizzato che enfatizza un gruppo muscolare specifico con il 50% di volume in più.",
             "structure": "Personalizzato in base al muscolo selezionato. Aumento di frequenza e volume per l'area target.",
             "bestFor": "Atleti esperti che vogliono correggere sbilanciamenti o muscoli carenti.",
-            "pros": ["Aumento volume mirato", "Corregge sbilanciamenti", "Approccio personalizzato"],
-            "cons": ["Richiede buon recupero", "Possibile riduzione volume altrove", "Strategia avanzata"]
+            "pros": [
+              "Aumento volume mirato",
+              "Corregge sbilanciamenti",
+              "Approccio personalizzato"
+            ],
+            "cons": [
+              "Richiede buon recupero",
+              "Possibile riduzione volume altrove",
+              "Strategia avanzata"
+            ]
           }
         }
       },
@@ -2096,6 +2136,10 @@
         "developers": {
           "title": "Per Atleti Tech-Savvy",
           "description": "Appassionati di tecnologia che vogliono capire l'AI e la scienza dell'allenamento dietro i loro workout."
+        },
+        "casual": {
+          "title": "Per Utenti Casual e Principianti",
+          "description": "Nessuna decisione complicata. Presentati, segui l'app e diventa più forte senza sforzo."
         }
       }
     },
@@ -3856,6 +3900,110 @@
           "title": "Apprendimento Pattern",
           "description": "Ricorda cosa funziona per il TUO corpo. Pattern infortuni, preferenze esercizi, tolleranza volume—tutto tracciato automaticamente."
         }
+      }
+    }
+  },
+  "landingSimple": {
+    "hero": {
+      "title": {
+        "appThinks": "L'app che pensa per te",
+        "subtitle": "Sempre nella tua tasca"
+      },
+      "painPoints": "\"Non so cosa fare in palestra\" · \"Le app sono troppo complicate\" · \"Non vedo risultati\"",
+      "description": {
+        "main": "Niente da studiare. Niente da decidere. Solo risultati.",
+        "sub": "Rispondi 3 domande, l'app crea tutto. Poi sollevi e basta."
+      },
+      "stats": {
+        "users": "10.000+ utenti",
+        "simple": "Più facile di Netflix",
+        "results": "Risultati garantiti"
+      },
+      "cta": {
+        "start": "Prova Gratis",
+        "dashboard": "Vai alla Dashboard",
+        "seeHow": "Guarda come funziona"
+      },
+      "technical": {
+        "noScience": "Non serve sapere niente di allenamento.",
+        "promise": "Solo 3 minuti e sei in palestra."
+      }
+    },
+    "simpleShowcase": {
+      "title": {
+        "part1": "Come funziona",
+        "part2": "(semplicissimo)"
+      },
+      "subtitle": "3 passaggi e sei pronto. Niente da studiare.",
+      "step1": {
+        "title": "Rispondi 3 domande",
+        "description": "Quanti giorni vuoi allenarti? Che attrezzatura hai? Hai dolori o limiti?",
+        "duration": "2 minuti"
+      },
+      "step2": {
+        "title": "L'app crea il tuo programma",
+        "description": "Algoritmi avanzati scelgono esercizi, serie, ripetizioni, pesi. Tu non fai niente.",
+        "duration": "30 secondi"
+      },
+      "step3": {
+        "title": "Vai in palestra e segui",
+        "description": "L'app ti dice esattamente cosa fare. Timer automatico, pesi calcolati, progressione garantita.",
+        "duration": "45-60 minuti"
+      }
+    },
+    "threeTapPlanning": {
+      "title": "3 tap e sei pronto",
+      "subtitle": "Meno tempo di un caffè",
+      "tap1": {
+        "label": "Inizia",
+        "screen": "Welcome screen"
+      },
+      "tap2": {
+        "label": "Rispondi",
+        "screen": "3 domande semplici"
+      },
+      "tap3": {
+        "label": "Vai",
+        "screen": "Workout pronto"
+      },
+      "result": "Programma completo creato. 0 decisioni da prendere."
+    },
+    "autoProgression": {
+      "title": {
+        "part1": "L'app decide",
+        "part2": "quanto caricare"
+      },
+      "subtitle": "Tu sollevi e basta. La progressione è automatica.",
+      "explanation": {
+        "what": "Ogni settimana, l'app ti dice esattamente quanto peso aggiungere.",
+        "why": "Si chiama \"progressive overload\" (carico progressivo) - ed è il segreto per crescere.",
+        "how": "L'app lo calcola per te. Tu non devi pensare a niente."
+      },
+      "example": {
+        "week1": "Settimana 1: 50kg × 10 reps",
+        "week2": "Settimana 2: 52.5kg × 10 reps",
+        "week4": "Settimana 4: 57.5kg × 10 reps",
+        "result": "+7.5kg in 4 settimane, automatico"
+      },
+      "cta": "Niente calcoli. Niente dubbi. Solo crescita."
+    },
+    "simpleResults": {
+      "title": "Risultati veri",
+      "subtitle": "Utenti che non sapevano niente di allenamento. Ora hanno risultati.",
+      "testimonial1": {
+        "quote": "Pensavo servisse un personal trainer. L'app è 10 volte meglio.",
+        "name": "Marco, 28",
+        "result": "+8kg in 3 mesi"
+      },
+      "testimonial2": {
+        "quote": "Non ho mai capito MEV, MAV, RIR... e non serve. L'app fa tutto.",
+        "name": "Giulia, 24",
+        "result": "Prima taglia in 2 mesi"
+      },
+      "testimonial3": {
+        "quote": "3 minuti per partire. Zero complicazioni. Solo risultati.",
+        "name": "Luca, 35",
+        "result": "-12kg in 4 mesi"
       }
     }
   }

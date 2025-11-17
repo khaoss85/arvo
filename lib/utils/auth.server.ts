@@ -36,3 +36,45 @@ export async function getUser() {
 
   return user;
 }
+
+/**
+ * Check if the current authenticated user is an admin
+ * @returns true if user is admin, false otherwise
+ */
+export async function isAdmin(): Promise<boolean> {
+  const user = await getUser();
+  if (!user) return false;
+
+  const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+  const supabase = await getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (error || !data) {
+    return false;
+  }
+
+  return data.role === 'admin';
+}
+
+/**
+ * Require admin role or throw redirect to dashboard
+ * Use in Server Components/Actions that require admin access
+ */
+export async function requireAdmin() {
+  const user = await getUser();
+  if (!user) {
+    const { redirect } = await import('next/navigation');
+    redirect('/login');
+  }
+
+  const admin = await isAdmin();
+  if (!admin) {
+    const { redirect } = await import('next/navigation');
+    redirect('/dashboard');
+  }
+}

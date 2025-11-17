@@ -171,7 +171,7 @@ export function BiomechanicsDemo() {
 
               <div className="mt-4 flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md text-sm border border-blue-200 dark:border-blue-900">
                 <div className="text-blue-600 dark:text-blue-400 font-semibold shrink-0">{t('proTip.label')}</div>
-                <div className="text-blue-900 dark:text-blue-200">
+                <div className="text-blue-900 dark:text-foreground">
                   {t('proTip.text')}
                 </div>
               </div>

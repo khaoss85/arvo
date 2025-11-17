@@ -58,7 +58,7 @@ export function SmartRestTimer() {
                   </div>
 
                   {/* Acceptable */}
-                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-950/50 rounded-lg border-2 border-blue-200 dark:border-blue-800">
                     <div className="flex-shrink-0 w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                       60s
                     </div>
@@ -119,7 +119,7 @@ export function SmartRestTimer() {
                 <div className="p-4 bg-muted/50 rounded-lg border">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-semibold text-primary-600 dark:text-primary-400">FST-7</div>
-                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/30 rounded-full text-primary-700 dark:text-primary-300">
+                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/60 rounded-full text-primary-700 dark:text-primary-50">
                       {t('methodologies.fst7.badge')}
                     </div>
                   </div>
@@ -142,7 +142,7 @@ export function SmartRestTimer() {
                 <div className="p-4 bg-muted/50 rounded-lg border">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-semibold text-primary-600 dark:text-primary-400">Y3T</div>
-                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/30 rounded-full text-primary-700 dark:text-primary-300">
+                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/60 rounded-full text-primary-700 dark:text-primary-50">
                       {t('methodologies.y3t.badge')}
                     </div>
                   </div>
@@ -165,7 +165,7 @@ export function SmartRestTimer() {
                 <div className="p-4 bg-muted/50 rounded-lg border">
                   <div className="flex items-center justify-between mb-2">
                     <div className="font-semibold text-primary-600 dark:text-primary-400">Mountain Dog</div>
-                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/30 rounded-full text-primary-700 dark:text-primary-300">
+                    <div className="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/60 rounded-full text-primary-700 dark:text-primary-50">
                       {t('methodologies.mountainDog.badge')}
                     </div>
                   </div>
@@ -209,14 +209,14 @@ export function SmartRestTimer() {
 
         {/* Bottom Footer */}
         <motion.div
-          className="mt-12 p-6 bg-primary-50 dark:bg-primary-950/20 rounded-lg border border-primary-200 dark:border-primary-800"
+          className="mt-12 p-6 bg-primary-50 dark:bg-primary-950/50 rounded-lg border border-primary-200 dark:border-primary-800"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <div className="text-center max-w-3xl mx-auto">
-            <p className="text-sm text-primary-900 dark:text-primary-100">
+            <p className="text-sm text-primary-900 dark:text-primary-50">
               <span className="font-bold">{t('footer.bold')}</span> {t('footer.text')}
             </p>
           </div>

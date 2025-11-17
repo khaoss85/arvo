@@ -266,8 +266,8 @@ export function VolumeTrackingVisual() {
               </div>
 
               {/* AI Insight */}
-              <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-950/20 rounded-md text-sm border border-primary-200 dark:border-primary-800">
-                <p className="text-primary-900 dark:text-primary-200">
+              <div className="mt-4 p-3 bg-primary-50 dark:bg-primary-950/50 rounded-md text-sm border border-primary-200 dark:border-primary-800">
+                <p className="text-primary-900 dark:text-foreground">
                   <strong>{t('cycleComparison.aiInsight.bold')}</strong> {t('cycleComparison.aiInsight.text')}
                 </p>
               </div>

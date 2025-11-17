@@ -1,10 +1,18 @@
+'use client';
+
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
+import { Dumbbell, Code2, Sparkles } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const t = useTranslations('landing.footer');
+  const pathname = usePathname();
+  const isMainPage = pathname === '/';
+  const isProPage = pathname === '/pro';
+  const isSimplePage = pathname === '/simple';
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
@@ -60,6 +68,72 @@ export function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+        </div>
+
+        {/* Ideal For Section - Cross-linking */}
+        <div className="py-8 border-t border-border">
+          <h3 className="font-semibold mb-4 text-center">{t('idealFor.title')}</h3>
+          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            {/* Show Athletes card on main and simple pages */}
+            {(isMainPage || isSimplePage) && (
+              <Link
+                href="/pro"
+                className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
+              >
+                <div className="flex items-start gap-3">
+                  <Dumbbell className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {t('idealFor.athletes.title')}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('idealFor.athletes.description')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* Show Tech-Savvy card on pro and simple pages */}
+            {(isProPage || isSimplePage) && (
+              <Link
+                href="/"
+                className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
+              >
+                <div className="flex items-start gap-3">
+                  <Code2 className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {t('idealFor.developers.title')}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('idealFor.developers.description')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* Show Casual Users card on main and pro pages */}
+            {(isMainPage || isProPage) && (
+              <Link
+                href="/simple"
+                className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
+              >
+                <div className="flex items-start gap-3">
+                  <Sparkles className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {t('idealFor.casual.title')}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('idealFor.casual.description')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
 

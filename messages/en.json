@@ -202,40 +202,80 @@
             "description": "6-day cycle with 2x frequency per muscle. Balanced volume and recovery.",
             "structure": "Day 1: Push (Chest, Shoulders, Triceps) • Day 2: Pull (Back, Biceps) • Day 3: Legs • Day 4: Push • Day 5: Pull • Day 6: Legs",
             "bestFor": "Intermediate to advanced lifters seeking balanced frequency and volume. Ideal for muscle growth and strength gains.",
-            "pros": ["2x weekly frequency per muscle", "Balanced recovery", "Flexible rest days"],
-            "cons": ["Requires 6 training days", "May feel repetitive", "Not ideal for beginners"]
+            "pros": [
+              "2x weekly frequency per muscle",
+              "Balanced recovery",
+              "Flexible rest days"
+            ],
+            "cons": [
+              "Requires 6 training days",
+              "May feel repetitive",
+              "Not ideal for beginners"
+            ]
           },
           "upper_lower": {
             "name": "Upper/Lower",
             "description": "4-day cycle with 2x frequency. Higher volume per session, time-efficient.",
             "structure": "Day 1: Upper Body • Day 2: Lower Body • Day 3: Upper Body • Day 4: Lower Body",
             "bestFor": "All experience levels. Perfect for those with limited training days but seeking high frequency.",
-            "pros": ["Time-efficient", "2x weekly frequency", "Simple structure"],
-            "cons": ["Long sessions", "Limited muscle specificity", "Fatigue accumulation"]
+            "pros": [
+              "Time-efficient",
+              "2x weekly frequency",
+              "Simple structure"
+            ],
+            "cons": [
+              "Long sessions",
+              "Limited muscle specificity",
+              "Fatigue accumulation"
+            ]
           },
           "full_body": {
             "name": "Full Body",
             "description": "3-day cycle with 3x frequency. Maximum frequency, excellent for beginners.",
             "structure": "Day 1: Full Body (all major muscles) • Day 2: Full Body • Day 3: Full Body",
             "bestFor": "Beginners or those with limited time. Maximizes training frequency with minimal commitment.",
-            "pros": ["3x weekly frequency", "Efficient use of time", "Great for skill acquisition"],
-            "cons": ["Lower volume per muscle per session", "Can feel rushed", "Not ideal for specialization"]
+            "pros": [
+              "3x weekly frequency",
+              "Efficient use of time",
+              "Great for skill acquisition"
+            ],
+            "cons": [
+              "Lower volume per muscle per session",
+              "Can feel rushed",
+              "Not ideal for specialization"
+            ]
           },
           "bro_split": {
             "name": "Bro Split",
             "description": "5-day cycle with 1x frequency. Very high volume per session, for advanced lifters.",
             "structure": "Day 1: Chest • Day 2: Back • Day 3: Shoulders • Day 4: Arms • Day 5: Legs",
             "bestFor": "Advanced lifters who thrive on high volume and enjoy dedicated muscle days.",
-            "pros": ["Maximum volume per muscle", "Mental focus on one area", "Flexible intensity"],
-            "cons": ["Only 1x frequency", "Longer sessions", "Not optimal for beginners"]
+            "pros": [
+              "Maximum volume per muscle",
+              "Mental focus on one area",
+              "Flexible intensity"
+            ],
+            "cons": [
+              "Only 1x frequency",
+              "Longer sessions",
+              "Not optimal for beginners"
+            ]
           },
           "weak_point_focus": {
             "name": "Weak Point Focus",
             "description": "Custom cycle emphasizing a specific muscle group with 50% more volume.",
             "structure": "Customized based on selected weak point muscle. Increased frequency and volume for target area.",
             "bestFor": "Experienced lifters addressing specific muscle imbalances or lagging body parts.",
-            "pros": ["Targeted volume increase", "Addresses imbalances", "Personalized approach"],
-            "cons": ["Requires good recovery", "May reduce volume elsewhere", "Advanced strategy"]
+            "pros": [
+              "Targeted volume increase",
+              "Addresses imbalances",
+              "Personalized approach"
+            ],
+            "cons": [
+              "Requires good recovery",
+              "May reduce volume elsewhere",
+              "Advanced strategy"
+            ]
           }
         }
       },
@@ -2096,6 +2136,10 @@
         "developers": {
           "title": "For Tech-Savvy Athletes",
           "description": "Tech enthusiasts who want to understand the AI and training science behind their workouts."
+        },
+        "casual": {
+          "title": "For Casual Users & Beginners",
+          "description": "No complicated decisions. Just show up, follow the app, and grow stronger effortlessly."
         }
       }
     },
@@ -3856,6 +3900,110 @@
           "title": "Pattern Learning",
           "description": "Remembers what works for YOUR body. Injury patterns, exercise preferences, volume tolerance—all tracked automatically."
         }
+      }
+    }
+  },
+  "landingSimple": {
+    "hero": {
+      "title": {
+        "appThinks": "The app that thinks for you",
+        "subtitle": "Always in your pocket"
+      },
+      "painPoints": "\"I don't know what to do at the gym\" · \"Apps are too complicated\" · \"I don't see results\"",
+      "description": {
+        "main": "Nothing to study. Nothing to decide. Just results.",
+        "sub": "Answer 3 questions, the app creates everything. Then just lift."
+      },
+      "stats": {
+        "users": "10,000+ users",
+        "simple": "Easier than Netflix",
+        "results": "Results guaranteed"
+      },
+      "cta": {
+        "start": "Try Free",
+        "dashboard": "Go to Dashboard",
+        "seeHow": "See how it works"
+      },
+      "technical": {
+        "noScience": "You don't need to know anything about training.",
+        "promise": "Just 3 minutes and you're at the gym."
+      }
+    },
+    "simpleShowcase": {
+      "title": {
+        "part1": "How it works",
+        "part2": "(super simple)"
+      },
+      "subtitle": "3 steps and you're ready. Nothing to study.",
+      "step1": {
+        "title": "Answer 3 questions",
+        "description": "How many days do you want to train? What equipment do you have? Any pain or limitations?",
+        "duration": "2 minutes"
+      },
+      "step2": {
+        "title": "The app creates your program",
+        "description": "Advanced algorithms choose exercises, sets, reps, weights. You do nothing.",
+        "duration": "30 seconds"
+      },
+      "step3": {
+        "title": "Go to the gym and follow",
+        "description": "The app tells you exactly what to do. Automatic timer, calculated weights, guaranteed progression.",
+        "duration": "45-60 minutes"
+      }
+    },
+    "threeTapPlanning": {
+      "title": "3 taps and you're ready",
+      "subtitle": "Less time than a coffee",
+      "tap1": {
+        "label": "Start",
+        "screen": "Welcome screen"
+      },
+      "tap2": {
+        "label": "Answer",
+        "screen": "3 simple questions"
+      },
+      "tap3": {
+        "label": "Go",
+        "screen": "Workout ready"
+      },
+      "result": "Complete program created. 0 decisions to make."
+    },
+    "autoProgression": {
+      "title": {
+        "part1": "The app decides",
+        "part2": "how much to load"
+      },
+      "subtitle": "You just lift. Progression is automatic.",
+      "explanation": {
+        "what": "Every week, the app tells you exactly how much weight to add.",
+        "why": "It's called \"progressive overload\" - and it's the secret to growth.",
+        "how": "The app calculates it for you. You don't have to think about anything."
+      },
+      "example": {
+        "week1": "Week 1: 50kg × 10 reps",
+        "week2": "Week 2: 52.5kg × 10 reps",
+        "week4": "Week 4: 57.5kg × 10 reps",
+        "result": "+7.5kg in 4 weeks, automatic"
+      },
+      "cta": "No calculations. No doubts. Just growth."
+    },
+    "simpleResults": {
+      "title": "Real results",
+      "subtitle": "Users who knew nothing about training. Now they have results.",
+      "testimonial1": {
+        "quote": "I thought I needed a personal trainer. The app is 10 times better.",
+        "name": "Mark, 28",
+        "result": "+8kg in 3 months"
+      },
+      "testimonial2": {
+        "quote": "I never understood MEV, MAV, RIR... and I don't need to. The app does everything.",
+        "name": "Julia, 24",
+        "result": "Down one size in 2 months"
+      },
+      "testimonial3": {
+        "quote": "3 minutes to start. Zero complications. Just results.",
+        "name": "Luke, 35",
+        "result": "-12kg in 4 months"
       }
     }
   }

@@ -604,18 +604,74 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          role: string
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           id: string
+          role?: string
         }
         Update: {
           created_at?: string | null
           email?: string | null
           id?: string
+          role?: string
         }
         Relationships: []
+      }
+      waitlist_entries: {
+        Row: {
+          converted_user_id: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          invited_count: number
+          queue_position: number | null
+          referral_code: string
+          referrer_id: string | null
+          status: string
+          training_goal: string | null
+          updated_at: string
+        }
+        Insert: {
+          converted_user_id?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          invited_count?: number
+          queue_position?: number | null
+          referral_code: string
+          referrer_id?: string | null
+          status?: string
+          training_goal?: string | null
+          updated_at?: string
+        }
+        Update: {
+          converted_user_id?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          invited_count?: number
+          queue_position?: number | null
+          referral_code?: string
+          referrer_id?: string | null
+          status?: string
+          training_goal?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_entries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_generation_metrics: {
         Row: {
@@ -663,6 +719,7 @@ export type Database = {
           id: string
           progress_percent: number | null
           request_id: string
+          split_plan_id: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["generation_status"]
           target_cycle_day: number | null
@@ -679,6 +736,7 @@ export type Database = {
           id?: string
           progress_percent?: number | null
           request_id: string
+          split_plan_id?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["generation_status"]
           target_cycle_day?: number | null
@@ -695,6 +753,7 @@ export type Database = {
           id?: string
           progress_percent?: number | null
           request_id?: string
+          split_plan_id?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["generation_status"]
           target_cycle_day?: number | null
@@ -703,6 +762,13 @@ export type Database = {
           workout_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "workout_generation_queue_split_plan_id_fkey"
+            columns: ["split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workout_generation_queue_workout_id_fkey"
             columns: ["workout_id"]
@@ -899,7 +965,8 @@ export type Database = {
         Args: { check_date?: string; start_date: string }
         Returns: number
       }
-      cleanup_old_generations: { Args: never; Returns: undefined }
+      calculate_queue_position: { Args: { entry_id: string }; Returns: number }
+      cleanup_old_generations: { Args: Record<PropertyKey, never>; Returns: undefined }
       complete_cycle: {
         Args: {
           p_avg_mental_readiness: number
@@ -916,6 +983,7 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_referral_code: { Args: Record<PropertyKey, never>; Returns: string }
       get_active_insights: {
         Args: { p_min_relevance?: number; p_user_id: string }
         Returns: {
@@ -968,7 +1036,9 @@ export type Database = {
           user_reason: string
         }[]
       }
-      update_insight_relevance_scores: { Args: never; Returns: undefined }
+      is_current_user_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
+      refresh_all_queue_positions: { Args: Record<PropertyKey, never>; Returns: undefined }
+      update_insight_relevance_scores: { Args: Record<PropertyKey, never>; Returns: undefined }
     }
     Enums: {
       generation_status: "pending" | "in_progress" | "completed" | "failed"
