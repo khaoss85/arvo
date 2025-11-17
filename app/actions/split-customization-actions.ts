@@ -718,14 +718,41 @@ export async function analyzeSplitTypeChangeAction(
 
     // 10. Call AI validator
     const validator = new SplitTypeChangeValidator(supabase)
+
+    console.log('🤖 [SplitTypeAnalysis] Starting analysis', {
+      userId,
+      targetSplitType,
+      currentSplitType: splitPlan.split_type,
+      model: 'gpt-5.1',
+      workoutsCompleted,
+      totalWorkoutsInCycle,
+      timestamp: new Date().toISOString()
+    })
+
+    const startTime = Date.now()
     const analysis = await validator.validateSplitTypeChange(validationInput)
+    const duration = Date.now() - startTime
+
+    console.log('✅ [SplitTypeAnalysis] Analysis completed', {
+      userId,
+      targetSplitType,
+      recommendation: analysis.recommendation,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString()
+    })
 
     return {
       success: true,
       data: analysis,
     }
   } catch (error: any) {
-    console.error('Error analyzing split type change:', error)
+    console.error('🔴 [SplitTypeAnalysis] Analysis failed:', {
+      error: error?.message,
+      stack: error?.stack,
+      userId,
+      targetSplitType,
+      timestamp: new Date().toISOString()
+    })
     return {
       success: false,
       error: error?.message || 'Failed to analyze split type change',

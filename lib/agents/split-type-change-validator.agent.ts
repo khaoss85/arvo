@@ -98,12 +98,12 @@ export interface SplitTypeChangeOutput {
  * - User experience and goals
  *
  * Provides AI-driven recommendations with pros/cons/alternatives.
- * Extends BaseAgent to use gpt-5-mini for comprehensive analysis.
+ * Extends BaseAgent to use gpt-5.1 for comprehensive analysis.
  */
 export class SplitTypeChangeValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'high', 'low') // High reasoning for comprehensive split analysis
-    this.model = 'gpt-5-mini' // Better quality analysis with balanced cost
+    super(supabaseClient, 'medium', 'low') // Medium reasoning for comprehensive split analysis
+    this.model = 'gpt-5.1' // Latest flagship model with reasoning capabilities
   }
 
   get systemPrompt(): string {

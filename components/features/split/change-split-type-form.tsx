@@ -56,21 +56,36 @@ export function ChangeSplitTypeForm({
 
     setAnalyzing(true)
     try {
-      const result = await analyzeSplitTypeChangeAction(
+      // Add client-side timeout (60 seconds) for better UX
+      const ANALYSIS_TIMEOUT = 60000 // 60 seconds
+
+      const analysisPromise = analyzeSplitTypeChangeAction(
         userId,
         selectedSplitType!,
         selectedMuscle || undefined
       )
 
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Analysis timeout. Please try again.')), ANALYSIS_TIMEOUT)
+      )
+
+      const result = await Promise.race([analysisPromise, timeoutPromise])
+
       if (result.success && result.data) {
         setAnalysis(result.data)
         setShowRecommendationDialog(true)
       } else {
-        addToast(result.error || 'Failed to analyze split type change', 'error')
+        addToast(
+          result.error || 'AI analysis failed. Please try again.',
+          'error'
+        )
       }
     } catch (error) {
       console.error('Analysis error:', error)
-      addToast('Failed to analyze split type change', 'error')
+      const errorMessage = error instanceof Error && error.message.includes('timeout')
+        ? 'Analysis timed out. The AI is taking longer than expected. Please try again.'
+        : 'AI analysis failed. Please try again or contact support if the issue persists.'
+      addToast(errorMessage, 'error')
     } finally {
       setAnalyzing(false)
     }
