@@ -61,7 +61,7 @@ export default async function SimplePage() {
 
   return (
     <main className="min-h-screen">
-      <HeroSectionSimple isAuthenticated={isAuthenticated} />
+      <HeroSectionSimple isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <SimpleShowcase />
       <AutoProgression />
       <SmartRestTimer />

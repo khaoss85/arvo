@@ -9,9 +9,10 @@ import { useTranslations } from 'next-intl';
 
 interface HeroSectionProps {
   isAuthenticated: boolean;
+  showWaitlist?: boolean;
 }
 
-export function HeroSection({ isAuthenticated }: HeroSectionProps) {
+export function HeroSection({ isAuthenticated, showWaitlist = false }: HeroSectionProps) {
   const t = useTranslations('landing.hero');
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-geometric-pattern px-4 py-20">
@@ -92,9 +93,9 @@ export function HeroSection({ isAuthenticated }: HeroSectionProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Link href={isAuthenticated ? "/dashboard" : "/login"}>
+            <Link href={isAuthenticated ? "/dashboard" : (showWaitlist ? "/waitlist" : "/login")}>
               <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? t('cta.dashboard') : t('cta.start')}
+                {isAuthenticated ? t('cta.dashboard') : (showWaitlist ? "Join the Waitlist" : t('cta.start'))}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

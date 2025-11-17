@@ -9,9 +9,10 @@ import { useTranslations } from 'next-intl';
 
 interface HeroSectionSimpleProps {
   isAuthenticated: boolean;
+  showWaitlist?: boolean;
 }
 
-export function HeroSectionSimple({ isAuthenticated }: HeroSectionSimpleProps) {
+export function HeroSectionSimple({ isAuthenticated, showWaitlist = false }: HeroSectionSimpleProps) {
   const t = useTranslations('landingSimple.hero');
 
   return (
@@ -93,9 +94,9 @@ export function HeroSectionSimple({ isAuthenticated }: HeroSectionSimpleProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Link href={isAuthenticated ? "/dashboard" : "/login"}>
+            <Link href={isAuthenticated ? "/dashboard" : (showWaitlist ? "/waitlist" : "/login")}>
               <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? t('cta.dashboard') : t('cta.start')}
+                {isAuthenticated ? t('cta.dashboard') : (showWaitlist ? "Join the Waitlist" : t('cta.start'))}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

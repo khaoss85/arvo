@@ -70,7 +70,7 @@ export default async function ProPage() {
 
   return (
     <main className="min-h-screen">
-      <HeroSectionPro isAuthenticated={isAuthenticated} />
+      <HeroSectionPro isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <ProblemSolution />
       <CoachingShowcase />
       <SmartRestTimer />

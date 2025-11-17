@@ -23,7 +23,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
-      <HeroSection isAuthenticated={isAuthenticated} />
+      <HeroSection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <AIShowcase />
       <SmartRestTimer />
       <NotesIntelligence />
