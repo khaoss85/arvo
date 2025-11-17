@@ -209,7 +209,7 @@ export function SmartRestTimer() {
 
         {/* Bottom Footer */}
         <motion.div
-          className="mt-12 p-6 bg-primary-50 dark:bg-primary-950/50 rounded-lg border border-primary-200 dark:border-primary-800"
+          className="mt-12 p-6 bg-primary-50 dark:bg-primary-900 rounded-lg border border-primary-200 dark:border-primary-700"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

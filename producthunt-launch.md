@@ -9,59 +9,62 @@
 
 **Test these 3 options with 5-10 people and pick the winner:**
 
-**Option A - AI Innovation Focus** (57 chars)
+**Option A - Beta Launch Focus** (59 chars)
 ```
-AI workout coach with real-time form correction & guidance
+AI workout coach in beta - Join waitlist for free access
 ```
-✅ Pros: Highlights unique tech (real-time AI)
-❌ Cons: Doesn't mention value vs alternatives
+✅ Pros: Clear beta status, mentions waitlist immediately
+✅ Emphasizes "free" as main value prop
+❌ Cons: Doesn't highlight the AI innovation as much
 
-**Option B - Value Proposition Focus** (59 chars)
+**Option B - Lifetime Access Focus** (58 chars)
 ```
-Your AI personal trainer for $15/mo (vs $150/session PT)
+AI coach with real-time guidance - Free for beta members
 ```
-✅ Pros: Clear value, comparison to expensive alternative
-❌ Cons: Might seem too salesy for PH community
+✅ Pros: Highlights tech + free access
+✅ "Real-time" shows innovation
+❌ Cons: Doesn't create urgency
 
-**Option C - Outcome/Benefit Focus** (56 chars) ⭐ RECOMMENDED
+**Option C - Outcome + Beta Focus** (60 chars) ⭐ RECOMMENDED
 ```
-AI coach that adapts your workout set-by-set in real-time
+AI coach adapting workouts in real-time - Join beta (free)
 ```
-✅ Pros: Clear benefit, shows adaptability (key differentiator)
-✅ Perfect length, not too salesy
-✅ "Set-by-set" is concrete and specific
+✅ Pros: Shows core benefit (adaptability) + beta opportunity
+✅ Perfect length, includes "free" without being salesy
+✅ "Real-time" emphasizes innovation
+✅ Creates FOMO with beta invite
 
 **FINAL RECOMMENDATION**: Option C
 - Most authentic for Product Hunt
-- Shows innovation without being gimmicky
-- Clear benefit without hard-selling
-- Can mention price in description/first comment
+- Shows innovation while highlighting beta opportunity
+- "Join beta (free)" creates urgency without hard-selling
+- Can explain waitlist process in description/first comment
 
 ---
 
 ### DESCRIPTION (260 characters max)
 
-**Version 1 - Problem/Solution/How** (258 chars) ⭐ RECOMMENDED
+**Version 1 - Beta Launch Focus** (260 chars) ⭐ RECOMMENDED
 ```
-Personal trainers cost $150/session. Generic apps give cookie-cutter programs. ARVO is your AI coach that watches your performance set-by-set, suggests weight/reps in real-time, and adapts when you're tired or crushing it. $15/mo. Try free.
+Personal trainers cost $150/session. Generic apps give cookie-cutter programs. ARVO is your AI coach that adapts set-by-set in real-time. 🎁 BETA LAUNCH: Join the waitlist for lifetime free access. Limited invites sent weekly. All features included.
 ```
 
 **Character Breakdown:**
 - Problem: Personal trainers cost $150/session. Generic apps give cookie-cutter programs. (85 chars)
-- Solution: ARVO is your AI coach that watches your performance set-by-set (66 chars)
-- How: suggests weight/reps in real-time, and adapts when you're tired or crushing it. (84 chars)
-- CTA: $15/mo. Try free. (23 chars)
-- **Total: 258 characters**
+- Solution: ARVO is your AI coach that adapts set-by-set in real-time. (67 chars)
+- Offer: 🎁 BETA LAUNCH: Join the waitlist for lifetime free access. Limited invites sent weekly. All features included. (108 chars)
+- **Total: 260 characters**
 
-**Version 2 - Shorter, Punchier** (198 chars)
+**Version 2 - Urgency Focus** (251 chars)
 ```
-Your AI workout coach that adapts in real-time. Suggests weight and reps based on your previous set. Explains WHY behind every decision. Like a personal trainer in your pocket, but $15/mo vs $150/session.
+AI workout coach that adapts in real-time, suggesting weight/reps after each set like a $150/session PT. 🚀 BETA: Join waitlist now for FREE LIFETIME ACCESS. Invites sent weekly. Be an early adopter and train smarter, not harder. All features unlocked.
 ```
 
-**RECOMMENDATION**: Use Version 1 (258 chars)
+**RECOMMENDATION**: Use Version 1 (260 chars)
 - Fills the character limit (shows you put thought in)
-- Addresses problem more clearly
-- "Try free" lowers barrier for early users (your goal)
+- Clear problem/solution structure
+- Emphasizes "lifetime free access" without being too salesy
+- Creates urgency with "limited invites sent weekly"
 
 ---
 
@@ -92,12 +95,18 @@ After 6 months of building, ARVO is my answer: an AI coach that gives you real-t
 
 If you track workouts (even in Excel), follow a methodology, and want intelligent progression without paying $600+/mo for a PT—ARVO is for you.
 
-**🎁 Exclusive Product Hunt Offer**
+**🎁 Beta Launch - Lifetime Free Access**
 
-Get **30% off your first year** with code **HUNTER30** (valid 48 hours).
-That's $10.50/mo instead of $15/mo—less than one coffee per week for AI coaching.
+We're launching in BETA today! Here's what this means:
 
-Try it free (no credit card): [arvo.guru](https://arvo.guru)
+✅ **Join the waitlist** → Get invited gradually (new invites sent weekly)
+✅ **Lifetime free access** → Beta members never pay. Ever.
+✅ **All features unlocked** → No limitations, full AI coaching experience
+✅ **Shape the product** → Your feedback directly influences development
+
+Why waitlist? We want to ensure every user gets high-quality onboarding and support. This isn't a mass-market launch—it's a community of serious lifters who want intelligent training.
+
+👉 Join the waitlist: [arvo.guru](https://arvo.guru)
 
 **Question for the Community**
 
@@ -106,9 +115,9 @@ What's your biggest frustration with workout apps right now? I'm actively iterat
 Thanks for checking out ARVO! Happy to answer any questions. 💪
 ```
 
-**Character Count**: ~1,650 characters
-**Reading Time**: ~45 seconds (perfect length)
-**Conversion Elements**: ✅ Personal story ✅ Value prop ✅ Special offer ✅ Question ✅ CTA
+**Character Count**: ~1,750 characters
+**Reading Time**: ~48 seconds (perfect length)
+**Conversion Elements**: ✅ Personal story ✅ Value prop ✅ Beta offer (lifetime free) ✅ Question ✅ CTA
 
 ---
 
@@ -131,9 +140,9 @@ Thanks for checking out ARVO! Happy to answer any questions. 💪
 
 **Built For**: Serious lifters who track workouts and want intelligent progression without the $600+/mo PT cost.
 
-**🎁 Product Hunt Exclusive**: 30% off first year with code HUNTER30 (48 hours only).
+**🎁 Beta Launch Special**: Join the waitlist for **lifetime free access**. Invites sent weekly.
 
-Try free at [arvo.guru](https://arvo.guru)
+Join at [arvo.guru](https://arvo.guru)
 
 **Question**: What's your #1 frustration with current workout apps?
 
@@ -143,7 +152,7 @@ Happy to answer any questions! 💪
 **RECOMMENDATION**: Use the longer first comment
 - PH community appreciates depth and authenticity
 - Personal story resonates more
-- You have the time to write it properly
+- Beta explanation benefits from extra detail
 
 ---
 
@@ -371,10 +380,10 @@ Time: 20 minutes
 
 **Wednesday Tasks**:
 - [ ] Product testing marathon
-  - Test all user flows (signup → workout → completion)
+  - Test all user flows (waitlist signup → confirmation email)
   - Fix any critical bugs
   - Ensure landing page converts well
-  - Test discount code (HUNTER30)
+  - Test waitlist confirmation flow
   - Speed test (< 3s page load)
 
 - [ ] Prepare email templates (1 hour)
@@ -412,7 +421,7 @@ Time: 20 minutes
   - Walk through entire user journey
   - Test on multiple devices (iOS, Android, desktop)
   - Ensure arvo.guru loads fast
-  - Triple-check discount code works
+  - Triple-check waitlist flow works end-to-end
 
 - [ ] Create launch day spreadsheet
   - List all supporters by "wave" (see Launch Day Strategy)
@@ -446,7 +455,7 @@ Time: 20 minutes
 - [ ] Review launch checklist one more time
 - [ ] Confirm YouTube video is publicly accessible
 - [ ] Test all links in first comment
-- [ ] Verify HUNTER30 code one last time
+- [ ] Verify waitlist signup flow one last time
 - [ ] Send final heads-up to close supporters
 - [ ] Set alarm for 11:45 PM PST (or 12:45 AM if waiting to check competition)
 - [ ] Review first comment one more time
@@ -522,7 +531,7 @@ If you have 2 minutes, I'd love your support:
 💬 Leave a comment sharing your experience (honest feedback only!)
 ⬆️ Upvote if you think others would benefit
 
-Special thank you: Code BETATHANKS gets you 50% off for life (even better than the PH offer).
+You already have lifetime free access as an early tester. Help us spread the word so more serious lifters can join the community!
 
 Whether you can support or not, thank you for being part of the journey.
 
@@ -545,7 +554,7 @@ Hey there,
 
 After 6 months of building, ARVO is live on Product Hunt!
 
-Quick recap: ARVO is an AI workout coach that gives you real-time, set-by-set guidance—like a personal trainer, but $15/mo instead of $150/session.
+Quick recap: ARVO is an AI workout coach that gives you real-time, set-by-set guidance—like a personal trainer, but free for early adopters vs $150/session traditional coaching.
 
 If you've ever:
 - Tracked workouts in a spreadsheet
@@ -556,7 +565,7 @@ If you've ever:
 
 Check it out: [PH link]
 
-Product Hunt exclusive: Code HUNTER30 = 30% off (48 hours only)
+Beta launch special: Join the waitlist for **lifetime free access**. Invites sent weekly.
 
 I'd love your honest feedback—even if you just lurk and observe the launch!
 
@@ -580,15 +589,15 @@ I started tracking workouts in Excel 10 years ago. Loved the control, hated that
 
 Personal trainers could, but $150/session? $600-900/month isn't sustainable for most people.
 
-So I built ARVO: an AI workout coach that gives you real-time, set-by-set guidance. It explains WHY behind every suggestion, adapts when you need it, and costs $15/mo.
+So I built ARVO: an AI workout coach that gives you real-time, set-by-set guidance. It explains WHY behind every suggestion and adapts when you need it.
 
 Built for serious lifters who want intelligent progression without the PT price tag.
 
 Would love your thoughts: [PH link]
 
-Special offer for my network: Code HUNTER30 = 30% off (48 hours)
+🎁 Beta launch: Join the waitlist for lifetime free access. Invites sent weekly to maintain quality onboarding.
 
-#buildinpublic #AI #fitness #productlaunch
+#buildinpublic #AI #fitness #productlaunch #betalaunch
 ```
 
 **Twitter Thread**:
@@ -597,7 +606,7 @@ Special offer for my network: Code HUNTER30 = 30% off (48 hours)
 
 An AI workout coach that gives you real-time, set-by-set guidance.
 
-Like a personal trainer in your pocket. $15/mo vs $150/session.
+Like a personal trainer in your pocket. Free for beta members vs $150/session.
 
 Check it out: [PH link]
 
@@ -639,7 +648,9 @@ Real-time adaptation. Real explanations.
 
 7/ Live on Product Hunt today: [link]
 
-Special offer: Code HUNTER30 = 30% off (48 hours)
+🎁 Beta launch: Join waitlist for LIFETIME FREE ACCESS
+
+Invites sent weekly. All features unlocked.
 
 Would love your feedback—be honest! 🙏
 
@@ -676,7 +687,7 @@ No worries if you're busy—appreciate you either way!
 
 [Your Name]
 
-P.S. Code HUNTER30 still works (30% off, 48 hours)
+P.S. Beta waitlist is still open - lifetime free access for early members!
 ```
 
 **Why Wave 5 Matters**: Recaptures people who got busy during the day.
@@ -695,7 +706,7 @@ Sitting at [X] upvotes—incredibly grateful for this community.
 
 If you haven't checked out ARVO yet: [link]
 
-Every upvote and comment helps us reach more serious lifters who need this.
+Join the beta waitlist for lifetime free access - every spot helps us build a community of serious lifters.
 
 Thank you 🙏
 ```
@@ -704,7 +715,7 @@ Thank you 🙏
 ```
 Hey! Final hours of PH launch—we're at [X] upvotes, aiming for [Y] to hit Product of the Day.
 
-No pressure at all, but if you know anyone in fitness/AI who might dig this, a share would be amazing.
+No pressure at all, but if you know anyone in fitness/AI who might want lifetime free beta access, a share would be amazing.
 
 Either way, thank you for supporting 🙏
 ```
@@ -767,11 +778,34 @@ What's most important to you in a workout app?
 ```
 Fair question about pricing!
 
+We're currently in BETA, which means early adopters get lifetime free access—no cost, ever.
+
 Here's my thinking: Personal trainers charge $150/session ($600-900/mo for regular coaching). Generic apps are $10-20/mo but don't adapt.
 
-ARVO is $15/mo—positioned between generic and personalized. The AI adapts to YOUR performance in real-time, which is what you're paying for.
+ARVO provides real-time AI coaching that adapts to YOUR performance. Beta members are helping us build this, so they get free access for life.
 
-Does that value equation make sense? Always open to feedback on pricing!
+Join the waitlist at arvo.guru - invites sent weekly!
+
+Does that value equation make sense? Always open to feedback!
+```
+
+**"Why Waitlist?" Question**:
+```
+Great question!
+
+We're doing gradual access (invites sent weekly) to ensure quality onboarding for every user.
+
+Here's why:
+1. Personal onboarding - I want to help each person set up properly
+2. Collect feedback - Small batches let us iterate quickly based on real usage
+3. Community building - Building a tight-knit group of serious lifters, not just user numbers
+4. Server capacity - Want to ensure <2s response times for everyone
+
+It's not artificial scarcity - it's genuine commitment to quality over scale.
+
+Beta members get lifetime free access, so we're not rushing to monetize either!
+
+Does that make sense?
 ```
 
 **"Another AI App" Skepticism**:
@@ -786,7 +820,7 @@ What makes ARVO different:
 
 I built this because I was frustrated with the generic AI apps too!
 
-Would love to hear what you think after trying it (code HUNTER30 for 30% off).
+Would love to hear what you think after trying it - join the beta waitlist for free lifetime access!
 ```
 
 **Technical Question** (from developer):
@@ -818,19 +852,26 @@ Are you building anything in the AI space?
 - **Ranking**: Top 5 = Featured, Top 3 = excellent, #1 = outstanding
 - **Featured Status**: Getting on Featured tab is success (manual curation)
 
-### Business Metrics (Your Goal: User Acquisition)
-- **Signups**: Track how many from PH traffic
-- **Trial Starts**: % of signups who start a workout
-- **Completion**: % who finish their first workout
-- **Conversion**: % who redeem HUNTER30 code
-- **Email Capture**: Build list for future marketing
+### Business Metrics (Your Goal: Beta User Acquisition)
+- **Waitlist Signups**: Track how many from PH traffic (Target: 500-1000)
+- **Signup Rate**: % of PH visitors who join waitlist (Target: 5-10%)
+- **Email Engagement**: % who open follow-up emails
+- **Invite Acceptance**: % who activate account after getting invite
+- **First Workout**: % who complete first workout after invite
+- **Retention**: % who return for 2nd+ workout
 
 ### Conversion Funnel
 ```
-PH Traffic → Landing Page → Signup → Trial Start → First Workout → Code Redemption → Paid User
+PH Traffic → Landing Page → Waitlist Signup → Email Engagement → Invite Sent → Account Activation → First Workout → Active User
 ```
 
 Track drop-off at each stage. Optimize biggest bottleneck.
+
+### Waitlist-Specific Metrics
+- **Daily Waitlist Growth**: Track signups per day post-launch
+- **Invite Batches**: Plan weekly batches (e.g., 50-100 invites/week)
+- **Onboarding Success**: % of invited users who complete first workout
+- **Feedback Quality**: Track actionable feedback from beta users
 
 ---
 
@@ -839,47 +880,67 @@ Track drop-off at each stage. Optimize biggest bottleneck.
 Since your goal is acquiring early users, not just getting upvotes:
 
 ### Landing Page Checklist
-- [ ] Clear value prop above fold ("AI coach, $15/mo vs $150/session")
+- [ ] Clear value prop above fold ("AI coach - Free lifetime access for beta members vs $150/session")
+- [ ] Beta banner prominent ("BETA LAUNCH: Join waitlist for free access")
 - [ ] Video demo auto-plays (or prominent play button)
-- [ ] Visible CTA ("Start Free Trial" or "Try Free")
+- [ ] Visible CTA ("Join the Waitlist" or "Get Beta Access")
 - [ ] Trust signals (beta user testimonials if available)
-- [ ] Simple signup flow (email + password, no friction)
+- [ ] Simple waitlist signup (email only, no friction)
 - [ ] Mobile-optimized (50%+ of PH traffic is mobile)
 - [ ] Fast load time (<3s)
 
-### Signup Flow Optimization
-- [ ] One-step signup (email/password only initially)
-- [ ] Clear value reminder ("Start your first AI-coached workout")
-- [ ] Onboarding in <2 minutes (don't lose them)
-- [ ] Immediate value (let them start a workout RIGHT AWAY)
-- [ ] Capture email before requiring payment
+### Waitlist Signup Flow Optimization
+- [ ] One-step waitlist (email only - no password yet)
+- [ ] Clear value reminder ("Get notified when you're invited to beta")
+- [ ] Confirmation email immediate ("You're on the list! Invites sent weekly")
+- [ ] Set expectations ("We'll email you within 1-2 weeks with your invite")
+- [ ] Optional: Ask 1-2 questions (training experience, goals) to prioritize invites
 
-### Special Offer Strategy
-- **Code**: HUNTER30
-- **Discount**: 30% off first year
-- **Time Limit**: 48 hours from launch
-- **Visibility**: Mentioned in first comment, landing page banner, email
-- **Goal**: Create urgency without being sleazy
+### Beta Launch Strategy
+- **Offer**: Lifetime free access
+- **Method**: Waitlist with gradual invites
+- **Invite Cadence**: Weekly batches
+- **Time Limit**: None (maintaining quality > rushing to scale)
+- **Visibility**: Mentioned in first comment, landing page banner, all email waves
+- **Goal**: Build community of serious lifters, not maximize vanity metrics
 
-### Follow-Up Email Sequence (For Non-Converters)
+### Follow-Up Email Sequence (For Waitlist Signups)
 **Day 1 (Launch Day Evening)**:
 ```
-Subject: Thanks for checking out ARVO on Product Hunt!
+Subject: You're on the ARVO beta waitlist! 🎉
 
 Hey [Name],
 
-Saw you signed up from Product Hunt—welcome!
+Thanks for joining the ARVO beta waitlist from Product Hunt!
 
-Quick question: What made you curious about ARVO?
+Quick question: What made you curious about ARVO? (Just reply to this email)
 
-Also, reminder that code HUNTER30 (30% off) expires in 24 hours if you want to lock in that pricing.
+You'll get your invite within 1-2 weeks. Invites go out every week in small batches so I can personally help everyone get started.
 
-Let me know if you have any questions!
+In the meantime, feel free to ask any questions!
+
+[Your Name]
+P.S. Lifetime free access for all beta members - no payment info required, ever.
+```
+
+**Day 7 (If not yet invited)**:
+```
+Subject: ARVO beta invite coming soon
+
+Hey [Name],
+
+Just a heads up that your ARVO beta invite is coming in the next batch (this week or next).
+
+Quick question while you wait: What's your current workout tracking setup? (Excel, notes app, pen & paper, other app?)
+
+I'm using this to understand how to make onboarding smoother for everyone.
+
+Thanks for your patience!
 
 [Your Name]
 ```
 
-**Day 3**:
+**Post-Invite Day 3**:
 ```
 Subject: How was your first workout with ARVO?
 
@@ -893,23 +954,6 @@ I'm actively iterating based on feedback, so I'd genuinely love to hear:
 - What would make you want to keep using it?
 
 No pressure—just always looking to improve!
-
-[Your Name]
-```
-
-**Day 7**:
-```
-Subject: One last thing before I stop bothering you 😅
-
-Hey [Name],
-
-Last email, I promise!
-
-If you tried ARVO and it wasn't for you—totally cool. Would you mind sharing why? (1-sentence reply is perfect)
-
-If you haven't tried it yet and want to, I extended HUNTER30 for you (reply and I'll send a custom link).
-
-Either way, thanks for being part of the launch!
 
 [Your Name]
 ```
@@ -944,9 +988,9 @@ Either way, thanks for being part of the launch!
 - [ ] All core features work flawlessly
 - [ ] Mobile experience is perfect (test on real phone)
 - [ ] Landing page loads in <3s
-- [ ] Signup flow is <2 minutes
-- [ ] Discount code HUNTER30 works (test it!)
-- [ ] Analytics tracking is set up
+- [ ] Waitlist signup flow works (email capture + confirmation)
+- [ ] Confirmation email sends immediately after signup
+- [ ] Analytics tracking is set up (waitlist signups, conversions)
 
 ### Assets Complete
 - [ ] Demo video uploaded to YouTube (public/unlisted)
@@ -1009,14 +1053,15 @@ Either way, thanks for being part of the launch!
 - Product Hunt is ONE launch channel, not your entire strategy
 - Authenticity > perfection
 - Engagement > upvotes (comments matter more)
-- User acquisition > vanity metrics
+- Community quality > vanity metrics
 - This is a marathon, not a sprint
 
 **Your advantages**:
-- Real-time AI form correction is genuinely innovative
+- Real-time AI adaptation is genuinely innovative
 - Personal story resonates (10 years of Excel!)
-- Clear value prop ($15/mo vs $150/session)
+- Clear value prop (Lifetime free for beta vs $150/session PT)
 - You're solving a real problem you've experienced
+- Beta strategy builds loyal community, not just user numbers
 
 **Final thought**:
 The Product Hunt community is incredibly supportive of indie makers. Be authentic, be helpful, be present—and you'll do great.

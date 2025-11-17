@@ -12,8 +12,44 @@ import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
 
 export const metadata: Metadata = {
-  title: "Arvo - L'app che pensa per te",
-  description: "Niente da studiare. Niente da decidere. Solo risultati. 3 minuti per iniziare, zero complicazioni.",
+  title: "Arvo - The App That Thinks For You",
+  description: "Nothing to study. Nothing to decide. Just results. Start in 3 minutes with zero complications. The simplest AI-powered workout tracker for casual gym-goers and beginners.",
+  keywords: [
+    'simple workout tracker',
+    'beginner fitness app',
+    'easy gym tracker',
+    'AI workout app',
+    'casual gym app',
+    'simple training app',
+    'automatic workout planner',
+    'beginner bodybuilding',
+    'easy fitness tracker',
+    'no-thinking workout app',
+    'progressive overload automation',
+    'smart rest timer',
+  ],
+
+  // OpenGraph for social sharing
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://arvo.guru/simple',
+    title: 'Arvo - The App That Thinks For You',
+    description: 'Nothing to study. Nothing to decide. Just results. The simplest AI-powered workout tracker for casual gym-goers and beginners.',
+    siteName: 'Arvo',
+  },
+
+  // Twitter Card
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Arvo - The App That Thinks For You',
+    description: 'Nothing to study. Nothing to decide. Just results. Start in 3 minutes with zero complications.',
+  },
+
+  // Canonical URL
+  alternates: {
+    canonical: 'https://arvo.guru/simple',
+  },
 };
 
 export default async function SimplePage() {
