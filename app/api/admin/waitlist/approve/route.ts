@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/utils/auth.server'
+import { EmailService } from '@/lib/services/email.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -80,7 +81,6 @@ export async function POST(request: NextRequest) {
     if (sendEmail && entry.email) {
       try {
         // Generate magic link using Supabase Auth
-        // Note: This sends email directly through Supabase
         const { data, error } = await adminClient.auth.admin.generateLink({
           type: 'magiclink',
           email: entry.email,
@@ -92,12 +92,16 @@ export async function POST(request: NextRequest) {
         if (error) {
           console.error('Error generating magic link:', error)
           magicLinkError = error.message
-        } else {
-          magicLinkSent = true
-          console.log('Magic link generated for:', entry.email)
+        } else if (data && data.properties && data.properties.action_link) {
+          // Send custom email with the magic link using Resend
+          const sent = await EmailService.sendApprovalEmail(entry, data.properties.action_link)
+          magicLinkSent = sent
 
-          // Alternatively, send custom email with the link
-          // You could use the `data.properties.action_link` to send via your email service
+          if (!sent) {
+            magicLinkError = 'Failed to send approval email via Resend'
+          }
+        } else {
+          magicLinkError = 'Failed to generate magic link'
         }
       } catch (emailError: any) {
         console.error('Error sending approval email:', emailError)

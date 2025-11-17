@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { EmailService } from '@/lib/services/email.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,6 +85,41 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Send emails asynchronously (don't block response)
+    Promise.all([
+      // Get referrer email if exists
+      referrerId
+        ? supabase
+            .from('waitlist_entries')
+            .select('email')
+            .eq('id', referrerId)
+            .single()
+            .then(({ data }) =>
+              EmailService.sendAdminNotification(
+                {
+                  ...newEntry,
+                  first_name: firstName,
+                  training_goal: trainingGoal,
+                },
+                data?.email
+              )
+            )
+        : EmailService.sendAdminNotification({
+            ...newEntry,
+            first_name: firstName,
+            training_goal: trainingGoal,
+          }),
+      // Send welcome email to user
+      EmailService.sendWaitlistWelcome({
+        ...newEntry,
+        first_name: firstName,
+        training_goal: trainingGoal,
+      }),
+    ]).catch((emailError) => {
+      console.error('Error sending waitlist emails:', emailError)
+      // Don't fail the request if emails fail
+    })
 
     return NextResponse.json({
       success: true,
