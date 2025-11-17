@@ -134,7 +134,8 @@
       "tabs": {
         "swapDays": "Swap Days",
         "toggleMuscles": "Manage Muscles",
-        "changeVariation": "Change Variation"
+        "changeVariation": "Change Variation",
+        "changeSplitType": "Change Split Type"
       },
       "swap": {
         "description": "Swap two days in your split to better fit your schedule.",
@@ -173,6 +174,73 @@
         "variationInfo": "Variations A and B use different exercises for the same muscle focus.",
         "validating": "Validating...",
         "changeVariation": "Change Variation"
+      },
+      "changeSplitType": {
+        "description": "Change your split type with AI-driven recommendations based on your current progress.",
+        "currentSplit": "Current Split",
+        "currentSplitBadge": "Current",
+        "selectNewSplit": "Select New Split Type",
+        "requiresMuscleSelection": "Select a muscle group to emphasize",
+        "selectWeakPointMuscle": "Select Weak Point Muscle",
+        "aiAnalysisNote": {
+          "title": "AI Analysis",
+          "description": "Our AI will analyze your cycle progress, fatigue levels, and training patterns to recommend the best timing for this change."
+        },
+        "analyzingButton": "Analyzing with AI...",
+        "analyzeButton": "Analyze with AI",
+        "splitTypes": {
+          "push_pull_legs": {
+            "name": "Push/Pull/Legs",
+            "description": "6-day cycle with 2x frequency per muscle. Balanced volume and recovery."
+          },
+          "upper_lower": {
+            "name": "Upper/Lower",
+            "description": "4-day cycle with 2x frequency. Higher volume per session, time-efficient."
+          },
+          "full_body": {
+            "name": "Full Body",
+            "description": "3-day cycle with 3x frequency. Maximum frequency, excellent for beginners."
+          },
+          "bro_split": {
+            "name": "Bro Split",
+            "description": "5-day cycle with 1x frequency. Very high volume per session, for advanced lifters."
+          },
+          "weak_point_focus": {
+            "name": "Weak Point Focus",
+            "description": "Custom cycle emphasizing a specific muscle group with 50% more volume."
+          }
+        }
+      },
+      "recommendation": {
+        "recommendation": {
+          "proceed": "Recommended to Proceed",
+          "wait": "Consider Waiting",
+          "not_recommended": "Not Recommended"
+        },
+        "pros": "Benefits",
+        "cons": "Drawbacks",
+        "impactAnalysis": "Impact Analysis",
+        "volumeChanges": "Volume Changes (sets per cycle)",
+        "recoveryImpact": "Recovery",
+        "recovery": {
+          "improved": "Improved",
+          "worse": "Worse",
+          "similar": "Similar"
+        },
+        "fatigueImpact": "Fatigue Management",
+        "fatigue": {
+          "reduced": "Reduced",
+          "increased": "Increased",
+          "similar": "Similar"
+        },
+        "warnings": "Important Warnings",
+        "alternatives": "Alternative Suggestions",
+        "cancel": "Cancel",
+        "proceedButton": "Proceed with Change",
+        "proceedAnywayButton": "Proceed Anyway",
+        "generating": "Generating new split...",
+        "successMessage": "Successfully switched to {splitType}!",
+        "errorMessage": "Failed to change split type. Please try again."
       },
       "validation": {
         "level": {
@@ -1990,7 +2058,18 @@
       "developer": {
         "text": "Developed by"
       },
-      "powered": "Powered by GPT-5 · Next.js · Supabase"
+      "powered": "Powered by GPT-5 · Next.js · Supabase",
+      "idealFor": {
+        "title": "Ideal For",
+        "athletes": {
+          "title": "For Athletes & Bodybuilders",
+          "description": "Competitive athletes who want championship-level programming without the tech details."
+        },
+        "developers": {
+          "title": "For Tech-Savvy Athletes",
+          "description": "Tech enthusiasts who want to understand the AI and training science behind their workouts."
+        }
+      }
     },
     "methodologies": {
       "title": {
@@ -2070,7 +2149,90 @@
       "bottomNote": {
         "bold": "Knowledge-Driven Architecture:",
         "text": "Training approaches are implemented as complete knowledge bases, not hardcoded rules. AI agents query these knowledge engines to make decisions with full methodological fidelity."
-      }
+      },
+      "fst7": {
+        "name": "FST-7",
+        "creator": "Hany Rambod",
+        "description": "Fascia Stretch Training for extreme muscle pumps",
+        "implementationDepth": "Implementation Depth",
+        "configLines": "{count} lines",
+        "configDescription": "of fascia stretching protocols and pump techniques",
+        "corePrinciples": "Core Principles:",
+        "principles": {
+          "sevenSets": "<mono>7 consecutive sets</mono> on final exercise per muscle group",
+          "shortRest": "Rest: <mono>30-45s</mono> only between sets to maintain pump",
+          "absoluteFailure": "RIR: <mono>0</mono> (absolute failure on all 7 sets)",
+          "hydration": "Hydration: <bold>Critical</bold> - sip water between every set"
+        },
+        "advancedTechniques": "Advanced Techniques:",
+        "techniques": {
+          "posing": "Posing Between Sets",
+          "posingValue": "Contract muscle 5-10s during rest",
+          "pumping": "Pump Amplification",
+          "pumpingValue": "Light stretching alternate with posing",
+          "heavyWork": "Heavy Compound Foundation",
+          "heavyWorkValue": "3-4 sets before FST-7 finisher"
+        },
+        "philosophy": "Training Philosophy:",
+        "philosophyQuote": "\"7 sets with short rest creates an extreme pump that stretches the fascia from within, potentially creating more space for muscle growth. Used by multiple Mr. Olympia champions including Phil Heath and Chris Bumstead.\""
+      },
+      "y3t": {
+        "name": "Y3T (Yoda 3 Training)",
+        "creator": "Neil Hill",
+        "description": "Undulating periodization across 3-week microcycles",
+        "implementationDepth": "Implementation Depth",
+        "configLines": "{count} lines",
+        "configDescription": "of weekly variation protocols and intensity techniques",
+        "corePrinciples": "Core Principles:",
+        "principles": {
+          "week1Heavy": "Week 1: <mono>6-8 reps</mono> (Heavy - strength focus)",
+          "week2Hybrid": "Week 2: <mono>8-12 reps</mono> (Hybrid - balanced hypertrophy)",
+          "week3Hell": "Week 3: <mono>15-30+ reps</mono> (Hell Week - metabolic stress)",
+          "restVariation": "Rest varies: <mono>3-4min</mono> (Week 1) to <mono>30-60s</mono> (Week 3)"
+        },
+        "weeklyRotation": "Weekly Rotation:",
+        "rotation": {
+          "week1Title": "Week 1: Heavy",
+          "week1Focus": "Mechanical tension, strength",
+          "week2Title": "Week 2: Hybrid",
+          "week2Focus": "Balanced hypertrophy",
+          "week3Title": "Week 3: Hell",
+          "week3Focus": "Drop sets, supersets, rest-pause"
+        },
+        "philosophy": "Training Philosophy:",
+        "philosophyQuote": "\"Systematic weekly variation prevents neural and muscular adaptation. The body never fully adapts because the stimulus constantly changes. After 9 weeks (3 complete cycles), rotate exercises for novelty.\"",
+        "usedBy": "Used by: 4x Mr. Olympia Flex Wheeler"
+      },
+      "mountainDog": {
+        "name": "Mountain Dog Training",
+        "creator": "John Meadows",
+        "description": "Multi-faceted hypertrophy with 4-phase workout structure",
+        "implementationDepth": "Implementation Depth",
+        "configLines": "{count} lines",
+        "configDescription": "of phase protocols and intensity techniques",
+        "corePrinciples": "Core Principles:",
+        "principles": {
+          "fourPhases": "<mono>4-phase structure:</mono> Pre-activation → Explosive → Supramax Pump → Loaded Stretching",
+          "chainsAndBands": "Accommodating resistance: <bold>Chains & bands</bold> are fundamental, not optional",
+          "noDeload": "No programmed deloads for <mono>6-12 weeks</mono> (recovery via exercise rotation)",
+          "loadedStretching": "Loaded stretching: <mono>30-60s holds</mono> in lengthened positions under load"
+        },
+        "fourPhaseStructure": "4-Phase Workout Structure:",
+        "phases": {
+          "phase1": "Phase 1: Pre-Activation",
+          "phase1Detail": "Joint prep, blood flow, mind-muscle connection",
+          "phase2": "Phase 2: Explosive Work",
+          "phase2Detail": "CNS activation with chains/bands",
+          "phase3": "Phase 3: Supramax Pump",
+          "phase3Detail": "Maximum metabolic stress, extreme volume",
+          "phase4": "Phase 4: Loaded Stretching",
+          "phase4Detail": "Mechanotransduction, passive tension"
+        },
+        "philosophy": "Training Philosophy:",
+        "philosophyQuote": "\"Combines extreme metabolic stress with mechanical tension. Exercise rotation every 3-4 weeks prevents adaptation plateaus without sacrificing technical mastery. Requires strong work capacity and ability to push beyond typical failure points.\""
+      },
+      "expandButton": "View 3 More Training Methods",
+      "collapseButton": "Show Less"
     },
     "hero": {
       "title": {
@@ -2466,6 +2628,18 @@
         "pricing": {
           "question": "How much does it cost?",
           "answer": "Free to start. Passwordless magic link authentication, no credit card required. Core features (AI workout generation, progression tracking, insights, custom equipment) are available immediately. The goal is to make intelligent training accessible, not to gatekeep behind paywalls."
+        },
+        "contestPrep": {
+          "question": "Can I use this for contest prep?",
+          "answer": "Absolutely. Track volume vs MRV week by week, monitor mental readiness trends across your prep, get automatic deload suggestions when fatigue accumulates. Everything you need for structured contest preparation with intelligent volume management."
+        },
+        "periodization": {
+          "question": "Does it understand periodization?",
+          "answer": "Yes. Kuba Method has accumulation/intensification/deload phases built in. Mentzer HIT has 4-7 day recovery protocols. The system tracks where you are in your training cycle and adjusts volume, intensity, and frequency accordingly. It's not just logging—it's intelligent periodization."
+        },
+        "customPrograms": {
+          "question": "What if I want to run my own program?",
+          "answer": "You're not locked into Kuba or Mentzer. Track any program you want. The AI still provides set-by-set progression guidance, injury pattern detection, volume tracking, and biomechanical adjustments. Use the intelligence layer with your own programming."
         }
       },
       "cta": {
@@ -3528,5 +3702,133 @@
     "abs": "Abs",
     "obliques": "Obliques",
     "lowerBack": "Lower Back"
+  },
+  "landingPro": {
+    "hero": {
+      "title": {
+        "championshipLevel": "Championship-Level Coaching",
+        "subtitle": "Always Available"
+      },
+      "painPoints": "\"What progression should I use?\" · \"Am I pushing too hard?\" · \"How do I structure my mesocycle?\"",
+      "description": {
+        "main": "Intelligent coaching systems that understand progressive overload, periodization, and recovery. Built for serious athletes.",
+        "methods": "Complete Kuba Method and Mentzer HIT implementations, not simplified versions."
+      },
+      "stats": {
+        "methods": "Kuba · Mentzer · FST-7",
+        "exercises": "1300+ Exercises",
+        "guidance": "Set-by-Set Guidance"
+      },
+      "cta": {
+        "start": "Start Training",
+        "dashboard": "Go to Dashboard",
+        "seeHow": "See How It Works"
+      },
+      "technical": {
+        "science": "Built on training science: MEV/MAV/MRV volume tracking, tempo prescriptions, intelligent periodization.",
+        "promise": "No guesswork. Only results."
+      }
+    },
+    "coachingShowcase": {
+      "title": {
+        "part1": "Intelligent",
+        "part2": "Training Systems"
+      },
+      "subtitle": "Not generic workout tracking. Specialized coaching intelligence that understands your training goals.",
+      "weakPointTargeting": {
+        "title": "Weak Point Targeting",
+        "description": "Automatically prioritizes lagging muscle groups",
+        "scenario": {
+          "situation": "You mention upper chest needs work in your profile.",
+          "response": "Every chest session: Incline movements first, when you're fresh. Flat bench comes later. Upper chest gets priority stimulus until it catches up."
+        },
+        "result": {
+          "title": "Result:",
+          "description": "Your program adapts to fix imbalances, not just track generic \"chest day\" volume."
+        }
+      },
+      "progressiveOverload": {
+        "title": "Progressive Overload, Automated",
+        "description": "Load progression that respects your performance",
+        "scenario": {
+          "situation": "Set 1: 100kg × 12 reps @ RIR 1, feeling strong (mental readiness: 4/5)",
+          "response": "Set 2: AI suggests 102.5kg × 8-10 reps. You hit top of range with good RIR? Weight goes up. Rep quality is your guide."
+        },
+        "alternative": {
+          "situation": "Alternative scenario: Set 1 felt heavy, RIR was 3",
+          "response": "Set 2: Weight stays at 100kg, target more reps (10-12). Or AI drops to 97.5kg to keep you in the stimulus zone."
+        },
+        "result": {
+          "title": "Result:",
+          "description": "No more guessing \"should I add weight?\" The system knows, based on your actual performance."
+        }
+      },
+      "setAdaptation": {
+        "title": "Set-by-Set Adaptation",
+        "description": "Your next set changes based on how this one felt",
+        "scenario": {
+          "situation": "Planned: 3 sets of 100kg × 8-10. Set 1 is rough—you hit only 8 reps @ RIR 3, mental readiness drops to 2/5.",
+          "response": "Set 2 recalculates in real-time: drops to 97.5kg, wider rep range (8-12) for safety. Set 3 might drop further if needed."
+        },
+        "result": {
+          "title": "Result:",
+          "description": "The workout adapts to your actual state, not a pre-programmed plan that ignores fatigue."
+        }
+      },
+      "cycleEvolution": {
+        "title": "Season-to-Season Evolution",
+        "description": "Learns from every mesocycle you complete",
+        "scenario": {
+          "situation": "Last mesocycle: Your mental readiness averaged 2.8/5, volume climbed close to MRV by week 4, deload came late.",
+          "response": "Next mesocycle: Volume starts lower, frequency drops from 6 to 5 sessions/week, extra focus on recovery. The system learned you were pushing too hard."
+        },
+        "result": {
+          "title": "Result:",
+          "description": "Every training block gets smarter based on real data from your previous cycles."
+        }
+      },
+      "footer": {
+        "bold": "This is coaching intelligence,",
+        "text": "not just workout logging. The system understands training principles and applies them to your actual performance."
+      }
+    },
+    "problemSolution": {
+      "problem": {
+        "title": "You Understand Training Science. You Need Intelligent Automation.",
+        "description": "You know MEV from MAV. You understand progressive overload. You don't need training explained—you need a system that respects the science and automates the details."
+      },
+      "painPoints": {
+        "excel": {
+          "title": "Excel Spreadsheets",
+          "description": "Manual calculations, no intelligence. You track everything but program nothing. Every mesocycle starts from scratch."
+        },
+        "genericApps": {
+          "title": "Generic Apps",
+          "description": "\"Track your sets!\" Great. But they don't understand periodization, volume landmarks, or intelligent progression. Just fancy logs."
+        },
+        "coaches": {
+          "title": "Online Coaches",
+          "description": "Expensive. Not always available when you need guidance mid-workout. Can't adjust in real-time as your session unfolds."
+        }
+      },
+      "solution": {
+        "title": "Arvo: Intelligent Programming That Understands Your Science",
+        "description": "Built for athletes who know training principles and need a system that applies them automatically, set by set, cycle by cycle."
+      },
+      "pillars": {
+        "methodology": {
+          "title": "Methodology Fidelity",
+          "description": "Real Kuba Method. Complete Mentzer HIT. Not watered-down interpretations. Every principle implemented."
+        },
+        "intelligence": {
+          "title": "Set-by-Set Intelligence",
+          "description": "Progressive overload calculated in real-time. Load adjustments based on RIR, mental readiness, and performance trends."
+        },
+        "learning": {
+          "title": "Pattern Learning",
+          "description": "Remembers what works for YOUR body. Injury patterns, exercise preferences, volume tolerance—all tracked automatically."
+        }
+      }
+    }
   }
 }

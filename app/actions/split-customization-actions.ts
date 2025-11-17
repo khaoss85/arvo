@@ -503,14 +503,22 @@ export async function getRecentModificationsAction(userId: string, limit = 20) {
  *
  * Fetches user profile and generates a new split plan with the target split type.
  * This deactivates the current split and activates the new one.
+ * Logs the modification to split_modifications table for tracking and undo.
  */
 export async function generateNewSplitTypeAction(
   userId: string,
   targetSplitType: SplitType,
-  weakPointMuscle?: string
+  weakPointMuscle?: string,
+  aiValidation?: SplitTypeChangeOutput,
+  userOverride?: boolean,
+  userReason?: string
 ) {
   try {
     const supabase = await getSupabaseServerClient()
+
+    // Get current active split plan BEFORE generating new one (for tracking)
+    const currentSplitPlan = await SplitPlanService.getActiveServer(userId)
+    const previousSplitType = currentSplitPlan?.split_type || null
 
     // Get user profile
     const profile = await UserProfileService.getByUserIdServer(userId)
@@ -549,6 +557,34 @@ export async function generateNewSplitTypeAction(
         success: false,
         error: result.error || 'Failed to generate new split plan',
       }
+    }
+
+    // Log modification if AI validation was provided and we have previous split
+    if (aiValidation && currentSplitPlan) {
+      const previousState = {
+        split_plan_id: currentSplitPlan.id,
+        split_type: currentSplitPlan.split_type,
+        sessions: currentSplitPlan.sessions,
+        cycle_days: currentSplitPlan.cycle_days,
+        frequency_map: currentSplitPlan.frequency_map,
+        volume_distribution: currentSplitPlan.volume_distribution,
+      }
+
+      await supabase.from('split_modifications').insert({
+        user_id: userId,
+        split_plan_id: result.data.splitPlan.id, // New split plan ID
+        modification_type: 'change_split_type',
+        details: {
+          previousSplitType,
+          newSplitType: targetSplitType,
+          weakPointMuscle,
+          previousSplitPlanId: currentSplitPlan.id,
+        } as any,
+        previous_state: previousState as any,
+        ai_validation: aiValidation as any,
+        user_override: userOverride || false,
+        user_reason: userReason,
+      })
     }
 
     return {

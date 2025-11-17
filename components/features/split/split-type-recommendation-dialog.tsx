@@ -64,11 +64,16 @@ export function SplitTypeRecommendationDialog({
   const handleProceed = async () => {
     setApplying(true)
     try {
+      // Determine if this is a user override (proceeding despite caution or not_recommended)
+      const isUserOverride = isWait || isNotRecommended
+
       // Generate new split with target split type
       const result = await generateNewSplitTypeAction(
         userId,
         targetSplitType,
-        weakPointMuscle
+        weakPointMuscle,
+        analysis, // Pass AI validation result for tracking
+        isUserOverride // Mark as override if user proceeded despite warning
       )
 
       if (result.success) {

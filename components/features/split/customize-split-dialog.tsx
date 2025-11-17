@@ -47,7 +47,7 @@ export function CustomizeSplitDialog({
     { id: 'swap', label: t('tabs.swapDays'), icon: '🔄' },
     { id: 'toggle', label: t('tabs.toggleMuscles'), icon: '💪' },
     { id: 'variation', label: t('tabs.changeVariation'), icon: '🔀' },
-    { id: 'splitType', label: t('tabs.changeSplitType'), icon: '🔄' }
+    { id: 'splitType', label: t('tabs.changeSplitType'), icon: '🔁' }
   ]
 
   return (
