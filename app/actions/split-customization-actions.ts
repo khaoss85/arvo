@@ -15,6 +15,8 @@ import {
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { WorkoutService } from '@/lib/services/workout.service'
 import type { SplitType } from '@/lib/types/split.types'
+import { generateSplitPlanAction } from './split-actions'
+import type { SplitPlannerInput } from '@/lib/agents/split-planner.agent'
 
 /**
  * Validate a split modification using AI
@@ -492,6 +494,72 @@ export async function getRecentModificationsAction(userId: string, limit = 20) {
     return {
       success: false,
       error: error?.message || 'Failed to get recent modifications',
+    }
+  }
+}
+
+/**
+ * Generate new split plan with different split type
+ *
+ * Fetches user profile and generates a new split plan with the target split type.
+ * This deactivates the current split and activates the new one.
+ */
+export async function generateNewSplitTypeAction(
+  userId: string,
+  targetSplitType: SplitType,
+  weakPointMuscle?: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get user profile
+    const profile = await UserProfileService.getByUserIdServer(userId)
+    if (!profile) {
+      return {
+        success: false,
+        error: 'User profile not found',
+      }
+    }
+
+    // Build input for split planner
+    const plannerInput: SplitPlannerInput = {
+      userId,
+      approachId: profile.approach_id || '',
+      splitType: targetSplitType,
+      weeklyFrequency: 4, // Default, will be adjusted by planner
+      weakPoints: profile.weak_points || [],
+      equipmentAvailable: profile.available_equipment || [],
+      specializationMuscle: weakPointMuscle || null,
+      experienceYears: profile.experience_years,
+      userAge: profile.age,
+      userGender: profile.gender,
+      userHeight: profile.height,
+      userWeight: profile.weight,
+      mesocycleWeek: profile.current_mesocycle_week,
+      mesocyclePhase: profile.mesocycle_phase,
+      caloricPhase: profile.caloric_phase,
+      caloricIntakeKcal: profile.caloric_intake_kcal,
+    }
+
+    // Generate new split plan
+    const result = await generateSplitPlanAction(plannerInput)
+
+    if (!result.success || !result.data?.splitPlan) {
+      return {
+        success: false,
+        error: result.error || 'Failed to generate new split plan',
+      }
+    }
+
+    return {
+      success: true,
+      data: result.data,
+    }
+  } catch (error: any) {
+    console.error('Error generating new split type:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to generate new split type',
     }
   }
 }
