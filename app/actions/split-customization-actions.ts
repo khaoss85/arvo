@@ -7,6 +7,14 @@ import {
   type SplitChangeValidationInput,
   type SplitChangeValidationOutput,
 } from '@/lib/agents/workout-modification-validator.agent'
+import {
+  SplitTypeChangeValidator,
+  type SplitTypeChangeInput,
+  type SplitTypeChangeOutput,
+} from '@/lib/agents/split-type-change-validator.agent'
+import { UserProfileService } from '@/lib/services/user-profile.service'
+import { WorkoutService } from '@/lib/services/workout.service'
+import type { SplitType } from '@/lib/types/split.types'
 
 /**
  * Validate a split modification using AI
@@ -484,6 +492,139 @@ export async function getRecentModificationsAction(userId: string, limit = 20) {
     return {
       success: false,
       error: error?.message || 'Failed to get recent modifications',
+    }
+  }
+}
+
+/**
+ * Analyze split type change using AI
+ *
+ * This validates whether changing from current split type to target split type
+ * is advisable based on cycle progress, fatigue, volume distribution, and user context.
+ */
+export async function analyzeSplitTypeChangeAction(
+  userId: string,
+  targetSplitType: SplitType,
+  weakPointMuscle?: string
+) {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // 1. Get active split plan
+    const splitPlan = await SplitPlanService.getActiveServer(userId)
+    if (!splitPlan) {
+      return {
+        success: false,
+        error: 'No active split plan found',
+      }
+    }
+
+    // 2. Get user profile for context
+    const profile = await UserProfileService.getByUserIdServer(userId)
+    if (!profile) {
+      return {
+        success: false,
+        error: 'User profile not found',
+      }
+    }
+
+    // 3. Get completed workouts for current cycle/split
+    const { data: completedWorkouts, error: workoutsError } = await supabase
+      .from('workouts')
+      .select('id, cycle_day, completed_at, mental_readiness_overall')
+      .eq('user_id', userId)
+      .eq('split_plan_id', splitPlan.id)
+      .eq('completed', true)
+      .order('completed_at', { ascending: false })
+
+    if (workoutsError) {
+      throw new Error(`Failed to fetch completed workouts: ${workoutsError.message}`)
+    }
+
+    // 4. Calculate cycle progress
+    const sessions = splitPlan.sessions as unknown as SessionDefinition[]
+    const totalWorkoutsInCycle = sessions.length
+    const workoutsCompleted = completedWorkouts?.length || 0
+
+    // 5. Calculate average mental readiness
+    const mentalReadinessValues = completedWorkouts
+      ?.map(w => w.mental_readiness_overall)
+      .filter(mr => mr !== null && mr !== undefined) as number[] || []
+
+    const avgMentalReadiness = mentalReadinessValues.length > 0
+      ? mentalReadinessValues.reduce((a, b) => a + b, 0) / mentalReadinessValues.length
+      : null
+
+    // 6. Calculate volume by muscle from current split
+    const volumeByMuscle: Record<string, number> = {}
+    sessions.forEach(session => {
+      const focus = session.focus || []
+      // Estimate sets per muscle per session (rough estimate)
+      const setsPerMuscle = Math.floor(12 / Math.max(focus.length, 1)) // Assume ~12 sets per session
+
+      focus.forEach(muscle => {
+        volumeByMuscle[muscle] = (volumeByMuscle[muscle] || 0) + setsPerMuscle
+      })
+    })
+
+    // 7. Get recent mental readiness trend (last 10 workouts)
+    const recentMentalReadinessTrend = mentalReadinessValues.slice(0, 10).reverse()
+
+    // 8. Calculate muscle training frequency
+    const musclesTrainedFrequency: Record<string, number> = {}
+    sessions.forEach(session => {
+      const focus = session.focus || []
+      focus.forEach(muscle => {
+        musclesTrainedFrequency[muscle] = (musclesTrainedFrequency[muscle] || 0) + 1
+      })
+    })
+
+    // 9. Build input for AI validator
+    const validationInput: SplitTypeChangeInput = {
+      currentSplit: {
+        splitType: splitPlan.split_type,
+        cycleDays: splitPlan.cycle_days,
+        cycleProgress: {
+          workoutsCompleted,
+          totalWorkoutsInCycle,
+          avgMentalReadiness,
+        },
+        volumeByMuscle,
+      },
+      targetSplit: {
+        splitType: targetSplitType,
+        weakPointMuscle,
+      },
+      userContext: {
+        userId,
+        approachId: profile.approach_id || '',
+        experienceYears: profile.experience_years ?? undefined,
+        userAge: profile.age ?? undefined,
+        weakPoints: profile.weak_points || [],
+        mesocycleWeek: profile.current_mesocycle_week ?? undefined,
+        mesocyclePhase: profile.mesocycle_phase ?? undefined,
+        caloricPhase: profile.caloric_phase,
+      },
+      completedWorkouts: {
+        totalCompleted: workoutsCompleted,
+        recentMentalReadinessTrend,
+        musclesTrainedFrequency,
+      },
+    }
+
+    // 10. Call AI validator
+    const validator = new SplitTypeChangeValidator(supabase)
+    const analysis = await validator.validateSplitTypeChange(validationInput)
+
+    return {
+      success: true,
+      data: analysis,
+    }
+  } catch (error: any) {
+    console.error('Error analyzing split type change:', error)
+    return {
+      success: false,
+      error: error?.message || 'Failed to analyze split type change',
     }
   }
 }
