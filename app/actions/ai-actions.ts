@@ -650,36 +650,6 @@ export async function generateWorkoutSummaryAction(userId: string, input: Workou
 }
 
 /**
- * Server action to update user's preferred split type
- * Updates the user_profiles table with the selected split preference
- */
-export async function updatePreferredSplitAction(
-  userId: string,
-  splitType: SplitType
-) {
-  try {
-    const supabase = await getSupabaseServerClient()
-
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ preferred_split: splitType })
-      .eq('user_id', userId)
-
-    if (error) {
-      throw new Error(`Failed to update preferred split: ${error.message}`)
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error('Server action - Update preferred split error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to update preferred split'
-    }
-  }
-}
-
-/**
  * Server action to update user's weak points
  * Updates the user_profiles table with the selected weak points (max 5)
  */

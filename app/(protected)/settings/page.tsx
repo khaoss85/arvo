@@ -6,7 +6,6 @@ import { getTranslations } from "next-intl/server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { TrainingApproachService } from "@/lib/services/training-approach.service"
 import { SettingsClientWrapper } from "@/components/features/settings/settings-client-wrapper"
-import { SplitSelector } from "@/components/features/settings/split-selector"
 import { CaloricPhaseSelector } from "@/components/features/settings/caloric-phase-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
 import { PhysicalLimitationsManager } from "@/components/features/settings/physical-limitations-manager"
@@ -62,14 +61,6 @@ export default async function SettingsPage() {
 
   return (
     <SettingsClientWrapper userId={user.id}>
-          {/* Split System Section */}
-          <Card className="p-6">
-            <SplitSelector
-              userId={user.id}
-              currentSplit={profile.preferred_split}
-            />
-          </Card>
-
           {/* Caloric Phase Section */}
           <Card className="p-6">
             <CaloricPhaseSelector
