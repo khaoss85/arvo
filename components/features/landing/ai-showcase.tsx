@@ -46,7 +46,7 @@ export function AIShowcase() {
         </motion.div>
 
         <motion.div
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid md:grid-cols-2 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -331,7 +331,7 @@ export function AIShowcase() {
           </motion.div>
 
           {/* Example 5: Insights & Safety Integration */}
-          <motion.div variants={itemVariants} className="md:col-span-2 lg:col-span-4">
+          <motion.div variants={itemVariants} className="md:col-span-2">
             <Card className="border-2 border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-950/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
