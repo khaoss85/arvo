@@ -56,6 +56,9 @@ export default async function SimplePage() {
   const user = await getUser();
   const isAuthenticated = !!user;
 
+  // Check if waitlist mode is enabled via env variable
+  const showWaitlist = process.env.NEXT_PUBLIC_WAITLIST_ENABLED === 'true';
+
   return (
     <main className="min-h-screen">
       <HeroSectionSimple isAuthenticated={isAuthenticated} />
@@ -66,7 +69,7 @@ export default async function SimplePage() {
       <SimpleResults />
       <MethodologiesSection />
       <FAQSection />
-      <CTASection isAuthenticated={isAuthenticated} />
+      <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <Footer />
     </main>
   );

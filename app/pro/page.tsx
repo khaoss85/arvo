@@ -65,6 +65,9 @@ export default async function ProPage() {
   const user = await getUser();
   const isAuthenticated = !!user;
 
+  // Check if waitlist mode is enabled via env variable
+  const showWaitlist = process.env.NEXT_PUBLIC_WAITLIST_ENABLED === 'true';
+
   return (
     <main className="min-h-screen">
       <HeroSectionPro isAuthenticated={isAuthenticated} />
@@ -80,7 +83,7 @@ export default async function ProPage() {
       <MethodologiesSection />
       <ComparisonTable />
       <FAQSection variant="pro" />
-      <CTASection isAuthenticated={isAuthenticated} />
+      <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <Footer />
     </main>
   );
