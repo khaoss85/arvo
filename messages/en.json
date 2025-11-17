@@ -188,26 +188,54 @@
         },
         "analyzingButton": "Analyzing with AI...",
         "analyzeButton": "Analyze with AI",
+        "showDetails": "Show Details",
+        "hideDetails": "Hide Details",
+        "detailsLabels": {
+          "structure": "Cycle Structure",
+          "bestFor": "Best For",
+          "pros": "Pros",
+          "cons": "Cons"
+        },
         "splitTypes": {
           "push_pull_legs": {
             "name": "Push/Pull/Legs",
-            "description": "6-day cycle with 2x frequency per muscle. Balanced volume and recovery."
+            "description": "6-day cycle with 2x frequency per muscle. Balanced volume and recovery.",
+            "structure": "Day 1: Push (Chest, Shoulders, Triceps) • Day 2: Pull (Back, Biceps) • Day 3: Legs • Day 4: Push • Day 5: Pull • Day 6: Legs",
+            "bestFor": "Intermediate to advanced lifters seeking balanced frequency and volume. Ideal for muscle growth and strength gains.",
+            "pros": ["2x weekly frequency per muscle", "Balanced recovery", "Flexible rest days"],
+            "cons": ["Requires 6 training days", "May feel repetitive", "Not ideal for beginners"]
           },
           "upper_lower": {
             "name": "Upper/Lower",
-            "description": "4-day cycle with 2x frequency. Higher volume per session, time-efficient."
+            "description": "4-day cycle with 2x frequency. Higher volume per session, time-efficient.",
+            "structure": "Day 1: Upper Body • Day 2: Lower Body • Day 3: Upper Body • Day 4: Lower Body",
+            "bestFor": "All experience levels. Perfect for those with limited training days but seeking high frequency.",
+            "pros": ["Time-efficient", "2x weekly frequency", "Simple structure"],
+            "cons": ["Long sessions", "Limited muscle specificity", "Fatigue accumulation"]
           },
           "full_body": {
             "name": "Full Body",
-            "description": "3-day cycle with 3x frequency. Maximum frequency, excellent for beginners."
+            "description": "3-day cycle with 3x frequency. Maximum frequency, excellent for beginners.",
+            "structure": "Day 1: Full Body (all major muscles) • Day 2: Full Body • Day 3: Full Body",
+            "bestFor": "Beginners or those with limited time. Maximizes training frequency with minimal commitment.",
+            "pros": ["3x weekly frequency", "Efficient use of time", "Great for skill acquisition"],
+            "cons": ["Lower volume per muscle per session", "Can feel rushed", "Not ideal for specialization"]
           },
           "bro_split": {
             "name": "Bro Split",
-            "description": "5-day cycle with 1x frequency. Very high volume per session, for advanced lifters."
+            "description": "5-day cycle with 1x frequency. Very high volume per session, for advanced lifters.",
+            "structure": "Day 1: Chest • Day 2: Back • Day 3: Shoulders • Day 4: Arms • Day 5: Legs",
+            "bestFor": "Advanced lifters who thrive on high volume and enjoy dedicated muscle days.",
+            "pros": ["Maximum volume per muscle", "Mental focus on one area", "Flexible intensity"],
+            "cons": ["Only 1x frequency", "Longer sessions", "Not optimal for beginners"]
           },
           "weak_point_focus": {
             "name": "Weak Point Focus",
-            "description": "Custom cycle emphasizing a specific muscle group with 50% more volume."
+            "description": "Custom cycle emphasizing a specific muscle group with 50% more volume.",
+            "structure": "Customized based on selected weak point muscle. Increased frequency and volume for target area.",
+            "bestFor": "Experienced lifters addressing specific muscle imbalances or lagging body parts.",
+            "pros": ["Targeted volume increase", "Addresses imbalances", "Personalized approach"],
+            "cons": ["Requires good recovery", "May reduce volume elsewhere", "Advanced strategy"]
           }
         }
       },

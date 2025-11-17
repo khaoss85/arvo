@@ -204,38 +204,28 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
               {splitPlan.split_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </p>
           </div>
-          <div className="flex gap-2">
-            {hasModifications && (
-              <Button
-                onClick={handleUndo}
-                disabled={undoing}
-                variant="outline"
-                size="sm"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-              >
-                {undoing ? (
-                  <>
-                    <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-                    {tSplit('undoing')}
-                  </>
-                ) : (
-                  <>↩️ {tSplit('undo')}</>
-                )}
-              </Button>
-            )}
+          {hasModifications && (
             <Button
-              onClick={() => setCustomizeDialogOpen(true)}
+              onClick={handleUndo}
+              disabled={undoing}
               variant="outline"
               size="sm"
               className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
             >
-              ⚙️ {tSplit('customize')}
+              {undoing ? (
+                <>
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  {tSplit('undoing')}
+                </>
+              ) : (
+                <>↩️ {tSplit('undo')}</>
+              )}
             </Button>
-          </div>
+          )}
         </div>
 
         {/* Cycle Progress Bar */}
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-purple-100 dark:text-purple-200">
               {t('cycleProgress')}
@@ -250,6 +240,18 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
               style={{ width: `${progressPercentage}%` }}
             />
           </div>
+        </div>
+
+        {/* Customize Button - Prominent Position */}
+        <div className="mb-4">
+          <Button
+            onClick={() => setCustomizeDialogOpen(true)}
+            variant="outline"
+            className="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white border-white/40 hover:border-white/60 shadow-sm transition-all"
+          >
+            <span className="mr-2">⚙️</span>
+            {tSplit('customize')}
+          </Button>
         </div>
 
         {/* Helper text */}

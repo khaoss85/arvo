@@ -38,6 +38,7 @@ export function ChangeSplitTypeForm({
 
   const [selectedSplitType, setSelectedSplitType] = useState<SplitType | null>(null)
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null)
+  const [expandedCard, setExpandedCard] = useState<SplitType | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<SplitTypeChangeOutput | null>(null)
   const [showRecommendationDialog, setShowRecommendationDialog] = useState(false)
@@ -138,6 +139,68 @@ export function ChangeSplitTypeForm({
                         defaultValue: `${option.type} split`,
                       })}
                     </p>
+
+                    {/* Expandable Info Section */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setExpandedCard(expandedCard === option.type ? null : option.type)
+                      }}
+                      className="mt-2 flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                    >
+                      <span>{expandedCard === option.type ? '▼' : '▶'}</span>
+                      <span>{expandedCard === option.type ? t('hideDetails') : t('showDetails')}</span>
+                    </button>
+
+                    {expandedCard === option.type && (
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3 text-sm">
+                        {/* Example Structure */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                            {t('detailsLabels.structure')}
+                          </h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {t(`splitTypes.${option.type}.structure`)}
+                          </p>
+                        </div>
+
+                        {/* Best For */}
+                        <div>
+                          <h5 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                            {t('detailsLabels.bestFor')}
+                          </h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {t(`splitTypes.${option.type}.bestFor`)}
+                          </p>
+                        </div>
+
+                        {/* Pros & Cons */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <h5 className="font-semibold text-green-700 dark:text-green-400 mb-1 flex items-center gap-1">
+                              <span>✓</span> {t('detailsLabels.pros')}
+                            </h5>
+                            <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                              {t.raw(`splitTypes.${option.type}.pros`).map((pro: string, idx: number) => (
+                                <li key={idx}>• {pro}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <h5 className="font-semibold text-orange-700 dark:text-orange-400 mb-1 flex items-center gap-1">
+                              <span>!</span> {t('detailsLabels.cons')}
+                            </h5>
+                            <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                              {t.raw(`splitTypes.${option.type}.cons`).map((con: string, idx: number) => (
+                                <li key={idx}>• {con}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {option.requiresMuscle && !isCurrentSplit && (
                       <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">
                         {t('requiresMuscleSelection')}

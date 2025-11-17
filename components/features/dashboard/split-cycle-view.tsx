@@ -181,14 +181,6 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
             </Button>
           )}
           <Button
-            onClick={() => setCustomizeDialogOpen(true)}
-            variant="outline"
-            size="sm"
-            className="bg-white/10 hover:bg-white/20 text-white border-white/30 hover:border-white/50"
-          >
-            ⚙️ {t('customize')}
-          </Button>
-          <Button
             onClick={handleAdvanceCycle}
             disabled={advancing}
             variant="outline"
@@ -208,7 +200,7 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       </div>
 
       {/* Cycle Progress */}
-      <div className="mb-6">
+      <div className="mb-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-purple-100 dark:text-purple-200">
             {t('cycleProgress')}
@@ -223,6 +215,18 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
+      </div>
+
+      {/* Customize Button - Prominent Position */}
+      <div className="mb-6">
+        <Button
+          onClick={() => setCustomizeDialogOpen(true)}
+          variant="outline"
+          className="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white border-white/40 hover:border-white/60 shadow-sm transition-all"
+        >
+          <span className="mr-2">⚙️</span>
+          {t('customize')}
+        </Button>
       </div>
 
       {/* Next Workout Preview */}
