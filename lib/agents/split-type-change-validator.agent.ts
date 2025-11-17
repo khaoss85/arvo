@@ -102,7 +102,7 @@ export interface SplitTypeChangeOutput {
  */
 export class SplitTypeChangeValidator extends BaseAgent {
   constructor(supabaseClient?: any) {
-    super(supabaseClient, 'medium', 'low') // Medium reasoning for comprehensive split analysis
+    super(supabaseClient, 'low', 'low') // Low reasoning for faster responses (5-15s)
     this.model = 'gpt-5.1' // Latest flagship model with reasoning capabilities
   }
 
@@ -384,7 +384,7 @@ Approach: ${approach.name}
 
   private buildUserContextSection(input: SplitTypeChangeInput): string {
     const { userContext } = input
-    let context = `
+    const context = `
 === USER CONTEXT ===
 Experience: ${userContext.experienceYears ?? 'Not specified'} years
 Age: ${userContext.userAge ?? 'Not specified'}
