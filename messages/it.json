@@ -41,6 +41,9 @@
       "confirmDelete": "Conferma Eliminazione"
     }
   },
+  "navigation": {
+    "backToDashboard": "Torna alla Dashboard"
+  },
   "components": {
     "ui": {
       "progressPhases": {
@@ -1881,6 +1884,7 @@
         "tempoDescription": "Discesa - Pausa - Salita - Contrazione",
         "trainingFrequency": "Frequenza di Allenamento",
         "perMuscleGroup": "Giorni per gruppo muscolare",
+        "week": "settimana",
         "weeklyPattern": "Pattern settimanale",
         "priority": "Priorità",
         "whenToAddWeight": "Quando aumentare il peso",

@@ -41,6 +41,9 @@
       "confirmDelete": "Confirm Delete"
     }
   },
+  "navigation": {
+    "backToDashboard": "Back to Dashboard"
+  },
   "components": {
     "ui": {
       "progressPhases": {
@@ -1083,6 +1086,7 @@
         "top": "Top",
         "trainingFrequency": "Training Frequency",
         "perMuscleGroup": "Per Muscle Group:",
+        "week": "week",
         "pattern": "Pattern:",
         "sessionDuration": "Session Duration",
         "duration": "Duration",

@@ -182,7 +182,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
               {/* Tempo */}
               {approach.variables.tempo && (
                 <div>
-                  <h4 className="text-sm font-semibold text-blue-300 mb-2">Tempo di Esecuzione</h4>
+                  <h4 className="text-sm font-semibold text-blue-300 mb-2">{t('variables.executionTempo')}</h4>
                   <div className="bg-gray-800/50 p-4 rounded">
                     <div className="text-center mb-2">
                       <div className="text-3xl font-mono font-bold text-white">{formatTempo(approach.variables.tempo)}</div>
@@ -190,19 +190,19 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
                     <div className="grid grid-cols-4 gap-2 text-xs">
                       <div className="text-center">
                         <div className="text-blue-300 font-semibold">{approach.variables.tempo.eccentric}s</div>
-                        <div className="text-gray-400">Discesa</div>
+                        <div className="text-gray-400">{t('variables.eccentric')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-purple-300 font-semibold">{approach.variables.tempo.pauseBottom}s</div>
-                        <div className="text-gray-400">Pausa</div>
+                        <div className="text-gray-400">{t('variables.pauseBottom')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-green-300 font-semibold">{approach.variables.tempo.concentric}s</div>
-                        <div className="text-gray-400">Salita</div>
+                        <div className="text-gray-400">{t('variables.concentric')}</div>
                       </div>
                       <div className="text-center">
                         <div className="text-amber-300 font-semibold">{approach.variables.tempo.pauseTop}s</div>
-                        <div className="text-gray-400">Contrazione</div>
+                        <div className="text-gray-400">{t('variables.pauseTop')}</div>
                       </div>
                     </div>
                   </div>
@@ -211,14 +211,14 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
               {/* Frequency */}
               <div>
-                <h4 className="text-sm font-semibold text-blue-300 mb-2">Frequenza di Allenamento</h4>
+                <h4 className="text-sm font-semibold text-blue-300 mb-2">{t('variables.trainingFrequency')}</h4>
                 <div className="space-y-2 text-sm">
                   <div className="bg-gray-800/50 p-3 rounded flex justify-between">
-                    <span className="text-gray-400">Giorni per gruppo muscolare</span>
-                    <span className="text-white font-semibold">{approach.variables.frequency.muscleGroupDays}x/settimana</span>
+                    <span className="text-gray-400">{t('variables.perMuscleGroup')}</span>
+                    <span className="text-white font-semibold">{approach.variables.frequency.muscleGroupDays}x/{t('variables.week')}</span>
                   </div>
                   <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                    <div className="text-blue-300 text-xs mb-1">Pattern settimanale</div>
+                    <div className="text-blue-300 text-xs mb-1">{t('variables.weeklyPattern')}</div>
                     <div className="text-gray-300">{approach.variables.frequency.weeklyPattern}</div>
                   </div>
                 </div>
@@ -233,16 +233,16 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
           {expandedSections.has('progression') && (
             <div className="p-4 bg-gray-900/30 space-y-4">
               <div className="bg-gray-800/50 p-3 rounded">
-                <div className="text-gray-400 text-sm mb-1">Priorità</div>
+                <div className="text-gray-400 text-sm mb-1">{t('variables.priority')}</div>
                 <div className="text-white font-semibold capitalize">{approach.progression.priority.replace('_', ' ')}</div>
               </div>
               <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                <div className="text-blue-300 text-sm mb-2">Quando aumentare il peso</div>
+                <div className="text-blue-300 text-sm mb-2">{t('variables.whenToAddWeight')}</div>
                 <div className="text-gray-300">{approach.progression.rules.whenToAddWeight}</div>
               </div>
               {approach.progression.setProgression && (
                 <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                  <div className="text-blue-300 text-sm mb-2">Strategia progressione serie</div>
+                  <div className="text-blue-300 text-sm mb-2">{t('variables.setProgressionStrategy')}</div>
                   <div className="text-gray-300 mb-1">{approach.progression.setProgression.strategy.replace(/_/g, ' ')}</div>
                   <div className="text-gray-400 text-sm">
                     {typeof approach.progression.setProgression.conditions === 'string'
@@ -253,7 +253,7 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
               )}
               {approach.progression.rules.deloadTriggers && approach.progression.rules.deloadTriggers.length > 0 && (
                 <div className="bg-amber-900/20 p-3 rounded border border-amber-500/30">
-                  <div className="text-amber-300 text-sm mb-2">⚠️ Trigger per Deload</div>
+                  <div className="text-amber-300 text-sm mb-2">⚠️ {t('variables.deloadTriggers')}</div>
                   <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
                     {approach.progression.rules.deloadTriggers.map((trigger, idx) => (
                       <li key={idx}>{trigger}</li>
@@ -273,9 +273,9 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
               <div className="p-4 bg-gray-900/30">
                 <div className="mb-3 p-3 bg-blue-900/20 rounded border border-blue-500/30">
                   <div className="text-xs text-gray-400 space-y-1">
-                    <div><span className="text-green-300 font-semibold">MEV</span> = Minimum Effective Volume (minimo per crescita)</div>
-                    <div><span className="text-blue-300 font-semibold">MAV</span> = Maximum Adaptive Volume (range ottimale)</div>
-                    <div><span className="text-red-300 font-semibold">MRV</span> = Maximum Recoverable Volume (massimo recuperabile)</div>
+                    <div>{t('volumeLandmarks.mevDesc')}</div>
+                    <div>{t('volumeLandmarks.mavDesc')}</div>
+                    <div>{t('volumeLandmarks.mrvDesc')}</div>
                   </div>
                 </div>
                 <div className="grid gap-3">
@@ -316,17 +316,17 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
                     <div className="space-y-2 text-sm">
                       {technique.when && (
                         <div className="text-gray-300">
-                          <span className="text-blue-300">Quando:</span> {technique.when}
+                          <span className="text-blue-300">{t('advancedTechniques.when')}</span> {technique.when}
                         </div>
                       )}
                       {technique.protocol && (
                         <div className="text-gray-300">
-                          <span className="text-blue-300">Protocollo:</span> {technique.protocol}
+                          <span className="text-blue-300">{t('advancedTechniques.protocol')}</span> {technique.protocol}
                         </div>
                       )}
                       {technique.frequency && (
                         <div className="text-gray-300">
-                          <span className="text-blue-300">Frequenza:</span> {technique.frequency}
+                          <span className="text-blue-300">{t('advancedTechniques.frequency')}</span> {technique.frequency}
                         </div>
                       )}
                     </div>
@@ -345,32 +345,32 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
               <div className="p-4 bg-gray-900/30 space-y-4">
                 {approach.periodization.mesocycleLength && (
                   <div className="bg-gray-800/50 p-3 rounded flex justify-between">
-                    <span className="text-gray-400">Lunghezza mesociclo</span>
-                    <span className="text-white font-semibold">{approach.periodization.mesocycleLength} settimane</span>
+                    <span className="text-gray-400">{t('periodization.mesocycleLength')}</span>
+                    <span className="text-white font-semibold">{approach.periodization.mesocycleLength} {t('periodization.weeks')}</span>
                   </div>
                 )}
 
                 {approach.periodization.accumulationPhase && (
                   <div className="bg-green-900/20 p-3 rounded border border-green-500/30">
-                    <h4 className="text-green-300 font-semibold mb-2">Fase di Accumulazione</h4>
+                    <h4 className="text-green-300 font-semibold mb-2">{t('periodization.accumulation')}</h4>
                     <div className="text-sm space-y-1">
-                      <div className="text-gray-300">Durata: {approach.periodization.accumulationPhase.weeks} settimane</div>
-                      <div className="text-gray-300">Focus: {approach.periodization.accumulationPhase.focus}</div>
-                      <div className="text-gray-300">Volume: {(approach.periodization.accumulationPhase.volumeMultiplier * 100)}% della baseline</div>
+                      <div className="text-gray-300">{t('periodization.duration')} {approach.periodization.accumulationPhase.weeks} {t('periodization.weeks')}</div>
+                      <div className="text-gray-300">{t('periodization.focus')} {approach.periodization.accumulationPhase.focus}</div>
+                      <div className="text-gray-300">{t('periodization.volume')} {t('periodization.baselinePercent', { percent: (approach.periodization.accumulationPhase.volumeMultiplier * 100) })}</div>
                     </div>
                   </div>
                 )}
 
                 {approach.periodization.intensificationPhase && (
                   <div className="bg-orange-900/20 p-3 rounded border border-orange-500/30">
-                    <h4 className="text-orange-300 font-semibold mb-2">Fase di Intensificazione</h4>
+                    <h4 className="text-orange-300 font-semibold mb-2">{t('periodization.intensification')}</h4>
                     <div className="text-sm space-y-1">
-                      <div className="text-gray-300">Durata: {approach.periodization.intensificationPhase.weeks} settimane</div>
-                      <div className="text-gray-300">Focus: {approach.periodization.intensificationPhase.focus}</div>
-                      <div className="text-gray-300">Volume: {(approach.periodization.intensificationPhase.volumeMultiplier * 100)}% della baseline</div>
+                      <div className="text-gray-300">{t('periodization.duration')} {approach.periodization.intensificationPhase.weeks} {t('periodization.weeks')}</div>
+                      <div className="text-gray-300">{t('periodization.focus')} {approach.periodization.intensificationPhase.focus}</div>
+                      <div className="text-gray-300">{t('periodization.volume')} {t('periodization.baselinePercent', { percent: (approach.periodization.intensificationPhase.volumeMultiplier * 100) })}</div>
                       {approach.periodization.intensificationPhase.techniquesIntroduced && (
                         <div className="text-gray-300 mt-2">
-                          <span className="text-orange-300">Tecniche introdotte:</span>
+                          <span className="text-orange-300">{t('periodization.techniquesIntroduced')}</span>
                           <div className="ml-4 mt-1">
                             {approach.periodization.intensificationPhase.techniquesIntroduced.join(', ')}
                           </div>
@@ -382,12 +382,12 @@ export function MethodDetails({ approachId }: MethodDetailsProps) {
 
                 {approach.periodization.deloadPhase && (
                   <div className="bg-blue-900/20 p-3 rounded border border-blue-500/30">
-                    <h4 className="text-blue-300 font-semibold mb-2">Fase di Deload</h4>
+                    <h4 className="text-blue-300 font-semibold mb-2">{t('periodization.deload')}</h4>
                     <div className="text-sm space-y-1">
-                      <div className="text-gray-300">Frequenza: {approach.periodization.deloadPhase.frequency}</div>
-                      <div className="text-gray-300">Riduzione volume: {approach.periodization.deloadPhase.volumeReduction}%</div>
-                      <div className="text-gray-300">Intensità: {approach.periodization.deloadPhase.intensityMaintenance}</div>
-                      <div className="text-gray-300">Durata: {approach.periodization.deloadPhase.duration}</div>
+                      <div className="text-gray-300">{t('periodization.frequency')} {approach.periodization.deloadPhase.frequency}</div>
+                      <div className="text-gray-300">{t('periodization.volumeReduction')} {approach.periodization.deloadPhase.volumeReduction}%</div>
+                      <div className="text-gray-300">{t('periodization.intensity')} {approach.periodization.deloadPhase.intensityMaintenance}</div>
+                      <div className="text-gray-300">{t('periodization.duration')} {approach.periodization.deloadPhase.duration}</div>
                     </div>
                   </div>
                 )}
