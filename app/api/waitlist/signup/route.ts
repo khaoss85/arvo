@@ -86,40 +86,43 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Send emails asynchronously (don't block response)
-    Promise.all([
-      // Get referrer email if exists
-      referrerId
-        ? supabase
-            .from('waitlist_entries')
-            .select('email')
-            .eq('id', referrerId)
-            .single()
-            .then(({ data }) =>
-              EmailService.sendAdminNotification(
-                {
-                  ...newEntry,
-                  first_name: firstName,
-                  training_goal: trainingGoal,
-                },
-                data?.email
+    // Send emails (await to ensure they complete before function terminates)
+    try {
+      await Promise.all([
+        // Get referrer email if exists
+        referrerId
+          ? supabase
+              .from('waitlist_entries')
+              .select('email')
+              .eq('id', referrerId)
+              .single()
+              .then(({ data }) =>
+                EmailService.sendAdminNotification(
+                  {
+                    ...newEntry,
+                    first_name: firstName,
+                    training_goal: trainingGoal,
+                  },
+                  data?.email
+                )
               )
-            )
-        : EmailService.sendAdminNotification({
-            ...newEntry,
-            first_name: firstName,
-            training_goal: trainingGoal,
-          }),
-      // Send welcome email to user
-      EmailService.sendWaitlistWelcome({
-        ...newEntry,
-        first_name: firstName,
-        training_goal: trainingGoal,
-      }),
-    ]).catch((emailError) => {
-      console.error('Error sending waitlist emails:', emailError)
-      // Don't fail the request if emails fail
-    })
+          : EmailService.sendAdminNotification({
+              ...newEntry,
+              first_name: firstName,
+              training_goal: trainingGoal,
+            }),
+        // Send welcome email to user
+        EmailService.sendWaitlistWelcome({
+          ...newEntry,
+          first_name: firstName,
+          training_goal: trainingGoal,
+        }),
+      ])
+      console.log('✅ Waitlist emails sent successfully')
+    } catch (emailError) {
+      console.error('❌ Error sending waitlist emails:', emailError)
+      // Don't fail the request if emails fail - user is already in waitlist
+    }
 
     return NextResponse.json({
       success: true,
