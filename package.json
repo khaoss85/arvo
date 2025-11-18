@@ -12,7 +12,8 @@
     "seed:mentzer": "tsx scripts/seed-mentzer-approach.ts",
     "seed:kuba": "tsx scripts/seed-kuba-approach.ts",
     "seed:y3t": "tsx scripts/seed-y3t-approach.ts",
-    "seed:mountaindog": "tsx scripts/seed-mountain-dog-approach.ts"
+    "seed:mountaindog": "tsx scripts/seed-mountain-dog-approach.ts",
+    "test:emails": "tsx scripts/test-emails-it.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
