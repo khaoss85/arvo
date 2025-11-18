@@ -388,7 +388,7 @@ export async function generateWorkoutAction(userId: string) {
       throw new Error('User profile not found. Please create a profile first.')
     }
 
-    if (!profile.approach_id) {
+    if (!(profile as any).approach_id) {
       throw new Error('No training approach selected. Please select a training approach in your profile.')
     }
 
@@ -396,7 +396,7 @@ export async function generateWorkoutAction(userId: string) {
     const targetLanguage = await getUserLanguage(userId)
 
     // Generate workout using server client
-    const workout = await generateWorkoutWithServerClient(userId, supabase, profile.approach_id, false, targetLanguage)
+    const workout = await generateWorkoutWithServerClient(userId, supabase, (profile as any).approach_id, false, targetLanguage)
 
     return { success: true, workout }
   } catch (error) {
