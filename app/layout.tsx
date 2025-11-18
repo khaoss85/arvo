@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { StructuredData } from "@/components/schema/structured-data";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -92,6 +93,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <StructuredData />
         <Providers>{children}</Providers>
         <Analytics />
         <SpeedInsights />

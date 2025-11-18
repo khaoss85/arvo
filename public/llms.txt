@@ -1,0 +1,97 @@
+# Arvo
+
+> AI-powered parametric workout tracker with 15 specialized AI agents. Real-time set-by-set coaching using GPT-5 reasoning models. Implements complete training methodologies with scientific fidelity including Kuba Method, Mike Mentzer HIT, FST-7, Y3T, and Mountain Dog Training.
+
+Arvo is a smart workout tracking application built for three distinct user types:
+
+1. **Competitive Athletes & IFBB PRO Bodybuilders** - Advanced methodology-aware coaching with context-aware volume tracking (MEV/MAV/MRV), set-by-set guidance, and cycle-to-cycle learning
+2. **Tech-Savvy Fitness Enthusiasts** - Full transparency into AI reasoning, biomechanical decisions, and training science
+3. **Casual Gym-Goers & Beginners** - Simplified interface with automatic progression and zero decision-making required
+
+## Key Features
+
+- **15 Specialized AI Agents**: Exercise Architect, Load Navigator, real-time adaptation engines
+- **1300+ Exercise Database**: Complete biomechanical categorization with video demonstrations
+- **5 Training Methodologies**: Complete implementations (not interpretations) of proven systems
+- **Real-time Set-by-Set Coaching**: Weight recommendations, rest timers, RPE/RIR tracking
+- **Notes Intelligence**: AI-powered insights from workout notes and historical patterns
+- **Equipment Vision**: Smart exercise substitutions based on available equipment
+- **Privacy-First Design**: Passwordless authentication, no credit card required
+
+## Training Methodologies
+
+Arvo implements complete training methodologies as knowledge bases, not simplified interpretations:
+
+- **Kuba Method**: Evidence-based parametric training with 2 working sets @ RIR 0-1, tempo 3-1-1-1, 60% lengthened-biased exercises, 6-week periodization cycles
+- **Mike Mentzer HIT**: High-intensity training philosophy with 1-2 sets to absolute failure, 4-7 day recovery, pre-exhaust techniques
+- **FST-7 (Hany Rambod)**: Fascia Stretch Training with 7 consecutive sets, 30-45s rest, absolute failure, critical hydration protocols
+- **Y3T (Neil Hill)**: Undulating periodization across 3-week microcycles (heavy/hybrid/hell weeks)
+- **Mountain Dog Training (John Meadows)**: 4-phase workout structure with accommodating resistance, loaded stretching, no programmed deloads
+
+## Product Variants
+
+- [Arvo Standard](https://arvo.guru): General-purpose AI coaching with full methodology support
+- [Arvo Pro](https://arvo.guru/pro): Advanced AI coaching for IFBB PRO athletes with methodology-aware volume tracking
+- [Arvo Simple](https://arvo.guru/simple): Simplified experience for beginners with automatic progression
+
+## Technical Stack
+
+- **AI Models**: GPT-5 reasoning models for Exercise Architect and Load Navigator agents
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **Frontend**: Next.js 14 with React, TypeScript, TailwindCSS
+- **Authentication**: Passwordless magic link (privacy-first, no passwords stored)
+- **Deployment**: Vercel with edge functions
+- **Analytics**: Privacy-respecting analytics with Vercel Analytics
+
+## Important Disclaimers
+
+**NOT MEDICAL ADVICE**: Arvo is a training tool, not medical advice. It does not diagnose, treat, or prevent any medical condition.
+
+**NOT A SUBSTITUTE FOR PROFESSIONAL COACHING**: While Arvo implements proven training methodologies, it cannot replace personalized coaching from certified professionals, especially for competitive athletes or individuals with medical conditions.
+
+**USER RESPONSIBILITY**: Users must understand their own fitness levels, limitations, and health status. Always consult healthcare professionals before starting any training program.
+
+**EQUIPMENT SAFETY**: Users are responsible for proper exercise form, equipment safety, and gym etiquette.
+
+See full disclaimer: [Medical Disclaimer](https://arvo.guru/medical-disclaimer)
+
+## Legal & Privacy
+
+- [Privacy Policy](https://arvo.guru/privacy): Details on data collection, storage, and user rights under GDPR
+- [Terms of Service](https://arvo.guru/terms): Usage terms, liability limitations, and user responsibilities
+
+## Core AI Agents
+
+Arvo uses 15 specialized AI agents that work together:
+
+1. **Exercise Architect**: Designs workouts using GPT-5 reasoning, considers 8+ variables including weak points, equipment availability, injury warnings, and methodology rules
+2. **Load Navigator**: Real-time weight recommendations based on previous set performance, RIR/RPE, mental readiness, and periodization phase
+3. **Volume Tracker**: Monitors weekly volume relative to MEV/MAV/MRV landmarks per muscle group
+4. **Rest Timer Intelligence**: Adaptive rest periods based on exercise type, methodology, and performance
+5. **Notes Intelligence**: Extracts insights from free-form workout notes using NLP
+6. **Equipment Substitution Engine**: Biomechanically equivalent exercise swaps based on available equipment
+7. **Injury Prevention Monitor**: Tracks joint stress patterns and suggests modifications
+8. **Progressive Overload Calculator**: Ensures systematic progression across training cycles
+9. **Hydration Reminder**: Context-aware hydration cues (critical for FST-7)
+10. **Audio Coaching System**: Set-by-set audio guidance during workouts
+11. **Performance Pattern Detector**: Identifies trends and plateaus across training history
+12. **Tempo & Technique Coach**: Provides tempo recommendations and technical cues per exercise
+13. **Deload Optimizer**: Suggests deload timing based on accumulated fatigue
+14. **Exercise Selection Diversifier**: Rotates exercises to prevent adaptation
+15. **Warm-up Architect**: Generates dynamic warm-ups based on main workout content
+
+## Target Use Cases
+
+- **Competitive Bodybuilding Prep**: Full methodology implementations for serious athletes
+- **Strength Training & Progressive Overload**: Systematic weight progression with AI guidance
+- **Gym Programming**: Complete workout generation with AI-selected exercises
+- **Training Cycle Management**: 6-12 week mesocycles with automatic periodization
+- **Exercise Substitution**: Real-time swaps based on equipment availability or injury
+- **Performance Analytics**: Historical tracking and pattern detection
+- **Beginner Onboarding**: 5-minute setup with zero training knowledge required
+
+## Optional
+
+- [Supabase Documentation](https://supabase.com/docs): Backend infrastructure details
+- [Next.js Documentation](https://nextjs.org/docs): Frontend framework reference
+- [OpenAI GPT-5 Information](https://platform.openai.com/docs): AI model capabilities
