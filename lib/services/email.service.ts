@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import {
   emailTemplates,
+  type SupportedLanguage,
   type WelcomeEmailData,
   type OnboardingCompleteEmailData,
   type FirstWorkoutReminderEmailData,
@@ -223,7 +224,6 @@ export class EmailService {
   ) {
     try {
       const supabase = getSupabaseAdmin();
-      // @ts-expect-error email_events table will be added to types after migration
       await supabase.from('email_events').insert({
         user_id: userId,
         event_type: eventType,
@@ -245,7 +245,6 @@ export class EmailService {
       const supabase = getSupabaseAdmin();
 
       // Check if email was already sent recently
-      // @ts-expect-error check_email_already_sent function will be added to types after migration
       const { data: alreadySent } = await supabase.rpc('check_email_already_sent', {
         p_user_id: userId,
         p_event_type: eventType,
@@ -260,7 +259,6 @@ export class EmailService {
       // Check user email preferences
       const { data: profile } = await supabase
         .from('user_profiles')
-        // @ts-expect-error email_notifications_enabled field will be added to types after migration
         .select('email_notifications_enabled, email_frequency')
         .eq('user_id', userId)
         .single();
@@ -278,6 +276,30 @@ export class EmailService {
   }
 
   /**
+   * Helper: Get user's preferred language
+   */
+  private static async getUserLanguage(userId: string): Promise<SupportedLanguage> {
+    try {
+      const supabase = getSupabaseAdmin();
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('preferred_language')
+        .eq('user_id', userId)
+        .single();
+
+      // Default to 'en' if not set or invalid
+      const lang = profile?.preferred_language;
+      if (lang === 'it' || lang === 'en') {
+        return lang as SupportedLanguage;
+      }
+      return 'en';
+    } catch (error) {
+      console.error('Error getting user language:', error);
+      return 'en'; // Default to English on error
+    }
+  }
+
+  /**
    * Email 1: Welcome & Onboarding Start
    */
   static async sendWelcomeEmail(userId: string, email: string, firstName: string) {
@@ -286,9 +308,10 @@ export class EmailService {
         return false;
       }
 
+      const lang = await this.getUserLanguage(userId);
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const data: WelcomeEmailData = { firstName, email };
-      const { subject, html } = emailTemplates.welcome(data, appUrl);
+      const { subject, html } = emailTemplates.welcome(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -303,8 +326,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'welcome', subject, 'welcome', { firstName });
-      console.log('Welcome email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'welcome', subject, 'welcome', { firstName, lang });
+      console.log(`Welcome email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendWelcomeEmail:', error);
@@ -325,7 +348,6 @@ export class EmailService {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
       // Get user stats
-      // @ts-expect-error get_user_onboarding_stats function will be added to types after migration
       const { data: stats } = await supabase.rpc('get_user_onboarding_stats', {
         p_user_id: userId,
       });
@@ -345,6 +367,8 @@ export class EmailService {
         firstWorkoutId?: string;
       };
 
+      const lang = await this.getUserLanguage(userId);
+
       const data: OnboardingCompleteEmailData = {
         firstName: userStats.firstName || 'là',
         approachName: userStats.approachName || 'Kuba Method',
@@ -354,7 +378,7 @@ export class EmailService {
         firstWorkoutId: userStats.firstWorkoutId || '',
       };
 
-      const { subject, html } = emailTemplates.onboardingComplete(data, appUrl);
+      const { subject, html } = emailTemplates.onboardingComplete(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -369,8 +393,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'onboarding_complete', subject, 'onboarding_complete', data);
-      console.log('Onboarding complete email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'onboarding_complete', subject, 'onboarding_complete', { ...data, lang });
+      console.log(`Onboarding complete email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendOnboardingCompleteEmail:', error);
@@ -409,6 +433,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const data: FirstWorkoutReminderEmailData = {
         firstName: profile?.first_name || 'là',
         workoutName: workout.workout_name || 'Il tuo primo workout',
@@ -418,7 +444,7 @@ export class EmailService {
         workoutId,
       };
 
-      const { subject, html } = emailTemplates.firstWorkoutReminder(data, appUrl);
+      const { subject, html } = emailTemplates.firstWorkoutReminder(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -433,8 +459,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'first_workout_reminder', subject, 'first_workout_reminder', data);
-      console.log('First workout reminder sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'first_workout_reminder', subject, 'first_workout_reminder', { ...data, lang });
+      console.log(`First workout reminder sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendFirstWorkoutReminderEmail:', error);
@@ -473,6 +499,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const data: FirstWorkoutCompleteEmailData = {
         firstName: profile?.first_name || 'là',
         totalVolume: workout.total_volume || 0,
@@ -481,7 +509,7 @@ export class EmailService {
         exercisesCompleted: workout.exercises?.length || 0,
       };
 
-      const { subject, html } = emailTemplates.firstWorkoutComplete(data, appUrl);
+      const { subject, html } = emailTemplates.firstWorkoutComplete(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -496,8 +524,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'first_workout_complete', subject, 'first_workout_complete', data);
-      console.log('First workout complete email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'first_workout_complete', subject, 'first_workout_complete', { ...data, lang });
+      console.log(`First workout complete email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendFirstWorkoutCompleteEmail:', error);
@@ -534,6 +562,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const totalVolume = workouts?.reduce((sum, w) => sum + (w.total_volume || 0), 0) || 0;
       const muscleGroups = new Set<string>();
       workouts?.forEach((w) => w.target_muscle_groups?.forEach((m: string) => muscleGroups.add(m)));
@@ -548,7 +578,7 @@ export class EmailService {
         cycleTotalDays: 8,
       };
 
-      const { subject, html } = emailTemplates.weeklyProgress(data, appUrl);
+      const { subject, html } = emailTemplates.weeklyProgress(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -563,8 +593,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'weekly_progress', subject, 'weekly_progress', data);
-      console.log('Weekly progress email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'weekly_progress', subject, 'weekly_progress', { ...data, lang });
+      console.log(`Weekly progress email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendWeeklyProgressEmail:', error);
@@ -602,6 +632,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const data: CycleCompleteEmailData = {
         firstName: profile?.first_name || 'là',
         cycleNumber: cycle.cycle_number as number,
@@ -612,7 +644,7 @@ export class EmailService {
         volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
       };
 
-      const { subject, html } = emailTemplates.cycleComplete(data, appUrl);
+      const { subject, html } = emailTemplates.cycleComplete(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -627,8 +659,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'cycle_complete', subject, 'cycle_complete', data);
-      console.log('Cycle complete email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'cycle_complete', subject, 'cycle_complete', { ...data, lang });
+      console.log(`Cycle complete email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendCycleCompleteEmail:', error);
@@ -674,6 +706,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const daysSince = lastWorkout?.completed_at
         ? Math.floor((Date.now() - new Date(lastWorkout.completed_at).getTime()) / (1000 * 60 * 60 * 24))
         : 7;
@@ -686,7 +720,7 @@ export class EmailService {
         nextWorkoutName: nextWorkout?.workout_name || 'Il tuo prossimo workout',
       };
 
-      const { subject, html } = emailTemplates.reengagement(data, appUrl);
+      const { subject, html } = emailTemplates.reengagement(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -701,8 +735,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'reengagement', subject, 'reengagement', data);
-      console.log('Reengagement email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'reengagement', subject, 'reengagement', { ...data, lang });
+      console.log(`Reengagement email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendReengagementEmail:', error);
@@ -735,6 +769,8 @@ export class EmailService {
         .eq('user_id', userId)
         .single();
 
+      const lang = await this.getUserLanguage(userId);
+
       const data: SettingsUpdateEmailData = {
         firstName: profile?.first_name || 'là',
         settingChanged,
@@ -743,7 +779,7 @@ export class EmailService {
         impact,
       };
 
-      const { subject, html } = emailTemplates.settingsUpdate(data, appUrl);
+      const { subject, html } = emailTemplates.settingsUpdate(data, appUrl, lang);
 
       const resend = this.getResendClient();
       const { data: emailData, error } = await resend.emails.send({
@@ -758,8 +794,8 @@ export class EmailService {
         return false;
       }
 
-      await this.trackEmailEvent(userId, 'settings_update', subject, 'settings_update', data);
-      console.log('Settings update email sent to:', email, emailData?.id);
+      await this.trackEmailEvent(userId, 'settings_update', subject, 'settings_update', { ...data, lang });
+      console.log(`Settings update email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
       return true;
     } catch (error) {
       console.error('Error in sendSettingsUpdateEmail:', error);

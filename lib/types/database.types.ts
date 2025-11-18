@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      caloric_phase_history: {
+        Row: {
+          avg_weight_change: number | null
+          caloric_intake_kcal: number | null
+          created_at: string | null
+          duration_weeks: number | null
+          ended_at: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phase: string
+          started_at: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_weight_change?: number | null
+          caloric_intake_kcal?: number | null
+          created_at?: string | null
+          duration_weeks?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phase: string
+          started_at?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_weight_change?: number | null
+          caloric_intake_kcal?: number | null
+          created_at?: string | null
+          duration_weeks?: number | null
+          ended_at?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phase?: string
+          started_at?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       cycle_completions: {
         Row: {
           avg_mental_readiness: number | null
@@ -72,6 +117,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      email_events: {
+        Row: {
+          created_at: string
+          email_subject: string
+          email_template: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_subject: string
+          email_template: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_subject?: string
+          email_template?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       exercise_generations: {
         Row: {
@@ -490,18 +568,25 @@ export type Database = {
           audio_coaching_enabled: boolean
           audio_coaching_speed: number
           available_equipment: string[] | null
+          caloric_intake_kcal: number | null
+          caloric_phase: string | null
+          caloric_phase_start_date: string | null
           created_at: string | null
           current_cycle_day: number | null
           current_cycle_start_date: string | null
           current_mesocycle_week: number | null
           custom_equipment: Json | null
           cycles_completed: number | null
+          email_frequency: Database["public"]["Enums"]["email_frequency"] | null
+          email_notifications_enabled: boolean | null
+          email_unsubscribed_at: string | null
           equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
           gender: string | null
           height: number | null
           last_cycle_completed_at: string | null
+          last_email_sent_at: string | null
           mesocycle_phase: string | null
           mesocycle_start_date: string | null
           preferred_language: string
@@ -521,18 +606,27 @@ export type Database = {
           audio_coaching_enabled?: boolean
           audio_coaching_speed?: number
           available_equipment?: string[] | null
+          caloric_intake_kcal?: number | null
+          caloric_phase?: string | null
+          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_cycle_start_date?: string | null
           current_mesocycle_week?: number | null
           custom_equipment?: Json | null
           cycles_completed?: number | null
+          email_frequency?:
+            | Database["public"]["Enums"]["email_frequency"]
+            | null
+          email_notifications_enabled?: boolean | null
+          email_unsubscribed_at?: string | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string | null
           height?: number | null
           last_cycle_completed_at?: string | null
+          last_email_sent_at?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_language?: string
@@ -552,18 +646,27 @@ export type Database = {
           audio_coaching_enabled?: boolean
           audio_coaching_speed?: number
           available_equipment?: string[] | null
+          caloric_intake_kcal?: number | null
+          caloric_phase?: string | null
+          caloric_phase_start_date?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_cycle_start_date?: string | null
           current_mesocycle_week?: number | null
           custom_equipment?: Json | null
           cycles_completed?: number | null
+          email_frequency?:
+            | Database["public"]["Enums"]["email_frequency"]
+            | null
+          email_notifications_enabled?: boolean | null
+          email_unsubscribed_at?: string | null
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string | null
           height?: number | null
           last_cycle_completed_at?: string | null
+          last_email_sent_at?: string | null
           mesocycle_phase?: string | null
           mesocycle_start_date?: string | null
           preferred_language?: string
@@ -966,7 +1069,11 @@ export type Database = {
         Returns: number
       }
       calculate_queue_position: { Args: { entry_id: string }; Returns: number }
-      cleanup_old_generations: { Args: Record<PropertyKey, never>; Returns: undefined }
+      check_email_already_sent: {
+        Args: { p_event_type: string; p_hours_ago?: number; p_user_id: string }
+        Returns: boolean
+      }
+      cleanup_old_generations: { Args: never; Returns: undefined }
       complete_cycle: {
         Args: {
           p_avg_mental_readiness: number
@@ -983,7 +1090,7 @@ export type Database = {
         }
         Returns: Json
       }
-      generate_referral_code: { Args: Record<PropertyKey, never>; Returns: string }
+      generate_referral_code: { Args: never; Returns: string }
       get_active_insights: {
         Args: { p_min_relevance?: number; p_user_id: string }
         Returns: {
@@ -1036,11 +1143,46 @@ export type Database = {
           user_reason: string
         }[]
       }
-      is_current_user_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
-      refresh_all_queue_positions: { Args: Record<PropertyKey, never>; Returns: undefined }
-      update_insight_relevance_scores: { Args: Record<PropertyKey, never>; Returns: undefined }
+      get_user_onboarding_stats: { Args: { p_user_id: string }; Returns: Json }
+      get_users_needing_first_workout_reminder: {
+        Args: never
+        Returns: {
+          email: string
+          first_name: string
+          preferred_language: string
+          target_muscles: string[]
+          user_id: string
+          workout_id: string
+          workout_name: string
+          workout_type: string
+        }[]
+      }
+      get_users_needing_reengagement: {
+        Args: never
+        Returns: {
+          days_since_last_workout: number
+          email: string
+          first_name: string
+          preferred_language: string
+          user_id: string
+        }[]
+      }
+      get_users_needing_weekly_progress: {
+        Args: never
+        Returns: {
+          email: string
+          first_name: string
+          preferred_language: string
+          user_id: string
+          week_number: number
+        }[]
+      }
+      is_current_user_admin: { Args: never; Returns: boolean }
+      refresh_all_queue_positions: { Args: never; Returns: undefined }
+      update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {
+      email_frequency: "immediate" | "daily_digest" | "weekly_digest" | "none"
       generation_status: "pending" | "in_progress" | "completed" | "failed"
       split_type:
         | "push_pull_legs"
@@ -1189,6 +1331,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      email_frequency: ["immediate", "daily_digest", "weekly_digest", "none"],
       generation_status: ["pending", "in_progress", "completed", "failed"],
       split_type: [
         "push_pull_legs",
