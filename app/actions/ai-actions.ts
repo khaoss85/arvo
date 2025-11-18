@@ -94,14 +94,17 @@ export async function completeOnboardingAction(
     const [splitResult, workout] = await Promise.all([splitPlanPromise, workoutPromise])
 
     // Step 3: Update profile with split plan ID if available
-    if (splitResult?.success && splitResult.data && 'splitPlan' in splitResult.data && splitResult.data.splitPlan?.id) {
-      await supabase
-        .from('user_profiles')
-        .update({
-          active_split_plan_id: splitResult.data.splitPlan.id,
-          current_cycle_day: 1
-        })
-        .eq('user_id', userId)
+    if (splitResult?.success && splitResult.data && 'splitPlan' in splitResult.data) {
+      const splitPlanId = (splitResult.data as any).splitPlan?.id
+      if (splitPlanId) {
+        await supabase
+          .from('user_profiles')
+          .update({
+            active_split_plan_id: splitPlanId,
+            current_cycle_day: 1
+          })
+          .eq('user_id', userId)
+      }
     }
 
     return { success: true, workoutId: workout.id }
