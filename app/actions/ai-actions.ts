@@ -463,7 +463,7 @@ export async function calculateProgressionAction(userId: string, input: Progress
 
     console.log('[calculateProgressionAction] Active insights fetched', {
       insightCount: transformedInsights.length,
-      hasExerciseSpecific: transformedInsights.some(i => i.exerciseName)
+      hasExerciseSpecific: transformedInsights.some((i: any) => i.exerciseName)
     })
 
     // Get user's preferred language
