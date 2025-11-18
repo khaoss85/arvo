@@ -223,6 +223,7 @@ export class EmailService {
   ) {
     try {
       const supabase = getSupabaseAdmin();
+      // @ts-expect-error email_events table will be added to types after migration
       await supabase.from('email_events').insert({
         user_id: userId,
         event_type: eventType,
@@ -244,6 +245,7 @@ export class EmailService {
       const supabase = getSupabaseAdmin();
 
       // Check if email was already sent recently
+      // @ts-expect-error check_email_already_sent function will be added to types after migration
       const { data: alreadySent } = await supabase.rpc('check_email_already_sent', {
         p_user_id: userId,
         p_event_type: eventType,
@@ -258,6 +260,7 @@ export class EmailService {
       // Check user email preferences
       const { data: profile } = await supabase
         .from('user_profiles')
+        // @ts-expect-error email_notifications_enabled field will be added to types after migration
         .select('email_notifications_enabled, email_frequency')
         .eq('user_id', userId)
         .single();
@@ -322,6 +325,7 @@ export class EmailService {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
       // Get user stats
+      // @ts-expect-error get_user_onboarding_stats function will be added to types after migration
       const { data: stats } = await supabase.rpc('get_user_onboarding_stats', {
         p_user_id: userId,
       });
