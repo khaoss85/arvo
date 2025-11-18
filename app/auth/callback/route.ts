@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/types/database.types";
+import { EmailService } from "@/lib/services/email.service";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -60,6 +61,33 @@ export async function GET(request: Request) {
       } catch (conversionError) {
         // Log error but don't block the auth flow
         console.error('Error tracking waitlist conversion:', conversionError);
+      }
+
+      // Send welcome email to new users (async, non-blocking)
+      try {
+        const { data: existingProfile } = await supabase
+          .from('user_profiles')
+          .select('user_id')
+          .eq('user_id', data.user.id)
+          .single();
+
+        // Only send welcome email if user hasn't completed onboarding yet
+        if (!existingProfile) {
+          const { data: waitlistData } = await supabase
+            .from('waitlist_entries')
+            .select('first_name')
+            .eq('email', data.user.email)
+            .single();
+
+          const firstName = waitlistData?.first_name || data.user.email?.split('@')[0] || 'there';
+
+          // Send email asynchronously (don't await)
+          EmailService.sendWelcomeEmail(data.user.id, data.user.email, firstName).catch((emailError) => {
+            console.error('Error sending welcome email:', emailError);
+          });
+        }
+      } catch (emailCheckError) {
+        console.error('Error checking if should send welcome email:', emailCheckError);
       }
 
       return NextResponse.redirect(`${origin}${next}`);

@@ -146,6 +146,16 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         }, 500)
       }
 
+      // Send workout complete email (async, non-blocking)
+      fetch('/api/email/workout-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workoutId })
+      }).catch((emailError) => {
+        console.error('[WorkoutSummary] Error triggering workout complete email:', emailError)
+        // Don't block user experience if email fails
+      })
+
       // Generate AI summary with mental readiness data
       console.log('[WorkoutSummary] Generating AI summary...')
       generateAISummary(stats.duration, stats.totalVolume, stats.totalSets, mentalReadinessSelected)

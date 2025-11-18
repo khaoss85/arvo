@@ -331,13 +331,23 @@ export class EmailService {
         return false;
       }
 
+      // Type cast from Json to expected shape
+      const userStats = stats as unknown as {
+        firstName?: string;
+        approachName?: string;
+        splitType?: string;
+        weeklyFrequency?: number;
+        weakPoints?: string[];
+        firstWorkoutId?: string;
+      };
+
       const data: OnboardingCompleteEmailData = {
-        firstName: stats.firstName || 'là',
-        approachName: stats.approachName || 'Kuba Method',
-        splitType: stats.splitType || 'push_pull_legs',
-        weeklyFrequency: stats.weeklyFrequency || 6,
-        weakPoints: stats.weakPoints || [],
-        firstWorkoutId: stats.firstWorkoutId || '',
+        firstName: userStats.firstName || 'là',
+        approachName: userStats.approachName || 'Kuba Method',
+        splitType: userStats.splitType || 'push_pull_legs',
+        weeklyFrequency: userStats.weeklyFrequency || 6,
+        weakPoints: userStats.weakPoints || [],
+        firstWorkoutId: userStats.firstWorkoutId || '',
       };
 
       const { subject, html } = emailTemplates.onboardingComplete(data, appUrl);
@@ -590,12 +600,12 @@ export class EmailService {
 
       const data: CycleCompleteEmailData = {
         firstName: profile?.first_name || 'là',
-        cycleNumber: cycle.cycle_number,
-        totalVolume: cycle.total_volume || 0,
-        workoutsCompleted: cycle.total_workouts_completed || 0,
-        totalDuration: cycle.total_duration_seconds || 0,
-        avgMentalReadiness: cycle.avg_mental_readiness || 0,
-        volumeByMuscleGroup: cycle.volume_by_muscle_group || {},
+        cycleNumber: cycle.cycle_number as number,
+        totalVolume: (cycle.total_volume as number) || 0,
+        workoutsCompleted: (cycle.total_workouts_completed as number) || 0,
+        totalDuration: (cycle.total_duration_seconds as number) || 0,
+        avgMentalReadiness: (cycle.avg_mental_readiness as number) || 0,
+        volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
       };
 
       const { subject, html } = emailTemplates.cycleComplete(data, appUrl);

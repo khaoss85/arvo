@@ -284,6 +284,24 @@ export class SplitPlanService {
         }
 
         console.log('[SplitPlanService] advanceCycle - Cycle completion saved atomically:', result);
+
+        // Send cycle complete email via API (async, non-blocking)
+        try {
+          const cycleId = (result as any)?.cycle_id;
+          if (cycleId) {
+            // Call API route to send email (avoids server-only import issues)
+            fetch('/api/email/cycle-complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cycleId })
+            }).catch(err => console.error('[SplitPlanService] Error triggering cycle complete email API:', err));
+
+            console.log('[SplitPlanService] advanceCycle - Cycle complete email API triggered');
+          }
+        } catch (emailError) {
+          // Don't throw - email failure shouldn't block cycle completion
+          console.error('[SplitPlanService] advanceCycle - Error triggering cycle email:', emailError);
+        }
       } catch (error) {
         console.error('[SplitPlanService] advanceCycle - Error in atomic cycle completion:', error);
         throw error; // Throw to prevent inconsistent state

@@ -5,6 +5,7 @@ import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
 import { ProgressSimulator } from '@/lib/utils/progress-simulator'
+import { EmailService } from '@/lib/services/email.service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -178,6 +179,14 @@ export async function POST(request: NextRequest) {
 
           // Complete metrics tracking
           await GenerationMetricsService.completeGeneration(generationRequestId, true)
+
+          // Send onboarding complete email (async, non-blocking)
+          const { data: user } = await supabase.auth.getUser()
+          if (user?.user?.email) {
+            EmailService.sendOnboardingCompleteEmail(data.userId, user.user.email).catch((emailError) => {
+              console.error('Error sending onboarding complete email:', emailError)
+            })
+          }
 
           // Send final complete event
           const completeData = JSON.stringify({
