@@ -171,7 +171,7 @@ async function generateWorkoutWithServerClient(
   // Merge standard equipment with custom equipment
   const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
   const customEquipmentIds = customEquipment.map(eq => eq.id)
-  const allAvailableEquipment = [...(profile.available_equipment || []), ...customEquipmentIds]
+  const allAvailableEquipment = [...((profile as any).available_equipment || []), ...customEquipmentIds]
 
   // Fetch active insights (includes proactive physical limitations from Settings)
   const { data: activeInsights } = await supabase
@@ -210,20 +210,20 @@ async function generateWorkoutWithServerClient(
   // Select exercises using AI
   const selection = await exerciseSelector.selectExercises({
     workoutType,
-    weakPoints: profile.weak_points || [],
+    weakPoints: (profile as any).weak_points || [],
     availableEquipment: allAvailableEquipment,
     customEquipment: customEquipment, // Pass custom equipment metadata
     equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for old data
     recentExercises: extractRecentExercises(recentWorkouts || []),
-    approachId: profile.approach_id,
-    experienceYears: profile.experience_years,
-    userAge: profile.age,
-    userGender: profile.gender,
+    approachId: (profile as any).approach_id,
+    experienceYears: (profile as any).experience_years,
+    userAge: (profile as any).age,
+    userGender: (profile as any).gender,
     userId: userId,
     skipSaving: skipExerciseSaving, // Skip DB saves during onboarding for performance
     // Mesocycle context for periodization-aware exercise selection
-    mesocycleWeek: profile.current_mesocycle_week,
-    mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,
+    mesocycleWeek: (profile as any).current_mesocycle_week,
+    mesocyclePhase: (profile as any).mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,
     // Caloric phase context for approach-aware optimization
     caloricPhase: profile.caloric_phase as 'bulk' | 'cut' | 'maintenance' | null,
     caloricIntakeKcal: profile.caloric_intake_kcal,
@@ -869,7 +869,7 @@ export async function validateCustomEquipmentAction(
     // Validate equipment (same flow for both text and photo input)
     const result = await validator.validateEquipment({
       equipmentName: finalEquipmentName!,
-      existingEquipment: profile.available_equipment || [],
+      existingEquipment: (profile as any).available_equipment || [],
       customEquipment: (profile.custom_equipment as Array<{ id: string; name: string }>) || [],
       userId
     })
@@ -1047,12 +1047,12 @@ export async function suggestExerciseSubstitutionAction(
     // Enrich input with user profile data + insights + memories
     const enrichedInput: SubstitutionInput = {
       ...input,
-      approachId: profile.approach_id || '',
-      weakPoints: profile.weak_points || [],
+      approachId: (profile as any).approach_id || '',
+      weakPoints: (profile as any).weak_points || [],
       availableEquipment: (profile as any).available_equipment || [],
-      experienceYears: profile.experience_years ?? undefined,
-      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
+      experienceYears: (profile as any).experience_years ?? undefined,
+      mesocycleWeek: (profile as any).current_mesocycle_week ?? undefined,
+      mesocyclePhase: ((profile as any).mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
       activeInsights: (insights || []).map((i: any) => ({
         id: i.id,
         exerciseName: i.exercise_name,
@@ -1117,11 +1117,11 @@ export async function generateWorkoutRationaleAction(
     // Enrich input with user profile data
     const enrichedInput: WorkoutRationaleInput = {
       ...input,
-      approachId: profile.approach_id || '',
-      weakPoints: profile.weak_points || [],
-      experienceYears: profile.experience_years ?? undefined,
-      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
+      approachId: (profile as any).approach_id || '',
+      weakPoints: (profile as any).weak_points || [],
+      experienceYears: (profile as any).experience_years ?? undefined,
+      mesocycleWeek: (profile as any).current_mesocycle_week ?? undefined,
+      mesocyclePhase: ((profile as any).mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined
     }
 
     // Get user's preferred language
@@ -1183,12 +1183,12 @@ export async function validateCustomSubstitutionAction(
     // Enrich input with user profile data + insights + memories
     const enrichedInput: CustomSubstitutionInput = {
       ...input,
-      approachId: profile.approach_id || '',
-      weakPoints: profile.weak_points || [],
+      approachId: (profile as any).approach_id || '',
+      weakPoints: (profile as any).weak_points || [],
       availableEquipment: (profile as any).available_equipment || [],
-      experienceYears: profile.experience_years ?? undefined,
-      mesocycleWeek: profile.current_mesocycle_week ?? undefined,
-      mesocyclePhase: (profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
+      experienceYears: (profile as any).experience_years ?? undefined,
+      mesocycleWeek: (profile as any).current_mesocycle_week ?? undefined,
+      mesocyclePhase: ((profile as any).mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null) ?? undefined,
       activeInsights: (insights || []).map((i: any) => ({
         id: i.id,
         exerciseName: i.exercise_name,
@@ -1351,15 +1351,15 @@ export async function validateWorkoutModificationAction(
       ...input,
       userContext: {
         ...input.userContext,
-        approachId: profile.approach_id || input.userContext.approachId,
-        experienceYears: profile.experience_years ?? undefined,
-        userAge: profile.age ?? undefined,
-        weakPoints: profile.weak_points || []
+        approachId: (profile as any).approach_id || input.userContext.approachId,
+        experienceYears: (profile as any).experience_years ?? undefined,
+        userAge: (profile as any).age ?? undefined,
+        weakPoints: (profile as any).weak_points || []
       },
       workoutContext: {
         ...input.workoutContext,
-        mesocycleWeek: profile.current_mesocycle_week ?? input.workoutContext.mesocycleWeek,
-        mesocyclePhase: (profile.mesocycle_phase as any) ?? input.workoutContext.mesocyclePhase
+        mesocycleWeek: (profile as any).current_mesocycle_week ?? input.workoutContext.mesocycleWeek,
+        mesocyclePhase: ((profile as any).mesocycle_phase as any) ?? input.workoutContext.mesocyclePhase
       }
     }
 
@@ -1413,15 +1413,15 @@ export async function validateExerciseAdditionAction(
       ...input,
       userContext: {
         ...input.userContext,
-        approachId: profile.approach_id || input.userContext.approachId,
-        experienceYears: profile.experience_years ?? undefined,
-        userAge: profile.age ?? undefined,
-        weakPoints: profile.weak_points || []
+        approachId: (profile as any).approach_id || input.userContext.approachId,
+        experienceYears: (profile as any).experience_years ?? undefined,
+        userAge: (profile as any).age ?? undefined,
+        weakPoints: (profile as any).weak_points || []
       },
       currentWorkout: {
         ...input.currentWorkout,
-        mesocycleWeek: profile.current_mesocycle_week ?? input.currentWorkout.mesocycleWeek,
-        mesocyclePhase: (profile.mesocycle_phase as any) ?? input.currentWorkout.mesocyclePhase
+        mesocycleWeek: (profile as any).current_mesocycle_week ?? input.currentWorkout.mesocycleWeek,
+        mesocyclePhase: ((profile as any).mesocycle_phase as any) ?? input.currentWorkout.mesocyclePhase
       }
     }
 
@@ -1474,14 +1474,14 @@ export async function suggestExerciseAdditionAction(
       ...input,
       userContext: {
         ...input.userContext,
-        approachId: profile.approach_id || input.userContext.approachId,
-        experienceYears: profile.experience_years ?? undefined,
-        userAge: profile.age ?? undefined,
-        weakPoints: profile.weak_points || [],
-        availableEquipment: profile.available_equipment || []
+        approachId: (profile as any).approach_id || input.userContext.approachId,
+        experienceYears: (profile as any).experience_years ?? undefined,
+        userAge: (profile as any).age ?? undefined,
+        weakPoints: (profile as any).weak_points || [],
+        availableEquipment: (profile as any).available_equipment || []
       },
-      mesocycleWeek: profile.current_mesocycle_week ?? input.mesocycleWeek,
-      mesocyclePhase: (profile.mesocycle_phase as any) ?? input.mesocyclePhase
+      mesocycleWeek: (profile as any).current_mesocycle_week ?? input.mesocycleWeek,
+      mesocyclePhase: ((profile as any).mesocycle_phase as any) ?? input.mesocyclePhase
     }
 
     // Create suggester agent and get suggestions
