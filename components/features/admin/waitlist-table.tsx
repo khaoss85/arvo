@@ -322,18 +322,20 @@ export function WaitlistTable() {
                         )}
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleRemove(entry.id)}
-                      disabled={processingIds.has(entry.id)}
-                    >
-                      {processingIds.has(entry.id) ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <X className="w-4 h-4" />
-                      )}
-                    </Button>
+                    {entry.status !== 'converted' && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleRemove(entry.id)}
+                        disabled={processingIds.has(entry.id)}
+                      >
+                        {processingIds.has(entry.id) ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <X className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))

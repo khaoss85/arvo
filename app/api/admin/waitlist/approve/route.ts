@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update status to approved
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminClient
       .from('waitlist_entries')
       .update({
         status: 'approved',
