@@ -2712,6 +2712,7 @@ Return ONLY valid JSON (no markdown, no code blocks):
           }
 
           await ExerciseGenerationService.findOrCreateServer(
+            this.supabase,
             exercise.name,
             metadata,
             userId

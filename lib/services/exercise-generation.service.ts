@@ -263,14 +263,14 @@ export class ExerciseGenerationService {
 
   /**
    * Server-side: find or create exercise
+   * @param supabase - Supabase client (should be admin client for background jobs to bypass RLS)
    */
   static async findOrCreateServer(
+    supabase: any,
     name: string,
     metadata: ExerciseMetadata,
     userId?: string | null
   ): Promise<ExerciseGeneration> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
 
     // Try to find existing exercise
     const { data: existing, error: searchError } = await supabase
