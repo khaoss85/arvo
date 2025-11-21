@@ -100,4 +100,5 @@ export const BRO_SPLIT_VARIATION_PATTERN: Record<WorkoutType, { A: string; B: st
   upper: { A: 'Compound', B: 'Isolation' },
   lower: { A: 'Compound', B: 'Isolation' },
   full_body: { A: 'Compound', B: 'Isolation' },
+  rest: { A: 'Rest Day', B: 'Rest Day' },
 }

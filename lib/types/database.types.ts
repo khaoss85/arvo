@@ -462,6 +462,7 @@ export type Database = {
       split_plans: {
         Row: {
           active: boolean | null
+          ai_response_id: string | null
           approach_id: string | null
           created_at: string | null
           cycle_days: number
@@ -478,6 +479,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean | null
+          ai_response_id?: string | null
           approach_id?: string | null
           created_at?: string | null
           cycle_days: number
@@ -494,6 +496,7 @@ export type Database = {
         }
         Update: {
           active?: boolean | null
+          ai_response_id?: string | null
           approach_id?: string | null
           created_at?: string | null
           cycle_days?: number
@@ -703,6 +706,30 @@ export type Database = {
           times_confirmed?: number
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_milestones: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          milestone_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          milestone_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          milestone_type?: string
           user_id?: string
         }
         Relationships: []
@@ -1099,6 +1126,7 @@ export type Database = {
       }
       workouts: {
         Row: {
+          ai_response_id: string | null
           approach_id: string | null
           audio_scripts: Json | null
           completed: boolean | null
@@ -1127,6 +1155,7 @@ export type Database = {
           workout_type: Database["public"]["Enums"]["workout_type"] | null
         }
         Insert: {
+          ai_response_id?: string | null
           approach_id?: string | null
           audio_scripts?: Json | null
           completed?: boolean | null
@@ -1155,6 +1184,7 @@ export type Database = {
           workout_type?: Database["public"]["Enums"]["workout_type"] | null
         }
         Update: {
+          ai_response_id?: string | null
           approach_id?: string | null
           audio_scripts?: Json | null
           completed?: boolean | null
@@ -1359,7 +1389,8 @@ export type Database = {
         | "back"
         | "shoulders"
         | "arms"
-      workout_variation: "A" | "B"
+        | "rest"
+      workout_variation: "A" | "B" | "none"
     }
     CompositeTypes: {
       [_ in never]: never

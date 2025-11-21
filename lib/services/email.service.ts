@@ -12,6 +12,7 @@ import {
   type ReengagementEmailData,
   type SettingsUpdateEmailData,
 } from './email-templates';
+import type { Database } from '@/lib/types/database.types';
 
 interface WaitlistEntry {
   id: string;
@@ -553,7 +554,7 @@ export class EmailService {
         .from('workouts')
         .select('total_volume, target_muscle_groups')
         .eq('user_id', userId)
-        .eq('completed', true)
+        .eq('status', 'completed')
         .gte('completed_at', oneWeekAgo.toISOString());
 
       const { data: profile } = await supabase
@@ -621,7 +622,10 @@ export class EmailService {
         .eq('id', cycleCompletionId)
         .single();
 
-      if (!cycle) {
+      type CycleCompletion = Database['public']['Tables']['cycle_completions']['Row'];
+      const typedCycle = cycle as CycleCompletion | null;
+
+      if (!typedCycle) {
         console.error('Cycle completion not found');
         return false;
       }
@@ -636,12 +640,12 @@ export class EmailService {
 
       const data: CycleCompleteEmailData = {
         firstName: profile?.first_name || 'là',
-        cycleNumber: cycle.cycle_number as number,
-        totalVolume: (cycle.total_volume as number) || 0,
-        workoutsCompleted: (cycle.total_workouts_completed as number) || 0,
-        totalDuration: (cycle.total_duration_seconds as number) || 0,
-        avgMentalReadiness: (cycle.avg_mental_readiness as number) || 0,
-        volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
+        cycleNumber: typedCycle.cycle_number as number,
+        totalVolume: (typedCycle.total_volume as number) || 0,
+        workoutsCompleted: (typedCycle.total_workouts_completed as number) || 0,
+        totalDuration: (typedCycle.total_duration_seconds as number) || 0,
+        avgMentalReadiness: (typedCycle.avg_mental_readiness as number) || 0,
+        volumeByMuscleGroup: (typedCycle.volume_by_muscle_group as Record<string, number>) || {},
       };
 
       const { subject, html } = emailTemplates.cycleComplete(data, appUrl, lang);
@@ -685,7 +689,7 @@ export class EmailService {
         .from('workouts')
         .select('workout_type, completed_at')
         .eq('user_id', userId)
-        .eq('completed', true)
+        .eq('status', 'completed')
         .order('completed_at', { ascending: false })
         .limit(1)
         .single();

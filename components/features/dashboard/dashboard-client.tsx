@@ -4,13 +4,15 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { SplitCycleTimeline } from "./split-cycle-timeline"
-import { RecentWorkoutCard } from "./recent-workout-card"
+import { ActivityFeed } from "./activity-feed"
+import { CheckRoomCard } from "./check-room-card"
 import { CycleCompletionModal } from "./cycle-completion-modal"
 import { SplitSelectionDialog } from "./split-selection-dialog"
+import { SplitAdaptationProgress } from "./split-adaptation-progress"
 import type { User } from "@supabase/supabase-js"
 import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
 import type { UserProfile } from "@/lib/types/schemas"
-import { getLastCycleCompletionAction, getCycleComparisonAction, changeSplitPlanAction, getActiveSplitPlanAction, getAllSplitPlansAction } from "@/app/actions/split-actions"
+import { getCycleComparisonAction, changeSplitPlanAction, getActiveSplitPlanAction, getAllSplitPlansAction } from "@/app/actions/split-actions"
 
 interface DashboardClientProps {
   user: User
@@ -19,10 +21,11 @@ interface DashboardClientProps {
   volumeProgress: MuscleVolumeProgress[]
 }
 
-export function DashboardClient({ user, profile, workouts, volumeProgress }: DashboardClientProps) {
+export function DashboardClient({ user, profile, volumeProgress }: DashboardClientProps) {
   const t = useTranslations("dashboard")
   const [showCompletionModal, setShowCompletionModal] = useState(false)
   const [showSplitSelection, setShowSplitSelection] = useState(false)
+  const [showAdaptationProgress, setShowAdaptationProgress] = useState(false)
   const [cycleStats, setCycleStats] = useState<any>(null)
   const [splitPlanName, setSplitPlanName] = useState<string>("")
   const [availableSplits, setAvailableSplits] = useState<any[]>([])
@@ -76,6 +79,28 @@ export function DashboardClient({ user, profile, workouts, volumeProgress }: Das
     }
   }
 
+  const handleAdaptSplit = () => {
+    // Show adaptation progress modal (triggers async API)
+    setShowCompletionModal(false)
+    setShowAdaptationProgress(true)
+  }
+
+  const handleAdaptationComplete = () => {
+    // Mark modal as dismissed
+    if (profile.last_cycle_completed_at) {
+      sessionStorage.setItem(`cycle-completed-${profile.last_cycle_completed_at}`, 'true')
+    }
+    // Reload page to show adapted split
+    window.location.reload()
+  }
+
+  const handleAdaptationError = (error: string) => {
+    console.error('Adaptation failed:', error)
+    setShowAdaptationProgress(false)
+    // Optionally show error to user
+    alert(error)
+  }
+
   const handleSelectSplit = async (splitId: string) => {
     const result = await changeSplitPlanAction(user.id, splitId)
     if (result.success) {
@@ -88,11 +113,6 @@ export function DashboardClient({ user, profile, workouts, volumeProgress }: Das
       window.location.reload()
     }
   }
-  // Get the 5 most recent completed workouts, ordered by completion date
-  const completedWorkouts = workouts
-    .filter(w => w.completed && w.completed_at)
-    .sort((a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime())
-    .slice(0, 5)
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -155,22 +175,10 @@ export function DashboardClient({ user, profile, workouts, volumeProgress }: Das
             </Link>
           </div>
 
-          {completedWorkouts.length > 0 ? (
-            <div className="space-y-3">
-              {completedWorkouts.map((workout) => (
-                <RecentWorkoutCard key={workout.id} workout={workout} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <div className="flex flex-col items-center">
-                <span className="text-5xl mb-4" role="img" aria-label="Flexed bicep">💪</span>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {t("noWorkoutsMessage")}
-                </p>
-              </div>
-            </div>
-          )}
+          <ActivityFeed userId={user.id} limit={10} />
+
+          {/* Check Room */}
+          <CheckRoomCard userId={user.id} className="mt-6" />
         </section>
       </div>
 
@@ -188,7 +196,10 @@ export function DashboardClient({ user, profile, workouts, volumeProgress }: Das
             totalSets: cycleStats.currentStats.totalSets,
           }}
           comparison={cycleStats.comparison}
+          volumeByMuscleGroup={cycleStats.currentStats.volumeByMuscleGroup}
+          previousVolumeByMuscleGroup={cycleStats.previousVolumeByMuscleGroup}
           onContinue={handleContinue}
+          onAdaptSplit={handleAdaptSplit}
           onChangeSplit={handleChangeSplit}
         />
       )}
@@ -201,6 +212,14 @@ export function DashboardClient({ user, profile, workouts, volumeProgress }: Das
           splits={availableSplits}
           currentSplitId={profile.active_split_plan_id}
           onSelect={handleSelectSplit}
+        />
+      )}
+
+      {/* Split Adaptation Progress */}
+      {showAdaptationProgress && (
+        <SplitAdaptationProgress
+          onComplete={handleAdaptationComplete}
+          onError={handleAdaptationError}
         />
       )}
     </div>

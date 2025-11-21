@@ -138,6 +138,63 @@
         "5": "Incredibile"
       }
     },
+    "adaptation": {
+      "title": "Adattamento Piano Split",
+      "subtitle": "L'AI sta analizzando i tuoi progressi e adattando il tuo piano di allenamento",
+      "starting": "Avvio adattamento...",
+      "complete": "Adattamento completato!",
+      "info": "Potrebbero volerci fino a 3 minuti. Puoi attendere qui o chiudere questa finestra e tornare più tardi.",
+      "errors": {
+        "failed": "Impossibile adattare il piano split. Riprova."
+      }
+    },
+    "activityFeed": {
+      "filters": {
+        "all": "Tutto",
+        "workouts": "Allenamenti",
+        "milestones": "Traguardi"
+      },
+      "types": {
+        "workout_completed": "Allenamento",
+        "cycle_completed": "Ciclo Completato",
+        "split_modified": "Split Modificata",
+        "onboarding_completed": "Onboarding",
+        "first_workout_completed": "Primo Allenamento",
+        "progress_check_milestone": "Check Progressi"
+      },
+      "cycleCompleted": {
+        "title": "Ciclo {number} Completato",
+        "workouts": "allenamenti",
+        "avgMentalReadiness": "Prontezza mentale media"
+      },
+      "splitModified": {
+        "title": "Split Modificata",
+        "types": {
+          "swap_days": "Giorni Scambiati",
+          "toggle_muscle": "Gruppi Muscolari Modificati",
+          "change_variation": "Variazione Cambiata",
+          "change_split_type": "Tipo Split Cambiato"
+        }
+      },
+      "onboardingCompleted": {
+        "title": "Onboarding Completato"
+      },
+      "firstWorkoutCompleted": {
+        "title": "Primo Allenamento Completato"
+      },
+      "progressCheckMilestone": {
+        "title": "Check Progressi",
+        "photos": "{count, plural, one {# foto} other {# foto}}",
+        "weight": "{weight}kg",
+        "cycleDay": "Giorno {day}",
+        "withMeasurements": "con misure"
+      },
+      "emptyState": {
+        "all": "Nessuna attività ancora. Completa il tuo primo allenamento per iniziare!",
+        "workouts": "Nessun allenamento completato ancora. Inizia ad allenarti per vedere i tuoi progressi qui!",
+        "milestones": "Nessun traguardo ancora. Completa un ciclo o modifica la tua split per vedere i traguardi!"
+      }
+    },
     "splitCycle": {
       "loadingSplitPlan": "Caricamento piano split...",
       "activeSplitPlan": "Piano Split Attivo",
@@ -443,6 +500,13 @@
       "remaining": "rimanenti",
       "targetReached": "Obiettivo raggiunto!"
     },
+    "muscleDistribution": "Distribuzione Muscolare",
+    "cycleComparison": "Confronto Cicli",
+    "cycleProgressTitle": "Progresso del Ciclo",
+    "actualVsTarget": "Il tuo progresso attuale vs obiettivi pianificati",
+    "currentVsPrevious": "Confronto ciclo corrente vs ciclo precedente",
+    "viewRadarChart": "Visualizza grafico distribuzione",
+    "viewMetrics": "Visualizza metriche dettagliate",
     "generation": {
       "title": "Generazione Allenamento",
       "phases": {
@@ -464,9 +528,11 @@
         "mentalReadiness": "Mental Readiness Media",
         "totalSets": "Serie Totali"
       },
+      "muscleDistribution": "Distribuzione Gruppi Muscolari",
       "comparisonNote": "Rispetto al ciclo precedente",
       "actions": {
         "continue": "Continua con {splitName}",
+        "adaptSplit": "Adatta Split con AI",
         "changeSplit": "Cambia Split"
       }
     },
@@ -478,7 +544,182 @@
       "created": "Creato il {date}",
       "select": "Seleziona",
       "noSplits": "Nessuna split disponibile. Crea una nuova split per iniziare."
+    },
+    "checkRoom": {
+      "title": "Check Room",
+      "latestCheck": "Ultimo Check",
+      "newCheck": "Nuovo Check",
+      "viewAll": "Vedi Tutti i Check",
+      "noChecks": "Nessun check ancora. Fai il tuo primo check progressi!",
+      "takeFirstCheck": "Fai il Tuo Primo Check",
+      "stats": {
+        "totalChecks": "Check Totali",
+        "daysSince": "Giorni Dall'Ultimo",
+        "today": "Oggi",
+        "milestone": "Traguardo"
+      },
+      "photoTypes": {
+        "front": "Frontale",
+        "side_left": "Laterale Sinistro",
+        "side_right": "Laterale Destro",
+        "back": "Posteriore"
+      },
+      "form": {
+        "title": "Nuovo Check Progressi",
+        "uploadPhotos": "Carica Foto",
+        "uploadInstructions": "Fai le foto con luce uniforme, stessa ora del giorno e stessa posizione per un confronto ottimale",
+        "weight": "Peso (kg)",
+        "weightOptional": "Opzionale",
+        "notes": "Note",
+        "notesPlaceholder": "Come ti senti? Qualche osservazione?",
+        "measurements": "Misure Corporee (cm)",
+        "measurementsOptional": "Opzionale",
+        "addMeasurement": "Aggiungi Misura",
+        "measurementTypes": {
+          "waist": "Vita",
+          "chest": "Petto",
+          "arm_left": "Braccio Sinistro",
+          "arm_right": "Braccio Destro",
+          "thigh_left": "Coscia Sinistra",
+          "thigh_right": "Coscia Destra",
+          "hips": "Fianchi",
+          "shoulders": "Spalle",
+          "calf_left": "Polpaccio Sinistro",
+          "calf_right": "Polpaccio Destro"
+        },
+        "markAsMilestone": "Segna come traguardo",
+        "milestoneDescription": "I check traguardo appaiono nel tuo feed attività",
+        "creating": "Creazione check...",
+        "create": "Crea Check",
+        "uploadPhoto": "Carica Foto",
+        "changePhoto": "Cambia Foto",
+        "removePhoto": "Rimuovi Foto"
+      },
+      "errors": {
+        "createFailed": "Creazione check fallita. Riprova.",
+        "noPhotos": "Carica almeno una foto",
+        "invalidWeight": "Inserisci un peso valido",
+        "invalidMeasurement": "Inserisci una misura valida"
+      },
+      "success": {
+        "created": "Check progressi creato con successo!"
+      }
+    },
+    "progressChecks": {
+      "title": "I Tuoi Check",
+      "subtitle": "{count, plural, =0 {Nessun check ancora} one {# check} other {# check}}",
+      "newCheck": "Nuovo Check",
+      "filters": {
+        "all": "Tutti",
+        "milestones": "Solo Traguardi"
+      },
+      "empty": {
+        "title": "Nessun Check Ancora",
+        "description": "Inizia a tracciare i tuoi progressi scattando il tuo primo check",
+        "cta": "Fai il Tuo Primo Check"
+      },
+      "milestone": "Traguardo",
+      "today": "Oggi",
+      "daysAgo": "{days, plural, one {# giorno fa} other {# giorni fa}}",
+      "cycleInfo": "Ciclo {cycle}, Giorno {day}",
+      "photoAlt": "Foto check progresso"
+    },
+    "progressCheckDetail": {
+      "title": "Dettagli Check",
+      "backToGallery": "Torna alla Galleria",
+      "delete": "Elimina",
+      "date": "Data",
+      "weight": "Peso",
+      "cycleInfo": "Ciclo {cycle}, Giorno {day}",
+      "milestone": "Traguardo",
+      "notes": "Note",
+      "noPhotos": "Nessuna foto disponibile",
+      "photoTypes": {
+        "front": "Frontale",
+        "sideLeft": "Laterale Sinistro",
+        "sideRight": "Laterale Destro",
+        "back": "Posteriore"
+      },
+      "measurements": {
+        "title": "Misure Corporee",
+        "chest": "Petto",
+        "waist": "Vita",
+        "hips": "Fianchi",
+        "bicepLeft": "Bicipite Sinistro",
+        "bicepRight": "Bicipite Destro",
+        "thighLeft": "Coscia Sinistra",
+        "thighRight": "Coscia Destra",
+        "calfLeft": "Polpaccio Sinistro",
+        "calfRight": "Polpaccio Destro"
+      },
+      "deleteConfirm": {
+        "title": "Eliminare Check?",
+        "message": "Questa azione è permanente. Tutte le foto e i dati saranno eliminati.",
+        "cancel": "Annulla",
+        "confirm": "Elimina",
+        "deleting": "Eliminazione..."
+      },
+      "deleteError": "Errore durante l'eliminazione del check",
+      "compare": "Confronta"
+    },
+    "progressCheckCompare": {
+      "title": "Confronto Check",
+      "backToGallery": "Torna alla Galleria",
+      "before": "Prima",
+      "after": "Dopo",
+      "daysBetween": "{days, plural, one {# giorno di differenza} other {# giorni di differenza}}",
+      "weight": "Peso",
+      "difference": "Differenza",
+      "info": "Informazioni",
+      "milestone": "Traguardo",
+      "cycleInfo": "Ciclo {cycle}, Giorno {day}",
+      "noPhoto": "Nessuna foto",
+      "photoTypes": {
+        "front": "Frontale",
+        "sideLeft": "Laterale Sinistro",
+        "sideRight": "Laterale Destro",
+        "back": "Posteriore"
+      },
+      "measurements": {
+        "title": "Confronto Misure",
+        "bodyPart": "Parte del Corpo",
+        "chest": "Petto",
+        "waist": "Vita",
+        "hips": "Fianchi",
+        "bicepLeft": "Bicipite Sinistro",
+        "bicepRight": "Bicipite Destro",
+        "thighLeft": "Coscia Sinistra",
+        "thighRight": "Coscia Destra",
+        "calfLeft": "Polpaccio Sinistro",
+        "calfRight": "Polpaccio Destro"
+      }
+    },
+    "compareCheckSelector": {
+      "title": "Seleziona Check da Confrontare",
+      "noChecks": "Nessun altro check disponibile per il confronto",
+      "today": "Oggi",
+      "daysAgo": "{days, plural, one {# giorno fa} other {# giorni fa}}",
+      "cycleInfo": "Ciclo {cycle}, Giorno {day}",
+      "cancel": "Annulla",
+      "checkPreviewAlt": "Anteprima check"
     }
+  },
+  "share": {
+    "shareButton": "Condividi",
+    "share": "Condividi",
+    "dialogTitle": "Condividi i Tuoi Risultati",
+    "dialogDescription": "Crea un link condivisibile con controlli sulla privacy",
+    "privacySettings": "Impostazioni Privacy",
+    "showName": "Mostra il mio nome",
+    "showStats": "Mostra statistiche",
+    "showCharts": "Mostra grafici",
+    "showExercises": "Mostra nomi esercizi",
+    "showNotes": "Mostra note",
+    "shareLink": "Link di Condivisione",
+    "preview": "Anteprima",
+    "done": "Fatto",
+    "viewCount": "{count, plural, one {# visualizzazione} other {# visualizzazioni}}",
+    "errorGenerating": "Impossibile generare il link di condivisione"
   },
   "workout": {
     "pages": {
@@ -1059,6 +1300,21 @@
       "volumeExplanation": "Set diretti (primari) + indiretti (secondari)",
       "actual": "Effettivo",
       "target": "Target"
+    },
+    "generation": {
+      "complete": "Workout Pronto!",
+      "failed": "Generazione Fallita",
+      "inProgress": "Generazione Workout in Corso",
+      "alreadyInProgress": "Hai già un workout in fase di generazione. Attendi il completamento o riprova più tardi.",
+      "resuming": "Ripresa generazione...",
+      "redirecting": "Reindirizzamento al tuo workout...",
+      "ready": "Il tuo workout è pronto da visualizzare",
+      "canCloseMessage": "Puoi chiudere e tornare dopo. La generazione continua in background.",
+      "errorDetails": "Si è verificato un errore durante la generazione. Riprova.",
+      "tryAgain": "Riprova",
+      "viewWorkout": "Visualizza Workout",
+      "closeAndCheckLater": "Chiudi e Controlla Dopo",
+      "continuesInBackground": "La generazione continua anche se chiudi questa finestra"
     }
   },
   "onboarding": {
@@ -1522,6 +1778,44 @@
       "notSupported": "Il coaching audio non è supportato nel tuo browser",
       "success": "Impostazioni audio salvate",
       "error": "Errore nel salvare le impostazioni audio"
+    },
+    "personalInfo": {
+      "title": "Informazioni Personali",
+      "description": "Gestisci i tuoi dati personali utilizzati per personalizzare gli allenamenti",
+      "fields": {
+        "firstName": "Nome",
+        "gender": "Genere",
+        "age": "Età",
+        "weight": "Peso",
+        "height": "Altezza"
+      },
+      "gender": {
+        "male": "Maschio",
+        "female": "Femmina",
+        "other": "Altro"
+      },
+      "units": {
+        "years": "anni",
+        "kg": "kg",
+        "cm": "cm"
+      },
+      "placeholders": {
+        "firstName": "Inserisci il tuo nome"
+      },
+      "buttons": {
+        "save": "Salva Modifiche",
+        "saving": "Salvataggio..."
+      },
+      "messages": {
+        "updateSuccess": "Informazioni personali aggiornate con successo!",
+        "updateFailed": "Errore nell'aggiornamento delle informazioni personali"
+      },
+      "errors": {
+        "invalidAge": "L'età deve essere tra 13 e 120 anni",
+        "invalidWeight": "Il peso deve essere tra 0 e 500 kg",
+        "invalidHeight": "L'altezza deve essere tra 0 e 300 cm"
+      },
+      "note": "Queste informazioni aiutano a personalizzare il tuo allenamento e l'esperienza di coaching AI"
     },
     "account": {
       "title": "Account",
@@ -2006,7 +2300,30 @@
         "topE1RM": "e1RM Massimo",
         "totalVolume": "Volume Totale",
         "workouts": "Allenamenti"
-      }
+      },
+      "muscleDistributionTitle": "Analisi Distribuzione Muscolare",
+      "cycleNumber": "Ciclo #{number}",
+      "comparisonModeTarget": "vs Obiettivo",
+      "comparisonModePrevious": "vs Ciclo Precedente",
+      "currentCycleProgress": "Progresso Ciclo Corrente",
+      "muscleGroupDistribution": "Distribuzione Gruppi Muscolari",
+      "historicalCycles": "Cicli Storici",
+      "viewAll": "Visualizza Tutti ({count})",
+      "showLess": "Mostra Meno",
+      "cycleHash": "Ciclo #{number}",
+      "last": "Ultimo",
+      "workouts": "allenamenti",
+      "sets": "serie",
+      "compareWith": "Confronta con",
+      "compareTwoCycles": "Confronta Due Cicli",
+      "cycleA": "Ciclo A",
+      "cycleB": "Ciclo B",
+      "comparingCycles": "Confronto Ciclo #{{a}} vs Ciclo #{{b}}",
+      "volumeTrendTitle": "Tendenza Volume nel Tempo",
+      "selectMuscles": "Seleziona muscoli da visualizzare",
+      "noTrendData": "Servono almeno 2 cicli completati per l'analisi del trend",
+      "isCurrentCycle": "è il tuo ciclo corrente",
+      "sameCycleWarning": "Stai confrontando lo stesso ciclo. Seleziona cicli diversi per un confronto significativo."
     },
     "ui": {
       "progressPhases": {
@@ -2018,11 +2335,20 @@
       }
     }
   },
+  "Analytics": {
+    "Metrics": {
+      "workouts": "Allenamenti",
+      "duration": "Durata",
+      "volume": "Volume",
+      "sets": "Serie"
+    }
+  },
   "api": {
     "workouts": {
       "generate": {
         "progress": {
           "starting": "Avvio generazione allenamento",
+          "resuming": "Ripresa generazione...",
           "loadingProfile": "Caricamento del tuo profilo",
           "planningWorkout": "Pianificazione del tuo allenamento",
           "aiAnalyzing": "AI in analisi degli esercizi",
@@ -2037,11 +2363,12 @@
           "unauthorized": "Non autorizzato",
           "failedToGenerate": "Impossibile generare l'allenamento",
           "internalServerError": "Errore interno del server",
+          "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}",
+          "generationAlreadyInProgress": "Hai già un allenamento in fase di generazione. Attendi il completamento o riprova più tardi.",
           "timeout": "Timeout durante la generazione. L'AI sta impiegando più tempo del previsto. Riprova tra poco.",
           "exerciseSelectionFailed": "Impossibile selezionare gli esercizi. L'AI non è riuscita a generare un allenamento valido dopo diversi tentativi. Riprova tra poco.",
           "splitPlanningFailed": "Impossibile pianificare la tua split di allenamento. Riprova o contatta il supporto se il problema persiste.",
-          "validationFailed": "L'allenamento generato non ha soddisfatto gli standard di qualità. Riprova - l'AI tenterà di migliorare il risultato.",
-          "cannotGeneratePastDay": "Impossibile generare allenamento per giorno di ciclo passato. Corrente: {current}, Target: {target}"
+          "validationFailed": "L'allenamento generato non ha soddisfatto gli standard di qualità. Riprova - l'AI tenterà di migliorare il risultato."
         },
         "polling": {
           "generating": "Generazione allenamento in corso...",
@@ -2052,6 +2379,46 @@
       "errors": {
         "workoutNotFound": "Allenamento non trovato",
         "failedToFetch": "Impossibile recuperare l'allenamento"
+      }
+    },
+    "splits": {
+      "generate": {
+        "progress": {
+          "starting": "Avvio generazione split",
+          "resuming": "Ripresa generazione...",
+          "loadingProfile": "Caricamento del tuo profilo",
+          "loadingHistory": "Caricamento cronologia allenamenti",
+          "analyzing": "AI in analisi delle tue esigenze di allenamento",
+          "generating": "Generazione piano split personalizzato",
+          "optimizing": "Ottimizzazione struttura split",
+          "finalizing": "Finalizzazione piano split",
+          "splitReady": "Piano split pronto!"
+        },
+        "errors": {
+          "unauthorized": "Non autorizzato",
+          "failedToGenerate": "Impossibile generare il piano split",
+          "internalServerError": "Errore interno del server",
+          "generationAlreadyInProgress": "Hai già una split in fase di generazione. Attendi il completamento o riprova più tardi.",
+          "timeout": "Timeout durante la generazione split. Il servizio potrebbe essere sovraccarico. Riprova tra qualche minuto.",
+          "splitPlanningFailed": "Impossibile pianificare la tua split di allenamento. Riprova o contatta il supporto se il problema persiste.",
+          "validationFailed": "La split generata non ha soddisfatto gli standard di qualità. Riprova - l'AI tenterà di migliorare il risultato.",
+          "generationTimeout": "La generazione della split ha impiegato troppo tempo. Riprova."
+        }
+      },
+      "adapt": {
+        "progress": {
+          "starting": "Avvio adattamento split",
+          "adapting": "Adattamento del tuo piano split",
+          "splitReady": "Split adattata con successo!"
+        },
+        "errors": {
+          "unauthorized": "Non autorizzato",
+          "failedToAdapt": "Impossibile adattare il piano split",
+          "generationAlreadyInProgress": "Hai già una split in fase di adattamento. Attendi il completamento.",
+          "timeout": "Timeout durante l'adattamento split. Riprova.",
+          "adaptationTimeout": "L'adattamento ha impiegato troppo tempo. Riprova.",
+          "noActiveSplit": "Nessun piano split attivo trovato. Crea prima una split."
+        }
       }
     },
     "onboarding": {
@@ -2083,6 +2450,7 @@
   "memory": {
     "title": "Dashboard Memory",
     "subtitle": "Cosa ha imparato Arvo su di te",
+    "backToDashboard": "Torna alla Dashboard",
     "loading": "Caricamento...",
     "stats": {
       "activeMemories": "Memory Attive",
@@ -3829,6 +4197,31 @@
     "obliques": "Obliqui",
     "lowerBack": "Lombare"
   },
+  "checkRoomSection": {
+    "sectionTitle": {
+      "part1": "Traccia i Progressi Come un",
+      "part2": "Pro"
+    },
+    "sectionSubtitle": "Foto dei progressi, analisi distribuzione muscolare e misure corporee complete—tutto in un unico posto.",
+    "cardTitle": "Check Room",
+    "cardDescription": "Tracciamento visivo dei progressi con foto, peso e misure corporee",
+    "feature1": "Foto da 4 angolazioni (frontale, laterali, retro)",
+    "feature2": "Traccia peso e oltre 10 misure corporee",
+    "feature3": "Confronti visivi prima/dopo",
+    "feature4": "Sistema milestone per check importanti",
+    "footer": {
+      "bold": "Progressi Basati sui Dati:",
+      "text": "Arvo combina tracciamento visivo con analisi approfondite per darti un quadro completo del tuo percorso di trasformazione."
+    }
+  },
+  "radarChartSection": {
+    "cardTitle": "Analisi Distribuzione Muscolare",
+    "cardDescription": "Visualizza il volume di allenamento su tutti i gruppi muscolari",
+    "feature1": "Vedi la distribuzione del volume muscolare a colpo d'occhio",
+    "feature2": "Confronta effettivo vs piano split target",
+    "feature3": "Tracciamento evoluzione ciclo-dopo-ciclo",
+    "feature4": "Identifica istantaneamente squilibri tra gruppi muscolari"
+  },
   "landingPro": {
     "hero": {
       "title": {
@@ -3955,6 +4348,42 @@
           "description": "Ricorda cosa funziona per il TUO corpo. Pattern infortuni, preferenze esercizi, tolleranza volume—tutto tracciato automaticamente."
         }
       }
+    },
+    "radarChartSection": {
+      "title": "Grafico Radar Distribuzione Muscolare",
+      "description": "Visualizza e ottimizza la distribuzione del volume su tutti i gruppi muscolari. Confronta cicli, identifica squilibri e assicura sviluppo bilanciato.",
+      "useCase1": {
+        "title": "Confronto Target",
+        "description": "Vedi il progresso in tempo reale vs i target di volume del tuo piano split"
+      },
+      "useCase2": {
+        "title": "Evoluzione Cicli",
+        "description": "Confronta ciclo corrente vs cicli precedenti per tracciare la progressione"
+      },
+      "useCase3": {
+        "title": "Rilevamento Squilibri",
+        "description": "Identifica istantaneamente gruppi muscolari sotto/sovra-allenati"
+      }
+    },
+    "checkRoomSection": {
+      "title": "Check Room: Tracciamento Visivo Progressi",
+      "description": "Documenta la tua trasformazione con foto dei progressi consistenti, peso e misure corporee",
+      "benefit1": {
+        "title": "Foto da 4 Angolazioni",
+        "description": "Frontale, laterali, retro per vista completa"
+      },
+      "benefit2": {
+        "title": "Oltre 10 Misure Corporee",
+        "description": "Traccia braccia, petto, vita, cosce, polpacci"
+      },
+      "benefit3": {
+        "title": "Sistema Milestone",
+        "description": "Segna check importanti per il feed attività"
+      },
+      "proTip": {
+        "bold": "Suggerimento Pro:",
+        "text": "Combina analisi grafico radar con foto Check Room per correlare cambiamenti visivi con distribuzione volume. Perfetto per cicli prep e identificazione punti deboli."
+      }
     }
   },
   "landingSimple": {
@@ -4058,6 +4487,21 @@
         "quote": "3 minuti per partire. Zero complicazioni. Solo risultati.",
         "name": "Luca, 35",
         "result": "-12kg in 4 mesi"
+      }
+    },
+    "simpleProgressSection": {
+      "title": {
+        "part1": "Vedi i Tuoi",
+        "part2": "Progressi"
+      },
+      "subtitle": "Semplici foto prima/dopo e grafici di progressi automatici. Nessun tracciamento complicato.",
+      "photos": {
+        "title": "Foto Progressi",
+        "description": "Scatta veloci foto prima/dopo. L'app ti ricorda quando è ora di un nuovo check."
+      },
+      "chart": {
+        "title": "Progressi Muscolari",
+        "description": "Vedi quali muscoli stai allenando in un grafico semplice. Tutto automatico."
       }
     }
   }

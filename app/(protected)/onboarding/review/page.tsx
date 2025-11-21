@@ -36,6 +36,11 @@ export default function ReviewPage() {
   const [showMedicalDisclaimer, setShowMedicalDisclaimer] = useState(false)
   const [checkingForCompletedSetup, setCheckingForCompletedSetup] = useState(true)
 
+  // State for resuming in-progress generation
+  const [resumingGeneration, setResumingGeneration] = useState(false)
+  const [existingRequestId, setExistingRequestId] = useState<string | null>(null)
+  const [existingProgress, setExistingProgress] = useState<number>(0)
+
   useEffect(() => {
     setStep(7)
     if (data.approachId) {
@@ -56,7 +61,7 @@ export default function ReviewPage() {
     }
   }, [data.approachId, data.strengthBaseline, data.gender, data.weight, setStep])
 
-  // Check on mount if onboarding was already completed (resume check)
+  // Check on mount if onboarding was already completed or in progress (resume check)
   useEffect(() => {
     const checkForCompletedSetup = async () => {
       if (!user?.id) {
@@ -67,16 +72,55 @@ export default function ReviewPage() {
       try {
         const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
 
-        // Check if there's a completed split generation for this user
+        // Check if there's an active generation for this user
         const activeGeneration = await GenerationQueueService.getActiveGeneration(user.id)
 
-        if (activeGeneration?.status === 'completed' && activeGeneration.split_plan_id) {
-          console.log('[ReviewPage] Found completed onboarding setup, redirecting to dashboard...')
-
-          // Clear onboarding state and redirect
-          reset()
-          router.push('/dashboard')
+        if (!activeGeneration) {
+          setCheckingForCompletedSetup(false)
           return
+        }
+
+        // Check if it's an onboarding generation (not workout generation)
+        const context = activeGeneration.context as any
+        const isOnboarding = context?.type === 'split' || context?.type === 'onboarding'
+
+        if (!isOnboarding) {
+          // This is a workout generation, not onboarding - ignore
+          setCheckingForCompletedSetup(false)
+          return
+        }
+
+        // Check if generation is stale (>10 minutes old)
+        const ageMs = Date.now() - new Date(activeGeneration.created_at).getTime()
+        if (ageMs > 10 * 60 * 1000) {
+          console.log('[ReviewPage] Generation is stale (>10 minutes), allowing fresh start')
+          setCheckingForCompletedSetup(false)
+          return
+        }
+
+        // Handle different generation statuses
+        switch (activeGeneration.status) {
+          case 'completed':
+            if (activeGeneration.split_plan_id) {
+              console.log('[ReviewPage] Found completed onboarding setup, redirecting to dashboard...')
+              reset()
+              router.push('/dashboard')
+            }
+            break
+
+          case 'in_progress':
+          case 'pending':
+            console.log('[ReviewPage] Resuming in-progress generation:', activeGeneration.request_id, 'at', activeGeneration.progress_percent + '%')
+            setExistingRequestId(activeGeneration.request_id)
+            setExistingProgress(activeGeneration.progress_percent || 0)
+            setResumingGeneration(true)
+            setLoading(true) // Show progress bar immediately
+            break
+
+          case 'failed':
+            console.log('[ReviewPage] Previous generation failed:', activeGeneration.error_message)
+            setError(activeGeneration.error_message || 'Previous generation failed. Please try again.')
+            break
         }
       } catch (error) {
         console.error('[ReviewPage] Failed to check for completed setup:', error)
@@ -564,7 +608,17 @@ export default function ReviewPage() {
 
       {error && (
         <div className="mt-6 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
-          <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+          <p className="text-sm text-red-800 dark:text-red-300 mb-3">{error}</p>
+          <Button
+            onClick={() => {
+              setError(null)
+              setLoading(false)
+            }}
+            variant="outline"
+            className="bg-white dark:bg-gray-900"
+          >
+            Try Again / Riprova
+          </Button>
         </div>
       )}
 
@@ -596,7 +650,9 @@ export default function ReviewPage() {
               weeklyFrequency: data.weeklyFrequency
             }}
             phases={onboardingPhases}
-            cancellable={false}
+            cancellable={true}
+            existingRequestId={resumingGeneration ? (existingRequestId ?? undefined) : undefined}
+            initialProgress={resumingGeneration ? existingProgress : undefined}
             onComplete={handleGenerationComplete}
             onError={handleGenerationError}
             onCancel={handleGenerationCancel}

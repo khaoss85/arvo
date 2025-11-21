@@ -138,6 +138,63 @@
         "5": "Incredible"
       }
     },
+    "adaptation": {
+      "title": "Adapting Split Plan",
+      "subtitle": "AI is analyzing your progress and adapting your training plan",
+      "starting": "Starting adaptation...",
+      "complete": "Adaptation complete!",
+      "info": "This may take up to 3 minutes. You can wait here or close this window and return later.",
+      "errors": {
+        "failed": "Failed to adapt split plan. Please try again."
+      }
+    },
+    "activityFeed": {
+      "filters": {
+        "all": "All",
+        "workouts": "Workouts",
+        "milestones": "Milestones"
+      },
+      "types": {
+        "workout_completed": "Workout",
+        "cycle_completed": "Cycle Complete",
+        "split_modified": "Split Modified",
+        "onboarding_completed": "Onboarding",
+        "first_workout_completed": "First Workout",
+        "progress_check_milestone": "Progress Check"
+      },
+      "cycleCompleted": {
+        "title": "Cycle {number} Completed",
+        "workouts": "workouts",
+        "avgMentalReadiness": "Average mental readiness"
+      },
+      "splitModified": {
+        "title": "Split Modified",
+        "types": {
+          "swap_days": "Swapped Days",
+          "toggle_muscle": "Modified Muscle Groups",
+          "change_variation": "Changed Variation",
+          "change_split_type": "Changed Split Type"
+        }
+      },
+      "onboardingCompleted": {
+        "title": "Onboarding Completed"
+      },
+      "firstWorkoutCompleted": {
+        "title": "First Workout Completed"
+      },
+      "progressCheckMilestone": {
+        "title": "Progress Check",
+        "photos": "{count, plural, one {# photo} other {# photos}}",
+        "weight": "{weight}kg",
+        "cycleDay": "Day {day}",
+        "withMeasurements": "with measurements"
+      },
+      "emptyState": {
+        "all": "No activity yet. Complete your first workout to get started!",
+        "workouts": "No workouts completed yet. Start training to see your progress here!",
+        "milestones": "No milestones yet. Complete a cycle or modify your split to see milestones!"
+      }
+    },
     "splitCycle": {
       "loadingSplitPlan": "Loading split plan...",
       "activeSplitPlan": "Active Split Plan",
@@ -443,6 +500,13 @@
       "remaining": "remaining",
       "targetReached": "Target reached!"
     },
+    "muscleDistribution": "Muscle Distribution",
+    "cycleComparison": "Cycle Comparison",
+    "cycleProgressTitle": "Cycle Progress",
+    "actualVsTarget": "Your current cycle progress vs planned targets",
+    "currentVsPrevious": "Current cycle vs previous cycle comparison",
+    "viewRadarChart": "View muscle distribution chart",
+    "viewMetrics": "View detailed metrics",
     "generation": {
       "title": "Generating Workout",
       "phases": {
@@ -464,9 +528,11 @@
         "mentalReadiness": "Avg Mental Readiness",
         "totalSets": "Total Sets"
       },
+      "muscleDistribution": "Muscle Group Distribution",
       "comparisonNote": "Compared to previous cycle",
       "actions": {
         "continue": "Continue with {splitName}",
+        "adaptSplit": "Adapt Split with AI",
         "changeSplit": "Change Split"
       }
     },
@@ -478,7 +544,182 @@
       "created": "Created on {date}",
       "select": "Select",
       "noSplits": "No splits available. Create a new split to get started."
+    },
+    "checkRoom": {
+      "title": "Check Room",
+      "latestCheck": "Latest Check",
+      "newCheck": "New Check",
+      "viewAll": "View All Checks",
+      "noChecks": "No checks yet. Take your first progress check!",
+      "takeFirstCheck": "Take Your First Check",
+      "stats": {
+        "totalChecks": "Total Checks",
+        "daysSince": "Days Since Last",
+        "today": "Today",
+        "milestone": "Milestone"
+      },
+      "photoTypes": {
+        "front": "Front",
+        "side_left": "Side Left",
+        "side_right": "Side Right",
+        "back": "Back"
+      },
+      "form": {
+        "title": "New Progress Check",
+        "uploadPhotos": "Upload Photos",
+        "uploadInstructions": "Take photos in consistent lighting, same time of day, and same location for best comparison",
+        "weight": "Weight (kg)",
+        "weightOptional": "Optional",
+        "notes": "Notes",
+        "notesPlaceholder": "How do you feel? Any observations?",
+        "measurements": "Body Measurements (cm)",
+        "measurementsOptional": "Optional",
+        "addMeasurement": "Add Measurement",
+        "measurementTypes": {
+          "waist": "Waist",
+          "chest": "Chest",
+          "arm_left": "Left Arm",
+          "arm_right": "Right Arm",
+          "thigh_left": "Left Thigh",
+          "thigh_right": "Right Thigh",
+          "hips": "Hips",
+          "shoulders": "Shoulders",
+          "calf_left": "Left Calf",
+          "calf_right": "Right Calf"
+        },
+        "markAsMilestone": "Mark as milestone",
+        "milestoneDescription": "Milestone checks appear in your activity feed",
+        "creating": "Creating check...",
+        "create": "Create Check",
+        "uploadPhoto": "Upload Photo",
+        "changePhoto": "Change Photo",
+        "removePhoto": "Remove Photo"
+      },
+      "errors": {
+        "createFailed": "Failed to create check. Please try again.",
+        "noPhotos": "Please upload at least one photo",
+        "invalidWeight": "Please enter a valid weight",
+        "invalidMeasurement": "Please enter a valid measurement"
+      },
+      "success": {
+        "created": "Progress check created successfully!"
+      }
+    },
+    "progressChecks": {
+      "title": "Your Checks",
+      "subtitle": "{count, plural, =0 {No checks yet} one {# check} other {# checks}}",
+      "newCheck": "New Check",
+      "filters": {
+        "all": "All",
+        "milestones": "Milestones Only"
+      },
+      "empty": {
+        "title": "No Checks Yet",
+        "description": "Start tracking your progress by taking your first check",
+        "cta": "Take Your First Check"
+      },
+      "milestone": "Milestone",
+      "today": "Today",
+      "daysAgo": "{days, plural, one {# day ago} other {# days ago}}",
+      "cycleInfo": "Cycle {cycle}, Day {day}",
+      "photoAlt": "Progress check photo"
+    },
+    "progressCheckDetail": {
+      "title": "Check Details",
+      "backToGallery": "Back to Gallery",
+      "delete": "Delete",
+      "date": "Date",
+      "weight": "Weight",
+      "cycleInfo": "Cycle {cycle}, Day {day}",
+      "milestone": "Milestone",
+      "notes": "Notes",
+      "noPhotos": "No photos available",
+      "photoTypes": {
+        "front": "Front",
+        "sideLeft": "Side Left",
+        "sideRight": "Side Right",
+        "back": "Back"
+      },
+      "measurements": {
+        "title": "Body Measurements",
+        "chest": "Chest",
+        "waist": "Waist",
+        "hips": "Hips",
+        "bicepLeft": "Left Bicep",
+        "bicepRight": "Right Bicep",
+        "thighLeft": "Left Thigh",
+        "thighRight": "Right Thigh",
+        "calfLeft": "Left Calf",
+        "calfRight": "Right Calf"
+      },
+      "deleteConfirm": {
+        "title": "Delete Check?",
+        "message": "This action is permanent. All photos and data will be deleted.",
+        "cancel": "Cancel",
+        "confirm": "Delete",
+        "deleting": "Deleting..."
+      },
+      "deleteError": "Error deleting check",
+      "compare": "Compare"
+    },
+    "progressCheckCompare": {
+      "title": "Check Comparison",
+      "backToGallery": "Back to Gallery",
+      "before": "Before",
+      "after": "After",
+      "daysBetween": "{days, plural, one {# day apart} other {# days apart}}",
+      "weight": "Weight",
+      "difference": "Difference",
+      "info": "Information",
+      "milestone": "Milestone",
+      "cycleInfo": "Cycle {cycle}, Day {day}",
+      "noPhoto": "No photo",
+      "photoTypes": {
+        "front": "Front",
+        "sideLeft": "Side Left",
+        "sideRight": "Side Right",
+        "back": "Back"
+      },
+      "measurements": {
+        "title": "Measurements Comparison",
+        "bodyPart": "Body Part",
+        "chest": "Chest",
+        "waist": "Waist",
+        "hips": "Hips",
+        "bicepLeft": "Left Bicep",
+        "bicepRight": "Right Bicep",
+        "thighLeft": "Left Thigh",
+        "thighRight": "Right Thigh",
+        "calfLeft": "Left Calf",
+        "calfRight": "Right Calf"
+      }
+    },
+    "compareCheckSelector": {
+      "title": "Select Check to Compare",
+      "noChecks": "No other checks available for comparison",
+      "today": "Today",
+      "daysAgo": "{days, plural, one {# day ago} other {# days ago}}",
+      "cycleInfo": "Cycle {cycle}, Day {day}",
+      "cancel": "Cancel",
+      "checkPreviewAlt": "Check preview"
     }
+  },
+  "share": {
+    "shareButton": "Share",
+    "share": "Share",
+    "dialogTitle": "Share Your Results",
+    "dialogDescription": "Create a shareable link with privacy controls",
+    "privacySettings": "Privacy Settings",
+    "showName": "Show my name",
+    "showStats": "Show statistics",
+    "showCharts": "Show charts",
+    "showExercises": "Show exercise names",
+    "showNotes": "Show notes",
+    "shareLink": "Share Link",
+    "preview": "Preview",
+    "done": "Done",
+    "viewCount": "{count, plural, one {# view} other {# views}}",
+    "errorGenerating": "Failed to generate share link"
   },
   "workout": {
     "pages": {
@@ -1059,6 +1300,21 @@
       "volumeExplanation": "Direct (primary) + indirect (secondary) sets",
       "actual": "Actual",
       "target": "Target"
+    },
+    "generation": {
+      "complete": "Workout Ready!",
+      "failed": "Generation Failed",
+      "inProgress": "Generating Your Workout",
+      "alreadyInProgress": "You already have a workout being generated. Please wait for it to complete or try again later.",
+      "resuming": "Resuming generation...",
+      "redirecting": "Redirecting to your workout...",
+      "ready": "Your workout is ready to view",
+      "canCloseMessage": "You can close this and check back later. Generation continues in the background.",
+      "errorDetails": "Something went wrong during generation. Please try again.",
+      "tryAgain": "Try Again",
+      "viewWorkout": "View Workout",
+      "closeAndCheckLater": "Close & Check Later",
+      "continuesInBackground": "Generation continues even if you close this"
     }
   },
   "onboarding": {
@@ -1523,6 +1779,44 @@
       "notSupported": "Audio coaching is not supported in your browser",
       "success": "Audio settings saved",
       "error": "Failed to save audio settings"
+    },
+    "personalInfo": {
+      "title": "Personal Information",
+      "description": "Manage your personal details used for workout personalization",
+      "fields": {
+        "firstName": "First Name",
+        "gender": "Gender",
+        "age": "Age",
+        "weight": "Weight",
+        "height": "Height"
+      },
+      "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "units": {
+        "years": "years",
+        "kg": "kg",
+        "cm": "cm"
+      },
+      "placeholders": {
+        "firstName": "Enter your first name"
+      },
+      "buttons": {
+        "save": "Save Changes",
+        "saving": "Saving..."
+      },
+      "messages": {
+        "updateSuccess": "Personal information updated successfully!",
+        "updateFailed": "Failed to update personal information"
+      },
+      "errors": {
+        "invalidAge": "Age must be between 13 and 120 years",
+        "invalidWeight": "Weight must be between 0 and 500 kg",
+        "invalidHeight": "Height must be between 0 and 300 cm"
+      },
+      "note": "This information helps personalize your training and AI coaching experience"
     },
     "account": {
       "title": "Account",
@@ -2016,6 +2310,37 @@
         "optimization": "Optimizing workout",
         "finalize": "Finalizing"
       }
+    },
+    "muscleDistributionTitle": "Muscle Distribution Analysis",
+    "cycleNumber": "Cycle #{number}",
+    "comparisonModeTarget": "vs Target",
+    "comparisonModePrevious": "vs Previous",
+    "currentCycleProgress": "Current Cycle Progress",
+    "muscleGroupDistribution": "Muscle Group Distribution",
+    "historicalCycles": "Historical Cycles",
+    "viewAll": "View All ({count})",
+    "showLess": "Show Less",
+    "cycleHash": "Cycle #{number}",
+    "last": "Last",
+    "workouts": "workouts",
+    "sets": "sets",
+    "compareWith": "Compare with",
+    "compareTwoCycles": "Compare Two Cycles",
+    "cycleA": "Cycle A",
+    "cycleB": "Cycle B",
+    "comparingCycles": "Comparing Cycle #{{a}} vs Cycle #{{b}}",
+    "volumeTrendTitle": "Volume Trend Over Time",
+    "selectMuscles": "Select muscles to display",
+    "noTrendData": "At least 2 completed cycles needed for trend analysis",
+    "isCurrentCycle": "is your current cycle",
+    "sameCycleWarning": "You are comparing the same cycle. Select different cycles for meaningful comparison."
+  },
+  "Analytics": {
+    "Metrics": {
+      "workouts": "Workouts",
+      "duration": "Duration",
+      "volume": "Volume",
+      "sets": "Sets"
     }
   },
   "api": {
@@ -2023,6 +2348,7 @@
       "generate": {
         "progress": {
           "starting": "Starting workout generation",
+          "resuming": "Resuming generation...",
           "loadingProfile": "Loading your profile",
           "planningWorkout": "Planning your workout",
           "aiAnalyzing": "AI analyzing exercises",
@@ -2038,6 +2364,7 @@
           "failedToGenerate": "Failed to generate workout",
           "internalServerError": "Internal server error",
           "cannotGeneratePastDay": "Cannot generate workout for past cycle day. Current: {current}, Target: {target}",
+          "generationAlreadyInProgress": "You already have a workout being generated. Please wait for it to complete or try again later.",
           "timeout": "AI generation timed out. The service may be overloaded. Please try again in a moment.",
           "exerciseSelectionFailed": "Failed to select exercises for your workout. Please try again or contact support if the issue persists.",
           "splitPlanningFailed": "Failed to plan your training split. Please try again or contact support if the issue persists.",
@@ -2052,6 +2379,46 @@
       "errors": {
         "workoutNotFound": "Workout not found",
         "failedToFetch": "Failed to fetch workout"
+      }
+    },
+    "splits": {
+      "generate": {
+        "progress": {
+          "starting": "Starting split generation",
+          "resuming": "Resuming generation...",
+          "loadingProfile": "Loading your profile",
+          "loadingHistory": "Loading training history",
+          "analyzing": "AI analyzing your training needs",
+          "generating": "Generating personalized split plan",
+          "optimizing": "Optimizing split structure",
+          "finalizing": "Finalizing split plan",
+          "splitReady": "Split plan ready!"
+        },
+        "errors": {
+          "unauthorized": "Unauthorized",
+          "failedToGenerate": "Failed to generate split plan",
+          "internalServerError": "Internal server error",
+          "generationAlreadyInProgress": "You already have a split being generated. Please wait for it to complete or try again later.",
+          "timeout": "Split generation timed out. The service may be overloaded. Please try again in a moment.",
+          "splitPlanningFailed": "Failed to plan your training split. Please try again or contact support if the issue persists.",
+          "validationFailed": "Generated split did not meet quality standards. Please try again - the AI will attempt to improve the result.",
+          "generationTimeout": "Split generation took too long. Please try again."
+        }
+      },
+      "adapt": {
+        "progress": {
+          "starting": "Starting split adaptation",
+          "adapting": "Adapting your split plan",
+          "splitReady": "Split adapted successfully!"
+        },
+        "errors": {
+          "unauthorized": "Unauthorized",
+          "failedToAdapt": "Failed to adapt split plan",
+          "generationAlreadyInProgress": "You already have a split being adapted. Please wait for it to complete.",
+          "timeout": "Split adaptation timed out. Please try again.",
+          "adaptationTimeout": "Adaptation took too long. Please try again.",
+          "noActiveSplit": "No active split plan found. Please create a split first."
+        }
       }
     },
     "onboarding": {
@@ -2083,6 +2450,7 @@
   "memory": {
     "title": "Memory Dashboard",
     "subtitle": "What Arvo has learned about you",
+    "backToDashboard": "Back to Dashboard",
     "loading": "Loading...",
     "stats": {
       "activeMemories": "Active Memories",
@@ -3829,6 +4197,31 @@
     "obliques": "Obliques",
     "lowerBack": "Lower Back"
   },
+  "checkRoomSection": {
+    "sectionTitle": {
+      "part1": "Track Progress Like a",
+      "part2": "Pro"
+    },
+    "sectionSubtitle": "Visual progress photos, muscle distribution analytics, and complete body measurements—all in one place.",
+    "cardTitle": "Check Room",
+    "cardDescription": "Visual progress tracking with photos, weight, and body measurements",
+    "feature1": "4-angle progress photos (front, sides, back)",
+    "feature2": "Track weight and 10+ body measurements",
+    "feature3": "Visual before/after comparisons",
+    "feature4": "Milestone system for important checks",
+    "footer": {
+      "bold": "Data-Driven Progress:",
+      "text": "Arvo combines visual tracking with deep analytics to give you a complete picture of your transformation journey."
+    }
+  },
+  "radarChartSection": {
+    "cardTitle": "Muscle Distribution Analytics",
+    "cardDescription": "Visualize your training volume across all muscle groups",
+    "feature1": "See muscle volume distribution at a glance",
+    "feature2": "Compare actual vs target split plan",
+    "feature3": "Cycle-to-cycle evolution tracking",
+    "feature4": "Identify muscle group imbalances instantly"
+  },
   "landingPro": {
     "hero": {
       "title": {
@@ -3955,6 +4348,42 @@
           "description": "Remembers what works for YOUR body. Injury patterns, exercise preferences, volume tolerance—all tracked automatically."
         }
       }
+    },
+    "radarChartSection": {
+      "title": "Muscle Distribution Radar Chart",
+      "description": "Visualize and optimize your volume distribution across all muscle groups. Compare cycles, identify imbalances, and ensure balanced development.",
+      "useCase1": {
+        "title": "Target Comparison",
+        "description": "See real-time progress vs your split plan's volume targets"
+      },
+      "useCase2": {
+        "title": "Cycle Evolution",
+        "description": "Compare current vs previous cycles to track progression"
+      },
+      "useCase3": {
+        "title": "Imbalance Detection",
+        "description": "Instantly identify under/over-trained muscle groups"
+      }
+    },
+    "checkRoomSection": {
+      "title": "Check Room: Visual Progress Tracking",
+      "description": "Document your transformation with consistent progress photos, weight, and body measurements",
+      "benefit1": {
+        "title": "4-Angle Photos",
+        "description": "Front, sides, back for complete view"
+      },
+      "benefit2": {
+        "title": "10+ Body Measurements",
+        "description": "Track arms, chest, waist, thighs, calves"
+      },
+      "benefit3": {
+        "title": "Milestone System",
+        "description": "Mark important checks for activity feed"
+      },
+      "proTip": {
+        "bold": "Pro Tip:",
+        "text": "Combine radar chart analytics with Check Room photos to correlate visual changes with volume distribution. Perfect for prep cycles and identifying weak points."
+      }
     }
   },
   "landingSimple": {
@@ -4058,6 +4487,21 @@
         "quote": "3 minutes to start. Zero complications. Just results.",
         "name": "Luke, 35",
         "result": "-12kg in 4 months"
+      }
+    },
+    "simpleProgressSection": {
+      "title": {
+        "part1": "See Your",
+        "part2": "Progress"
+      },
+      "subtitle": "Simple before/after photos and automatic progress charts. No complicated tracking.",
+      "photos": {
+        "title": "Progress Photos",
+        "description": "Take quick before/after photos. The app reminds you when it's time for a new check."
+      },
+      "chart": {
+        "title": "Muscle Progress",
+        "description": "See which muscles you're working in a simple chart. All automatic."
       }
     }
   }

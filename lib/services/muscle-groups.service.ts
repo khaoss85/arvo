@@ -254,6 +254,7 @@ export function generateWorkoutName(
     back: 'Schiena',
     shoulders: 'Spalle',
     arms: 'Braccia',
+    rest: 'Riposo',
   }
 
   const baseName = typeNames[workoutType] || 'Allenamento'
@@ -337,6 +338,7 @@ export function getWorkoutTypeColor(workoutType: WorkoutType): string {
     back: 'blue',
     shoulders: 'orange',
     arms: 'purple',
+    rest: 'gray',
   }
 
   return colors[workoutType] || 'gray'
@@ -357,6 +359,7 @@ export function getWorkoutTypeIcon(workoutType: WorkoutType): string {
     back: '🔙',
     shoulders: '💥',
     arms: '💪',
+    rest: '😴',
   }
 
   return icons[workoutType] || '💪'

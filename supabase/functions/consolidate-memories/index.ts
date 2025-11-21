@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
           .from('workouts')
           .select('id, completed_at, mental_readiness_overall, duration_seconds')
           .eq('user_id', user.user_id)
-          .eq('completed', true)
+          .eq('status', 'completed')
           .gte('completed_at', thirtyDaysAgo.toISOString())
           .order('completed_at', { ascending: false })
           .limit(20)

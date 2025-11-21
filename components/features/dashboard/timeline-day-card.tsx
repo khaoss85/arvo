@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { TimelineDayData, VolumeComparison } from '@/lib/services/split-timeline.types'
@@ -13,6 +13,7 @@ import { generateDraftWorkoutAction } from '@/app/actions/ai-actions'
 import { ProgressFeedback } from '@/components/ui/progress-feedback'
 import { InsightChangesModal, type InsightInfluencedChange } from '@/components/features/workout/insight-changes-modal'
 import { useUIStore } from '@/lib/stores/ui.store'
+import { ShareButton } from '@/components/features/sharing/share-button'
 
 interface TimelineDayCardProps {
   dayData: TimelineDayData
@@ -110,7 +111,52 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
   const [showChangesModal, setShowChangesModal] = useState(false)
   const [targetDayForGeneration, setTargetDayForGeneration] = useState<number | null>(null)
   const [skipping, setSkipping] = useState(false)
+  const [activeRequestId, setActiveRequestId] = useState<string | null>(null)
+  const [activeGenerationProgress, setActiveGenerationProgress] = useState<number>(0)
   const { addToast } = useUIStore()
+
+  // Check on mount if there's an active generation for this day
+  useEffect(() => {
+    const checkActiveGeneration = async () => {
+      try {
+        const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
+
+        const activeGeneration = await GenerationQueueService.getActiveGeneration(userId)
+
+        if (!activeGeneration) return
+
+        // Check if the active generation matches this card's day
+        // 1. If target_cycle_day is set, it must match this card's day
+        // 2. If target_cycle_day is null, it defaults to the user's current day (so match if isCurrentDay is true)
+        const isMatchingDay = activeGeneration.target_cycle_day 
+          ? activeGeneration.target_cycle_day == day 
+          : isCurrentDay
+
+        // Only resume if it's for THIS specific day and status is pending/in_progress
+        if (isMatchingDay && 
+           (activeGeneration.status === 'pending' || activeGeneration.status === 'in_progress')) {
+          
+          console.log('[TimelineDayCard] Found active generation to resume for day', day, 'at', activeGeneration.progress_percent + '%')
+
+          // Store the request ID and initial progress to pass to ProgressFeedback
+          setActiveRequestId(activeGeneration.request_id)
+          setActiveGenerationProgress(activeGeneration.progress_percent || 0)
+
+          // Show the progress bar - ProgressFeedback will handle the rest
+          setShowProgress(true)
+          setIsGenerating(true)
+          setTargetDayForGeneration(day)
+        }
+      } catch (error) {
+        console.error('[TimelineDayCard] Failed to check for active generation:', error)
+      }
+    }
+
+    // Only check for current day or upcoming days (not completed days)
+    if (isCurrentDay || status === 'upcoming') {
+      checkActiveGeneration()
+    }
+  }, [userId, day, isCurrentDay, status])
 
   // Handle generation for both current day and pre-generation
   const handleGenerate = (targetDay?: number) => {
@@ -485,6 +531,18 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         </div>
       )}
 
+      {/* Share Button (only for completed workouts) */}
+      {status === 'completed' && completedWorkout && (
+        <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+          <ShareButton
+            shareType="cycle"
+            entityId={completedWorkout.id}
+            variant="ghost"
+            size="sm"
+          />
+        </div>
+      )}
+
       {/* Workout Generation Progress */}
       {showProgress && (
         <div className={cn(
@@ -498,6 +556,8 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             endpoint="/api/workouts/generate/stream"
             requestBody={{ targetCycleDay: targetDayForGeneration || day }}
             cancellable={true}
+            existingRequestId={activeRequestId || undefined}
+            initialProgress={activeGenerationProgress}
             onComplete={(data) => handleGenerationComplete(data.workout, data.insightInfluencedChanges)}
             onError={handleGenerationError}
             onCancel={handleGenerationCancel}

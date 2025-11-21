@@ -56,7 +56,7 @@ export abstract class BaseAgent {
       case 'none':
         return 15000      // 15s - ultra-fast responses, no extended reasoning (GPT-5.1 fastest mode)
       case 'low':
-        return 90000      // 90s - fast, standard constraints
+        return 180000     // 180s (3min) - increased for complex prompts like split planning
       case 'medium':
         return 240000     // 240s (4min) - complex multi-constraint optimization
       case 'high':
@@ -621,6 +621,121 @@ ${mems.map(mem => {
       if (error instanceof Error) {
         const enhancedMessage = `[${this.constructor.name}] ${error.message}`
         error.message = enhancedMessage
+      }
+
+      throw error
+    }
+  }
+
+  /**
+   * Complete AI request with Structured Outputs (JSON Schema validation by OpenAI)
+   * This method uses chat.completions.create() instead of responses.create()
+   * to leverage OpenAI's Structured Outputs feature which guarantees valid JSON.
+   *
+   * According to GPT-5.1 Prompting Guide:
+   * - Structured Outputs work with chat.completions API (not responses API)
+   * - JSON is always valid (guaranteed by OpenAI)
+   * - Can use reasoning: 'none' for 50% faster responses
+   * - ~70% cost reduction (no reasoning tokens)
+   *
+   * @param userPrompt - The user prompt to send to AI
+   * @param jsonSchema - JSON Schema for strict structured output validation
+   * @param targetLanguage - Target language for responses
+   * @param customTimeoutMs - Optional custom timeout
+   * @returns Validated AI result (guaranteed to match schema)
+   */
+  protected async completeWithStructuredOutput<T>(
+    userPrompt: string,
+    jsonSchema: {
+      name: string
+      strict?: boolean
+      schema: Record<string, any>
+    },
+    targetLanguage: Locale = 'en',
+    customTimeoutMs?: number
+  ): Promise<T> {
+    try {
+      console.log('🤖 [BASE_AGENT] Starting Structured Output AI request...', {
+        agentClass: this.constructor.name,
+        targetLanguage,
+        schemaName: jsonSchema.name,
+        promptLength: userPrompt.length,
+        customTimeout: customTimeoutMs ? `${customTimeoutMs}ms` : 'default',
+        timestamp: new Date().toISOString()
+      })
+
+      // Add language instruction to system prompt
+      // No reasoning guidance needed - we're using reasoning: 'none' for speed
+      const languageInstruction = this.getLanguageInstruction(targetLanguage)
+
+      // For structured outputs, add planning guidance (per GPT-5.1 guide)
+      const planningGuidance = `\n\n⚡ PLANNING GUIDANCE: You MUST plan extensively before generating the JSON output, ensuring all constraints are met and the JSON is valid. Verify the JSON structure matches the schema exactly before responding.`
+
+      const systemPrompt = `${this.systemPrompt}${languageInstruction}${planningGuidance}`
+
+      // Timeout based on reasoning effort (or custom)
+      const AI_TIMEOUT_MS = customTimeoutMs || this.getTimeoutForReasoning()
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(
+            `Structured Output AI request timeout after ${AI_TIMEOUT_MS / 1000}s. ` +
+            `Agent: ${this.constructor.name}, Schema: ${jsonSchema.name}`
+          ))
+        }, AI_TIMEOUT_MS)
+      })
+
+      // Use chat.completions.create() with Structured Outputs
+      // Per GPT-5.1 guide: use reasoning 'none' or 'low' for best performance with structured outputs
+      const response = await Promise.race([
+        this.openai.chat.completions.create({
+          model: this.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: jsonSchema.name,
+              strict: jsonSchema.strict ?? true, // Default to strict mode
+              schema: jsonSchema.schema
+            }
+          },
+          // Use reasoning 'none' for speed (50% faster, 70% cheaper)
+          // Structured Outputs guarantees JSON validity, so we don't need heavy reasoning
+          ...(this.reasoningEffort !== 'none' && {
+            // Only include reasoning if using o1/o3-mini models
+            // For gpt-5.1, reasoning is controlled via prompt
+          })
+        }),
+        timeoutPromise
+      ])
+
+      console.log('✅ [BASE_AGENT] Structured Output AI response received', {
+        hasResponse: !!response,
+        hasChoices: !!response.choices?.[0],
+        hasContent: !!response.choices?.[0]?.message?.content,
+        responseId: response.id
+      })
+
+      const content = response.choices?.[0]?.message?.content
+      if (!content) throw new Error('No response from AI')
+
+      // Parse JSON (guaranteed to be valid by Structured Outputs)
+      return JSON.parse(content) as T
+
+    } catch (error) {
+      console.error('🔴 [BASE_AGENT] Structured Output AI error:', {
+        agent: this.constructor.name,
+        schemaName: jsonSchema.name,
+        errorName: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        isTimeout: error instanceof Error && error.message.includes('timeout'),
+        timestamp: new Date().toISOString()
+      })
+
+      if (error instanceof Error) {
+        error.message = `[${this.constructor.name}] ${error.message}`
       }
 
       throw error

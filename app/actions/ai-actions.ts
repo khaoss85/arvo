@@ -168,6 +168,11 @@ async function generateWorkoutWithServerClient(
 
   const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
+  // Defensive check: ensure this is not a REST day
+  if (workoutType === 'rest') {
+    throw new Error('Cannot generate exercises for a REST day')
+  }
+
   // Merge standard equipment with custom equipment
   const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
   const customEquipmentIds = customEquipment.map(eq => eq.id)
@@ -209,7 +214,7 @@ async function generateWorkoutWithServerClient(
 
   // Select exercises using AI
   const selection = await exerciseSelector.selectExercises({
-    workoutType,
+    workoutType: workoutType as Exclude<WorkoutType, 'rest'>, // Safe: rest days are filtered above
     weakPoints: (profile as any).weak_points || [],
     availableEquipment: allAvailableEquipment,
     customEquipment: customEquipment, // Pass custom equipment metadata
@@ -716,10 +721,9 @@ export async function updateCaloricPhaseAction(
     const { error } = await supabase
       .from('user_profiles')
       .update({
-        // TODO: Add caloric_phase fields to database migration
-        // caloric_phase: phase,
-        // caloric_phase_start_date: startDate,
-        // ...(caloricIntakeKcal !== undefined && { caloric_intake_kcal: caloricIntakeKcal })
+        caloric_phase: phase,
+        caloric_phase_start_date: startDate,
+        ...(caloricIntakeKcal !== undefined && { caloric_intake_kcal: caloricIntakeKcal })
       })
       .eq('user_id', userId)
 

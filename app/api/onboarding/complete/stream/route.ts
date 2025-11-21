@@ -4,8 +4,10 @@ import type { SplitType } from '@/lib/services/muscle-groups.service'
 import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
-import { ProgressSimulator } from '@/lib/utils/progress-simulator'
 import { EmailService } from '@/lib/services/email.service'
+import { ActivityService } from '@/lib/services/activity.service'
+import { inngest } from '@/lib/inngest/client'
+import { GenerationQueueService } from '@/lib/services/generation-queue.service'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -119,28 +121,26 @@ export async function POST(request: NextRequest) {
 
           sendProgress('profile', 30, tProgress('profileCreated'), getRemainingEta(30))
 
-          // Phase 2: Generate split plan if data provided (40-90%)
+          // Phase 2: Generate split plan if data provided (40-100%)
           let splitPlanId = null
           if (data.splitType && data.weeklyFrequency) {
             sendProgress('split', 40, tProgress('planningWorkout'), getRemainingEta(40))
-            sendProgress('split', 50, tProgress('analyzingApproach'), getRemainingEta(50))
 
-            // Start progress simulation during AI call (50% → 90%)
-            const simulator = new ProgressSimulator()
-            const aiStartProgress = 50
-            const aiEndProgress = 90
-            // Estimate AI duration as 40% of total estimated duration (or 120s default)
-            const estimatedAiDuration = estimatedDuration ? Math.floor(estimatedDuration * 0.4) : 120000
-
-            simulator.start(aiStartProgress, aiEndProgress, estimatedAiDuration, async (progress) => {
-              sendProgress('split', progress, tProgress('generatingSplit'), getRemainingEta(progress))
+            // Create queue entry for split generation
+            const queueEntry = await GenerationQueueService.createServer({
+              userId: data.userId,
+              requestId: splitGenerationRequestId,
+              context: { type: 'split', splitType: data.splitType }
             })
 
-            const { generateSplitPlanAction } = await import('@/app/actions/split-actions')
-            let splitResult
+            console.log(`[Onboarding] Created split generation queue entry: ${queueEntry.id}`)
 
-            try {
-              splitResult = await generateSplitPlanAction({
+            // Check if Inngest is available
+            const shouldUseInngest = !!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_DEV === '1'
+
+            if (shouldUseInngest) {
+              // Build input for SplitPlanner
+              const input = {
                 userId: data.userId,
                 approachId: data.approachId,
                 splitType: data.splitType,
@@ -150,25 +150,119 @@ export async function POST(request: NextRequest) {
                 experienceYears: data.confirmedExperience || null,
                 userAge: data.age || null,
                 userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
-              }, splitGenerationRequestId) // Pass requestId for resume capability
-            } finally {
-              simulator.stop()
+              }
+
+              // Trigger Inngest for async background processing
+              console.log(`[Onboarding] Triggering Inngest worker for split generation: ${splitGenerationRequestId}`)
+              await inngest.send({
+                name: 'split/generate.requested',
+                data: {
+                  requestId: splitGenerationRequestId,
+                  userId: data.userId,
+                  input,
+                  targetLanguage: locale
+                }
+              })
+
+              // Poll database for updates from Inngest worker
+              sendProgress('split', 50, tProgress('analyzingApproach'), getRemainingEta(50))
+
+              let lastProgress = 50
+              const pollInterval = 2000  // 2 seconds
+              const maxDuration = 4 * 60 * 1000  // 4 minutes max (shorter than split generation since it's part of onboarding)
+              const pollStartTime = Date.now()
+
+              console.log(`[Onboarding] Starting SSE polling for Inngest split generation: ${splitGenerationRequestId}`)
+
+              while (lastProgress < 100 && (Date.now() - pollStartTime) < maxDuration) {
+                await new Promise(resolve => setTimeout(resolve, pollInterval))
+
+                // Check database for updates
+                const updatedEntry = await GenerationQueueService.getByRequestIdServer(splitGenerationRequestId)
+
+                if (!updatedEntry) {
+                  console.error(`[Onboarding] Queue entry disappeared: ${splitGenerationRequestId}`)
+                  throw new Error('Split generation queue entry disappeared')
+                }
+
+                if (updatedEntry.status === 'completed' && updatedEntry.split_plan_id) {
+                  // Split generation completed!
+                  splitPlanId = updatedEntry.split_plan_id
+                  console.log(`[Onboarding] Split generation completed: ${splitPlanId}`)
+
+                  // Update profile with split plan
+                  await supabase
+                    .from('user_profiles')
+                    .update({
+                      active_split_plan_id: splitPlanId,
+                      current_cycle_day: 1
+                    })
+                    .eq('user_id', data.userId)
+
+                  sendProgress('split', 90, tProgress('splitCreated'), getRemainingEta(90))
+                  break
+                } else if (updatedEntry.status === 'failed') {
+                  console.error(`[Onboarding] Split generation failed: ${updatedEntry.error_message}`)
+                  throw new Error(updatedEntry.error_message || 'Split generation failed')
+                } else if (updatedEntry.status === 'in_progress' || updatedEntry.status === 'pending') {
+                  // Send progress update if it increased
+                  if (updatedEntry.progress_percent > lastProgress) {
+                    // Map progress from 50-90% range for onboarding flow
+                    const mappedProgress = 50 + (updatedEntry.progress_percent * 0.4)
+                    console.log(`[Onboarding] Split progress: ${updatedEntry.progress_percent}% → ${Math.round(mappedProgress)}%`)
+
+                    sendProgress(
+                      'split',
+                      Math.round(mappedProgress),
+                      updatedEntry.current_phase || tProgress('generatingSplit'),
+                      getRemainingEta(Math.round(mappedProgress))
+                    )
+                    lastProgress = mappedProgress
+                  }
+                }
+              }
+
+              // Timeout check
+              if ((Date.now() - pollStartTime) >= maxDuration && !splitPlanId) {
+                console.error(`[Onboarding] Split generation timeout after 4 minutes: ${splitGenerationRequestId}`)
+                throw new Error('Split generation took too long. Please try again.')
+              }
+            } else {
+              // Fallback: Inngest not available, use synchronous generation
+              console.warn(`[Onboarding] Inngest not available, using synchronous split generation`)
+
+              const { generateSplitPlanAction } = await import('@/app/actions/split-actions')
+
+              sendProgress('split', 50, tProgress('analyzingApproach'), getRemainingEta(50))
+
+              const splitResult = await generateSplitPlanAction({
+                userId: data.userId,
+                approachId: data.approachId,
+                splitType: data.splitType,
+                weeklyFrequency: data.weeklyFrequency,
+                weakPoints: data.weakPoints || [],
+                equipmentAvailable: data.availableEquipment || [],
+                experienceYears: data.confirmedExperience || null,
+                userAge: data.age || null,
+                userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
+              }, splitGenerationRequestId)
+
+              if (splitResult?.success && splitResult.data) {
+                const splitPlan = splitResult.data.splitPlan as any
+                splitPlanId = splitPlan.id
+
+                // Update profile with split plan
+                await supabase
+                  .from('user_profiles')
+                  .update({
+                    active_split_plan_id: splitPlanId,
+                    current_cycle_day: 1
+                  })
+                  .eq('user_id', data.userId)
+              }
+
+              sendProgress('split', 90, tProgress('splitCreated'), getRemainingEta(90))
             }
-
-            if (splitResult?.success && splitResult.data) {
-              splitPlanId = splitResult.data.splitPlan.id
-
-              // Update profile with split plan
-              await supabase
-                .from('user_profiles')
-                .update({
-                  active_split_plan_id: splitPlanId,
-                  current_cycle_day: 1
-                })
-                .eq('user_id', data.userId)
-            }
-
-            sendProgress('split', 90, tProgress('splitCreated'), getRemainingEta(90))
           } else {
             sendProgress('split', 85, tProgress('finalizingSetup'), getRemainingEta(85))
           }
@@ -179,6 +273,13 @@ export async function POST(request: NextRequest) {
 
           // Complete metrics tracking
           await GenerationMetricsService.completeGeneration(generationRequestId, true)
+
+          // Create onboarding completion milestone (async, non-blocking)
+          ActivityService.createMilestone(data.userId, 'onboarding_complete', {
+            splitPlanId: splitPlanId,
+          }).catch((milestoneError) => {
+            console.error('Error creating onboarding milestone:', milestoneError)
+          })
 
           // Send onboarding complete email (async, non-blocking)
           const { data: user } = await supabase.auth.getUser()

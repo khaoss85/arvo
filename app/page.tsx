@@ -4,6 +4,8 @@ import { AIShowcase } from "@/components/features/landing/ai-showcase";
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
 import { VolumeTrackingVisual } from "@/components/features/landing/volume-tracking-visual";
+import { CheckRoomSection } from "@/components/features/landing/CheckRoomSection";
+import { RadarChartSection } from "@/components/features/landing/RadarChartSection";
 import { BiomechanicsDemo } from "@/components/features/landing/biomechanics-demo";
 import { GymReadyFeatures } from "@/components/features/landing/gym-ready-features";
 import { AICoachingFeatures } from "@/components/features/landing/ai-coaching-features";
@@ -28,6 +30,8 @@ export default async function Home() {
       <SmartRestTimer />
       <NotesIntelligence />
       <VolumeTrackingVisual />
+      <CheckRoomSection variant="default" />
+      <RadarChartSection variant="default" />
       <BiomechanicsDemo />
       <GymReadyFeatures />
       <AICoachingFeatures />

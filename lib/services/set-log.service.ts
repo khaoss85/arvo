@@ -463,8 +463,10 @@ export class SetLogService {
       };
     }
 
+    const typedSets = sets as any[];
+
     // Count skipped sets by type
-    const skippedSets = sets.filter((set) => set.skipped);
+    const skippedSets = typedSets.filter((set) => set.skipped);
     const warmupSetsSkipped = skippedSets.filter((set) => set.set_type === "warmup").length;
     const workingSetsSkipped = skippedSets.filter((set) => set.set_type === "working").length;
 
@@ -476,7 +478,7 @@ export class SetLogService {
       reason: string | null;
     }>();
 
-    sets.forEach((set) => {
+    typedSets.forEach((set) => {
       if (set.original_exercise_name) {
         // This exercise was substituted
         const key = set.exercise_name; // Use new exercise name as key
@@ -560,8 +562,10 @@ export class SetLogService {
         };
       }
 
+      const typedSets = sets as any[];
+
       // Count skipped sets by type
-      const skippedSets = sets.filter((set) => set.skipped);
+      const skippedSets = typedSets.filter((set) => set.skipped);
       const warmupSetsSkipped = skippedSets.filter((set) => set.set_type === "warmup").length;
       const workingSetsSkipped = skippedSets.filter((set) => set.set_type === "working").length;
 
@@ -573,7 +577,7 @@ export class SetLogService {
         reason: string | null;
       }>();
 
-      sets.forEach((set) => {
+      typedSets.forEach((set) => {
         if (set.original_exercise_name) {
           // This exercise was substituted
           const key = set.exercise_name; // Use new exercise name as key

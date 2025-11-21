@@ -80,8 +80,11 @@ export class MemoryService {
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    type UserMemoryRow = Database['public']['Tables']['user_memory_entries']['Row'];
+    const typedData = data as UserMemoryRow | null;
+
+    if (error || !typedData) throw error;
+    return typedData;
   }
 
   /**
@@ -155,8 +158,11 @@ export class MemoryService {
 
     const { data, error } = await query;
 
+    type UserMemoryRow = Database['public']['Tables']['user_memory_entries']['Row'];
+    const typedData = data as UserMemoryRow[] | null;
+
     if (error) throw error;
-    return data || [];
+    return typedData || [];
   }
 
   /**
@@ -169,12 +175,15 @@ export class MemoryService {
       .eq('id', memoryId)
       .single();
 
+    type UserMemoryRow = Database['public']['Tables']['user_memory_entries']['Row'];
+    const typedData = data as UserMemoryRow | null;
+
     if (error) {
       if (error.code === 'PGRST116') return null;
       throw error;
     }
 
-    return data;
+    return typedData;
   }
 
   /**
@@ -192,7 +201,7 @@ export class MemoryService {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as UserMemoryEntry;
   }
 
   /**
@@ -293,12 +302,12 @@ export class MemoryService {
 
     // Further filter by related exercises if provided
     if (relatedExercises && relatedExercises.length > 0) {
-      return (data || []).filter((memory) =>
+      return ((data || []) as UserMemoryEntry[]).filter((memory) =>
         memory.related_exercises?.some((ex) => relatedExercises.includes(ex))
       );
     }
 
-    return data || [];
+    return (data || []) as UserMemoryEntry[];
   }
 
   /**
@@ -426,7 +435,7 @@ export class MemoryService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as UserMemoryEntry[];
   }
 }
 

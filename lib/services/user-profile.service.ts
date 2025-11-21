@@ -1,4 +1,6 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/types/database.types";
 import {
   insertUserProfileSchema,
   updateUserProfileSchema,
@@ -99,10 +101,21 @@ export class UserProfileService {
 
   /**
    * Get user profile by user ID (server-side)
+   * @param userId - The user ID to fetch profile for
+   * @param supabaseClient - Optional Supabase client (for admin operations in background workers)
    */
-  static async getByUserIdServer(userId: string): Promise<UserProfile | null> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async getByUserIdServer(
+    userId: string,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<UserProfile | null> {
+    // Use provided client (e.g., admin client from background worker) or create server client
+    let supabase: SupabaseClient<Database>;
+    if (supabaseClient) {
+      supabase = supabaseClient;
+    } else {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      supabase = await getSupabaseServerClient();
+    }
 
     const { data, error } = await supabase
       .from("user_profiles")

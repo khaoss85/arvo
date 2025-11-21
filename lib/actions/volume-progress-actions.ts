@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { calculateMuscleGroupVolumes, type WorkoutExercise } from '@/lib/utils/workout-helpers'
 import type { Workout } from '@/lib/types/schemas'
+import type { Database } from '@/lib/types/database.types'
 
 /**
  * Volume progress for a single muscle group
@@ -52,11 +53,14 @@ export async function getVolumeProgressAction(userId: string) {
       }
     }
 
+    type WorkoutRow = Database['public']['Tables']['workouts']['Row']
+    const typedWorkouts = (completedWorkouts || []) as WorkoutRow[]
+
     // Calculate total volume completed so far in the cycle
     const totalVolumeByMuscle: Record<string, number> = {}
 
-    if (completedWorkouts && completedWorkouts.length > 0) {
-      for (const workout of completedWorkouts) {
+    if (typedWorkouts.length > 0) {
+      for (const workout of typedWorkouts) {
         // Extract exercises from workout
         const exercises = workout.exercises as any[] || []
 

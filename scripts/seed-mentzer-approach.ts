@@ -46,21 +46,28 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
     short_philosophy: 'High-intensity, low-volume training based on brief, infrequent workouts pushed to momentary muscular failure. The philosophy: maximum growth stimulus comes from intense effort, not volume. Recovery between workouts is crucial. More training is NOT better—quality and intensity trump quantity every time.',
 
     variables: {
-      sets: {
-        range: [1, 2],
-        description: 'Heavy Duty uses minimal sets (1-2 per exercise) taken to absolute failure and beyond',
-        progressionNotes: 'Never add more sets - increase intensity instead'
+      // Standardized fields matching other approaches
+      setsPerExercise: {
+        working: 2, // Maximum for Heavy Duty (1-2 sets to absolute failure)
+        warmup: '0-1 light',
+        notes: 'Heavy Duty uses minimal sets taken to absolute failure and beyond. Never add more sets - increase intensity instead.'
       },
-      reps: {
-        range: [6, 10],
-        description: 'Moderate rep range to allow maximum intensity while maintaining form',
-        progressionNotes: 'Progress by adding weight, not reps beyond 10'
+      repRanges: {
+        compound: [6, 10],
+        isolation: [6, 10], // Same range for Heavy Duty
+        notes: 'Moderate rep range to allow maximum intensity while maintaining form. Progress by adding weight, not reps beyond 10.'
       },
-      rest: {
-        betweenSets: [180, 300],
-        betweenExercises: [180, 300],
-        description: 'Long rest periods (3-5 minutes) to ensure full recovery for maximum intensity',
-        rationale: 'ATP replenishment and nervous system recovery for true maximum effort'
+      rirTarget: {
+        normal: -1,   // BEYOND failure - use intensity techniques
+        intense: -1,  // Always beyond failure in Heavy Duty
+        deload: 3,    // During deload week
+        notes: 'Train to momentary muscular failure and beyond using intensity techniques. Failure is the starting point, not the endpoint.'
+      },
+      // Heavy Duty-specific additional fields
+      restPeriods: {
+        compound: [180, 300],
+        isolation: [180, 300],
+        autoRegulation: 'Long rest periods (3-5 minutes) to ensure full recovery for maximum intensity. ATP replenishment and nervous system recovery for true maximum effort.'
       },
       tempo: {
         eccentric: 4,
@@ -69,11 +76,6 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         pauseTop: 0,
         description: 'Slow controlled eccentric (4 seconds) and explosive concentric (2 seconds) to maximize time under tension and fiber recruitment',
         rationale: 'Slow negatives eliminate momentum and increase mechanical stress; explosive positives maximize motor unit recruitment'
-      },
-      rir: {
-        typical: -1, // BEYOND failure
-        description: 'Train to momentary muscular failure and beyond using intensity techniques',
-        context: 'Failure is the starting point, not the endpoint'
       },
       sessionDuration: {
         typical: [30, 45],

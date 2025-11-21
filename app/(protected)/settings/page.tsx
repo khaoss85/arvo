@@ -17,6 +17,7 @@ import { MethodDetails } from "@/components/features/settings/method-details"
 import { ApproachSwitcher } from "@/components/features/settings/approach-switcher"
 import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
 import { AudioCoachingSettings } from "@/components/features/settings/audio-coaching-settings"
+import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
 import { Card } from "@/components/ui/card"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -117,6 +118,20 @@ export default async function SettingsPage() {
           {/* Audio Coaching Section */}
           <Card className="p-6">
             <AudioCoachingSettings />
+          </Card>
+
+          {/* Personal Information Section */}
+          <Card className="p-6">
+            <PersonalInfoEditor
+              userId={user.id}
+              initialData={{
+                first_name: profile.first_name,
+                gender: profile.gender,
+                age: profile.age,
+                weight: profile.weight,
+                height: profile.height,
+              }}
+            />
           </Card>
 
           {/* Account Info Section */}

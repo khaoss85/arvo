@@ -4,6 +4,7 @@ import { HeroSectionSimple } from "@/components/features/landing-simple/hero-sec
 import { SimpleShowcase } from "@/components/features/landing-simple/simple-showcase";
 import { AutoProgression } from "@/components/features/landing-simple/auto-progression";
 import { SimpleResults } from "@/components/features/landing-simple/simple-results";
+import { SimpleProgressSection } from "@/components/features/landing/SimpleProgressSection";
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
 import { MethodologiesSection } from "@/components/features/landing/methodologies-section";
@@ -67,6 +68,7 @@ export default async function SimplePage() {
       <SmartRestTimer />
       <NotesIntelligence />
       <SimpleResults />
+      <SimpleProgressSection />
       <MethodologiesSection />
       <FAQSection />
       <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />

@@ -90,6 +90,7 @@ export const splitPlanSchema = z.object({
   specialization_muscle: z.string().nullable().optional(), // Target muscle for weak_point_focus split
   specialization_frequency: z.number().int().min(1).nullable().optional(), // Times per cycle
   specialization_volume_multiplier: z.number().min(1.0).max(3.0).nullable().optional(), // Volume multiplier (e.g., 1.5 = 50% more)
+  ai_response_id: z.string().nullable().optional(), // OpenAI response ID for GPT-5 reasoning persistence
   active: z.boolean().nullable(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
@@ -215,7 +216,7 @@ export const workoutSchema = z.object({
   total_volume: z.number().min(0).nullable(),
   total_sets: z.number().int().min(0).nullable(),
   notes: z.string().nullable(),
-  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms']).nullable(),
+  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest']).nullable(),
   workout_name: z.string().nullable(),
   target_muscle_groups: z.array(z.string()).nullable(),
   split_type: z.string().nullable(),
@@ -223,11 +224,13 @@ export const workoutSchema = z.object({
   // Split planning fields
   split_plan_id: z.string().uuid().nullable(),
   cycle_day: z.number().int().min(1).nullable(), // Which day of the cycle (1 to cycle_days)
-  variation: z.enum(['A', 'B']).nullable(), // A/B variation
+  variation: z.enum(['A', 'B', 'none']).nullable(), // A/B variation (or 'none' for REST days)
   // Workout status field
   status: workoutStatusSchema.nullable(),
   // Audio coaching scripts
   audio_scripts: z.record(z.string(), z.unknown()).nullable().optional(),
+  // GPT-5 reasoning persistence for exercise selection
+  ai_response_id: z.string().nullable().optional(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({

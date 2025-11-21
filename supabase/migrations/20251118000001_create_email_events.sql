@@ -78,10 +78,10 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  -- Get approach name
-  SELECT name INTO v_approach_name
-  FROM approaches
-  WHERE id = v_profile.approach_id;
+  -- Note: Approach names are stored in JSON files, not in database
+  -- The approach_id is stored in user_profiles.approach_id
+  -- The application will resolve the approach name from the filesystem
+  v_approach_name := v_profile.approach_id;
 
   -- Get active split plan
   SELECT * INTO v_split_plan

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { InsightParserAgent } from '@/lib/agents/insight-parser.agent'
+import type { Database } from '@/lib/types/database.types'
 
 export async function POST(request: NextRequest) {
   console.log('[API /insights/parse] ==================== NEW REQUEST ====================')
@@ -63,7 +64,10 @@ export async function POST(request: NextRequest) {
       .eq('id', workoutId)
       .single()
 
-    if (workoutError || !workout) {
+    type Workout = Database['public']['Tables']['workouts']['Row']
+    const typedWorkout = workout as Workout | null
+
+    if (workoutError || !typedWorkout) {
       console.error('[API /insights/parse] ❌ Failed to fetch workout')
       console.error('[API /insights/parse] Error details:', workoutError)
       console.error('[API /insights/parse] Possible causes:')
@@ -77,9 +81,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[API /insights/parse] ✅ Workout found:', {
-      workoutId: workout.id,
-      workoutUserId: workout.user_id,
-      matchesAuthUser: workout.user_id === authUser.id
+      workoutId: typedWorkout.id,
+      workoutUserId: typedWorkout.user_id,
+      matchesAuthUser: typedWorkout.user_id === authUser.id
     })
 
     // Check for duplicate requests within last 30 seconds (idempotency)
@@ -118,9 +122,9 @@ export async function POST(request: NextRequest) {
       userNote: notes,
       workoutContext: {
         exercises: [], // Simplified for now - in production, fetch from sets_log
-        mentalReadiness: workout.mental_readiness_overall || undefined,
+        mentalReadiness: typedWorkout.mental_readiness_overall || undefined,
         mesocyclePhase: undefined, // Not in database schema
-        workoutType: workout.workout_type || undefined
+        workoutType: typedWorkout.workout_type || undefined
       },
       recentInsights: [] // We'll query this in a production version
     })

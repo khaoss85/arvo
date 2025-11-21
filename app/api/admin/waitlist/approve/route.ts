@@ -3,6 +3,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/utils/auth.server'
 import { EmailService } from '@/lib/services/email.service'
+import type { Database } from '@/lib/types/database.types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +36,10 @@ export async function POST(request: NextRequest) {
       .eq('id', entryId)
       .single()
 
-    if (fetchError || !entry) {
+    type WaitlistEntry = Database['public']['Tables']['waitlist_entries']['Row']
+    const typedEntry = entry as WaitlistEntry | null
+
+    if (fetchError || !typedEntry) {
       return NextResponse.json(
         { error: 'Waitlist entry not found' },
         { status: 404 }
@@ -43,14 +47,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already approved or converted
-    if (entry.status === 'approved') {
+    if (typedEntry.status === 'approved') {
       return NextResponse.json(
         { error: 'Entry already approved', alreadyApproved: true },
         { status: 400 }
       )
     }
 
-    if (entry.status === 'converted') {
+    if (typedEntry.status === 'converted') {
       return NextResponse.json(
         { error: 'Entry already converted to user', alreadyConverted: true },
         { status: 400 }
@@ -78,12 +82,12 @@ export async function POST(request: NextRequest) {
     let magicLinkSent = false
     let magicLinkError = null
 
-    if (sendEmail && entry.email) {
+    if (sendEmail && typedEntry.email) {
       try {
         // Generate magic link using Supabase Auth
         const { data, error } = await adminClient.auth.admin.generateLink({
           type: 'magiclink',
-          email: entry.email,
+          email: typedEntry.email,
           options: {
             redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
           },
@@ -94,7 +98,7 @@ export async function POST(request: NextRequest) {
           magicLinkError = error.message
         } else if (data && data.properties && data.properties.action_link) {
           // Send custom email with the magic link using Resend
-          const sent = await EmailService.sendApprovalEmail(entry, data.properties.action_link)
+          const sent = await EmailService.sendApprovalEmail(typedEntry, data.properties.action_link)
           magicLinkSent = sent
 
           if (!sent) {
@@ -112,8 +116,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       entry: {
-        id: entry.id,
-        email: entry.email,
+        id: typedEntry.id,
+        email: typedEntry.email,
         status: 'approved',
       },
       magicLinkSent,

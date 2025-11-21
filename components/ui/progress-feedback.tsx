@@ -28,6 +28,8 @@ interface ProgressFeedbackProps {
   onComplete: (data: any) => void
   onError: (error: string) => void
   onCancel?: () => void
+  existingRequestId?: string // If provided, resume this generation instead of starting new
+  initialProgress?: number // Initial progress percentage when resuming (prevents 0% flash)
 }
 
 export function ProgressFeedback({
@@ -38,66 +40,28 @@ export function ProgressFeedback({
   cancellable = true,
   onComplete,
   onError,
-  onCancel
+  onCancel,
+  existingRequestId,
+  initialProgress
 }: ProgressFeedbackProps) {
   // Use i18n phases if not provided
   const defaultPhases = useWorkoutPhases()
   const activePhases = phases || defaultPhases
 
   const [phase, setPhase] = useState(activePhases[0]?.id || 'profile')
-  const [progress, setProgress] = useState(0)
+  const [progress, setProgress] = useState(initialProgress || 0)
   const [message, setMessage] = useState('Starting...')
   const [eta, setEta] = useState<number | null>(null) // ETA in seconds
   const [detail, setDetail] = useState<string | null>(null) // Additional details
 
   // Polling fallback for mobile disconnections
   const [generationRequestId, setGenerationRequestId] = useState(() => {
-    // Generate UUID only once per component mount (may be replaced if resuming)
-    return crypto.randomUUID()
+    // Use existing request ID if resuming, otherwise generate new
+    return existingRequestId || crypto.randomUUID()
   })
-  const [pollingMode, setPollingMode] = useState(false)
-  const [resumedFromDatabase, setResumedFromDatabase] = useState(false)
+  const [pollingMode, setPollingMode] = useState(!!existingRequestId)
+  const [resumedFromDatabase, setResumedFromDatabase] = useState(!!existingRequestId)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Check on mount if there's an active generation to resume (database queue)
-  useEffect(() => {
-    const checkActiveGeneration = async () => {
-      try {
-        const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
-        const { getUserId } = await import('@/lib/utils/get-user-id')
-
-        const userId = await getUserId()
-        if (!userId) return
-
-        const activeGeneration = await GenerationQueueService.getActiveGeneration(userId)
-
-        if (activeGeneration && (activeGeneration.status === 'pending' || activeGeneration.status === 'in_progress')) {
-          console.log('[ProgressFeedback] Found active generation to resume:', {
-            requestId: activeGeneration.request_id,
-            progress: activeGeneration.progress_percent,
-            phase: activeGeneration.current_phase
-          })
-
-          // Use the request ID from the active generation
-          setGenerationRequestId(activeGeneration.request_id)
-
-          // Resume from where it left off
-          setProgress(activeGeneration.progress_percent)
-          if (activeGeneration.current_phase) {
-            setMessage(activeGeneration.current_phase)
-          }
-          setPhase(getPhaseFromProgress(activeGeneration.progress_percent))
-          setResumedFromDatabase(true)
-          setPollingMode(true) // Start polling immediately
-        }
-      } catch (error) {
-        console.error('[ProgressFeedback] Failed to check for active generation:', error)
-        // Don't block normal flow - just log the error
-      }
-    }
-
-    checkActiveGeneration()
-  }, []) // Run once on mount
 
   // Polling logic (activated on SSE failure or resume from database)
   useEffect(() => {
@@ -205,7 +169,16 @@ export function ProgressFeedback({
 
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {
+            // Stream closed - check if generation completed
+            if (progress < 100) {
+              console.log('[ProgressFeedback] SSE stream closed before completion (progress: ' + progress + '%), switching to polling mode')
+              setPollingMode(true)
+            } else {
+              console.log('[ProgressFeedback] SSE stream closed after completion')
+            }
+            break
+          }
 
           const chunk = decoder.decode(value)
           const lines = chunk.split('\n')
@@ -302,6 +275,16 @@ export function ProgressFeedback({
             </p>
           </div>
         </div>
+
+        {/* AI Thinking Animation - shown during reasoning phase */}
+        {message.toLowerCase().includes('ai is') && (
+          <div className="flex items-center justify-center gap-2 py-2">
+            <div className="animate-pulse text-xl">🤔</div>
+            <span className="text-xs text-gray-600 dark:text-gray-400">
+              Deep reasoning in progress...
+            </span>
+          </div>
+        )}
 
         {/* Duration notice or ETA - keep users informed */}
         {eta !== null && eta > 0 ? (

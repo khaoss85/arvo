@@ -166,7 +166,7 @@ export class AnalyticsService {
       .from('workouts')
       .select('id, completed_at, total_volume, total_sets')
       .eq('user_id', userId)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .gte('completed_at', startDate.toISOString())
       .order('completed_at', { ascending: true })
 
@@ -220,7 +220,7 @@ export class AnalyticsService {
       .from('workouts')
       .select('completed_at, total_volume')
       .eq('user_id', userId)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .gte('completed_at', startDate.toISOString())
 
     if (error) throw new Error(`Failed to fetch workout frequency: ${error.message}`)
@@ -260,7 +260,7 @@ export class AnalyticsService {
       .from('workouts')
       .select('duration_seconds')
       .eq('user_id', userId)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .gte('completed_at', startDate.toISOString())
       .not('duration_seconds', 'is', null)
 

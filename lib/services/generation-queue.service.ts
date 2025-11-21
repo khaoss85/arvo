@@ -186,7 +186,38 @@ export class GenerationQueueService {
   }
 
   /**
+   * Get active generation for user (pending or in_progress) - SERVER-SIDE
+   * Used to prevent duplicate concurrent generations server-side
+   * @param userId - User ID to check for active generations
+   * @returns Active generation if exists, null otherwise
+   */
+  static async getActiveGenerationServer(userId: string): Promise<GenerationQueueEntry | null> {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('workout_generation_queue')
+      .select('*')
+      .eq('user_id', userId)
+      .in('status', ['pending', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null // No active generation
+      }
+      console.error('[GenerationQueueService] Failed to get active generation (server):', error)
+      return null // Don't throw, just return null for safety
+    }
+
+    return data as GenerationQueueEntry
+  }
+
+  /**
    * Mark generation as started (server-side)
+   * Uses server client with user authentication (for SSE stream endpoint)
    */
   static async markAsStarted(requestId: string): Promise<GenerationQueueEntry> {
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
@@ -214,6 +245,7 @@ export class GenerationQueueService {
 
   /**
    * Update generation progress (server-side)
+   * Uses server client with user authentication (for SSE stream endpoint)
    */
   static async updateProgress(input: UpdateGenerationProgressInput): Promise<void> {
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
@@ -235,6 +267,7 @@ export class GenerationQueueService {
 
   /**
    * Mark generation as completed (server-side)
+   * Uses server client with user authentication (for SSE stream endpoint)
    */
   static async markAsCompleted(input: CompleteGenerationInput): Promise<GenerationQueueEntry> {
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')
@@ -263,6 +296,7 @@ export class GenerationQueueService {
 
   /**
    * Mark generation as failed (server-side)
+   * Uses server client with user authentication (for SSE stream endpoint)
    */
   static async markAsFailed(input: FailGenerationInput): Promise<GenerationQueueEntry> {
     const { getSupabaseServerClient } = await import('@/lib/supabase/server')

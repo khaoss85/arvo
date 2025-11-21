@@ -113,7 +113,8 @@ export async function generateSplitPlanAction(
     const splitPlanner = new SplitPlanner(supabase)
 
     // Generate split plan using AI (with cycle history context if available)
-    const splitPlanData = await splitPlanner.planSplit({
+    // Use Structured Outputs for faster, more reliable generation during onboarding
+    const splitPlanData = await splitPlanner.planSplitWithStructuredOutput({
       ...input,
       recentCycleCompletions: cycleHistory || undefined,
       cycleComparison: cycleComparison || undefined,
@@ -129,6 +130,7 @@ export async function generateSplitPlanAction(
       frequency_map: splitPlanData.frequencyMap as any,
       volume_distribution: splitPlanData.volumeDistribution as any,
       active: true,
+      ai_response_id: splitPlanData.responseId || null, // Store for GPT-5 reasoning persistence
     }
 
     // Add specialization fields for weak_point_focus splits
@@ -727,18 +729,18 @@ export async function adaptSplitAfterCycleAction(userId: string) {
       weakPoints: profile?.weak_points || [],
       equipmentAvailable: profile?.available_equipment || ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight'],
       // Adaptation context (CRITICAL: pass the gathered data to SplitPlanner!)
-      substitutionPatterns: substitutions.map(sub => ({
+      substitutionPatterns: substitutions.map((sub: any) => ({
         originalExercise: sub.originalExercise,
         newExercise: sub.newExercise,
         reason: sub.reason,
         count: sub.count
       })),
-      memories: memories.map(mem => ({
+      memories: memories.map((mem: any) => ({
         content: mem.title,
         category: mem.memory_category,
         createdAt: '' // Field not available from get_active_memories RPC function
       })),
-      insights: insights.map(insight => ({
+      insights: insights.map((insight: any) => ({
         exerciseName: insight.exercise_name || 'Unknown',
         category: insight.insight_type || 'general',
         description: insight.user_note,
@@ -760,8 +762,10 @@ export async function adaptSplitAfterCycleAction(userId: string) {
     console.log('[adaptSplitAfterCycleAction] Calling SplitPlanner agent...')
 
     // 4. Call SplitPlanner agent with medium reasoning effort for quality adaptations
+    // Pass previous response ID for GPT-5 reasoning continuity
     const planner = new SplitPlanner(supabase, 'medium')
-    const adaptedSplit = await planner.planSplit(input, targetLanguage)
+    const previousResponseId = currentSplit.ai_response_id || undefined
+    const adaptedSplit = await planner.planSplit(input, targetLanguage, previousResponseId)
 
     console.log('[adaptSplitAfterCycleAction] Split adapted:', {
       sessions: adaptedSplit.sessions?.length,
@@ -783,7 +787,8 @@ export async function adaptSplitAfterCycleAction(userId: string) {
       sessions: adaptedSplit.sessions as any,
       frequency_map: adaptedSplit.frequencyMap,
       volume_distribution: adaptedSplit.volumeDistribution,
-      active: true
+      active: true,
+      ai_response_id: adaptedSplit.responseId || null // Store for next adaptation's reasoning continuity
     })
 
     console.log('[adaptSplitAfterCycleAction] Adapted split saved:', newSplit.id)

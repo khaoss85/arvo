@@ -91,8 +91,9 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   // Initialize state based on warmup vs working set
   const getInitialWeight = useCallback(() => {
     if (currentWarmup) {
-      // Use pre-calculated weight if available
-      if (currentWarmup.weight !== undefined) {
+      // Use pre-calculated weight if available and valid (not 0)
+      // Check for > 0 to handle old workouts with weight: 0 bug
+      if (currentWarmup.weight !== undefined && currentWarmup.weight > 0) {
         return currentWarmup.weight
       }
       // Calculate from percentage using effective target (adapts to actual performance)

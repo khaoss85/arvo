@@ -22,18 +22,20 @@ export type {
 
 /**
  * Exercise pattern matching for muscle groups
- * Based on muscle-groups.service.ts patterns
+ * Order matters: more specific patterns are checked first
  */
 const EXERCISE_MUSCLE_PATTERNS: Record<string, string[]> = {
-  // Chest
-  chest: ['bench', 'press', 'fly', 'pec', 'chest', 'petto'],
-  // Shoulders
-  shoulders: ['shoulder', 'overhead', 'military', 'lateral', 'rear delt', 'spalle', 'delt'],
+  // Shoulders - specific subdivisions (must be checked before generic patterns)
+  shoulders_rear: ['rear delt', 'rear-delt', 'face pull', 'reverse fly', 'reverse pec deck'],
+  shoulders_side: ['lateral raise', 'side raise', 'lateral delt', 'side delt'],
+  shoulders_front: ['front raise', 'front delt', 'overhead press', 'military press', 'shoulder press'],
+  // Chest (removed generic "press" and "fly")
+  chest: ['bench press', 'chest press', 'pec deck', 'chest fly', 'petto', 'incline press', 'decline press', 'dumbbell press'],
   // Triceps
-  triceps: ['tricep', 'pushdown', 'dip', 'skull crusher', 'extension'],
+  triceps: ['tricep', 'pushdown', 'pressdown', 'dip', 'skull crusher', 'skullcrusher', 'extension', 'kickback'],
   // Back
-  back: ['row', 'deadlift', 'schiena', 'back'],
-  lats: ['lat', 'pulldown', 'pull-up', 'pullup', 'chin', 'dorsali'],
+  back: ['row', 'deadlift', 'schiena'],
+  lats: ['lat', 'pulldown', 'pull-up', 'pullup', 'pull up', 'chin', 'dorsali'],
   traps: ['trap', 'shrug'],
   // Biceps
   biceps: ['curl', 'bicep'],
@@ -51,28 +53,82 @@ const EXERCISE_MUSCLE_PATTERNS: Record<string, string[]> = {
  */
 export class SplitTimelineService {
   /**
-   * Get muscle groups from exercise name
+   * Get muscle groups from exercise using structured data (primary approach)
+   * Falls back to pattern matching for legacy workouts
    */
-  private static getMuscleGroupsFromExercise(exerciseName: string): string[] {
+  private static getMuscleGroupsFromExercise(exercise: any): {
+    primary: string[];
+    secondary: string[];
+  } {
+    // Use structured muscle data if available (modern workouts from AI generation)
+    if (exercise.primaryMuscles && Array.isArray(exercise.primaryMuscles)) {
+      return {
+        primary: exercise.primaryMuscles,
+        secondary: exercise.secondaryMuscles || []
+      };
+    }
+
+    // Fallback to pattern matching for legacy workouts or exercises without metadata
+    const exerciseName = typeof exercise === 'string'
+      ? exercise
+      : (exercise.exerciseName || exercise.name || 'Unknown');
+
+    const musclesFromPattern = this.getMuscleGroupsFromExerciseLegacy(exerciseName);
+
+    return {
+      primary: musclesFromPattern,
+      secondary: []
+    };
+  }
+
+  /**
+   * Legacy pattern matching for muscle groups (fallback only)
+   * Checks specific patterns first to avoid false matches
+   */
+  private static getMuscleGroupsFromExerciseLegacy(exerciseName: string): string[] {
     const nameLower = exerciseName.toLowerCase();
     const muscleGroups: Set<string> = new Set();
 
-    // Check each muscle group pattern
-    for (const [muscle, patterns] of Object.entries(EXERCISE_MUSCLE_PATTERNS)) {
-      for (const pattern of patterns) {
-        if (nameLower.includes(pattern)) {
-          muscleGroups.add(muscle);
+    // Define order: check most specific patterns first
+    const muscleCheckOrder = [
+      // Shoulders (specific subdivisions first)
+      'shoulders_rear',
+      'shoulders_side',
+      'shoulders_front',
+      // Then other muscles
+      'chest',
+      'triceps',
+      'back',
+      'lats',
+      'traps',
+      'biceps',
+      'quads',
+      'hamstrings',
+      'glutes',
+      'calves',
+      'abs'
+    ];
+
+    // Check patterns in order
+    for (const muscle of muscleCheckOrder) {
+      const patterns = EXERCISE_MUSCLE_PATTERNS[muscle];
+      if (patterns) {
+        for (const pattern of patterns) {
+          if (nameLower.includes(pattern)) {
+            muscleGroups.add(muscle);
+            break; // Found a match for this muscle, move to next
+          }
         }
       }
     }
 
     // Fallback to generic categories if no specific match
     if (muscleGroups.size === 0) {
-      if (nameLower.includes('push') || nameLower.includes('press')) {
+      if (nameLower.includes('push')) {
         muscleGroups.add('chest');
       } else if (nameLower.includes('pull')) {
         muscleGroups.add('back');
-      } else if (nameLower.includes('leg') || nameLower.includes('squat')) {
+      } else if (nameLower.includes('leg')) {
         muscleGroups.add('quads');
       }
     }
@@ -82,8 +138,9 @@ export class SplitTimelineService {
 
   /**
    * Calculate actual volume per muscle group from completed workout
+   * Optimized to use a single bulk query instead of N queries per exercise
    */
-  static calculateActualVolume(workout: Workout): Record<string, number> {
+  static async calculateActualVolume(workout: Workout, supabase: any): Promise<Record<string, number>> {
     const volumeByMuscle: Record<string, number> = {};
 
     if (!workout.exercises || !Array.isArray(workout.exercises)) {
@@ -92,21 +149,62 @@ export class SplitTimelineService {
 
     const exercises = workout.exercises as any[];
 
+    // ALWAYS query sets_log for accurate working set counts
+    // JSON completedSets includes warmup sets, which skews the numbers
+    const setsByExercise = new Map<string, number>();
+    try {
+      const { data: loggedSets, error } = await supabase
+        .from('sets_log')
+        .select('exercise_name')
+        .eq('workout_id', workout.id)
+        .eq('set_type', 'working')
+        .eq('skipped', false);
+
+      if (!error && loggedSets) {
+        // Group by exercise_name and count (case-insensitive matching)
+        for (const set of loggedSets) {
+          const exerciseName = set.exercise_name?.toLowerCase().trim() || '';
+          setsByExercise.set(exerciseName, (setsByExercise.get(exerciseName) || 0) + 1);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to query sets_log for workout:', workout.id, err);
+      // Fallback to JSON if query fails
+      for (const exercise of exercises) {
+        const name = getExerciseName(exercise);
+        if (name === 'Unknown Exercise') continue;
+
+        const completedSets = exercise.completedSets || exercise.sets || [];
+        // Filter for working sets only (if set_type field exists)
+        const workingSets = Array.isArray(completedSets)
+          ? completedSets.filter((s: any) => s.set_type === 'working' || !s.set_type)
+          : [];
+        const actualSets = workingSets.length;
+        const normalizedName = name.toLowerCase().trim();
+        setsByExercise.set(normalizedName, actualSets);
+      }
+    }
+
+    // Now calculate volumes per muscle
     for (const exercise of exercises) {
-      // Use utility to safely extract exercise name
       const name = getExerciseName(exercise);
       if (name === 'Unknown Exercise') continue;
 
-      // Get muscle groups for this exercise
-      const muscleGroups = this.getMuscleGroupsFromExercise(name);
+      // Get muscle groups using structured data (primary + secondary)
+      const muscleData = this.getMuscleGroupsFromExercise(exercise);
 
-      // Count completed sets
-      const completedSets = exercise.completedSets || exercise.sets || [];
-      const actualSets = Array.isArray(completedSets) ? completedSets.length : 0;
+      // Get working sets from database (case-insensitive)
+      const normalizedName = name.toLowerCase().trim();
+      const actualSets = setsByExercise.get(normalizedName) || 0;
 
-      // Add to each muscle group
-      for (const muscle of muscleGroups) {
+      // Add full volume to primary muscles
+      for (const muscle of muscleData.primary) {
         volumeByMuscle[muscle] = (volumeByMuscle[muscle] || 0) + actualSets;
+      }
+
+      // Add partial volume to secondary muscles (0.5x weight for accuracy)
+      for (const muscle of muscleData.secondary) {
+        volumeByMuscle[muscle] = (volumeByMuscle[muscle] || 0) + (actualSets * 0.5);
       }
     }
 
@@ -188,7 +286,8 @@ export class SplitTimelineService {
     const workoutMap = new Map<number, Workout>();
 
     if (workouts) {
-      for (const workout of workouts) {
+      const typedWorkouts = workouts as any[];
+      for (const workout of typedWorkouts) {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
@@ -210,12 +309,39 @@ export class SplitTimelineService {
     const { getSupabaseServerClient } = await import("@/lib/supabase/server");
     const supabase = await getSupabaseServerClient();
 
+    // Get user profile to find when current cycle started
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('current_cycle_start_date')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('Failed to fetch user profile:', profileError);
+      return new Map();
+    }
+
+    // If no start date, use split plan creation date as fallback
+    let cycleStartDate = profile?.current_cycle_start_date;
+
+    if (!cycleStartDate) {
+      // Fallback: fetch split plan creation date
+      const { data: splitPlan } = await supabase
+        .from('split_plans')
+        .select('created_at')
+        .eq('id', splitPlanId)
+        .single();
+
+      cycleStartDate = splitPlan?.created_at || '2000-01-01T00:00:00.000Z';
+    }
+
     const { data: workouts, error } = await supabase
       .from('workouts')
       .select('*')
       .eq('user_id', userId)
       .eq('split_plan_id', splitPlanId)
       .eq('status', 'completed')
+      .gte('completed_at', cycleStartDate)
       .order('completed_at', { ascending: false});
 
     if (error) {
@@ -227,7 +353,8 @@ export class SplitTimelineService {
     const workoutMap = new Map<number, Workout>();
 
     if (workouts) {
-      for (const workout of workouts) {
+      const typedWorkouts = workouts as any[];
+      for (const workout of typedWorkouts) {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
@@ -294,7 +421,8 @@ export class SplitTimelineService {
     const workoutMap = new Map<number, Workout>();
 
     if (workouts) {
-      for (const workout of workouts) {
+      const typedWorkouts = workouts as any[];
+      for (const workout of typedWorkouts) {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
@@ -316,12 +444,39 @@ export class SplitTimelineService {
     const { getSupabaseBrowserClient } = await import("@/lib/supabase/client");
     const supabase = getSupabaseBrowserClient();
 
+    // Get user profile to find when current cycle started
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('current_cycle_start_date')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError) {
+      console.error('Failed to fetch user profile:', profileError);
+      return new Map();
+    }
+
+    // If no start date, use split plan creation date as fallback
+    let cycleStartDate = profile?.current_cycle_start_date;
+
+    if (!cycleStartDate) {
+      // Fallback: fetch split plan creation date
+      const { data: splitPlan } = await supabase
+        .from('split_plans')
+        .select('created_at')
+        .eq('id', splitPlanId)
+        .single();
+
+      cycleStartDate = splitPlan?.created_at || '2000-01-01T00:00:00.000Z';
+    }
+
     const { data: workouts, error } = await supabase
       .from('workouts')
       .select('*')
       .eq('user_id', userId)
       .eq('split_plan_id', splitPlanId)
       .eq('status', 'completed')
+      .gte('completed_at', cycleStartDate)
       .order('completed_at', { ascending: false });
 
     if (error) {
@@ -333,7 +488,8 @@ export class SplitTimelineService {
     const workoutMap = new Map<number, Workout>();
 
     if (workouts) {
-      for (const workout of workouts) {
+      const typedWorkouts = workouts as any[];
+      for (const workout of typedWorkouts) {
         const cycleDay = workout.cycle_day;
         if (cycleDay && !workoutMap.has(cycleDay)) {
           // Keep most recent workout for each cycle day
@@ -452,7 +608,7 @@ export class SplitTimelineService {
 
       // Add completed workout data if exists
       if (completedWorkout && session) {
-        const actualVolume = this.calculateActualVolume(completedWorkout);
+        const actualVolume = await this.calculateActualVolume(completedWorkout, supabase);
         const variance = this.calculateVariance(session.targetVolume, actualVolume);
 
         dayData.completedWorkout = {
@@ -563,7 +719,7 @@ export class SplitTimelineService {
 
       // Add completed workout data if exists
       if (completedWorkout && session) {
-        const actualVolume = this.calculateActualVolume(completedWorkout);
+        const actualVolume = await this.calculateActualVolume(completedWorkout, supabase);
         const variance = this.calculateVariance(session.targetVolume, actualVolume);
 
         dayData.completedWorkout = {

@@ -44,13 +44,31 @@ export interface SplitPlannerInput {
   // Cycle history context (NEW)
   recentCycleCompletions?: CycleCompletionSummary[]
   cycleComparison?: CycleComparisonData | null
+  // User preferences from substitution patterns (NEW)
+  substitutionPatterns?: Array<{
+    originalExercise: string
+    newExercise: string
+    reason: string
+    count: number
+  }>
+  memories?: Array<{
+    content: string
+    category: string
+    createdAt: string
+  }>
+  insights?: Array<{
+    exerciseName: string
+    category: string
+    description: string
+    severity: string
+  }>
 }
 
 export interface SessionDefinition {
   day: number // Position in cycle (1 to cycle_days)
-  name: string // e.g., "Push A", "Pull B", "Legs A", "Chest A", "Back B"
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'chest' | 'back' | 'shoulders' | 'arms'
-  variation: 'A' | 'B'
+  name: string // e.g., "Push A", "Pull B", "Legs A", "Chest A", "Back B", "Rest"
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'chest' | 'back' | 'shoulders' | 'arms' | 'rest' // Use 'rest' for REST days
+  variation: 'A' | 'B' | 'none' // Use 'none' for REST days
   focus: string[] // Muscle groups emphasized, e.g., ["chest", "shoulders", "triceps"]
   targetVolume: Record<string, number> // Sets per muscle group in this session
   principles: string[] // Key principles for this session from approach
@@ -64,16 +82,22 @@ export interface SplitPlanOutput {
   volumeDistribution: Record<string, number> // Muscle group -> total sets in cycle
   rationale: string // Why this split structure was chosen
   weeklyScheduleExample: string[] // Example of how to schedule in a week
+  responseId?: string // OpenAI response ID for reasoning continuity (GPT-5)
 }
 
 export class SplitPlanner extends BaseAgent {
   protected supabase: any
 
-  constructor(supabaseClient?: any) {
-    // Use low reasoning for faster split generation (90s vs 240s timeout)
+  constructor(
+    supabaseClient?: any,
+    reasoningEffort?: 'none' | 'low' | 'medium' | 'high',
+    verbosity?: 'low' | 'medium' | 'high'
+  ) {
+    // Default: Use low reasoning for faster split generation (90s vs 240s timeout)
     // Medium reasoning was too slow for onboarding UX (appeared stuck at 60%)
-    // Use low verbosity for cleaner, more scannable onboarding output
-    super(supabaseClient, 'low', 'low')
+    // But for adaptations, caller can specify 'medium' for higher quality
+    // Use low verbosity for cleaner, more scannable output
+    super(supabaseClient, reasoningEffort || 'low', verbosity || 'low')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
   }
 
@@ -102,7 +126,11 @@ When creating splits:
 Always output valid JSON matching the exact structure specified.`
   }
 
-  async planSplit(input: SplitPlannerInput, targetLanguage?: 'en' | 'it'): Promise<SplitPlanOutput> {
+  async planSplit(
+    input: SplitPlannerInput,
+    targetLanguage?: 'en' | 'it',
+    previousResponseId?: string
+  ): Promise<SplitPlanOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'split_planning')
 
@@ -114,6 +142,9 @@ Always output valid JSON matching the exact structure specified.`
 
     // Build cycle history context (NEW)
     const cycleHistoryContext = this.buildCycleHistoryContext(input, approach)
+
+    // Build user preferences context (substitutions, memories, insights)
+    const userPreferencesContext = this.buildUserPreferencesContext(input)
 
     // Build caloric phase context (NEW - Item 1)
     // Note: Default to flexible volume (most approaches allow volume modulation)
@@ -221,6 +252,7 @@ Equipment Available: ${input.equipmentAvailable.join(', ')}
 ${demographicContext}
 ${constraintContext}
 ${cycleHistoryContext}
+${userPreferencesContext}
 ${caloricPhaseContext}
 
 === TASK ===
@@ -393,8 +425,8 @@ Output the split plan as JSON with this EXACT structure:
     {
       "day": 4,
       "name": "Rest",
-      "workoutType": null,
-      "variation": null,
+      "workoutType": "rest",
+      "variation": "none",
       "focus": [],
       "targetVolume": {},
       "principles": ["Active recovery", "Sleep and nutrition focus"],
@@ -410,7 +442,165 @@ Output the split plan as JSON with this EXACT structure:
 **⚠️ REMINDER**: Do NOT include muscle groups with 0 sets in targetVolume, frequencyMap, or volumeDistribution. Only include muscles that are actually being trained (sets > 0).
 `
 
-    return await this.complete<SplitPlanOutput>(prompt, targetLanguage)
+    // Call AI with optional previous response ID for reasoning continuity
+    const result = await this.complete<SplitPlanOutput>(
+      prompt,
+      targetLanguage,
+      undefined, // customTimeoutMs (use default)
+      previousResponseId
+    )
+
+    // Add response ID to result for GPT-5 reasoning persistence
+    return {
+      ...result,
+      responseId: this.lastResponseId
+    }
+  }
+
+  /**
+   * Fast version using Structured Outputs for onboarding
+   * Uses reasoning 'none' (15s timeout) + guaranteed JSON validity
+   * ~60-70% faster than planSplit(), ideal for first-time onboarding
+   */
+  async planSplitWithStructuredOutput(input: SplitPlannerInput, targetLanguage?: 'en' | 'it'): Promise<SplitPlanOutput> {
+    // Build same prompt as planSplit (reuse logic)
+    const approach = await this.knowledge.loadApproach(input.approachId)
+
+    const demographicContext = this.buildDemographicContext(input)
+    const constraintContext = this.buildConstraintContext(input)
+    const cycleHistoryContext = this.buildCycleHistoryContext(input, approach)
+    const userPreferencesContext = this.buildUserPreferencesContext(input)
+
+    const prompt = this.buildPromptForStructuredOutput(
+      input,
+      approach,
+      demographicContext,
+      constraintContext,
+      cycleHistoryContext,
+      userPreferencesContext,
+      targetLanguage
+    )
+
+    // Define strict JSON schema for Structured Outputs
+    const schema = {
+      name: 'split_plan_output',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          cycleDays: {
+            type: 'number',
+            description: 'Total days in one complete cycle'
+          },
+          sessions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                day: { type: 'number' },
+                name: { type: 'string' },
+                workoutType: {
+                  type: 'string',
+                  enum: ['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest']
+                },
+                variation: {
+                  type: 'string',
+                  enum: ['A', 'B', 'none']
+                },
+                focus: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                targetVolume: {
+                  type: 'object',
+                  additionalProperties: { type: 'number' }
+                },
+                principles: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                exampleExercises: {
+                  type: 'array',
+                  items: { type: 'string' }
+                }
+              },
+              required: ['day', 'name', 'workoutType', 'variation', 'focus', 'principles', 'exampleExercises'],
+              // Note: targetVolume removed - objects with additionalProperties cannot be required per OpenAI Structured Outputs
+              additionalProperties: false
+            }
+          },
+          frequencyMap: {
+            type: 'object',
+            description: 'Muscle group -> times trained per week',
+            additionalProperties: { type: 'number' }
+          },
+          volumeDistribution: {
+            type: 'object',
+            description: 'Muscle group -> total sets in cycle',
+            additionalProperties: { type: 'number' }
+          },
+          rationale: {
+            type: 'string',
+            description: 'Why this split structure was chosen'
+          },
+          weeklyScheduleExample: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Example of how to schedule in a week'
+          }
+        },
+        required: ['cycleDays', 'sessions', 'rationale', 'weeklyScheduleExample'],
+        // Note: frequencyMap and volumeDistribution removed - objects with additionalProperties cannot be required per OpenAI Structured Outputs
+        additionalProperties: false
+      }
+    }
+
+    // Use Structured Outputs (automatically uses reasoning 'none' for speed)
+    return await this.completeWithStructuredOutput<SplitPlanOutput>(prompt, schema, targetLanguage)
+  }
+
+  private buildPromptForStructuredOutput(
+    input: SplitPlannerInput,
+    approach: any,
+    demographicContext: string,
+    constraintContext: string,
+    cycleHistoryContext: string,
+    userPreferencesContext: string,
+    targetLanguage?: 'en' | 'it'
+  ): string {
+    // Simplified prompt for onboarding (no cycle history for first-time users)
+    const lang = targetLanguage || 'en'
+
+    return `# Training Split Plan Generation
+
+${demographicContext}
+${constraintContext}
+
+## Training Approach: ${approach.name}
+${approach.description}
+
+${approach.principles ? `### Key Principles:
+${approach.principles.map((p: any, i: number) => `${i + 1}. ${p}`).join('\n')}` : ''}
+
+${userPreferencesContext}
+
+## Task
+Design a training split plan that:
+1. Matches the ${input.splitType.replace(/_/g, ' ')} structure
+2. Fits ${input.weeklyFrequency} training days per week
+3. Follows the approach's principles and volume guidelines
+4. Prioritizes weak points: ${input.weakPoints.length > 0 ? input.weakPoints.join(', ') : 'none specified'}
+
+## Important Guidelines
+- Follow the approach's frequency recommendations
+- Distribute volume appropriately across muscle groups
+- Use workout variations (A/B) if approach recommends them
+- Ensure adequate recovery between sessions
+- Only include muscle groups with sets > 0 in targetVolume and volumeDistribution
+
+${lang === 'it' ? 'Fornisci la risposta in italiano.' : 'Provide response in English.'}
+
+Output a valid JSON split plan.`
   }
 
   private buildDemographicContext(input: SplitPlannerInput): string {
@@ -607,5 +797,70 @@ Output the split plan as JSON with this EXACT structure:
     }
 
     return context
+  }
+
+  private buildUserPreferencesContext(input: SplitPlannerInput): string {
+    const parts: string[] = []
+
+    // Add substitution patterns
+    if (input.substitutionPatterns && input.substitutionPatterns.length > 0) {
+      parts.push('\n=== USER\'S EXERCISE PREFERENCES (FROM SUBSTITUTION HISTORY) ===')
+      parts.push('IMPORTANT: The user has consistently swapped certain exercises. Prefer the new exercises in the adapted split.\n')
+
+      input.substitutionPatterns.forEach((sub, idx) => {
+        parts.push(`${idx + 1}. **${sub.originalExercise}** → **${sub.newExercise}**`)
+        parts.push(`   Reason: ${sub.reason}`)
+        parts.push(`   Times substituted: ${sub.count}`)
+        parts.push(`   → ACTION: Use "${sub.newExercise}" instead of "${sub.originalExercise}" in the new split\n`)
+      })
+    }
+
+    // Add memories
+    if (input.memories && input.memories.length > 0) {
+      parts.push('\n=== USER\'S TRAINING MEMORIES ===')
+      parts.push('These are important context points the user has saved:\n')
+
+      input.memories.forEach((memory, idx) => {
+        parts.push(`${idx + 1}. [${memory.category}] ${memory.content}`)
+      })
+      parts.push('')
+    }
+
+    // Add insights
+    if (input.insights && input.insights.length > 0) {
+      parts.push('\n=== USER\'S EXERCISE-SPECIFIC INSIGHTS ===')
+      parts.push('CRITICAL: The user has logged specific issues with these exercises. AVOID them or suggest alternatives.\n')
+
+      // Group by severity
+      const highSeverity = input.insights.filter(i => i.severity === 'high' || i.severity === 'critical')
+      const mediumSeverity = input.insights.filter(i => i.severity === 'medium' || i.severity === 'moderate')
+      const lowSeverity = input.insights.filter(i => i.severity === 'low' || i.severity === 'minor')
+
+      if (highSeverity.length > 0) {
+        parts.push('🔴 **HIGH PRIORITY - AVOID THESE EXERCISES:**')
+        highSeverity.forEach(insight => {
+          parts.push(`   - ${insight.exerciseName}: ${insight.description} [${insight.category}]`)
+        })
+        parts.push('')
+      }
+
+      if (mediumSeverity.length > 0) {
+        parts.push('⚠️ **MODERATE ISSUES - USE WITH CAUTION:**')
+        mediumSeverity.forEach(insight => {
+          parts.push(`   - ${insight.exerciseName}: ${insight.description} [${insight.category}]`)
+        })
+        parts.push('')
+      }
+
+      if (lowSeverity.length > 0) {
+        parts.push('ℹ️ **MINOR NOTES:**')
+        lowSeverity.forEach(insight => {
+          parts.push(`   - ${insight.exerciseName}: ${insight.description} [${insight.category}]`)
+        })
+        parts.push('')
+      }
+    }
+
+    return parts.length > 0 ? parts.join('\n') : ''
   }
 }

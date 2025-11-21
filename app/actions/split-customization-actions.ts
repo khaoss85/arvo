@@ -396,12 +396,12 @@ export async function undoLastModificationAction(userId: string) {
     const supabase = await getSupabaseServerClient()
 
     // Get last modification
-    const { data: modifications, error: fetchError } = await supabase
+    const { data: modifications, error: fetchError } = (await supabase
       .from('split_modifications')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1)
+      .limit(1)) as any
 
     if (fetchError) {
       throw new Error(`Failed to fetch last modification: ${fetchError.message}`)
@@ -572,7 +572,7 @@ export async function generateNewSplitTypeAction(
 
       await supabase.from('split_modifications').insert({
         user_id: userId,
-        split_plan_id: result.data.splitPlan.id, // New split plan ID
+        split_plan_id: (result.data as any).splitPlan.id, // New split plan ID
         modification_type: 'change_split_type',
         details: {
           previousSplitType,

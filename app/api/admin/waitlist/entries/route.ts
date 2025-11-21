@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { isAdmin } from '@/lib/utils/auth.server'
+import type { Database } from '@/lib/types/database.types'
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,9 +54,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    type WaitlistEntry = Database['public']['Tables']['waitlist_entries']['Row']
+    const typedEntries = (entries || []) as WaitlistEntry[]
+
     // For each entry, get referrals count
     const entriesWithStats = await Promise.all(
-      (entries || []).map(async (entry) => {
+      typedEntries.map(async (entry) => {
         const { count: referralsCount } = await supabase
           .from('waitlist_entries')
           .select('*', { count: 'exact', head: true })

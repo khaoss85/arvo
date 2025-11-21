@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { memoryService, type ActiveMemory } from '@/lib/services/memory.service'
 import { insightService, type ActiveInsight } from '@/lib/services/insight.service'
@@ -17,7 +18,8 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
+  ArrowLeft
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -149,6 +151,13 @@ export function MemoryDashboardClient({ userId }: MemoryDashboardClientProps) {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
       <div className="mb-8">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('backToDashboard')}
+        </Link>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">{t('title')}</h1>

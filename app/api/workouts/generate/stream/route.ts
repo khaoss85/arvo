@@ -8,9 +8,29 @@ import { GenerationCache } from '@/lib/services/generation-cache'
 import { GenerationMetricsService } from '@/lib/services/generation-metrics.service'
 import { GenerationQueueService } from '@/lib/services/generation-queue.service'
 import { ProgressSimulator } from '@/lib/utils/progress-simulator'
+import { inngest } from '@/lib/inngest/client'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+/**
+ * Safely enqueue data to a ReadableStreamDefaultController
+ * Handles the case where the controller is already closed (client disconnected)
+ */
+function safeEnqueue(controller: ReadableStreamDefaultController, chunk: Uint8Array): boolean {
+  try {
+    controller.enqueue(chunk)
+    return true
+  } catch (error) {
+    // Controller already closed - client disconnected
+    if (error instanceof TypeError && error.message.includes('already closed')) {
+      console.log('[WorkoutGenerate] Controller already closed during enqueue (client disconnected)')
+      return false
+    } else {
+      throw error
+    }
+  }
+}
 
 /**
  * Safely close a ReadableStreamDefaultController
@@ -47,7 +67,8 @@ export async function POST(request: NextRequest) {
     const userId = user.id
     const locale = await getUserLanguage(userId)
     const body = await request.json()
-    const { targetCycleDay, generationRequestId } = body
+    const { targetCycleDay } = body
+    let generationRequestId = body.generationRequestId
 
     // Get translations for progress messages and errors
     const tProgress = await getTranslations({ locale, namespace: 'api.workouts.generate.progress' })
@@ -65,7 +86,7 @@ export async function POST(request: NextRequest) {
             message: string,
             eta?: number | null,
             detail?: string
-          ) => {
+          ): Promise<boolean> => {
             const data = JSON.stringify({
               phase,
               progress,
@@ -73,7 +94,11 @@ export async function POST(request: NextRequest) {
               ...(eta !== undefined && eta !== null && { eta }),
               ...(detail && { detail })
             })
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+            const enqueued = safeEnqueue(controller, encoder.encode(`data: ${data}\n\n`))
+            if (!enqueued) {
+              console.log('[WorkoutGenerate] Client disconnected, stopping progress updates')
+              return false
+            }
 
             // Also update database queue (non-blocking, errors logged but not thrown)
             if (generationRequestId) {
@@ -88,6 +113,8 @@ export async function POST(request: NextRequest) {
                 // Don't throw - progress updates are non-critical
               }
             }
+
+            return true
           }
 
           // Check database queue for previous generation (survives server restarts)
@@ -105,12 +132,14 @@ export async function POST(request: NextRequest) {
 
               if (workout) {
                 await sendProgress('complete', 100, tProgress('workoutReady'))
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                const enqueued = safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
                   phase: 'complete',
                   workout,
                   insightInfluencedChanges: [] // Not stored in queue entry
                 })}\n\n`))
-                safeClose(controller)
+                if (enqueued) {
+                  safeClose(controller)
+                }
                 return
               }
             }
@@ -120,18 +149,58 @@ export async function POST(request: NextRequest) {
             if (cached?.status === 'complete') {
               console.log(`[WorkoutGenerate] Returning cached result: ${generationRequestId}`)
               await sendProgress('complete', 100, tProgress('workoutReady'))
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+              const enqueued = safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
                 phase: 'complete',
                 workout: cached.workout,
                 insightInfluencedChanges: cached.insightInfluencedChanges
               })}\n\n`))
-              safeClose(controller)
+              if (enqueued) {
+                safeClose(controller)
+              }
               return
             }
 
             // Create or update database queue entry
+            // Use Inngest in production (has event key) OR in dev mode (INNGEST_DEV=1)
+            const shouldUseInngest = !!process.env.INNGEST_EVENT_KEY || process.env.INNGEST_DEV === '1'
+
             if (!queueEntry) {
-              // Create new queue entry
+              // ⚠️ SERVER-SIDE CONCURRENCY CHECK: Prevent duplicate generations
+              // Check if user already has an active generation (pending or in_progress)
+              const existingGeneration = await GenerationQueueService.getActiveGenerationServer(userId)
+
+              if (existingGeneration) {
+                console.log(`[WorkoutGenerate] User already has active generation:`, {
+                  existingRequestId: existingGeneration.request_id,
+                  existingDay: existingGeneration.target_cycle_day,
+                  requestedDay: targetCycleDay,
+                  status: existingGeneration.status
+                })
+
+                // If it's for the same day, resume it instead of creating a new one
+                if (existingGeneration.target_cycle_day === targetCycleDay) {
+                  console.log(`[WorkoutGenerate] Same day - resuming existing generation`)
+                  queueEntry = existingGeneration
+                  generationRequestId = existingGeneration.request_id
+
+                  // Send current progress and close (will poll for updates)
+                  await sendProgress(
+                    'profile',
+                    existingGeneration.progress_percent,
+                    existingGeneration.current_phase || tProgress('resuming')
+                  )
+                  safeClose(controller)
+                  return
+                }
+
+                // If it's for a different day, reject with 409 Conflict
+                console.warn(`[WorkoutGenerate] Different day - rejecting concurrent generation`)
+                await sendProgress('error', 0, tErrors('generationAlreadyInProgress'))
+                safeClose(controller)
+                return
+              }
+
+              // No active generation - safe to create new queue entry
               queueEntry = await GenerationQueueService.createServer({
                 userId,
                 requestId: generationRequestId,
@@ -139,8 +208,157 @@ export async function POST(request: NextRequest) {
                 context: { type: 'workout', targetCycleDay }
               })
               console.log(`[WorkoutGenerate] Created queue entry: ${queueEntry.id}`)
+
+              // Trigger Inngest for async background processing (avoids Vercel timeouts)
+              if (shouldUseInngest) {
+                console.log(`[WorkoutGenerate] Triggering Inngest worker for: ${generationRequestId}`)
+                await inngest.send({
+                  name: 'workout/generate.requested',
+                  data: {
+                    requestId: generationRequestId,
+                    userId,
+                    targetCycleDay: targetCycleDay ?? undefined
+                  }
+                })
+
+                // Keep stream open and poll database for Inngest updates
+                await sendProgress('profile', 5, tProgress('starting'), null)
+
+                // Poll database every 2 seconds for updates from Inngest worker
+                let lastProgress = 5
+                const pollInterval = 2000  // 2 seconds
+                const maxDuration = 5 * 60 * 1000  // 5 minutes max
+                const startTime = Date.now()
+
+                console.log(`[WorkoutGenerate] Starting SSE polling for Inngest updates: ${generationRequestId}`)
+
+                while (lastProgress < 100 && (Date.now() - startTime) < maxDuration) {
+                  await new Promise(resolve => setTimeout(resolve, pollInterval))
+
+                  // Check database for updates
+                  const queueEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
+
+                  if (!queueEntry) {
+                    console.error(`[WorkoutGenerate] Queue entry disappeared: ${generationRequestId}`)
+                    await sendProgress('error', 0, tErrors('failedToGenerate'))
+                    break
+                  }
+
+                  if (queueEntry.status === 'completed' && queueEntry.workout_id) {
+                    // Fetch the workout and send completion
+                    const { WorkoutService } = await import('@/lib/services/workout.service')
+                    const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
+
+                    if (workout) {
+                      console.log(`[WorkoutGenerate] Inngest generation completed: ${generationRequestId}`)
+                      await sendProgress('complete', 100, tProgress('workoutReady'))
+                      safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
+                        phase: 'complete',
+                        workout,
+                        insightInfluencedChanges: []
+                      })}\n\n`))
+                    }
+                    break
+                  } else if (queueEntry.status === 'failed') {
+                    console.error(`[WorkoutGenerate] Inngest generation failed: ${queueEntry.error_message}`)
+                    await sendProgress('error', 0, queueEntry.error_message || tErrors('failedToGenerate'))
+                    break
+                  } else if (queueEntry.status === 'in_progress' || queueEntry.status === 'pending') {
+                    // Send progress update if it increased
+                    if (queueEntry.progress_percent > lastProgress) {
+                      console.log(`[WorkoutGenerate] Progress update: ${queueEntry.progress_percent}% - ${queueEntry.current_phase}`)
+                      await sendProgress(
+                        queueEntry.current_phase || 'profile',
+                        queueEntry.progress_percent,
+                        queueEntry.current_phase || tProgress('generating'),
+                        null
+                      )
+                      lastProgress = queueEntry.progress_percent
+                    }
+                  }
+                }
+
+                // Timeout check
+                if ((Date.now() - startTime) >= maxDuration) {
+                  console.error(`[WorkoutGenerate] SSE polling timeout after 5 minutes: ${generationRequestId}`)
+                  await sendProgress('error', 0, tErrors('generationTimeout'))
+                }
+
+                safeClose(controller)
+                return
+              }
             } else if (queueEntry.status === 'pending' || queueEntry.status === 'in_progress') {
-              // Resume existing generation - mark as started
+              // Resume existing generation - check if Inngest is already processing it
+              if (shouldUseInngest) {
+                console.log(`[WorkoutGenerate] Resuming via SSE polling (Inngest is processing): ${generationRequestId}`)
+
+                // Send current progress from database
+                await sendProgress(
+                  queueEntry.current_phase || 'profile',
+                  queueEntry.progress_percent || 5,
+                  queueEntry.current_phase || tProgress('starting'),
+                  null
+                )
+
+                // Start polling loop (same as new generation)
+                let lastProgress = queueEntry.progress_percent || 5
+                const pollInterval = 2000
+                const maxDuration = 5 * 60 * 1000
+                const startTime = Date.now()
+
+                while (lastProgress < 100 && (Date.now() - startTime) < maxDuration) {
+                  await new Promise(resolve => setTimeout(resolve, pollInterval))
+
+                  const updatedEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
+
+                  if (!updatedEntry) {
+                    console.error(`[WorkoutGenerate] Resumed queue entry disappeared: ${generationRequestId}`)
+                    await sendProgress('error', 0, tErrors('failedToGenerate'))
+                    break
+                  }
+
+                  if (updatedEntry.status === 'completed' && updatedEntry.workout_id) {
+                    const { WorkoutService } = await import('@/lib/services/workout.service')
+                    const workout = await WorkoutService.getByIdServer(updatedEntry.workout_id)
+
+                    if (workout) {
+                      console.log(`[WorkoutGenerate] Resumed Inngest generation completed: ${generationRequestId}`)
+                      await sendProgress('complete', 100, tProgress('workoutReady'))
+                      safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
+                        phase: 'complete',
+                        workout,
+                        insightInfluencedChanges: []
+                      })}\n\n`))
+                    }
+                    break
+                  } else if (updatedEntry.status === 'failed') {
+                    console.error(`[WorkoutGenerate] Resumed generation failed: ${updatedEntry.error_message}`)
+                    await sendProgress('error', 0, updatedEntry.error_message || tErrors('failedToGenerate'))
+                    break
+                  } else if (updatedEntry.status === 'in_progress' || updatedEntry.status === 'pending') {
+                    if (updatedEntry.progress_percent > lastProgress) {
+                      console.log(`[WorkoutGenerate] Resumed progress update: ${updatedEntry.progress_percent}%`)
+                      await sendProgress(
+                        updatedEntry.current_phase || 'profile',
+                        updatedEntry.progress_percent,
+                        updatedEntry.current_phase || tProgress('generating'),
+                        null
+                      )
+                      lastProgress = updatedEntry.progress_percent
+                    }
+                  }
+                }
+
+                if ((Date.now() - startTime) >= maxDuration) {
+                  console.error(`[WorkoutGenerate] Resumed SSE polling timeout: ${generationRequestId}`)
+                  await sendProgress('error', 0, tErrors('generationTimeout'))
+                }
+
+                safeClose(controller)
+                return
+              }
+
+              // Fallback: mark as started for synchronous processing
               await GenerationQueueService.markAsStarted(generationRequestId)
               console.log(`[WorkoutGenerate] Resuming generation: ${generationRequestId}`)
             }
@@ -287,7 +505,7 @@ export async function POST(request: NextRequest) {
               workout: result.workout,
               insightInfluencedChanges: result.insightInfluencedChanges
             })
-            controller.enqueue(encoder.encode(`data: ${completeData}\n\n`))
+            safeEnqueue(controller, encoder.encode(`data: ${completeData}\n\n`))
 
             // Save completion to cache and database
             if (generationRequestId) {
@@ -379,8 +597,11 @@ export async function POST(request: NextRequest) {
             phase: 'error',
             error: userErrorMessage
           })
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
-          controller.close()
+          // Use safeEnqueue since controller might already be closed (client disconnected)
+          const enqueued = safeEnqueue(controller, encoder.encode(`data: ${errorData}\n\n`))
+          if (enqueued) {
+            controller.close()
+          }
         }
       }
     })

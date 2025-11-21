@@ -39,3 +39,9 @@ next-env.d.ts
 # Option A (Recommended): Commit embeddings to repo (always available, no setup)
 # Option B: Uncomment below to ignore embeddings (requires generation in CI/CD)
 # public/data/exercise-embeddings.json
+
+# supabase temporary files
+supabase/.temp/
+
+# test screenshots
+app/test-screenshots/

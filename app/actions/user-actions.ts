@@ -75,3 +75,75 @@ export async function getUserPreferredLanguage(
     return null
   }
 }
+
+/**
+ * Update user's personal information (demographic data)
+ *
+ * @param userId - The user's ID
+ * @param data - Personal information to update
+ * @returns Success status and optional error message
+ */
+export async function updatePersonalInfo(
+  userId: string,
+  data: {
+    first_name: string | null
+    gender: 'male' | 'female' | 'other' | null
+    age: number | null
+    weight: number | null
+    height: number | null
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Validate data
+    if (data.age !== null && (data.age < 13 || data.age > 120)) {
+      return {
+        success: false,
+        error: 'Age must be between 13 and 120'
+      }
+    }
+
+    if (data.weight !== null && (data.weight <= 0 || data.weight > 500)) {
+      return {
+        success: false,
+        error: 'Weight must be between 0 and 500 kg'
+      }
+    }
+
+    if (data.height !== null && (data.height <= 0 || data.height > 300)) {
+      return {
+        success: false,
+        error: 'Height must be between 0 and 300 cm'
+      }
+    }
+
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        first_name: data.first_name,
+        gender: data.gender,
+        age: data.age,
+        weight: data.weight,
+        height: data.height,
+      })
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('[updatePersonalInfo] Database error:', error)
+      return {
+        success: false,
+        error: 'Failed to update personal information'
+      }
+    }
+
+    console.log('[updatePersonalInfo] Successfully updated personal info for user:', userId)
+    return { success: true }
+  } catch (error) {
+    console.error('[updatePersonalInfo] Unexpected error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}

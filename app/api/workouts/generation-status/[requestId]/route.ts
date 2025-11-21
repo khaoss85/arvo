@@ -154,8 +154,8 @@ export async function GET(
 
     return Response.json({
       status: 'in_progress',
-      progress,
-      phase, // Include phase to keep synchronized with percentage
+      progress: progress,
+      phase: phase, // Include phase to keep synchronized with percentage
       message,
       elapsedSeconds
     })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { EmailService } from '@/lib/services/email.service';
+import { ActivityService } from '@/lib/services/activity.service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
       .from('workouts')
       .select('id')
       .eq('user_id', user.id)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .order('completed_at', { ascending: true });
 
     if (workoutsError) {
@@ -43,6 +44,11 @@ export async function POST(request: NextRequest) {
 
     // Only send email if this is the first completed workout
     if (completedWorkouts && completedWorkouts.length === 1 && completedWorkouts[0].id === workoutId) {
+      // Create first workout completion milestone
+      await ActivityService.createMilestone(user.id, 'first_workout_complete', {
+        workoutId: workoutId,
+      });
+
       // Send first workout complete email
       const sent = await EmailService.sendFirstWorkoutCompleteEmail(
         user.id,

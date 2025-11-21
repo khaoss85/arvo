@@ -24,17 +24,19 @@ const messages = {
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   const { setUser, setLoading } = useAuthStore();
-  const { locale, setLocale } = useLocaleStore();
+  const { locale, setLocale, _hasHydrated } = useLocaleStore();
   const [isLocaleInitialized, setIsLocaleInitialized] = useState(false);
 
-  // Initialize locale on first load
+  // Initialize locale on first load, but only after Zustand has hydrated
   useEffect(() => {
+    if (!_hasHydrated || isLocaleInitialized) return;
+
     const detected = detectUserLocale();
     if (detected !== locale) {
       setLocale(detected);
     }
     setIsLocaleInitialized(true);
-  }, []);
+  }, [_hasHydrated, isLocaleInitialized, locale, setLocale]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -90,8 +92,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Don't render until locale is initialized to prevent hydration mismatch
-  if (!isLocaleInitialized) {
+  // Don't render until both Zustand has hydrated and locale is initialized
+  // This prevents hydration mismatches and ensures translations load correctly
+  if (!_hasHydrated || !isLocaleInitialized) {
     return null;
   }
 

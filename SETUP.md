@@ -72,3 +72,67 @@ Dopo la migrazione, verifica nel dashboard Supabase:
 - Table Editor: dovresti vedere tutte le tabelle create
 - Authentication: configurato per magic link
 - Policies: ogni tabella ha le sue RLS policies
+
+## 🔄 Step 4: Inngest Setup (Background Jobs - OPZIONALE ma RACCOMANDATO)
+
+L'app usa Inngest per generare i workout in modo asincrono, evitando timeout e permettendo all'utente di chiudere il browser durante la generazione.
+
+### Setup Inngest (Free Tier)
+
+1. **Crea account gratuito**: https://app.inngest.com/sign-up
+
+2. **Ottieni le chiavi**:
+   - Vai a: https://app.inngest.com/env/production/manage/keys
+   - Copia l'**Event Key**
+   - Copia il **Signing Key**
+
+3. **Aggiungi le chiavi al `.env.local`**:
+```bash
+INNGEST_EVENT_KEY=your_event_key_here
+INNGEST_SIGNING_KEY=signkey-prod-xxxxx
+```
+
+4. **In sviluppo locale**:
+```bash
+# Terminal 1: Avvia l'app
+npm run dev
+
+# Terminal 2: Avvia Inngest Dev Server
+npx inngest-cli@latest dev
+```
+
+Il dev server si aprirà su http://localhost:8288 dove puoi vedere:
+- Events in tempo reale
+- Function executions
+- Logs e debugging
+
+### Come funziona
+
+- Senza Inngest: Generazione sincrona, timeout dopo 10s su Vercel Hobby
+- Con Inngest: Generazione asincrona in background, nessun timeout, progress bar in tempo reale
+
+### Testing
+
+1. Vai su `/dashboard`
+2. Clicca "Generate Workout"
+3. Vedrai un modal con progress bar che si aggiorna in tempo reale
+4. Puoi chiudere il modal e tornare dopo - la generazione continua
+5. Al completamento, verrai reindirizzato automaticamente al workout
+
+### Deployment su Vercel
+
+Quando fai deploy su Vercel:
+
+1. Aggiungi le variabili in Vercel dashboard:
+   ```
+   INNGEST_EVENT_KEY=...
+   INNGEST_SIGNING_KEY=...
+   ```
+
+2. In Inngest dashboard, configura webhook:
+   - URL: `https://tuo-dominio.vercel.app/api/inngest`
+   - Vercel farà il deploy e Inngest inizierà a inviare eventi
+
+3. Verifica deployment:
+   - Vai su Inngest dashboard → Functions
+   - Dovresti vedere "generate-workout-async" registrato

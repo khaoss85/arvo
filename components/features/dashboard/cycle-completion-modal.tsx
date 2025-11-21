@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -10,7 +11,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Minus, Award, Dumbbell, Brain, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Award, Dumbbell, Brain, Calendar, Sparkles } from "lucide-react";
+import { MuscleRadarChart } from "@/components/features/analytics/muscle-radar-chart";
 
 interface CycleCompletionModalProps {
   open: boolean;
@@ -29,7 +31,10 @@ interface CycleCompletionModalProps {
     mentalReadinessDelta: number | null;
     setsDelta: number;
   } | null;
+  volumeByMuscleGroup?: Record<string, number>; // Current cycle muscle volumes
+  previousVolumeByMuscleGroup?: Record<string, number>; // Previous cycle muscle volumes
   onContinue: () => void;
+  onAdaptSplit: () => void;
   onChangeSplit: () => void;
 }
 
@@ -40,10 +45,23 @@ export function CycleCompletionModal({
   splitPlanName,
   stats,
   comparison,
+  volumeByMuscleGroup,
+  previousVolumeByMuscleGroup,
   onContinue,
+  onAdaptSplit,
   onChangeSplit,
 }: CycleCompletionModalProps) {
   const t = useTranslations("Dashboard.CycleCompletion");
+  const [isAdapting, setIsAdapting] = useState(false);
+
+  const handleAdaptSplit = async () => {
+    setIsAdapting(true);
+    try {
+      await onAdaptSplit();
+    } finally {
+      setIsAdapting(false);
+    }
+  };
 
   const formatVolume = (volume: number) => {
     return new Intl.NumberFormat("it-IT", {
@@ -72,7 +90,7 @@ export function CycleCompletionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-center mb-4">
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
@@ -164,18 +182,44 @@ export function CycleCompletionModal({
               {t("comparisonNote")}
             </div>
           )}
+
+          {/* Muscle Distribution Radar Chart */}
+          {volumeByMuscleGroup && Object.keys(volumeByMuscleGroup).length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="text-sm font-semibold text-center mb-3">
+                {t("muscleDistribution")}
+              </h4>
+              <MuscleRadarChart
+                actualData={volumeByMuscleGroup}
+                targetData={previousVolumeByMuscleGroup || {}}
+                previousData={previousVolumeByMuscleGroup}
+                comparisonMode={previousVolumeByMuscleGroup ? 'previous' : 'target'}
+                maxMuscles={6}
+              />
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
+        <DialogFooter className="flex flex-col sm:flex-row gap-2">
           <Button
             variant="outline"
             onClick={onChangeSplit}
             className="flex-1"
+            disabled={isAdapting}
           >
             {t("actions.changeSplit")}
           </Button>
           <Button
+            onClick={handleAdaptSplit}
+            disabled={isAdapting}
+            className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isAdapting ? "Adapting..." : t("actions.adaptSplit")}
+          </Button>
+          <Button
             onClick={onContinue}
+            disabled={isAdapting}
             className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
           >
             {t("actions.continue", { splitName: splitPlanName })}

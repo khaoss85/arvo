@@ -118,19 +118,33 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       setOverallMentalReadiness(mentalReadinessSelected)
 
       // Mark workout as completed with mental readiness
+      // Collect learned target weights from exercises (weights adjusted during workout)
+      const learnedTargetWeights = exercises
+        .filter(ex => ex.targetWeight > 0) // Only include exercises with valid weights
+        .map(ex => ({
+          exerciseName: ex.exerciseName,
+          targetWeight: ex.targetWeight,
+          updatedAt: new Date().toISOString(),
+          confidence: ex.completedSets.length >= ex.targetSets ? 'high' as const :
+                     ex.completedSets.length >= Math.floor(ex.targetSets / 2) ? 'medium' as const :
+                     'low' as const
+        }))
+
       console.log('[WorkoutSummary] Calling WorkoutService.markAsCompletedWithStats...', {
         workoutId,
         stats: {
           totalVolume: stats.totalVolume,
           duration: stats.duration,
-          mentalReadinessOverall: mentalReadinessSelected
+          mentalReadinessOverall: mentalReadinessSelected,
+          learnedTargetWeightsCount: learnedTargetWeights.length
         }
       })
 
       const result = await WorkoutService.markAsCompletedWithStats(workoutId, {
         totalVolume: stats.totalVolume,
         duration: stats.duration,
-        mentalReadinessOverall: mentalReadinessSelected
+        mentalReadinessOverall: mentalReadinessSelected,
+        learnedTargetWeights
       })
 
       console.log('[WorkoutSummary] Workout marked as completed successfully', {

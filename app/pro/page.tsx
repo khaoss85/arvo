@@ -6,6 +6,8 @@ import { ProblemSolution } from "@/components/features/landing-pro/problem-solut
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
 import { VolumeTrackingVisual } from "@/components/features/landing/volume-tracking-visual";
+import { RadarChartSection } from "@/components/features/landing/RadarChartSection";
+import { CheckRoomSection } from "@/components/features/landing/CheckRoomSection";
 import { BiomechanicsDemo } from "@/components/features/landing/biomechanics-demo";
 import { GymReadyFeatures } from "@/components/features/landing/gym-ready-features";
 import { AICoachingFeatures } from "@/components/features/landing/ai-coaching-features";
@@ -76,6 +78,8 @@ export default async function ProPage() {
       <SmartRestTimer />
       <NotesIntelligence />
       <VolumeTrackingVisual />
+      <RadarChartSection variant="pro" />
+      <CheckRoomSection variant="pro" />
       <BiomechanicsDemo />
       <GymReadyFeatures />
       <AICoachingFeatures />

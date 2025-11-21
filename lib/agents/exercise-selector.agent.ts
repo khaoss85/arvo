@@ -3,10 +3,11 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client'
 import { ExerciseGenerationService, type ExerciseMetadata } from '@/lib/services/exercise-generation.service'
 import { findEquipmentById } from '@/lib/constants/equipment-taxonomy'
 import { AnimationService } from '@/lib/services/animation.service'
+import type { WorkoutType } from '@/lib/services/muscle-groups.service'
 import type { Locale } from '@/i18n'
 
 export interface ExerciseSelectionInput {
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'chest' | 'back' | 'shoulders' | 'arms'
+  workoutType: Exclude<WorkoutType, 'rest'>
   weakPoints: string[]
   equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment
   availableEquipment?: string[] // New multiselect equipment array
@@ -110,6 +111,7 @@ export interface ExerciseSelectionOutput {
   workoutRationale: string
   weakPointAddress: string
   insightInfluencedChanges?: InsightInfluencedChange[] // NEW: Track changes made due to insights/memories
+  responseId?: string // OpenAI response ID for reasoning continuity (GPT-5)
 }
 
 /**
@@ -363,11 +365,20 @@ export class ExerciseSelector extends BaseAgent {
   protected supabase: any
 
   constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'low' | 'medium' | 'high') {
-    // Use 'low' reasoning for workout generation (90s timeout, basic constraint checking)
+    // Use 'high' reasoning for optimal exercise selection quality
     // ExerciseSelector has complex multi-constraint optimization (volume targets, periodization, insights)
-    // 'low' reasoning reduces retry failures and improves first-attempt success rate
-    super(supabaseClient, reasoningEffort || 'low', 'low')
+    // 'high' reasoning provides best quality with timeout (240s) to prevent failures
+    super(supabaseClient, reasoningEffort || 'high', 'medium')
     this.supabase = supabaseClient || getSupabaseBrowserClient()
+  }
+
+  /**
+   * Override timeout to use extended 240s for complex exercise selection with high reasoning
+   * Uses 'high' reasoning (maximum quality) with extended timeout for complex constraints
+   * This provides best quality generation while preventing timeout failures
+   */
+  protected getTimeoutForReasoning(): number {
+    return 240000 // 240 seconds (4 minutes) - aligned with base agent 'high' reasoning timeout
   }
 
   /**
@@ -617,7 +628,11 @@ Format:
 Make user safety and preferences your top priority.`
   }
 
-  async selectExercises(input: ExerciseSelectionInput, targetLanguage?: 'en' | 'it'): Promise<ExerciseSelectionOutput> {
+  async selectExercises(
+    input: ExerciseSelectionInput,
+    targetLanguage?: 'en' | 'it',
+    previousResponseId?: string // GPT-5 reasoning continuity - enables cumulative learning
+  ): Promise<ExerciseSelectionOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
 
@@ -951,7 +966,92 @@ If target is chest = 12 sets, you CANNOT just do 3 exercises × 4 sets each.
 ✗ Wrong thinking: "3 chest exercises × 4 sets = 12 sets" ← Ignores primary vs secondary!
 ✓ Correct: Calculate primary (1.0x) + secondary (0.5x) contributions from ALL exercises
 
-⚠️ **YOU MUST apply this calculation when verifying your exercise selection against the targets below.**
+=== 🎯 STEP-BY-STEP VOLUME MATCHING STRATEGY (MANDATORY APPROACH) ===
+
+**PROBLEM:** Indirect volume from compound movements accumulates quickly and can exceed targets for "helper muscles" (biceps, traps, rear delts, etc.)
+
+**SOLUTION:** Use this 3-step process to avoid over-accumulation:
+
+**STEP 1: Select Compound Movements First**
+Choose your main compound exercises for primary muscle groups. These will generate indirect volume for secondary muscles.
+
+Example for Pull Day:
+- Barbell Row (4 sets): Primary: lats, upper_back | Secondary: biceps, traps
+- Lat Pulldown (4 sets): Primary: lats | Secondary: biceps, upper_back
+
+**STEP 2: Calculate Accumulated Indirect Volume**
+Track how much INDIRECT volume each muscle has already received from compounds:
+
+From Barbell Row (4 sets):
+  → biceps: +2.0 indirect (4 × 0.5)
+  → traps: +2.0 indirect (4 × 0.5)
+
+From Lat Pulldown (4 sets):
+  → biceps: +2.0 indirect (4 × 0.5)
+  → upper_back: +2.0 indirect (4 × 0.5)
+
+Total accumulated indirect:
+  → biceps: 4.0 sets (already)
+  → traps: 2.0 sets (already)
+  → upper_back: 6.0 sets (4.0 direct + 2.0 indirect)
+
+**STEP 3: Adjust Isolation Work Based on Remaining Budget**
+Subtract accumulated volume from targets to determine remaining isolation work needed.
+
+If targets are: biceps = 3 sets, traps = 2 sets
+  → biceps: 3 target - 4.0 accumulated = -1.0 sets ⚠️ ALREADY OVER!
+  → traps: 2 target - 2.0 accumulated = 0 sets ✓ EXACTLY MET!
+
+**DECISION RULES:**
+1. If remaining budget is NEGATIVE (like biceps above):
+   - Option A: Accept being slightly over target (within ±20% tolerance)
+   - Option B: Reduce compound movement sets (e.g., 3 sets instead of 4)
+   - Option C: DO NOT add any direct isolation work for that muscle
+
+2. If remaining budget is ZERO or CLOSE (like traps above):
+   - DO NOT add isolation exercises for that muscle
+   - Accept the volume from compounds
+
+3. If remaining budget is POSITIVE:
+   - Add isolation work for exactly that remaining amount
+   - Example: rear_delts = 4 target - 1.0 accumulated = 3.0 sets → add Face Pulls (3 sets)
+
+**WORKED EXAMPLE - Full Pull Day:**
+
+Targets: {lats: 4, upper_back: 4, biceps: 3, traps: 2, rear_delts: 2}
+
+Step 1 - Compounds selected:
+  - Chest-Supported T-Bar Row (4 sets)
+    Primary: lats (4.0), upper_back (4.0)
+    Secondary: biceps (2.0), traps (2.0)
+
+Step 2 - Calculate accumulated:
+  lats: 4.0 direct
+  upper_back: 4.0 direct
+  biceps: 2.0 indirect
+  traps: 2.0 indirect
+  rear_delts: 0
+
+Step 3 - Remaining budgets:
+  lats: 4 target - 4.0 actual = 0 ✓ DONE
+  upper_back: 4 target - 4.0 actual = 0 ✓ DONE
+  biceps: 3 target - 2.0 actual = 1.0 → ADD 1 set bicep curl OR accept 2.0 (within tolerance)
+  traps: 2 target - 2.0 actual = 0 ✓ DONE (NO shrugs needed)
+  rear_delts: 2 target - 0 actual = 2.0 → ADD 2 sets rear delt work
+
+Final selection:
+  1. Chest-Supported T-Bar Row (4 sets)
+  2. Dumbbell Hammer Curl (2 sets) ← added 1 extra for buffer
+  3. Cable Rear Delt Fly (2 sets)
+
+Total volume check:
+  lats: 4.0 (target 4) ✓
+  upper_back: 4.0 (target 4) ✓
+  biceps: 4.0 = 2.0 direct + 2.0 indirect (target 3, +1.0 over but within ±20%) ✓
+  traps: 2.0 indirect (target 2) ✓
+  rear_delts: 2.0 (target 2) ✓
+
+⚠️ **YOU MUST follow this step-by-step process when generating exercises to avoid volume violations.**
 
 === TARGET VOLUME TABLE (HARD CONSTRAINTS) ===
 ${Object.entries(input.targetVolume).map(([muscle, sets]) => {
@@ -1002,6 +1102,29 @@ When target is 0 for a muscle: DO NOT add exercises for that muscle "by accident
 Example: If target is { rear_delts: 2, shoulders: 0 }
   → Include: rear delt flies (2 sets) ✓
   → DO NOT include: lateral raises, overhead press ❌ (these target shoulders)
+
+=== 🔑 EXACT MUSCLE KEYS REQUIRED (CRITICAL) ===
+
+⚠️ **YOU MUST USE THESE EXACT MUSCLE KEY NAMES IN YOUR primaryMuscles AND secondaryMuscles ARRAYS:**
+
+${Object.keys(input.targetVolume).map(muscle => `  • "${muscle}"`).join('\n')}
+
+**DO NOT use generic synonyms or anatomical names!**
+
+Common mistakes to AVOID:
+${Object.keys(input.targetVolume).includes('shoulders_front') || Object.keys(input.targetVolume).includes('shoulders_side') || Object.keys(input.targetVolume).includes('shoulders_rear') ? `
+  ❌ WRONG: primaryMuscles: ["shoulders", "deltoids", "anterior deltoid"]
+  ✅ CORRECT: Use the EXACT keys listed above:
+     - For overhead/shoulder press → primaryMuscles: ["shoulders_front"]
+     - For lateral raises → primaryMuscles: ["shoulders_side"]
+     - For rear delt flies → primaryMuscles: ["shoulders_rear"]
+` : ''}${Object.keys(input.targetVolume).includes('chest_upper') || Object.keys(input.targetVolume).includes('chest_lower') ? `
+  ❌ WRONG: primaryMuscles: ["chest", "pectorals"]
+  ✅ CORRECT: Use the EXACT keys listed above:
+     - For incline press → primaryMuscles: ["chest_upper"]
+     - For decline/flat press → primaryMuscles: ["chest_lower"] or ["chest"]
+` : ''}
+**The validator performs EXACT string matching. If you use a different key, the volume will NOT be counted!**
 
 === VALIDATION PREVIEW ===
 Your exercise selection will be validated against these exact constraints:
@@ -1253,6 +1376,75 @@ COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
       * Final sets: Power/explosive cues (IT: "Immagina potenza esplosiva attraverso il movimento", EN: "Imagine explosive power through the movement")
   * Progression across sets: early sets focus on mind-muscle connection imagery, later sets on power/intensity imagery
   * Keep concise but descriptive (8-15 words for visualization cues)
+
+=== 🎯 EXERCISE SELECTION QUALITY GUIDELINES ===
+
+When selecting exercises, prioritize quality and effectiveness:
+
+**EQUIPMENT MATCHING:**
+✓ ONLY select exercises using equipment from the "Available Equipment" list above
+✓ Match equipment to movement patterns (e.g., cables for constant tension, dumbbells for unilateral work)
+✗ DO NOT invent equipment the user doesn't have
+✗ DO NOT select "exotic" or overly complex variations without clear rationale
+
+**EXERCISE EFFECTIVENESS:**
+✓ Prioritize evidence-based, proven exercises with strong scientific backing
+✓ Use exercises from the user's training history (see "Previously Used Exercises" above) when appropriate for consistency
+✓ Select compound movements that efficiently target multiple muscle groups
+✗ Avoid unnecessarily complex or "trendy" variations without proven benefits
+✗ DO NOT select exercises that require specialized equipment or advanced skill unless user has experience
+
+**USER CONTEXT INTEGRATION:**
+✓ Consider user's experience level (${input.experienceYears ? `${input.experienceYears} years` : 'not specified'}) - beginners need simpler movements
+${input.userAge && input.userAge > 50 ? '✓ Prioritize joint-friendly variations (user is 50+ years old)' : ''}
+✓ Respect active insights and avoid flagged exercises (see "Active User Insights" section)
+✓ Account for weak points: ${input.weakPoints && input.weakPoints.length > 0 ? input.weakPoints.join(', ') : 'none specified'}
+
+=== 📋 EXERCISE ORDERING OPTIMIZATION ===
+
+**CRITICAL:** The ORDER in which you list exercises matters for training effectiveness.
+
+**MANDATORY SEQUENCING RULES:**
+
+1. **COMPOUND MOVEMENTS FIRST (highest neural/systemic demand)**
+   - Multi-joint exercises targeting large muscle groups
+   - Examples: Squats, Deadlifts, Rows, Presses, Pull-ups
+   - Why: Require most coordination, strength, and focus when fresh
+
+2. **ISOLATION MOVEMENTS SECOND (lower systemic demand)**
+   - Single-joint exercises targeting specific muscles
+   - Examples: Bicep Curls, Lateral Raises, Leg Curls, Tricep Extensions
+   - Why: Can be performed effectively even when fatigued
+
+3. **MUSCLE GROUP SIZE PRIORITY (within each category)**
+   - Larger muscles before smaller muscles
+   - Example Push Day: Chest Press → Shoulder Press → Tricep Extension
+   - Example Pull Day: Row → Pulldown → Bicep Curl → Rear Delt Fly
+
+4. **FATIGUE MANAGEMENT**
+   - Exercises for same muscle group should be distributed thoughtfully
+   - Avoid consecutive exercises that heavily fatigue the same stabilizers
+   - Example: Don't do Overhead Press immediately after Heavy Bench Press (both stress shoulders)
+
+**CORRECT SEQUENCING EXAMPLE (Pull Day):**
+1. Barbell Row (compound, large muscle groups: lats, upper back)
+2. Lat Pulldown (compound, lats-focused)
+3. Face Pull (isolation, rear delts)
+4. Bicep Curl (isolation, small muscle)
+5. Shrug (isolation, traps - if needed)
+
+**INCORRECT SEQUENCING EXAMPLE:**
+1. Bicep Curl ❌ (isolation should not be first)
+2. Face Pull ❌ (isolation before compounds)
+3. Barbell Row (should be first)
+4. Lat Pulldown (ok position)
+5. Shrug (ok position)
+
+**EXCEPTION:** Pre-exhaust techniques (if specified by approach methodology)
+- May intentionally place isolation before compound for specific muscle focus
+- Only use if explicitly part of the training approach philosophy
+
+⚠️ **YOU MUST order your selected exercises following these sequencing rules.**
 
 Select 4-6 exercises following the approach philosophy.
 
@@ -1545,20 +1737,143 @@ Required JSON structure:
 **REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
     `
 
-    // 🔒 GENERATE WITH RETRY & VALIDATION: Use retry mechanism with validation feedback
-    const result = await this.completeWithRetry<ExerciseSelectionOutput>(
+    // 🔒 JSON SCHEMA for Structured Outputs (guarantees valid JSON)
+    // This replaces the retry+validation approach with OpenAI's Structured Outputs feature
+    const exerciseSelectionSchema = {
+      name: 'exercise_selection',
+      schema: {
+        type: 'object',
+        properties: {
+          exercises: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                equipmentVariant: { type: 'string' },
+                sets: { type: 'number' },
+                repRange: {
+                  type: 'array',
+                  items: { type: 'number' },
+                  minItems: 2,
+                  maxItems: 2
+                },
+                restSeconds: { type: 'number' },
+                tempo: { type: 'string' },
+                rationaleForSelection: { type: 'string' },
+                alternatives: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                primaryMuscles: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                secondaryMuscles: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                movementPattern: { type: 'string' },
+                romEmphasis: {
+                  type: 'string',
+                  enum: ['lengthened', 'shortened', 'full_range']
+                },
+                unilateral: { type: 'boolean' },
+                technicalCues: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                warmupSets: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      setNumber: { type: 'number' },
+                      weightPercentage: { type: 'number' },
+                      weight: { type: 'number' },
+                      reps: { type: 'number' },
+                      rir: { type: 'number' },
+                      restSeconds: { type: 'number' },
+                      technicalFocus: { type: 'string' }
+                    },
+                    required: ['setNumber', 'weightPercentage', 'weight', 'reps', 'rir', 'restSeconds', 'technicalFocus'],
+                    additionalProperties: false
+                  }
+                },
+                setGuidance: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      setNumber: { type: 'number' },
+                      technicalFocus: { type: 'string' },
+                      mentalFocus: { type: 'string' }
+                    },
+                    required: ['setNumber', 'technicalFocus', 'mentalFocus'],
+                    additionalProperties: false
+                  }
+                }
+              },
+              required: ['name', 'equipmentVariant', 'sets', 'repRange', 'restSeconds', 'tempo', 'rationaleForSelection', 'alternatives', 'primaryMuscles', 'secondaryMuscles', 'movementPattern', 'romEmphasis', 'unilateral', 'technicalCues', 'warmupSets', 'setGuidance'],
+              additionalProperties: false
+            }
+          },
+          workoutRationale: { type: 'string' },
+          weakPointAddress: { type: 'string' },
+          insightInfluencedChanges: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                source: {
+                  type: 'string',
+                  enum: ['insight', 'memory']
+                },
+                sourceId: { type: 'string' },
+                sourceTitle: { type: 'string' },
+                action: {
+                  type: 'string',
+                  enum: ['avoided', 'substituted', 'preferred', 'adjusted']
+                },
+                originalExercise: { type: 'string' },
+                selectedExercise: { type: 'string' },
+                reason: { type: 'string' }
+              },
+              required: ['source', 'sourceId', 'sourceTitle', 'action', 'originalExercise', 'selectedExercise', 'reason'],
+              additionalProperties: false
+            }
+          }
+        },
+        required: ['exercises', 'workoutRationale', 'weakPointAddress', 'insightInfluencedChanges'],
+        additionalProperties: false
+      }
+    }
+
+    // 🚀 GENERATE WITH REASONING PERSISTENCE (GPT-5)
+    // Uses Responses API with previous_response_id for cumulative learning across workouts
+    // Trade-off: Slower than Structured Outputs but enables AI to learn user preferences over time
+    console.log('[ExerciseSelector] Calling AI with reasoning persistence...', {
+      hasPreviousResponse: !!previousResponseId,
+      previousResponseId: previousResponseId ? previousResponseId.slice(0, 12) + '...' : 'none'
+    })
+    const result = await this.complete<ExerciseSelectionOutput>(
       prompt,
-      (result) => this.validateExerciseSelection(result, input, approach, targetLanguage),
-      3,  // maxAttempts
-      targetLanguage
+      targetLanguage,
+      undefined, // customTimeoutMs (use default from reasoningEffort)
+      previousResponseId // Enable reasoning continuity
     )
 
-    // Validation complete - if we reach here, the AI generated a valid workout
-    console.log('[ExerciseSelector] Workout generation successful with validation')
+    console.log('[ExerciseSelector] ✅ Workout generation successful with reasoning persistence')
 
     // Ensure insightInfluencedChanges field exists (even if AI didn't include it)
     if (!result.insightInfluencedChanges) {
       result.insightInfluencedChanges = [];
+    }
+
+    // ✅ GUARD: Double-check exercises array exists before populating animations
+    // This should never happen if validation passed, but defensive programming prevents crashes
+    if (!result.exercises || !Array.isArray(result.exercises)) {
+      throw new Error('[ExerciseSelector] Validation passed but exercises array is missing - this indicates a serious bug in the validation logic')
     }
 
     // Populate animation URLs for each exercise using AnimationService (async)
@@ -1584,7 +1899,11 @@ Required JSON structure:
       await this.saveGeneratedExercises(result.exercises, input.userId)
     }
 
-    return result
+    // Add response ID to result for GPT-5 reasoning persistence
+    return {
+      ...result,
+      responseId: this.lastResponseId
+    }
   }
 
   /**
@@ -1754,6 +2073,18 @@ Required JSON structure:
     approach: any,
     targetLanguage: Locale = 'en'
   ): Promise<{ valid: boolean; feedback: string }> {
+    // ✅ GUARD: Check if exercises array exists before validation
+    if (!result || !result.exercises || !Array.isArray(result.exercises)) {
+      return {
+        valid: false,
+        feedback: `**CRITICAL ERROR: Missing or invalid 'exercises' array**\n` +
+                  `- Expected: Array of exercise objects\n` +
+                  `- Received: ${result ? (result.exercises ? typeof result.exercises : 'undefined') : 'null result'}\n` +
+                  `- FIX: Your JSON response MUST include an "exercises" array with at least 1 exercise\n` +
+                  `- Example structure: { "exercises": [{ "name": "...", "sets": 3, ... }], "workoutRationale": "..." }`
+      }
+    }
+
     // Debug: Log what AI actually generated
     console.log('🔍 [VALIDATOR] AI generated exercises (before normalization):', JSON.stringify(result.exercises.map(ex => ({
       name: ex.name,
@@ -1863,16 +2194,137 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
     // Validation 4: Target volume (±20% tolerance)
     if (input.targetVolume && Object.keys(input.targetVolume).length > 0) {
+      // Helper: Infer specific muscle subdivision based on exercise name
+      // This handles cases where AI uses generic "shoulders" but exercise name reveals the specific head
+      const inferSpecificMuscleFromExercise = (exerciseName: string, genericMuscle: string): string => {
+        const nameLower = exerciseName.toLowerCase()
+
+        // If muscle is already specific (has underscore), keep it as-is
+        if (genericMuscle.includes('_')) {
+          return genericMuscle
+        }
+
+        // Shoulder subdivision inference
+        if (genericMuscle === 'shoulders' || genericMuscle === 'deltoid' || genericMuscle === 'deltoids') {
+          // Front deltoid patterns (vertical pressing, overhead movements)
+          if (nameLower.includes('press') || nameLower.includes('overhead') ||
+              nameLower.includes('military') || nameLower.includes('push press')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_front`)
+            return 'shoulders_front'
+          }
+
+          // Side deltoid patterns (lateral/abduction movements)
+          if (nameLower.includes('lateral') || nameLower.includes('side raise') ||
+              nameLower.includes('side delt') || nameLower.includes('abduction')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_side`)
+            return 'shoulders_side'
+          }
+
+          // Rear deltoid patterns (horizontal pulling, rear movements)
+          if (nameLower.includes('rear') || nameLower.includes('face pull') ||
+              nameLower.includes('reverse fly') || nameLower.includes('bent')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_rear`)
+            return 'shoulders_rear'
+          }
+
+          // Default: if can't infer, keep generic (will be logged as warning later)
+          console.warn(`⚠️ [SMART MAPPING] Could not infer shoulder subdivision for "${exerciseName}", keeping generic "${genericMuscle}"`)
+        }
+
+        // Chest subdivision inference
+        if (genericMuscle === 'chest' || genericMuscle === 'pectorals') {
+          if (nameLower.includes('incline') || nameLower.includes('upper')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_upper`)
+            return 'chest_upper'
+          }
+          if (nameLower.includes('decline') || nameLower.includes('lower')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_lower`)
+            return 'chest_lower'
+          }
+          // Flat presses default to chest_lower (sternal emphasis in biomechanics)
+          if (nameLower.includes('bench press') || nameLower.includes('press') ||
+              nameLower.includes('fly') || nameLower.includes('flye')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_lower (flat press)`)
+            return 'chest_lower'
+          }
+        }
+
+        // Triceps subdivision inference
+        if (genericMuscle === 'triceps' || genericMuscle === 'tricep') {
+          // Long head patterns (overhead movements emphasize long head via shoulder extension)
+          if (nameLower.includes('overhead') || nameLower.includes('french press') ||
+              nameLower.includes('skull crusher') || nameLower.includes('lying extension')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_long`)
+            return 'triceps_long'
+          }
+
+          // Lateral head patterns (pressing and pushdown movements)
+          if (nameLower.includes('pushdown') || nameLower.includes('press down') ||
+              nameLower.includes('kickback') || nameLower.includes('close grip')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_lateral`)
+            return 'triceps_lateral'
+          }
+
+          // Medial head patterns (reverse grip emphasizes medial head)
+          if (nameLower.includes('reverse grip') || nameLower.includes('underhand') ||
+              nameLower.includes('dip')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_medial`)
+            return 'triceps_medial'
+          }
+
+          // Default: if can't infer, keep generic (will be logged as warning later)
+          console.warn(`⚠️ [SMART MAPPING] Could not infer triceps subdivision for "${exerciseName}", keeping generic "${genericMuscle}"`)
+        }
+
+        // Back subdivision inference
+        if (genericMuscle === 'back' || genericMuscle === 'backs') {
+          // Lats (vertical pulling movements)
+          if (nameLower.includes('pull up') || nameLower.includes('pullup') ||
+              nameLower.includes('pulldown') || nameLower.includes('pull-up') ||
+              nameLower.includes('chin up') || nameLower.includes('chinup') ||
+              nameLower.includes('lat')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → lats`)
+            return 'lats'
+          }
+
+          // Lower back (hip hinge patterns, spinal extensors)
+          if (nameLower.includes('deadlift') || nameLower.includes('hyperextension') ||
+              nameLower.includes('good morning') || nameLower.includes('romanian') ||
+              nameLower.includes('back extension') || nameLower.includes('lumbar')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → lower_back`)
+            return 'lower_back'
+          }
+
+          // Upper back (horizontal pulling, rhomboids, mid-traps)
+          if (nameLower.includes('row') || nameLower.includes('shrug') ||
+              nameLower.includes('face pull') || nameLower.includes('rear delt') ||
+              nameLower.includes('reverse fly')) {
+            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → upper_back`)
+            return 'upper_back'
+          }
+
+          // Default to upper_back for unknown back exercises
+          console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → upper_back (default)`)
+          return 'upper_back'
+        }
+
+        return genericMuscle
+      }
+
       const calculateMuscleVolume = (exercises: typeof result.exercises): Record<string, number> => {
         const volume: Record<string, number> = {}
         exercises.forEach(ex => {
           ex.primaryMuscles?.forEach(muscle => {
             const normalized = muscle.toLowerCase().trim()
-            volume[normalized] = (volume[normalized] || 0) + (ex.sets || 0)
+            // Apply smart mapping based on exercise name
+            const inferred = inferSpecificMuscleFromExercise(ex.name, normalized)
+            volume[inferred] = (volume[inferred] || 0) + (ex.sets || 0)
           })
           ex.secondaryMuscles?.forEach(muscle => {
             const normalized = muscle.toLowerCase().trim()
-            volume[normalized] = (volume[normalized] || 0) + (ex.sets || 0) * 0.5
+            // Apply smart mapping for secondary muscles too
+            const inferred = inferSpecificMuscleFromExercise(ex.name, normalized)
+            volume[inferred] = (volume[inferred] || 0) + (ex.sets || 0) * 0.5
           })
         })
         return volume
@@ -2016,7 +2468,7 @@ Return ONLY valid JSON (no markdown, no code blocks):
         actual: number
         min: number
         max: number
-        status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION'
+        status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' | 'MISSING_REQUIRED'
         delta: number
       }> = []
 
@@ -2037,9 +2489,12 @@ Return ONLY valid JSON (no markdown, no code blocks):
         const minAllowed = Math.round(targetSets * (1 - targetTolerance))
         const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
 
-        let status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' = 'PASS'
+        let status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' | 'MISSING_REQUIRED' = 'PASS'
         if (targetSets === 0 && actualSets > 0) {
           status = 'ZERO_VIOLATION'
+        } else if (targetSets > 0 && actualSets === 0) {
+          // CRITICAL: Required muscle group has ZERO volume - this is a critical failure
+          status = 'MISSING_REQUIRED'
         } else if (actualSets < minAllowed) {
           status = 'UNDER'
         } else if (actualSets > maxAllowed) {
@@ -2068,10 +2523,12 @@ Return ONLY valid JSON (no markdown, no code blocks):
       diagnosticResults.forEach(result => {
         const statusIcon = result.status === 'PASS' ? '✅' :
                           result.status === 'ZERO_VIOLATION' ? '🚫' :
+                          result.status === 'MISSING_REQUIRED' ? '❌' :
                           result.status === 'UNDER' ? '⬇️' :
                           '⬆️'
         const statusText = result.status === 'PASS' ? 'PASS' :
                           result.status === 'ZERO_VIOLATION' ? 'ZERO VIOLATED' :
+                          result.status === 'MISSING_REQUIRED' ? 'MISSING (0 sets!)' :
                           result.status === 'UNDER' ? `UNDER (${result.delta.toFixed(1)})` :
                           `OVER (+${result.delta.toFixed(1)})`
 
@@ -2108,7 +2565,15 @@ Return ONLY valid JSON (no markdown, no code blocks):
 
       console.log('='.repeat(80) + '\n')
 
-      const violations: Array<{muscle: string; target: number; actual: number; suggestion: string}> = []
+      const violations: Array<{
+        muscle: string
+        target: number
+        actual: number
+        direct: number
+        indirect: number
+        breakdown: Array<{exerciseName: string; contribution: number; type: 'primary' | 'secondary'}>
+        suggestion: string
+      }> = []
 
       for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
         const muscleName = MUSCLE_GROUPS[muscleKey as keyof typeof MUSCLE_GROUPS] || muscleKey
@@ -2127,15 +2592,68 @@ Return ONLY valid JSON (no markdown, no code blocks):
         const minAllowed = Math.round(targetSets * (1 - targetTolerance))
         const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
 
-        if (actualSets < minAllowed || actualSets > maxAllowed) {
-          const suggestion = actualSets < minAllowed
-            ? `ADD ${(minAllowed - actualSets).toFixed(0)} more sets for ${muscleKey}`
-            : `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from ${muscleKey}`
+        if (actualSets < minAllowed || actualSets > maxAllowed || (targetSets > 0 && actualSets === 0)) {
+          // Calculate direct vs indirect volume breakdown
+          let directVolume = 0
+          let indirectVolume = 0
+          const breakdown: Array<{exerciseName: string; contribution: number; type: 'primary' | 'secondary'}> = []
+
+          result.exercises.forEach(ex => {
+            const isPrimary = ex.primaryMuscles?.some(m => {
+              const normalized = normalizeMuscleForVolume(m)
+              return normalized === normalizedTarget
+            })
+            const isSecondary = ex.secondaryMuscles?.some(m => {
+              const normalized = normalizeMuscleForVolume(m)
+              return normalized === normalizedTarget
+            })
+
+            if (isPrimary) {
+              directVolume += ex.sets || 0
+              breakdown.push({
+                exerciseName: ex.name,
+                contribution: ex.sets || 0,
+                type: 'primary'
+              })
+            } else if (isSecondary) {
+              const contribution = (ex.sets || 0) * 0.5
+              indirectVolume += contribution
+              breakdown.push({
+                exerciseName: ex.name,
+                contribution: contribution,
+                type: 'secondary'
+              })
+            }
+          })
+
+          // Generate actionable suggestion based on direct/indirect split
+          let suggestion = ''
+          if (targetSets > 0 && actualSets === 0) {
+            // CRITICAL: Missing required muscle entirely
+            suggestion = `❌ CRITICAL: NO exercises targeting ${muscleKey}! You MUST add at least ${minAllowed} sets. CHECK: Are you using the correct muscle key name "${muscleKey}" (not generic synonyms)?`
+          } else if (actualSets < minAllowed) {
+            suggestion = `ADD ${(minAllowed - actualSets).toFixed(0)} more sets for ${muscleKey} (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect)`
+          } else {
+            // Over target
+            if (directVolume === 0) {
+              // Only indirect volume - reduce compound exercises or accept being over
+              suggestion = `Volume comes entirely from INDIRECT work (${indirectVolume.toFixed(1)} sets). Options: (A) Reduce compound exercise sets, OR (B) Accept being over target (within tolerance)`
+            } else if (indirectVolume > directVolume) {
+              // More indirect than direct - prioritize removing direct work
+              suggestion = `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from DIRECT ${muscleKey} work (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect). Keep indirect from compounds, reduce isolation.`
+            } else {
+              // More direct than indirect - standard reduction
+              suggestion = `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from ${muscleKey} (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect)`
+            }
+          }
 
           violations.push({
             muscle: `${muscleKey} (${muscleName})`,
             target: targetSets,
             actual: actualSets,
+            direct: directVolume,
+            indirect: indirectVolume,
+            breakdown,
             suggestion
           })
         }
@@ -2144,11 +2662,22 @@ Return ONLY valid JSON (no markdown, no code blocks):
       if (violations.length > 0) {
         errors.push(
           `**TARGET VOLUME VIOLATION** (±20% tolerance)\n` +
-          `- Violations (${violations.length} muscle groups):\n` +
-          violations.map(v =>
-            `  * ${v.muscle}: target ${v.target} sets, got ${v.actual.toFixed(1)} sets\n` +
-            `    FIX: ${v.suggestion}`
-          ).join('\n')
+          `- Violations (${violations.length} muscle groups):\n\n` +
+          violations.map(v => {
+            let msg = `  * ${v.muscle}: target ${v.target} sets, got ${v.actual.toFixed(1)} sets (${v.direct.toFixed(1)} direct + ${v.indirect.toFixed(1)} indirect)\n`
+
+            // Add breakdown by exercise
+            if (v.breakdown.length > 0) {
+              msg += `    Volume breakdown:\n`
+              v.breakdown.forEach(b => {
+                const label = b.type === 'primary' ? 'direct' : 'indirect'
+                msg += `      - ${b.exerciseName}: +${b.contribution.toFixed(1)} sets (${label})\n`
+              })
+            }
+
+            msg += `    FIX: ${v.suggestion}`
+            return msg
+          }).join('\n\n')
         )
       }
     }

@@ -1,4 +1,6 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/types/database.types";
 import {
   insertSplitPlanSchema,
   updateSplitPlanSchema,
@@ -10,9 +12,9 @@ import { CycleStatsService } from "@/lib/services/cycle-stats.service";
 
 export interface SessionDefinition {
   day: number; // Position in cycle (1 to cycle_days)
-  name: string; // e.g., "Push A", "Pull B", "Legs A"
-  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body';
-  variation: 'A' | 'B';
+  name: string; // e.g., "Push A", "Pull B", "Legs A", "Rest"
+  workoutType: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full_body' | 'rest'; // Use 'rest' for REST days
+  variation: 'A' | 'B' | 'none'; // Use 'none' for REST days
   focus: string[]; // Muscle groups emphasized
   targetVolume: Record<string, number>; // Sets per muscle group in this session
   principles: string[]; // Key principles for this session
@@ -41,16 +43,19 @@ export class SplitPlanService {
       throw new Error(`Failed to create split plan: ${error.message}`);
     }
 
+    const typedData = data as { id: string; [key: string]: any };
+
     // Update user profile with active split plan
     await supabase
       .from("user_profiles")
       .update({
-        active_split_plan_id: data.id,
+        active_split_plan_id: typedData.id,
         current_cycle_day: 1, // Start at day 1
+        current_cycle_start_date: new Date().toISOString(), // Set cycle start date
       })
       .eq("user_id", plan.user_id);
 
-    return data as SplitPlan;
+    return typedData as SplitPlan;
   }
 
   /**
@@ -191,8 +196,10 @@ export class SplitPlanService {
 
   /**
    * Advance user to next cycle day
+   * @param userId - User ID
+   * @param completedCycleDay - Optional cycle day that was just completed (from workout.cycle_day)
    */
-  static async advanceCycle(userId: string): Promise<number> {
+  static async advanceCycle(userId: string, completedCycleDay?: number): Promise<number> {
     const supabase = getSupabaseBrowserClient();
 
     console.log('[SplitPlanService] advanceCycle - Starting for userId:', userId);
@@ -236,13 +243,16 @@ export class SplitPlanService {
     }
 
     // Calculate next cycle day (wraps around)
-    const currentDay = profile.current_cycle_day || 1;
+    // Use completedCycleDay if provided (from workout.cycle_day), otherwise fallback to profile
+    const currentDay = completedCycleDay || profile.current_cycle_day || 1;
     const nextDay = currentDay >= splitPlan.cycle_days ? 1 : currentDay + 1;
-    const wrappedAround = nextDay === 1 && currentDay >= splitPlan.cycle_days;
+    const wrappedAround = currentDay >= splitPlan.cycle_days;
 
     console.log('[SplitPlanService] advanceCycle - Advancing:', {
-      from: currentDay,
-      to: nextDay,
+      completedCycleDay,
+      profileCurrentDay: profile.current_cycle_day,
+      effectiveCurrentDay: currentDay,
+      nextDay,
       totalCycleDays: splitPlan.cycle_days,
       wrappedAround
     });
@@ -285,22 +295,22 @@ export class SplitPlanService {
 
         console.log('[SplitPlanService] advanceCycle - Cycle completion saved atomically:', result);
 
-        // Send cycle complete email via API (async, non-blocking)
-        try {
-          const cycleId = (result as any)?.cycle_id;
-          if (cycleId) {
-            // Call API route to send email (avoids server-only import issues)
-            fetch('/api/email/cycle-complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ cycleId })
-            }).catch(err => console.error('[SplitPlanService] Error triggering cycle complete email API:', err));
-
-            console.log('[SplitPlanService] advanceCycle - Cycle complete email API triggered');
-          }
-        } catch (emailError) {
-          // Don't throw - email failure shouldn't block cycle completion
-          console.error('[SplitPlanService] advanceCycle - Error triggering cycle email:', emailError);
+        // Send cycle complete email via API (async, non-blocking, fire-and-forget)
+        // Use Promise.resolve() to ensure any errors (sync or async) don't propagate
+        const cycleId = (result as any)?.cycle_id;
+        if (cycleId) {
+          Promise.resolve().then(async () => {
+            try {
+              await fetch('/api/email/cycle-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cycleId })
+              });
+              console.log('[SplitPlanService] advanceCycle - Cycle complete email API triggered');
+            } catch (emailError) {
+              console.error('[SplitPlanService] advanceCycle - Error triggering cycle email:', emailError);
+            }
+          });
         }
       } catch (error) {
         console.error('[SplitPlanService] advanceCycle - Error in atomic cycle completion:', error);
@@ -402,10 +412,17 @@ export class SplitPlanService {
 
   /**
    * Server-side: Create split plan
+   * @param supabaseClient - Optional admin client for background workers (bypasses RLS)
    */
-  static async createServer(plan: InsertSplitPlan): Promise<SplitPlan> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async createServer(
+    plan: InsertSplitPlan,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<SplitPlan> {
+    // Use provided client (admin for background workers) or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const validated = insertSplitPlanSchema.parse(plan);
 
@@ -427,24 +444,35 @@ export class SplitPlanService {
       throw new Error(`Failed to create split plan: ${error.message}`);
     }
 
+    const typedData = data as { id: string; [key: string]: any };
+
     // Update user profile
     await supabase
       .from("user_profiles")
       .update({
-        active_split_plan_id: data.id,
+        active_split_plan_id: typedData.id,
         current_cycle_day: 1,
+        current_cycle_start_date: new Date().toISOString(), // Set cycle start date
       })
       .eq("user_id", plan.user_id);
 
-    return data as SplitPlan;
+    return typedData as SplitPlan;
   }
 
   /**
    * Server-side: Get active split plan
+   * @param userId - User ID
+   * @param supabaseClient - Optional Supabase client (defaults to server client)
    */
-  static async getActiveServer(userId: string): Promise<SplitPlan | null> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async getActiveServer(
+    userId: string,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<SplitPlan | null> {
+    // Use provided client or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const { data, error } = await supabase
       .from("split_plans")

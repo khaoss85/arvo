@@ -7,9 +7,12 @@ import type { SplitTimelineData } from '@/lib/services/split-timeline.types'
 import type { MuscleVolumeProgress } from '@/lib/actions/volume-progress-actions'
 import { TimelineDayCard } from './timeline-day-card'
 import { VolumeSummaryTimelineCard } from './volume-summary-timeline-card'
+import { MuscleDistributionCard } from './muscle-distribution-card'
 import { useUIStore } from '@/lib/stores/ui.store'
 import { CustomizeSplitDialog } from '@/components/features/split/customize-split-dialog'
 import { undoLastModificationAction, getRecentModificationsAction } from '@/app/actions/split-customization-actions'
+import { getCurrentCycleStatsAction } from '@/app/actions/cycle-stats-actions'
+import type { CycleStatsForTimeline } from '@/app/actions/cycle-stats-actions'
 import { Button } from '@/components/ui/button'
 
 interface SplitCycleTimelineProps {
@@ -30,6 +33,8 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
   const [customizeDialogOpen, setCustomizeDialogOpen] = useState(false)
   const [hasModifications, setHasModifications] = useState(false)
   const [undoing, setUndoing] = useState(false)
+  const [cycleStats, setCycleStats] = useState<CycleStatsForTimeline | null>(null)
+  const [statsLoading, setStatsLoading] = useState(false)
 
   const loadTimelineData = useCallback(async () => {
     setLoading(true)
@@ -99,6 +104,23 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
     }
   }, [userId])
 
+  const loadCycleStats = useCallback(async () => {
+    setStatsLoading(true)
+    try {
+      const result = await getCurrentCycleStatsAction(userId)
+      if (result.success && result.data) {
+        setCycleStats(result.data)
+      } else {
+        setCycleStats(null)
+      }
+    } catch (err) {
+      console.error('Failed to load cycle stats:', err)
+      setCycleStats(null)
+    } finally {
+      setStatsLoading(false)
+    }
+  }, [userId])
+
   const handleUndo = useCallback(async () => {
     if (!window.confirm(tSplit('confirmUndo') || 'Are you sure you want to undo the last modification?')) {
       return
@@ -130,7 +152,8 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
   useEffect(() => {
     loadTimelineData()
     checkForModifications()
-  }, [loadTimelineData, checkForModifications])
+    loadCycleStats()
+  }, [loadTimelineData, checkForModifications, loadCycleStats])
 
   // Refresh timeline when page becomes visible (user returns from workout)
   useEffect(() => {
@@ -292,6 +315,22 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
             {volumeProgress && volumeProgress.length > 0 && (
               <div style={{ scrollSnapAlign: 'center' }}>
                 <VolumeSummaryTimelineCard progressData={volumeProgress} />
+              </div>
+            )}
+
+            {/* Muscle Distribution Card */}
+            {cycleStats && !statsLoading && (
+              <div style={{ scrollSnapAlign: 'center' }}>
+                <MuscleDistributionCard
+                  targetData={cycleStats.targetVolumeDistribution}
+                  actualData={cycleStats.currentStats.volumeByMuscleGroup}
+                  stats={cycleStats.currentStats}
+                  comparison={cycleStats.comparison}
+                  previousCycleData={cycleStats.previousVolumeByMuscleGroup || undefined}
+                  comparisonMode="target"
+                  variant="timeline"
+                  loading={statsLoading}
+                />
               </div>
             )}
           </div>

@@ -1,6 +1,7 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CycleCompletion, InsertCycleCompletion } from "@/lib/types/schemas";
 import { calculateMuscleGroupVolumes } from "@/lib/utils/workout-helpers";
+import type { Database } from "@/lib/types/database.types";
 
 export interface CycleStats {
   totalVolume: number;
@@ -49,7 +50,7 @@ export class CycleStatsService {
       .select("*")
       .eq("user_id", userId)
       .eq("split_plan_id", splitPlanId)
-      .eq("completed", true)
+      .eq("status", "completed")
       .gte("completed_at", cycleStartDate)
       .order("completed_at", { ascending: true });
 
@@ -57,7 +58,10 @@ export class CycleStatsService {
       throw new Error(`Failed to fetch workouts: ${workoutsError.message}`);
     }
 
-    if (!workouts || workouts.length === 0) {
+    type WorkoutRow = Database['public']['Tables']['workouts']['Row'];
+    const typedWorkouts = (workouts || []) as WorkoutRow[];
+
+    if (typedWorkouts.length === 0) {
       // No workouts completed in this cycle yet
       return {
         totalVolume: 0,
@@ -71,18 +75,18 @@ export class CycleStatsService {
     }
 
     // Calculate aggregated statistics
-    const totalVolume = workouts.reduce(
+    const totalVolume = typedWorkouts.reduce(
       (sum: number, w: any) => sum + (w.total_volume || 0),
       0
     );
-    const totalSets = workouts.reduce((sum: number, w: any) => sum + (w.total_sets || 0), 0);
-    const totalDurationSeconds = workouts.reduce(
+    const totalSets = typedWorkouts.reduce((sum: number, w: any) => sum + (w.total_sets || 0), 0);
+    const totalDurationSeconds = typedWorkouts.reduce(
       (sum: number, w: any) => sum + (w.duration_seconds || 0),
       0
     );
 
     // Calculate average mental readiness
-    const mentalReadinessValues = workouts
+    const mentalReadinessValues = typedWorkouts
       .map((w: any) => w.mental_readiness_overall)
       .filter((mr: any): mr is number => mr !== null && mr !== undefined);
     const avgMentalReadiness =
@@ -93,7 +97,7 @@ export class CycleStatsService {
 
     // Calculate volume by muscle group
     const volumeByMuscleGroup: Record<string, number> = {};
-    for (const workout of workouts) {
+    for (const workout of typedWorkouts) {
       if (!workout.exercises || !Array.isArray(workout.exercises)) continue;
 
       const muscleVolumes = calculateMuscleGroupVolumes(workout.exercises as any);
@@ -106,7 +110,7 @@ export class CycleStatsService {
 
     // Count workouts by type
     const workoutsByType: Record<string, number> = {};
-    for (const workout of workouts) {
+    for (const workout of typedWorkouts) {
       if (workout.workout_type) {
         workoutsByType[workout.workout_type] =
           (workoutsByType[workout.workout_type] || 0) + 1;
@@ -115,7 +119,7 @@ export class CycleStatsService {
 
     return {
       totalVolume,
-      totalWorkoutsCompleted: workouts.length,
+      totalWorkoutsCompleted: typedWorkouts.length,
       avgMentalReadiness,
       totalSets,
       totalDurationSeconds,

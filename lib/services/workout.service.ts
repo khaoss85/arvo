@@ -1,4 +1,6 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/types/database.types";
 import {
   insertWorkoutSchema,
   updateWorkoutSchema,
@@ -84,7 +86,7 @@ export class WorkoutService {
       .from("workouts")
       .select("*")
       .eq("user_id", userId)
-      .eq("completed", true)
+      .eq("status", "completed")
       .order("planned_at", { ascending: false })
       .limit(limit);
 
@@ -118,11 +120,20 @@ export class WorkoutService {
 
   /**
    * Create workout (server-side)
+   * @param workout - Workout data to insert
+   * @param supabaseClient - Optional Supabase client (defaults to server client). Use admin client for background workers.
    */
-  static async createServer(workout: InsertWorkout): Promise<Workout> {
+  static async createServer(
+    workout: InsertWorkout,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<Workout> {
     const validated = insertWorkoutSchema.parse(workout);
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+
+    // Use provided client (admin for background workers) or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const { data, error} = await supabase
       .from("workouts")
@@ -182,10 +193,18 @@ export class WorkoutService {
 
   /**
    * Get workouts by user ID (server-side)
+   * @param userId - User ID
+   * @param supabaseClient - Optional Supabase client (defaults to server client)
    */
-  static async getByUserIdServer(userId: string): Promise<Workout[]> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async getByUserIdServer(
+    userId: string,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<Workout[]> {
+    // Use provided client or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const { data, error } = await supabase
       .from("workouts")
@@ -202,10 +221,18 @@ export class WorkoutService {
 
   /**
    * Get workout by ID (server-side)
+   * @param id - Workout ID
+   * @param supabaseClient - Optional Supabase client (defaults to server client)
    */
-  static async getByIdServer(id: string): Promise<Workout | null> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async getByIdServer(
+    id: string,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<Workout | null> {
+    // Use provided client or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const { data, error } = await supabase
       .from("workouts")
@@ -249,10 +276,18 @@ export class WorkoutService {
   /**
    * Get current in-progress workout for user (server-side)
    * Used to resume interrupted workouts
+   * @param userId - User ID
+   * @param supabaseClient - Optional Supabase client (defaults to server client)
    */
-  static async getInProgressWorkoutServer(userId: string): Promise<Workout | null> {
-    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
-    const supabase = await getSupabaseServerClient();
+  static async getInProgressWorkoutServer(
+    userId: string,
+    supabaseClient?: SupabaseClient<Database>
+  ): Promise<Workout | null> {
+    // Use provided client or fallback to server client
+    const supabase = supabaseClient || await (async () => {
+      const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+      return await getSupabaseServerClient();
+    })();
 
     const { data, error } = await supabase
       .from("workouts")
@@ -334,6 +369,12 @@ export class WorkoutService {
       totalSets?: number;
       completedAt?: Date;
       mentalReadinessOverall?: number;
+      learnedTargetWeights?: Array<{
+        exerciseName: string;
+        targetWeight: number;
+        updatedAt: string;
+        confidence: 'low' | 'medium' | 'high';
+      }>;
     }
   ): Promise<{ workout: Workout; warnings: string[] }> {
     console.log('[WorkoutService] Starting markAsCompletedWithStats', {
@@ -401,6 +442,13 @@ export class WorkoutService {
     if (stats.mentalReadinessOverall !== undefined) {
       updateData.mental_readiness_overall = stats.mentalReadinessOverall;
     }
+    if (stats.learnedTargetWeights !== undefined && stats.learnedTargetWeights.length > 0) {
+      updateData.learned_target_weights = stats.learnedTargetWeights;
+      console.log('[WorkoutService] Saving learned target weights:', {
+        count: stats.learnedTargetWeights.length,
+        exercises: stats.learnedTargetWeights.map(w => w.exerciseName)
+      });
+    }
 
     console.log('[WorkoutService] Updating workout with completion data:', {
       workoutId: id,
@@ -434,9 +482,11 @@ export class WorkoutService {
       }
     }
 
+    const typedData = data as { completed_at?: string; [key: string]: any };
+
     console.log('[WorkoutService] Workout marked as completed successfully:', {
       workoutId: id,
-      completed_at: data.completed_at
+      completed_at: typedData.completed_at
     });
 
     const warnings: string[] = [];
@@ -445,11 +495,13 @@ export class WorkoutService {
     if (workout.split_plan_id && workout.user_id) {
       console.log('[WorkoutService] Workout is part of split plan, advancing cycle...', {
         splitPlanId: workout.split_plan_id,
-        userId: workout.user_id
+        userId: workout.user_id,
+        cycleDay: workout.cycle_day
       });
 
       try {
-        await SplitPlanService.advanceCycle(workout.user_id);
+        // Pass the completed cycle_day to ensure accurate wrap-around detection
+        await SplitPlanService.advanceCycle(workout.user_id, workout.cycle_day || undefined);
         console.log('[WorkoutService] Split plan cycle advanced successfully');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -473,7 +525,7 @@ export class WorkoutService {
     });
 
     return {
-      workout: data as unknown as Workout,
+      workout: typedData as unknown as Workout,
       warnings
     };
   }

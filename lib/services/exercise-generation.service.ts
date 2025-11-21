@@ -6,6 +6,7 @@ import {
   type InsertExerciseGeneration,
   type UpdateExerciseGeneration,
 } from "@/lib/types/schemas";
+import type { Database } from "@/lib/types/database.types";
 
 export interface ExerciseMetadata {
   primaryMuscles?: string[];
@@ -38,12 +39,15 @@ export class ExerciseGenerationService {
       .limit(1)
       .single();
 
-    if (existing && !searchError) {
+    type ExerciseGenerationRow = Database['public']['Tables']['exercise_generations']['Row'];
+    const typedExisting = existing as ExerciseGenerationRow | null;
+
+    if (typedExisting && !searchError) {
       // Exercise exists - increment usage and return
-      await this.incrementUsage(existing.id);
+      await this.incrementUsage(typedExisting.id);
       return {
-        ...existing,
-        usage_count: (existing.usage_count || 0) + 1,
+        ...typedExisting,
+        usage_count: (typedExisting.usage_count || 0) + 1,
       } as ExerciseGeneration;
     }
 
@@ -274,24 +278,27 @@ export class ExerciseGenerationService {
       .select("*")
       .ilike("name", name.trim())
       .or(`user_id.is.null${userId ? `,user_id.eq.${userId}` : ''}`)
-      .order("usage_count", { ascending: false })
+      .order("usage_count", { ascending: false})
       .limit(1)
       .single();
 
-    if (existing && !searchError) {
+    type ExerciseGenerationRow2 = Database['public']['Tables']['exercise_generations']['Row'];
+    const typedExisting2 = existing as ExerciseGenerationRow2 | null;
+
+    if (typedExisting2 && !searchError) {
       // Increment usage
       const { error: updateError } = await supabase
         .from("exercise_generations")
         .update({
-          usage_count: (existing.usage_count || 0) + 1,
+          usage_count: (typedExisting2.usage_count || 0) + 1,
           last_used_at: new Date().toISOString(),
         })
-        .eq("id", existing.id);
+        .eq("id", typedExisting2.id);
 
       if (!updateError) {
         return {
-          ...existing,
-          usage_count: (existing.usage_count || 0) + 1,
+          ...typedExisting2,
+          usage_count: (typedExisting2.usage_count || 0) + 1,
         } as ExerciseGeneration;
       }
     }

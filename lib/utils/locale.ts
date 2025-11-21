@@ -2,8 +2,9 @@ import { type Locale, locales, defaultLocale } from '@/i18n';
 
 /**
  * Storage key for language preference in localStorage
+ * Must match the key used in locale.store.ts
  */
-const LOCALE_STORAGE_KEY = 'arvo_preferred_language';
+const LOCALE_STORAGE_KEY = 'arvo_locale';
 
 /**
  * Detects the user's preferred locale with the following priority:

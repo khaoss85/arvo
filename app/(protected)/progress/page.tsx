@@ -11,15 +11,19 @@ import {
   useVolumeAnalytics,
   useAIInsights
 } from '@/lib/hooks/useAnalytics'
+import { useHistoricalCycleStats } from '@/lib/hooks/useCycleStats'
 import { ProgressChart } from '@/components/features/analytics/progress-chart'
 import { VolumeChart } from '@/components/features/analytics/volume-chart'
 import { PRCards } from '@/components/features/analytics/pr-cards'
 import { AIInsights } from '@/components/features/analytics/ai-insights'
+import { MuscleDistributionAnalysis } from '@/components/features/analytics/muscle-distribution-analysis'
 import { ExerciseSelector } from '@/components/features/analytics/exercise-selector'
 import { ArrowLeft, Brain } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
 export default function ProgressPage() {
   const t = useTranslations('progress.page')
+  const locale = useLocale()
   const { user } = useAuthStore()
   const [selectedExercise, setSelectedExercise] = useState<string>('all')
   const [timeRange, setTimeRange] = useState(30) // days
@@ -46,6 +50,8 @@ export default function ProgressPage() {
     user.id,
     timeRange
   )
+
+  const { data: cycleHistory, isLoading: cycleHistoryLoading } = useHistoricalCycleStats(user.id, 6)
 
   return (
     <div className="min-h-screen p-4 sm:p-8 bg-gray-50 dark:bg-gray-950">
@@ -120,6 +126,17 @@ export default function ProgressPage() {
             loading={insightsLoading}
             className="mb-8"
           />
+        )}
+
+        {/* Muscle Distribution Analysis (only for 'all' exercises) */}
+        {selectedExercise === 'all' && cycleHistory && (
+          <div className="mb-8">
+            <MuscleDistributionAnalysis
+              historicalData={cycleHistory}
+              loading={cycleHistoryLoading}
+              locale={locale}
+            />
+          </div>
         )}
 
         {/* Charts Grid */}
