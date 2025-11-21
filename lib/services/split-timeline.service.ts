@@ -29,8 +29,11 @@ const EXERCISE_MUSCLE_PATTERNS: Record<string, string[]> = {
   shoulders_rear: ['rear delt', 'rear-delt', 'face pull', 'reverse fly', 'reverse pec deck'],
   shoulders_side: ['lateral raise', 'side raise', 'lateral delt', 'side delt'],
   shoulders_front: ['front raise', 'front delt', 'overhead press', 'military press', 'shoulder press'],
-  // Chest (removed generic "press" and "fly")
-  chest: ['bench press', 'chest press', 'pec deck', 'chest fly', 'petto', 'incline press', 'decline press', 'dumbbell press'],
+  // Chest - specific subdivisions (must be checked before generic chest)
+  chest_upper: ['incline press', 'incline bench', 'incline fly', 'incline cable', 'upper chest', 'clavicular', 'upper-chest'],
+  chest_lower: ['decline press', 'decline bench', 'decline fly', 'lower chest', 'high-to-low', 'dip', 'lower-chest'],
+  // Chest - generic (fallback)
+  chest: ['bench press', 'chest press', 'pec deck', 'chest fly', 'petto', 'dumbbell press'],
   // Triceps
   triceps: ['tricep', 'pushdown', 'pressdown', 'dip', 'skull crusher', 'skullcrusher', 'extension', 'kickback'],
   // Back
