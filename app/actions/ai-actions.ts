@@ -131,8 +131,8 @@ async function generateWorkoutWithServerClient(
   // Get user's language if not provided
   const language = targetLanguage || await getUserLanguage(userId)
 
-  // Pass server client to ExerciseSelector for database access
-  const exerciseSelector = new ExerciseSelector(supabase, 'medium')
+  // Pass server client to ExerciseSelector for database access (using low reasoning for faster generation)
+  const exerciseSelector = new ExerciseSelector(supabase, 'low')
 
   // Get user profile (already created above, but we need to fetch it for weak points and equipment)
   const { data: profile, error: profileError } = await supabase

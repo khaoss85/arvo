@@ -21,9 +21,11 @@ export function getOpenAIClient(): OpenAI {
 
     console.log('✅ [OPENAI_CLIENT] Initializing OpenAI client...')
     client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
+      timeout: 400000,  // 400s (6.6 min) - SDK-level timeout as safety net
+      maxRetries: 0     // Disable automatic retries - we handle retries at application level
     })
-    console.log('✅ [OPENAI_CLIENT] OpenAI client initialized successfully')
+    console.log('✅ [OPENAI_CLIENT] OpenAI client initialized with timeout: 400s, maxRetries: 0')
   }
   return client
 }

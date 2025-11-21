@@ -572,16 +572,31 @@ ${mems.map(mem => {
         timestamp: new Date().toISOString()
       })
 
-      const response = await Promise.race([
-        this.openai.responses.create({
+      // Add keepalive logging to track long-running requests
+      const keepaliveInterval = setInterval(() => {
+        const elapsed = Math.round((Date.now() - aiStartTime) / 1000)
+        console.log(`⏳ [BASE_AGENT] Still waiting for OpenAI... ${elapsed}s elapsed (timeout: ${AI_TIMEOUT_MS / 1000}s)`, {
+          agent: this.constructor.name,
           model: this.model,
-          input: combinedInput,
-          reasoning: { effort: this.reasoningEffort },
-          text: { verbosity: this.verbosity },
-          ...(responseIdToUse && { previous_response_id: responseIdToUse })
-        }),
-        timeoutPromise
-      ])
+          reasoning: this.reasoningEffort
+        })
+      }, 30000) // Log every 30 seconds
+
+      let response
+      try {
+        response = await Promise.race([
+          this.openai.responses.create({
+            model: this.model,
+            input: combinedInput,
+            reasoning: { effort: this.reasoningEffort },
+            text: { verbosity: this.verbosity },
+            ...(responseIdToUse && { previous_response_id: responseIdToUse })
+          }),
+          timeoutPromise
+        ])
+      } finally {
+        clearInterval(keepaliveInterval) // Always clean up interval
+      }
 
       const aiDuration = Date.now() - aiStartTime
       console.log('✅ [BASE_AGENT] AI response received', {

@@ -60,9 +60,9 @@ export class WorkoutGeneratorService {
       supabase = await getSupabaseServerClient()
     }
 
-    // Use medium reasoning for reliable JSON generation with extended timeout (240s = 4 minutes)
-    // Medium reasoning provides better constraint satisfaction than low (180s) for complex workout generation
-    const exerciseSelector = new ExerciseSelector(supabase, 'medium')
+    // Use low reasoning for faster workout generation with reasonable timeout (180s = 3 minutes)
+    // Low reasoning provides good balance between speed and quality for workout generation
+    const exerciseSelector = new ExerciseSelector(supabase, 'low')
 
     // Progress: Starting
     await onProgress?.('profile', 5, 'Loading user profile and preferences')
