@@ -92,6 +92,24 @@ export class SplitTimelineService {
     const nameLower = exerciseName.toLowerCase();
     const muscleGroups: Set<string> = new Set();
 
+    // Word-based matching for chest subdivisions (more flexible than exact substring)
+    // Check for "incline" + any chest indicator → chest_upper
+    if (nameLower.includes('incline') &&
+        (nameLower.includes('bench') || nameLower.includes('press') || nameLower.includes('fly'))) {
+      muscleGroups.add('chest_upper');
+    }
+
+    // Check for "decline" OR "high-to-low" + chest indicators → chest_lower
+    if ((nameLower.includes('decline') || nameLower.includes('high-to-low')) &&
+        (nameLower.includes('bench') || nameLower.includes('press') || nameLower.includes('fly'))) {
+      muscleGroups.add('chest_lower');
+    }
+
+    // Check for "close-grip" or "close grip" (triceps focus)
+    if (nameLower.includes('close-grip') || nameLower.includes('close grip')) {
+      muscleGroups.add('triceps');
+    }
+
     // Define order: check most specific patterns first
     const muscleCheckOrder = [
       // Shoulders (specific subdivisions first)
