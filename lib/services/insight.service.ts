@@ -63,8 +63,11 @@ export class InsightService {
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow | null;
+
+    if (error || !typedData) throw error;
+    return typedData;
   }
 
   /**
@@ -81,7 +84,7 @@ export class InsightService {
       });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as Database['public']['Functions']['get_active_insights']['Returns'];
   }
 
   /**
@@ -142,8 +145,11 @@ export class InsightService {
 
     const { data, error } = await query;
 
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow[] | null;
+
     if (error) throw error;
-    return data || [];
+    return typedData || [];
   }
 
   /**
@@ -156,12 +162,15 @@ export class InsightService {
       .eq('id', insightId)
       .single();
 
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow | null;
+
     if (error) {
       if (error.code === 'PGRST116') return null; // Not found
       throw error;
     }
 
-    return data;
+    return typedData;
   }
 
   /**
@@ -178,8 +187,11 @@ export class InsightService {
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow | null;
+
+    if (error || !typedData) throw error;
+    return typedData;
   }
 
   /**
@@ -294,8 +306,11 @@ export class InsightService {
       .eq('workout_id', workoutId)
       .order('created_at', { ascending: true });
 
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow[] | null;
+
     if (error) throw error;
-    return data || [];
+    return typedData || [];
   }
 
   /**
@@ -312,8 +327,11 @@ export class InsightService {
       .eq('exercise_name', exerciseName)
       .order('created_at', { ascending: false });
 
+    type WorkoutInsightRow = Database['public']['Tables']['workout_insights']['Row'];
+    const typedData = data as WorkoutInsightRow[] | null;
+
     if (error) throw error;
-    return data || [];
+    return typedData || [];
   }
 
   /**

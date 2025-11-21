@@ -7,8 +7,8 @@ import { SplitTimelineService } from '@/lib/services/split-timeline.service'
 import { CycleStatsService } from '@/lib/services/cycle-stats.service'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { GenerationQueueService } from '@/lib/services/generation-queue.service'
-import { MemoryService } from '@/lib/services/memory.service'
-import { InsightService } from '@/lib/services/insight.service'
+import { memoryService } from '@/lib/services/memory.service'
+import { insightService } from '@/lib/services/insight.service'
 
 /**
  * Generate a new split plan using AI
@@ -672,26 +672,47 @@ export async function adaptSplitAfterCycleAction(userId: string) {
     // Get cycle comparison (trends)
     let cycleComparison = null
     if (recentCycles.length >= 2) {
-      cycleComparison = await CycleStatsService.getComparisonWithPreviousCycle(
-        recentCycles[0],
-        recentCycles[1]
-      )
+      const lastCycle = recentCycles[0]
+      const previousCycle = recentCycles[1]
+
+      const volumeDelta = previousCycle.total_volume > 0
+        ? ((lastCycle.total_volume - previousCycle.total_volume) / previousCycle.total_volume) * 100
+        : 0
+
+      const mentalReadinessDelta = (lastCycle.avg_mental_readiness !== null && previousCycle.avg_mental_readiness !== null)
+        ? lastCycle.avg_mental_readiness - previousCycle.avg_mental_readiness
+        : null
+
+      cycleComparison = {
+        volumeDelta,
+        workoutsDelta: lastCycle.total_workouts_completed - previousCycle.total_workouts_completed,
+        mentalReadinessDelta,
+        setsDelta: lastCycle.total_sets - previousCycle.total_sets,
+      }
     }
 
     // Get active memories (learned preferences)
-    const memories = await MemoryService.getActiveMemories(userId)
+    const memories = await memoryService.getActiveMemories(userId)
 
     // Get active insights (exercise issues)
-    const insights = await InsightService.getActiveInsights(userId)
+    const insights = await insightService.getActiveInsights(userId)
 
     // Get recent substitutions (last 90 days)
     const substitutions = await getRecentSubstitutions(userId, 90)
+
+    // Get user profile for equipment preferences
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('available_equipment, weak_points')
+      .eq('user_id', userId)
+      .single()
 
     console.log('[adaptSplitAfterCycleAction] Adaptation data gathered:', {
       cycles: recentCycles.length,
       memories: memories.length,
       insights: insights.length,
-      substitutions: substitutions.length
+      substitutions: substitutions.length,
+      equipment: profile?.available_equipment?.length || 0
     })
 
     // 3. Build SplitPlannerInput (same structure as generateSplitPlanAction)
@@ -702,20 +723,45 @@ export async function adaptSplitAfterCycleAction(userId: string) {
       approachId: currentSplit.approach_id!,
       splitType: currentSplit.split_type as any,
       // Reuse current split configuration
-      targetFrequency: currentSplit.cycle_days, // TODO: Extract from sessions
-      weakPoints: [], // TODO: Could extract from user profile if needed
-      // Adaptation context
-      recentCycleCompletions: recentCycles,
-      cycleComparison: cycleComparison || undefined,
-      // NOTE: memories and insights are passed downstream to ExerciseSelector
-      targetLanguage
+      weeklyFrequency: currentSplit.cycle_days, // Reuse cycle days as weekly frequency
+      weakPoints: profile?.weak_points || [],
+      equipmentAvailable: profile?.available_equipment || ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight'],
+      // Adaptation context (CRITICAL: pass the gathered data to SplitPlanner!)
+      substitutionPatterns: substitutions.map(sub => ({
+        originalExercise: sub.originalExercise,
+        newExercise: sub.newExercise,
+        reason: sub.reason,
+        count: sub.count
+      })),
+      memories: memories.map(mem => ({
+        content: mem.title,
+        category: mem.memory_category,
+        createdAt: '' // Field not available from get_active_memories RPC function
+      })),
+      insights: insights.map(insight => ({
+        exerciseName: insight.exercise_name || 'Unknown',
+        category: insight.insight_type || 'general',
+        description: insight.user_note,
+        severity: insight.severity || 'medium'
+      })),
+      recentCycleCompletions: recentCycles.map(cycle => ({
+        cycleNumber: cycle.cycle_number,
+        completedAt: cycle.completed_at,
+        totalVolume: cycle.total_volume,
+        totalWorkoutsCompleted: cycle.total_workouts_completed,
+        avgMentalReadiness: cycle.avg_mental_readiness,
+        totalSets: cycle.total_sets,
+        volumeByMuscleGroup: cycle.volume_by_muscle_group as Record<string, number>,
+        workoutsByType: cycle.workouts_by_type as Record<string, number>
+      })),
+      cycleComparison: cycleComparison || undefined
     }
 
     console.log('[adaptSplitAfterCycleAction] Calling SplitPlanner agent...')
 
-    // 4. Call SplitPlanner agent (reuse existing agent!)
+    // 4. Call SplitPlanner agent with medium reasoning effort for quality adaptations
     const planner = new SplitPlanner(supabase, 'medium')
-    const adaptedSplit = await planner.planSplit(input)
+    const adaptedSplit = await planner.planSplit(input, targetLanguage)
 
     console.log('[adaptSplitAfterCycleAction] Split adapted:', {
       sessions: adaptedSplit.sessions?.length,
@@ -824,6 +870,11 @@ async function getRecentSubstitutions(
   const patternMap = new Map<string, SubstitutionPattern>()
 
   for (const sub of substitutions) {
+    // Skip if exercise names are null
+    if (!sub.original_exercise_name || !sub.exercise_name) {
+      continue
+    }
+
     const key = `${sub.original_exercise_name}→${sub.exercise_name}`
 
     if (patternMap.has(key)) {
