@@ -98,7 +98,10 @@ export class SplitTimelineService {
       'shoulders_rear',
       'shoulders_side',
       'shoulders_front',
-      // Then other muscles
+      // Chest (specific subdivisions first)
+      'chest_upper',
+      'chest_lower',
+      // Then generic categories
       'chest',
       'triceps',
       'back',
