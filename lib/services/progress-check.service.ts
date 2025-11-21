@@ -64,14 +64,21 @@ export class ProgressCheckService {
           return null;
         }
 
-        // Get public URL (even though bucket is private, we save the path)
-        const { data } = supabase.storage.from('progress-photos').getPublicUrl(fileName);
+        // Get signed URL for private bucket (valid for 24 hours)
+        const { data, error: urlError } = await supabase.storage
+          .from('progress-photos')
+          .createSignedUrl(fileName, 86400); // 86400 seconds = 24 hours
+
+        if (urlError || !data) {
+          console.error(`Failed to create signed URL for ${type} photo:`, urlError);
+          return null;
+        }
 
         // Create photo record in database
         const { error: photoError } = await supabase.from('progress_photos').insert({
           check_id: checkWithId.id,
           photo_type: type,
-          photo_url: data.publicUrl,
+          photo_url: data.signedUrl,
           photo_order: index,
         });
 
@@ -146,7 +153,16 @@ export class ProgressCheckService {
       return [];
     }
 
-    return (data || []) as unknown as ProgressCheckWithPhotos[];
+    // Refresh photo URLs for all checks
+    const checks = (data || []) as unknown as ProgressCheckWithPhotos[];
+    const checksWithRefreshedUrls = await Promise.all(
+      checks.map(async (check) => ({
+        ...check,
+        photos: await this.refreshPhotoUrls(check.photos || []),
+      }))
+    );
+
+    return checksWithRefreshedUrls;
   }
 
   /**
@@ -167,7 +183,14 @@ export class ProgressCheckService {
       return null;
     }
 
-    return data as unknown as ProgressCheckWithDetails;
+    const check = data as unknown as ProgressCheckWithDetails;
+
+    // Refresh photo URLs
+    if (check && check.photos) {
+      check.photos = await this.refreshPhotoUrls(check.photos);
+    }
+
+    return check;
   }
 
   /**
@@ -189,7 +212,63 @@ export class ProgressCheckService {
       return null;
     }
 
-    return data as unknown as ProgressCheckWithPhotos | null;
+    const check = data as unknown as ProgressCheckWithPhotos | null;
+
+    // Refresh photo URLs
+    if (check && check.photos) {
+      check.photos = await this.refreshPhotoUrls(check.photos);
+    }
+
+    return check;
+  }
+
+  /**
+   * Refresh signed URLs for photos (private helper method)
+   * Regenerates signed URLs for an array of photos
+   */
+  private static async refreshPhotoUrls(photos: any[]): Promise<any[]> {
+    if (!photos || photos.length === 0) return photos;
+
+    const supabase = getSupabaseBrowserClient();
+
+    const refreshedPhotos = await Promise.all(
+      photos.map(async (photo) => {
+        try {
+          // Extract file path from existing URL
+          // URL format: https://[project].supabase.co/storage/v1/object/sign/progress-photos/[path]?token=...
+          const url = new URL(photo.photo_url);
+          const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(sign|public)\/progress-photos\/(.+)/);
+
+          if (!pathMatch || !pathMatch[2]) {
+            console.error('Could not extract path from photo URL:', photo.photo_url);
+            return photo;
+          }
+
+          const filePath = pathMatch[2];
+
+          // Generate new signed URL
+          const { data, error } = await supabase.storage
+            .from('progress-photos')
+            .createSignedUrl(filePath, 86400); // 24 hours
+
+          if (error || !data) {
+            console.error('Failed to refresh signed URL:', error);
+            return photo;
+          }
+
+          // Return photo with updated URL
+          return {
+            ...photo,
+            photo_url: data.signedUrl,
+          };
+        } catch (error) {
+          console.error('Error refreshing photo URL:', error);
+          return photo;
+        }
+      })
+    );
+
+    return refreshedPhotos;
   }
 
   /**
@@ -354,9 +433,17 @@ export class ProgressCheckService {
 
     const checks = (data || []) as unknown as ProgressCheckWithPhotos[];
 
+    // Refresh photo URLs for all checks
+    const checksWithRefreshedUrls = await Promise.all(
+      checks.map(async (check) => ({
+        ...check,
+        photos: await this.refreshPhotoUrls(check.photos || []),
+      }))
+    );
+
     // Group by cycle number
     const cycleMap = new Map<number, ProgressCheckWithPhotos[]>();
-    checks.forEach((check) => {
+    checksWithRefreshedUrls.forEach((check) => {
       if (check.cycle_number !== null) {
         const existing = cycleMap.get(check.cycle_number) || [];
         cycleMap.set(check.cycle_number, [...existing, check]);
