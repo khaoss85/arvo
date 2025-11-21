@@ -304,7 +304,7 @@ export async function getPublicShareDataAction(token: string) {
       case 'workout':
         const { data: workout } = await supabase
           .from('workouts')
-          .select('*, exercises:workout_exercises(*)')
+          .select('*')
           .eq('id', shareLink.entity_id)
           .single()
         entityData = workout
