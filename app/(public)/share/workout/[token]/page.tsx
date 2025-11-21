@@ -90,8 +90,8 @@ export default async function PublicWorkoutSharePage({
     <PublicWorkoutView
       data={workoutData}
       privacySettings={privacySettings as SharePrivacySettings}
-      viewCount={viewCount}
-      createdAt={createdAt}
+      viewCount={viewCount ?? 0}
+      createdAt={createdAt ?? new Date().toISOString()}
       locale={locale}
     />
   )

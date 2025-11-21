@@ -58,7 +58,7 @@ export abstract class BaseAgent {
       case 'low':
         return 180000     // 180s (3min) - increased for complex prompts like split planning
       case 'medium':
-        return 240000     // 240s (4min) - complex multi-constraint optimization
+        return 360000     // 360s (6min) - increased for complex workout generation with many constraints
       case 'high':
         return 240000     // 240s (4min) - maximum reasoning for hardest problems
     }
@@ -561,6 +561,17 @@ ${mems.map(mem => {
       // This enables multi-turn CoT persistence for +4.3% accuracy improvement (Tau-Bench verified)
       const responseIdToUse = previousResponseId || this.lastResponseId
 
+      // Log before OpenAI call for debugging
+      const aiStartTime = Date.now()
+      console.log('🚀 [BASE_AGENT] Sending request to OpenAI...', {
+        agent: this.constructor.name,
+        model: this.model,
+        reasoning: this.reasoningEffort,
+        promptLength: combinedInput.length,
+        timeout: AI_TIMEOUT_MS,
+        timestamp: new Date().toISOString()
+      })
+
       const response = await Promise.race([
         this.openai.responses.create({
           model: this.model,
@@ -572,11 +583,15 @@ ${mems.map(mem => {
         timeoutPromise
       ])
 
+      const aiDuration = Date.now() - aiStartTime
       console.log('✅ [BASE_AGENT] AI response received', {
+        agent: this.constructor.name,
         hasResponse: !!response,
         hasOutputText: !!response.output_text,
         outputLength: response.output_text?.length || 0,
-        responseId: response.id
+        responseId: response.id,
+        duration: `${aiDuration}ms`,
+        timestamp: new Date().toISOString()
       })
 
       const content = response.output_text

@@ -53,8 +53,8 @@ export default async function PublicCycleSharePage({
     <PublicCycleView
       data={cycleData}
       privacySettings={privacySettings as SharePrivacySettings}
-      viewCount={viewCount}
-      createdAt={createdAt}
+      viewCount={viewCount ?? 0}
+      createdAt={createdAt ?? new Date().toISOString()}
       locale={locale}
     />
   )
