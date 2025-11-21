@@ -109,6 +109,7 @@ export type Database = {
           updated_at: string | null
           user_id: string
           volume_by_muscle_group: Json | null
+          sets_by_muscle_group: Json | null
           workouts_by_type: Json | null
         }
         Insert: {
@@ -125,6 +126,7 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           volume_by_muscle_group?: Json | null
+          sets_by_muscle_group?: Json | null
           workouts_by_type?: Json | null
         }
         Update: {
@@ -141,6 +143,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           volume_by_muscle_group?: Json | null
+          sets_by_muscle_group?: Json | null
           workouts_by_type?: Json | null
         }
         Relationships: [

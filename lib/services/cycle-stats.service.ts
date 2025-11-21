@@ -71,6 +71,7 @@ export class CycleStatsService {
         totalSets: 0,
         totalDurationSeconds: 0,
         volumeByMuscleGroup: {},
+        setsByMuscleGroup: {},
         workoutsByType: {},
       };
     }
@@ -226,6 +227,7 @@ export class CycleStatsService {
       total_sets: stats.totalSets,
       total_duration_seconds: stats.totalDurationSeconds,
       volume_by_muscle_group: stats.volumeByMuscleGroup,
+      sets_by_muscle_group: stats.setsByMuscleGroup,
       workouts_by_type: stats.workoutsByType,
     };
 

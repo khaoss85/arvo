@@ -103,6 +103,7 @@ export function MuscleGroupTrendChart({
         totalSets: 0,
         totalDurationSeconds: 0,
         volumeByMuscleGroup: currentCycle.volumeByMuscleGroup,
+        setsByMuscleGroup: currentCycle.volumeByMuscleGroup,
         splitType: 'current',
       })
     }

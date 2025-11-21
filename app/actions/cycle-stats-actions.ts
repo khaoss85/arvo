@@ -14,6 +14,7 @@ export interface CycleStatsForTimeline {
     totalSets: number
     totalDurationSeconds: number
     volumeByMuscleGroup: Record<string, number>
+    setsByMuscleGroup: Record<string, number>
   }
   comparison: {
     volumeDelta: number // percentage
@@ -38,6 +39,7 @@ export interface HistoricalCycleStats {
     totalSets: number
     totalDurationSeconds: number
     volumeByMuscleGroup: Record<string, number>
+    setsByMuscleGroup: Record<string, number>
     splitType: string
   }>
   currentCycleStats: {
@@ -47,6 +49,7 @@ export interface HistoricalCycleStats {
     totalSets: number
     totalDurationSeconds: number
     volumeByMuscleGroup: Record<string, number>
+    setsByMuscleGroup: Record<string, number>
     targetVolumeDistribution: Record<string, number>
   } | null
 }
@@ -106,6 +109,7 @@ export async function getCurrentCycleStatsAction(userId: string) {
           totalSets: currentStats.totalSets,
           totalDurationSeconds: currentStats.totalDurationSeconds,
           volumeByMuscleGroup: currentStats.volumeByMuscleGroup,
+          setsByMuscleGroup: currentStats.setsByMuscleGroup,
         },
         comparison,
         targetVolumeDistribution: splitPlan.volume_distribution as Record<string, number>,
@@ -146,6 +150,7 @@ export async function getHistoricalCycleStatsAction(
       totalSets: cycle.total_sets,
       totalDurationSeconds: cycle.total_duration_seconds || 0,
       volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
+      setsByMuscleGroup: (cycle.sets_by_muscle_group as Record<string, number>) || (cycle.volume_by_muscle_group as Record<string, number>) || {},
       splitType: 'completed', // Could fetch split plan name if needed
     })) as any
 
@@ -173,6 +178,7 @@ export async function getHistoricalCycleStatsAction(
           totalSets: currentStats.totalSets,
           totalDurationSeconds: currentStats.totalDurationSeconds,
           volumeByMuscleGroup: currentStats.volumeByMuscleGroup,
+          setsByMuscleGroup: currentStats.setsByMuscleGroup,
           targetVolumeDistribution: splitPlan.volume_distribution as Record<string, number>,
         }
       }
@@ -212,6 +218,7 @@ export async function getAllCycleCompletionsAction(userId: string) {
         totalSets: cycle.total_sets,
         totalDurationSeconds: cycle.total_duration_seconds || 0,
         volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
+        setsByMuscleGroup: (cycle.sets_by_muscle_group as Record<string, number>) || (cycle.volume_by_muscle_group as Record<string, number>) || {},
         avgMentalReadiness: cycle.avg_mental_readiness,
       })) as any
     }
@@ -249,6 +256,7 @@ export async function getCycleCompletionByIdAction(cycleId: string) {
         totalSets: cycle.total_sets,
         totalDurationSeconds: cycle.total_duration_seconds || 0,
         volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
+        setsByMuscleGroup: (cycle.sets_by_muscle_group as Record<string, number>) || (cycle.volume_by_muscle_group as Record<string, number>) || {},
         avgMentalReadiness: cycle.avg_mental_readiness,
       }
     }

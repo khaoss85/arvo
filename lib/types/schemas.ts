@@ -166,6 +166,7 @@ export const cycleCompletionSchema = z.object({
   total_sets: z.number().int().min(0),
   total_duration_seconds: z.number().int().min(0).nullable(),
   volume_by_muscle_group: z.record(z.string(), z.number()).nullable(),
+  sets_by_muscle_group: z.record(z.string(), z.number()).nullable(),
   workouts_by_type: z.record(z.string(), z.number()).nullable(),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
