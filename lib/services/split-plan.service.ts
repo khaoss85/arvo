@@ -282,6 +282,7 @@ export class SplitPlanService {
           p_total_sets: stats.totalSets,
           p_total_duration_seconds: stats.totalDurationSeconds,
           p_volume_by_muscle_group: stats.volumeByMuscleGroup,
+          p_sets_by_muscle_group: stats.setsByMuscleGroup, // Semantically correct sets data for radar charts
           p_workouts_by_type: stats.workoutsByType,
         });
 
