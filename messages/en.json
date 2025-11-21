@@ -4195,7 +4195,12 @@
     "calves": "Calves",
     "abs": "Abs",
     "obliques": "Obliques",
-    "lowerBack": "Lower Back"
+    "lowerBack": "Lower Back",
+    "lower_back": "Lower Back",
+    "adductors": "Adductors",
+    "abductors": "Abductors",
+    "hipFlexors": "Hip Flexors",
+    "serratus": "Serratus"
   },
   "checkRoomSection": {
     "sectionTitle": {

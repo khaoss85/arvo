@@ -4195,7 +4195,12 @@
     "calves": "Polpacci",
     "abs": "Addominali",
     "obliques": "Obliqui",
-    "lowerBack": "Lombare"
+    "lowerBack": "Lombare",
+    "lower_back": "Lombare",
+    "adductors": "Adduttori",
+    "abductors": "Abduttori",
+    "hipFlexors": "Flessori dell'Anca",
+    "serratus": "Dentato"
   },
   "checkRoomSection": {
     "sectionTitle": {
