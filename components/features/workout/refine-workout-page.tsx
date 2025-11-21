@@ -119,7 +119,7 @@ export function RefineWorkoutPage({
     if (!sessionDefinition) return {}
 
     return calculateMuscleGroupVolumes(
-      exercises.map(ex => ({
+      exercises.filter(ex => ex.name).map(ex => ({
         name: ex.name,
         sets: ex.sets,
         primaryMuscles: (ex as any).primaryMuscles,
@@ -132,8 +132,23 @@ export function RefineWorkoutPage({
   React.useEffect(() => {
     const loadExercisesWithAnimations = async () => {
       if (workout?.exercises) {
+        // Normalize exercises: use exerciseName as fallback for name field
+        const normalizedExercises = (workout.exercises as any[]).map((ex: any) => ({
+          ...ex,
+          name: ex.name || ex.exerciseName || 'Unknown Exercise'
+        })).filter((ex: any) => ex.name && ex.name !== 'Unknown Exercise')
+
+        // Log if any exercises were filtered out
+        const filteredCount = (workout.exercises as any[]).length - normalizedExercises.length
+        if (filteredCount > 0) {
+          console.warn(`[RefineWorkout] Filtered out ${filteredCount} exercises with missing names`, {
+            totalExercises: (workout.exercises as any[]).length,
+            validExercises: normalizedExercises.length
+          })
+        }
+
         const exercisesWithAnimations = await Promise.all(
-          (workout.exercises as unknown as Exercise[]).map(async (ex) => {
+          normalizedExercises.map(async (ex: Exercise) => {
             const animationUrl = await AnimationService.getAnimationUrl({
               name: ex.name,
               canonicalPattern: ex.name,
@@ -779,7 +794,7 @@ export function RefineWorkoutPage({
           <WorkoutRationale
             ref={rationaleRef}
             workoutType={workout.workout_type || 'general'}
-            exercises={exercises.map(ex => ({
+            exercises={exercises.filter(ex => ex.name).map(ex => ({
               exerciseName: ex.name,
               targetSets: ex.sets,
               targetReps: ex.repRange,
@@ -792,7 +807,7 @@ export function RefineWorkoutPage({
 
       {/* Exercises List */}
       <div className="space-y-4 mb-6">
-        {exercises.map((exercise, index) => (
+        {exercises.filter(ex => ex.name).map((exercise, index) => (
           <Card key={`exercise-${index}`} className="p-4">
             <div className="space-y-3">
               {/* Exercise Header */}
@@ -1218,13 +1233,14 @@ export function RefineWorkoutPage({
         onClose={() => setIsAddExerciseModalOpen(false)}
         onSelectExercise={handleSelectExercise}
         currentWorkoutType={workout.workout_type || 'general'}
-        excludeExercises={exercises.map(ex => ex.name.toLowerCase())}
+        excludeExercises={exercises.filter(ex => ex.name).map(ex => ex.name.toLowerCase())}
         enableAISuggestions={true}
         enableAIValidation={true}
         userId={userId}
         currentWorkoutContext={{
-          existingExercises: exercises.map(ex => {
+          existingExercises: exercises.filter(ex => ex.name).map(ex => {
             const muscleGroups = extractMuscleGroupsFromExercise(ex.name, ex.equipmentVariant)
+            const exerciseName = ex.name.toLowerCase()
             return {
               name: ex.name,
               sets: ex.sets,
@@ -1233,12 +1249,12 @@ export function RefineWorkoutPage({
                 secondary: muscleGroups.secondary,
               },
               movementPattern: undefined, // Could be enhanced later
-              isCompound: ex.name.toLowerCase().includes('press') ||
-                         ex.name.toLowerCase().includes('squat') ||
-                         ex.name.toLowerCase().includes('deadlift') ||
-                         ex.name.toLowerCase().includes('row') ||
-                         ex.name.toLowerCase().includes('pull-up') ||
-                         ex.name.toLowerCase().includes('chin-up'),
+              isCompound: exerciseName.includes('press') ||
+                         exerciseName.includes('squat') ||
+                         exerciseName.includes('deadlift') ||
+                         exerciseName.includes('row') ||
+                         exerciseName.includes('pull-up') ||
+                         exerciseName.includes('chin-up'),
             }
           }),
           totalExercises: exercises.length,
