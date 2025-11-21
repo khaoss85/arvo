@@ -9,7 +9,8 @@ export interface CycleStats {
   avgMentalReadiness: number | null;
   totalSets: number;
   totalDurationSeconds: number;
-  volumeByMuscleGroup: Record<string, number>;
+  volumeByMuscleGroup: Record<string, number>; // Despite name, this contains SETS count (legacy naming issue)
+  setsByMuscleGroup: Record<string, number>; // Same data as volumeByMuscleGroup, semantically correct name
   workoutsByType: Record<string, number>;
 }
 
@@ -96,17 +97,23 @@ export class CycleStatsService {
         : null;
 
     // Calculate volume by muscle group
+    // NOTE: Despite the name "volumeByMuscleGroup", calculateMuscleGroupVolumes() actually returns SETS count, not volume!
+    // This is a known naming issue throughout the codebase.
     const volumeByMuscleGroup: Record<string, number> = {};
     for (const workout of typedWorkouts) {
       if (!workout.exercises || !Array.isArray(workout.exercises)) continue;
 
       const muscleVolumes = calculateMuscleGroupVolumes(workout.exercises as any);
       for (const [muscle, breakdown] of Object.entries(muscleVolumes)) {
-        const totalVolume = (breakdown.direct || 0) + (breakdown.indirect || 0);
+        const totalSets = (breakdown.direct || 0) + (breakdown.indirect || 0);
         volumeByMuscleGroup[muscle] =
-          (volumeByMuscleGroup[muscle] || 0) + totalVolume;
+          (volumeByMuscleGroup[muscle] || 0) + totalSets;
       }
     }
+
+    // Create setsByMuscleGroup with the same data (for clarity and to fix radar chart bug)
+    // This is the correct semantic name for what the data actually represents
+    const setsByMuscleGroup = { ...volumeByMuscleGroup };
 
     // Count workouts by type
     const workoutsByType: Record<string, number> = {};
@@ -124,6 +131,7 @@ export class CycleStatsService {
       totalSets,
       totalDurationSeconds,
       volumeByMuscleGroup,
+      setsByMuscleGroup, // Same data as volumeByMuscleGroup, but with semantically correct name
       workoutsByType,
     };
   }

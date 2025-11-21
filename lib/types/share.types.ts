@@ -98,7 +98,8 @@ export interface CycleShareData {
   totalWorkouts: number
   totalSets: number
   totalDurationSeconds: number
-  volumeByMuscleGroup: Record<string, number>
+  volumeByMuscleGroup: Record<string, number> // Legacy field - actually contains sets count
+  setsByMuscleGroup?: Record<string, number> // Semantically correct name for sets data (used by radar chart)
   splitType?: string
   targetVolumeDistribution?: Record<string, number>
   // User info (conditional on privacy settings)

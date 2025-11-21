@@ -141,7 +141,7 @@ export function PublicCycleView({
             </h2>
             <MuscleRadarChart
               targetData={data.targetVolumeDistribution || {}}
-              actualData={data.volumeByMuscleGroup}
+              actualData={data.setsByMuscleGroup || data.volumeByMuscleGroup}
               comparisonMode="target"
               loading={false}
               maxMuscles={8}

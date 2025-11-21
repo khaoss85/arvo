@@ -43,6 +43,7 @@ export default async function PublicCycleSharePage({
     totalSets: entityData.total_sets,
     totalDurationSeconds: entityData.total_duration_seconds || 0,
     volumeByMuscleGroup: (entityData.volume_by_muscle_group as Record<string, number>) || {},
+    setsByMuscleGroup: (entityData.sets_by_muscle_group as Record<string, number>) || (entityData.volume_by_muscle_group as Record<string, number>) || {},
     splitType: getSplitDisplayName(entityData.split_type, locale as 'en' | 'it') || undefined,
     targetVolumeDistribution: (entityData.target_volume_distribution as Record<string, number>) || undefined,
     userName: userInfo?.name || undefined,
