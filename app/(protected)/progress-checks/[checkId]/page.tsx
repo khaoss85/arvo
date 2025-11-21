@@ -31,6 +31,44 @@ export default async function ProgressCheckDetailPage({
 
   const check = data as unknown as ProgressCheckWithDetails
 
+  // Refresh signed URLs for photos (server-side)
+  if (check.photos && check.photos.length > 0) {
+    const refreshedPhotos = await Promise.all(
+      check.photos.map(async (photo) => {
+        try {
+          // Extract file path from existing URL
+          const url = new URL(photo.photo_url)
+          const pathMatch = url.pathname.match(/\/storage\/v1\/object\/(sign|public)\/progress-photos\/(.+)/)
+
+          if (!pathMatch || !pathMatch[2]) {
+            return photo
+          }
+
+          const filePath = pathMatch[2]
+
+          // Generate new signed URL with server client
+          const { data: urlData, error: urlError } = await supabase.storage
+            .from('progress-photos')
+            .createSignedUrl(filePath, 86400) // 24 hours
+
+          if (urlError || !urlData) {
+            console.error('Failed to refresh signed URL:', urlError)
+            return photo
+          }
+
+          return {
+            ...photo,
+            photo_url: urlData.signedUrl,
+          }
+        } catch (error) {
+          console.error('Error refreshing photo URL:', error)
+          return photo
+        }
+      })
+    )
+    check.photos = refreshedPhotos
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <ProgressCheckDetail check={check} userId={user.id} />
