@@ -196,7 +196,7 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
             totalSets: cycleStats.currentStats.totalSets,
           }}
           comparison={cycleStats.comparison}
-          volumeByMuscleGroup={cycleStats.currentStats.volumeByMuscleGroup}
+          volumeByMuscleGroup={cycleStats.currentStats.setsByMuscleGroup || cycleStats.currentStats.volumeByMuscleGroup}
           previousVolumeByMuscleGroup={cycleStats.previousVolumeByMuscleGroup}
           onContinue={handleContinue}
           onAdaptSplit={handleAdaptSplit}

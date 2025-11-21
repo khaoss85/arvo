@@ -323,7 +323,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
               <div style={{ scrollSnapAlign: 'center' }}>
                 <MuscleDistributionCard
                   targetData={cycleStats.targetVolumeDistribution}
-                  actualData={cycleStats.currentStats.volumeByMuscleGroup}
+                  actualData={cycleStats.currentStats.setsByMuscleGroup || cycleStats.currentStats.volumeByMuscleGroup}
                   stats={cycleStats.currentStats}
                   comparison={cycleStats.comparison}
                   previousCycleData={cycleStats.previousVolumeByMuscleGroup || undefined}

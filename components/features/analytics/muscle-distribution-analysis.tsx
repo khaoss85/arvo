@@ -278,13 +278,13 @@ export function MuscleDistributionAnalysis({
         </h3>
         <MuscleRadarChart
           targetData={comparisonMode === 'dual-historical' ? {} : currentCycleStats.targetVolumeDistribution}
-          actualData={comparisonMode === 'dual-historical' && cycleA ? cycleA.volumeByMuscleGroup : currentCycleStats.volumeByMuscleGroup}
+          actualData={comparisonMode === 'dual-historical' && cycleA ? (cycleA.setsByMuscleGroup || cycleA.volumeByMuscleGroup) : (currentCycleStats.setsByMuscleGroup || currentCycleStats.volumeByMuscleGroup)}
           previousData={
             comparisonMode === 'dual-historical' && cycleB
-              ? cycleB.volumeByMuscleGroup
+              ? (cycleB.setsByMuscleGroup || cycleB.volumeByMuscleGroup)
               : comparisonMode === 'previous' && selectedCycle
-              ? selectedCycle.volumeByMuscleGroup
-              : previousCycle?.volumeByMuscleGroup
+              ? (selectedCycle.setsByMuscleGroup || selectedCycle.volumeByMuscleGroup)
+              : (previousCycle?.setsByMuscleGroup || previousCycle?.volumeByMuscleGroup)
           }
           comparisonMode={comparisonMode === 'dual-historical' ? 'previous' : comparisonMode}
           loading={loading}
