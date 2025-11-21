@@ -535,7 +535,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
       {status === 'completed' && completedWorkout && (
         <div className="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex justify-end">
           <ShareButton
-            shareType="cycle"
+            shareType="workout"
             entityId={completedWorkout.id}
             variant="ghost"
             size="sm"
