@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      body_measurements: {
+        Row: {
+          check_id: string
+          created_at: string
+          id: string
+          measurement_type: string
+          unit: string
+          value: number
+        }
+        Insert: {
+          check_id: string
+          created_at?: string
+          id?: string
+          measurement_type: string
+          unit?: string
+          value: number
+        }
+        Update: {
+          check_id?: string
+          created_at?: string
+          id?: string
+          measurement_type?: string
+          unit?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "progress_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caloric_phase_history: {
         Row: {
           avg_weight_change: number | null
@@ -190,6 +225,80 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_checks: {
+        Row: {
+          created_at: string
+          cycle_day: number | null
+          cycle_number: number | null
+          id: string
+          is_milestone: boolean
+          notes: string | null
+          taken_at: string
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          cycle_day?: number | null
+          cycle_number?: number | null
+          id?: string
+          is_milestone?: boolean
+          notes?: string | null
+          taken_at?: string
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          cycle_day?: number | null
+          cycle_number?: number | null
+          id?: string
+          is_milestone?: boolean
+          notes?: string | null
+          taken_at?: string
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      progress_photos: {
+        Row: {
+          check_id: string
+          created_at: string
+          id: string
+          photo_order: number
+          photo_type: string
+          photo_url: string
+        }
+        Insert: {
+          check_id: string
+          created_at?: string
+          id?: string
+          photo_order?: number
+          photo_type: string
+          photo_url: string
+        }
+        Update: {
+          check_id?: string
+          created_at?: string
+          id?: string
+          photo_order?: number
+          photo_type?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_photos_check_id_fkey"
+            columns: ["check_id"]
+            isOneToOne: false
+            referencedRelation: "progress_checks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sets_log: {
         Row: {
           created_at: string | null
@@ -260,6 +369,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      share_links: {
+        Row: {
+          created_at: string | null
+          entity_id: string
+          expires_at: string | null
+          id: string
+          privacy_settings: Json | null
+          share_token: string
+          share_type: string
+          updated_at: string | null
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id: string
+          expires_at?: string | null
+          id?: string
+          privacy_settings?: Json | null
+          share_token: string
+          share_type: string
+          updated_at?: string | null
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string
+          expires_at?: string | null
+          id?: string
+          privacy_settings?: Json | null
+          share_token?: string
+          share_type?: string
+          updated_at?: string | null
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
       }
       split_modifications: {
         Row: {
@@ -960,6 +1108,7 @@ export type Database = {
           duration_seconds: number | null
           exercises: Json[] | null
           id: string
+          learned_target_weights: Json | null
           mental_readiness_overall: number | null
           notes: string | null
           planned_at: string | null
@@ -987,6 +1136,7 @@ export type Database = {
           duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          learned_target_weights?: Json | null
           mental_readiness_overall?: number | null
           notes?: string | null
           planned_at?: string | null
@@ -1014,6 +1164,7 @@ export type Database = {
           duration_seconds?: number | null
           exercises?: Json[] | null
           id?: string
+          learned_target_weights?: Json | null
           mental_readiness_overall?: number | null
           notes?: string | null
           planned_at?: string | null
@@ -1073,6 +1224,7 @@ export type Database = {
         Args: { p_event_type: string; p_hours_ago?: number; p_user_id: string }
         Returns: boolean
       }
+      cleanup_expired_share_links: { Args: never; Returns: undefined }
       cleanup_old_generations: { Args: never; Returns: undefined }
       complete_cycle: {
         Args: {
@@ -1176,6 +1328,10 @@ export type Database = {
           user_id: string
           week_number: number
         }[]
+      }
+      increment_share_view_count: {
+        Args: { token: string }
+        Returns: undefined
       }
       is_current_user_admin: { Args: never; Returns: boolean }
       refresh_all_queue_positions: { Args: never; Returns: undefined }

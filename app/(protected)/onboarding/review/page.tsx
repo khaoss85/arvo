@@ -15,6 +15,7 @@ import { useAuthStore } from '@/lib/stores/auth.store'
 import { estimateExperience, getExperienceLevelDescription, identifyLiftType, type ExperienceEstimate } from '@/lib/utils/experience-calculator'
 import { getEquipmentLabel } from '@/lib/constants/equipment-taxonomy'
 import { MedicalDisclaimerModal } from '@/components/features/legal/medical-disclaimer-modal'
+import { getActiveSplitPlanAction } from '@/app/actions/split-actions'
 
 // Standard lifts for badge identification
 const STANDARD_LIFTS = ['bench_press', 'squat', 'deadlift', 'overhead_press']
@@ -125,8 +126,51 @@ export default function ReviewPage() {
     setShowMedicalDisclaimer(false)
   }
 
-  const handleGenerationComplete = () => {
-    // Clear onboarding state and redirect
+  const handleGenerationComplete = async (data: any) => {
+    if (!user?.id) {
+      setError('User not found')
+      return
+    }
+
+    const splitPlanId = data?.splitPlanId
+    if (!splitPlanId) {
+      console.warn('[ReviewPage] Split plan ID missing in completion event, redirecting anyway')
+      reset()
+      router.push('/dashboard')
+      return
+    }
+
+    console.log(`[ReviewPage] Generation complete, verifying split ${splitPlanId} is visible in DB...`)
+
+    // Polling to verify split is visible in DB before redirect
+    // This prevents race condition where dashboard loads before split is committed
+    const maxRetries = 10
+    const retryDelay = 500 // ms
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const result = await getActiveSplitPlanAction(user.id)
+
+        if (result.success && result.data?.id === splitPlanId) {
+          console.log(`[ReviewPage] Split verified in DB after ${attempt} attempt(s), redirecting...`)
+          reset()
+          router.push('/dashboard')
+          return
+        }
+
+        console.log(`[ReviewPage] Attempt ${attempt}/${maxRetries}: Split not yet visible, retrying...`)
+      } catch (error) {
+        console.error(`[ReviewPage] Error verifying split (attempt ${attempt}):`, error)
+      }
+
+      // Wait before retry (except on last attempt)
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+      }
+    }
+
+    // Timeout - redirect anyway to avoid blocking user
+    console.warn(`[ReviewPage] Timeout waiting for split to be visible (${maxRetries * retryDelay}ms), redirecting anyway`)
     reset()
     router.push('/dashboard')
   }
