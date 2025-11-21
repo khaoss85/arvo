@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getPublicShareDataAction } from '@/app/actions/share-actions'
 import { PublicWorkoutView } from '@/components/features/sharing/public-workout-view'
 import type { WorkoutShareData, SharePrivacySettings } from '@/lib/types/share.types'
+import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 
 interface PublicWorkoutSharePageProps {
   params: { token: string }
@@ -33,54 +34,67 @@ export default async function PublicWorkoutSharePage({
     notFound()
   }
 
-  // Calculate total volume from exercises
+  // Calculate total volume from exercises (handle real DB structure)
   let totalVolume = 0
   let totalSets = 0
-  const exercises: Array<{ name: string; sets: number; reps?: number; weight?: number }> = []
+  const exercises: Array<{ name: string; sets: number; reps?: number; weight?: number; volume?: number }> = []
+  const volumeByMuscleGroup: Record<string, number> = {}
 
   if (entityData.exercises && Array.isArray(entityData.exercises)) {
-    // Group exercises by name and aggregate
-    const exerciseMap = new Map<string, { sets: number; totalReps: number; totalWeight: number; count: number }>()
-
     for (const ex of entityData.exercises) {
-      const name = ex.exercise_name || 'Unknown Exercise'
-      const weight = ex.weight || 0
-      const reps = ex.reps || 0
+      const name = ex.exerciseName || 'Unknown Exercise'
+      const completedSets = ex.completedSets || []
 
-      // Add to total volume
-      totalVolume += weight * reps
-      totalSets += 1
+      if (completedSets.length === 0) continue
 
-      // Aggregate by exercise name
-      if (!exerciseMap.has(name)) {
-        exerciseMap.set(name, { sets: 0, totalReps: 0, totalWeight: 0, count: 0 })
+      // Calculate aggregate stats for this exercise
+      let exerciseVolume = 0
+      let totalReps = 0
+      let totalWeight = 0
+      const workingSets = completedSets.filter((set: any) => !set.isWarmup && set.weight > 0)
+
+      for (const set of workingSets) {
+        const weight = set.weight || 0
+        const reps = set.reps || 0
+        const setVolume = weight * reps
+
+        exerciseVolume += setVolume
+        totalReps += reps
+        totalWeight += weight
       }
-      const agg = exerciseMap.get(name)!
-      agg.sets += 1
-      agg.totalReps += reps
-      agg.totalWeight += weight
-      agg.count += 1
-    }
 
-    // Convert to exercise array
-    for (const [name, agg] of Array.from(exerciseMap.entries())) {
+      totalVolume += exerciseVolume
+      totalSets += workingSets.length
+
+      // Add to exercises array
+      const avgWeight = workingSets.length > 0 ? Math.round(totalWeight / workingSets.length) : 0
+      const avgReps = workingSets.length > 0 ? Math.round(totalReps / workingSets.length) : 0
+
       exercises.push({
         name,
-        sets: agg.sets,
-        reps: Math.round(agg.totalReps / agg.count),
-        weight: Math.round(agg.totalWeight / agg.count)
+        sets: workingSets.length,
+        reps: avgReps,
+        weight: avgWeight,
+        volume: exerciseVolume
       })
+
+      // Calculate muscle group volumes
+      const muscleGroups = extractMuscleGroupsFromExercise(name)
+      for (const muscleGroup of muscleGroups.primary) {
+        volumeByMuscleGroup[muscleGroup] = (volumeByMuscleGroup[muscleGroup] || 0) + exerciseVolume
+      }
     }
   }
 
   // Transform entity data to WorkoutShareData format
   const workoutData: WorkoutShareData = {
     workoutDate: entityData.created_at || new Date().toISOString(),
-    splitName: entityData.split_name || undefined,
+    splitName: entityData.split_type || undefined,
     totalVolume: Math.round(totalVolume),
     totalSets,
     durationSeconds: entityData.duration_seconds || 0,
     exercises: (privacySettings as SharePrivacySettings).showExercises ? exercises : undefined,
+    volumeByMuscleGroup: Object.keys(volumeByMuscleGroup).length > 0 ? volumeByMuscleGroup : undefined,
     notes: entityData.notes || undefined,
     userName: userInfo?.name || undefined,
     userPhoto: userInfo?.photo || undefined
@@ -121,11 +135,17 @@ export async function generateMetadata({
     ? userInfo.name
     : (locale === 'it' ? 'Qualcuno' : 'Someone')
 
-  // Calculate total volume for metadata
-  let totalVolume = 0
-  if (entityData.exercises && Array.isArray(entityData.exercises)) {
+  // Calculate total volume for metadata (use DB total_volume if available, otherwise calculate)
+  let totalVolume = entityData.total_volume ? parseFloat(entityData.total_volume) : 0
+
+  if (totalVolume === 0 && entityData.exercises && Array.isArray(entityData.exercises)) {
     for (const ex of entityData.exercises) {
-      totalVolume += (ex.weight || 0) * (ex.reps || 0)
+      const completedSets = ex.completedSets || []
+      for (const set of completedSets) {
+        if (!set.isWarmup && set.weight > 0) {
+          totalVolume += (set.weight || 0) * (set.reps || 0)
+        }
+      }
     }
   }
 

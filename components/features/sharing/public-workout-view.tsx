@@ -4,6 +4,7 @@ import { Activity, Calendar, Timer, Dumbbell, TrendingUp, Share2, CheckCircle } 
 import { formatDistanceToNow } from 'date-fns'
 import { it, enUS } from 'date-fns/locale'
 import type { WorkoutShareData, SharePrivacySettings } from '@/lib/types/share.types'
+import { MuscleRadarChart } from '@/components/features/analytics/muscle-radar-chart'
 
 interface PublicWorkoutViewProps {
   data: WorkoutShareData
@@ -146,6 +147,24 @@ export function PublicWorkoutView({
           </div>
         )}
 
+        {/* Muscle Group Distribution */}
+        {privacySettings.showStats && data.volumeByMuscleGroup && Object.keys(data.volumeByMuscleGroup).length > 0 && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-blue-500" />
+              {locale === 'it' ? 'Distribuzione Muscolare' : 'Muscle Distribution'}
+            </h2>
+            <div className="flex justify-center">
+              <MuscleRadarChart
+                actualData={data.volumeByMuscleGroup}
+                targetData={{}}
+                comparisonMode="target"
+                maxMuscles={6}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Exercises List */}
         {privacySettings.showExercises && data.exercises && data.exercises.length > 0 && (
           <div className="bg-white dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -165,7 +184,7 @@ export function PublicWorkoutView({
                         {index + 1}
                       </span>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium text-gray-900 dark:text-white">
                         {exercise.name}
                       </p>
@@ -179,6 +198,16 @@ export function PublicWorkoutView({
                         )}
                       </p>
                     </div>
+                    {exercise.volume && exercise.volume > 0 && (
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                          {new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-US').format(exercise.volume)}kg
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {locale === 'it' ? 'volume' : 'volume'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

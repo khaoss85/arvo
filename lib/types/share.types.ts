@@ -151,7 +151,9 @@ export interface WorkoutShareData {
     sets: number
     reps?: number
     weight?: number
+    volume?: number
   }>
+  volumeByMuscleGroup?: Record<string, number>
   notes?: string
   // User info (conditional on privacy settings)
   userName?: string
