@@ -79,10 +79,10 @@ export default async function PublicWorkoutSharePage({
         volume: exerciseVolume
       })
 
-      // Calculate muscle group volumes
+      // Calculate muscle group sets (radar chart expects sets count, not volume)
       const muscleGroups = extractMuscleGroupsFromExercise(name)
       for (const muscleGroup of muscleGroups.primary) {
-        volumeByMuscleGroup[muscleGroup] = (volumeByMuscleGroup[muscleGroup] || 0) + exerciseVolume
+        volumeByMuscleGroup[muscleGroup] = (volumeByMuscleGroup[muscleGroup] || 0) + workingSets.length
       }
     }
   }
