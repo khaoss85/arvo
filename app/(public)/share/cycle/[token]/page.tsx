@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getPublicShareDataAction } from '@/app/actions/share-actions'
 import { PublicCycleView } from '@/components/features/sharing/public-cycle-view'
 import type { CycleShareData, SharePrivacySettings } from '@/lib/types/share.types'
+import { getSplitDisplayName } from '@/lib/utils/split-display-names'
 
 interface PublicCycleSharePageProps {
   params: { token: string }
@@ -42,7 +43,7 @@ export default async function PublicCycleSharePage({
     totalSets: entityData.total_sets,
     totalDurationSeconds: entityData.total_duration_seconds || 0,
     volumeByMuscleGroup: (entityData.volume_by_muscle_group as Record<string, number>) || {},
-    splitType: entityData.split_type || undefined,
+    splitType: getSplitDisplayName(entityData.split_type, locale as 'en' | 'it') || undefined,
     targetVolumeDistribution: (entityData.target_volume_distribution as Record<string, number>) || undefined,
     userName: userInfo?.name || undefined,
     userPhoto: userInfo?.photo || undefined,

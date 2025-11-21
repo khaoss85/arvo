@@ -276,8 +276,11 @@ export async function getPublicShareDataAction(token: string) {
       }
     }
 
-    // Increment view count (fire and forget)
-    supabase.rpc('increment_share_view_count', { token }).then()
+    // Increment view count and wait for it to complete
+    await supabase.rpc('increment_share_view_count', { token })
+
+    // Increment locally for accurate display
+    const updatedViewCount = (shareLink.view_count || 0) + 1
 
     // Fetch actual data based on share type
     let entityData: any = null
@@ -342,7 +345,7 @@ export async function getPublicShareDataAction(token: string) {
       data: {
         shareType: shareLink.share_type,
         createdAt: shareLink.created_at,
-        viewCount: shareLink.view_count,
+        viewCount: updatedViewCount,
         privacySettings,
         entityData,
         userInfo

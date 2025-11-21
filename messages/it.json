@@ -4509,5 +4509,13 @@
         "description": "Vedi quali muscoli stai allenando in un grafico semplice. Tutto automatico."
       }
     }
+  },
+  "splitTypes": {
+    "push_pull_legs": "Push/Pull/Gambe",
+    "upper_lower": "Upper/Lower",
+    "full_body": "Full Body",
+    "bro_split": "Bro Split",
+    "weak_point_focus": "Focus Punti Deboli",
+    "custom": "Personalizzato"
   }
 }

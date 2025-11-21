@@ -4,6 +4,7 @@ import { getPublicShareDataAction } from '@/app/actions/share-actions'
 import { PublicWorkoutView } from '@/components/features/sharing/public-workout-view'
 import type { WorkoutShareData, SharePrivacySettings } from '@/lib/types/share.types'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
+import { getSplitDisplayName } from '@/lib/utils/split-display-names'
 
 interface PublicWorkoutSharePageProps {
   params: { token: string }
@@ -89,7 +90,7 @@ export default async function PublicWorkoutSharePage({
   // Transform entity data to WorkoutShareData format
   const workoutData: WorkoutShareData = {
     workoutDate: entityData.created_at || new Date().toISOString(),
-    splitName: entityData.split_type || undefined,
+    splitName: getSplitDisplayName(entityData.split_type, locale as 'en' | 'it') || undefined,
     totalVolume: Math.round(totalVolume),
     totalSets,
     durationSeconds: entityData.duration_seconds || 0,
