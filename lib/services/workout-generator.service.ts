@@ -517,6 +517,28 @@ export class WorkoutGeneratorService {
       // Initialize audio script generator
       const audioGenerator = new AudioScriptGeneratorAgent(supabase)
 
+      // Fetch user profile for periodization context
+      const userProfile = await UserProfileService.getByUserIdServer(scriptInput.userId)
+
+      // Fetch workout details for cycle context
+      const { data: workoutData } = await supabase
+        .from('workouts')
+        .select('cycle_day, split_plan_id')
+        .eq('id', workoutId)
+        .single()
+
+      // Fetch split plan for total cycle days
+      let totalCycleDays: number | undefined
+      if (workoutData?.split_plan_id) {
+        const { data: splitPlanData } = await supabase
+          .from('split_plans')
+          .select('cycle_days')
+          .eq('id', workoutData.split_plan_id)
+          .single()
+
+        totalCycleDays = splitPlanData?.cycle_days
+      }
+
       // Extract common rest periods from exercises
       const restPeriods = Array.from(
         new Set(
@@ -526,7 +548,7 @@ export class WorkoutGeneratorService {
         )
       ).sort((a, b) => a - b)
 
-      // Prepare input for audio script generator
+      // Prepare input for audio script generator with contextual data
       const audioInput = {
         workoutRationale: scriptInput.workoutRationale, // Overall workout focus and exercise sequencing
         exercises: scriptInput.exercises.map((ex) => ({
@@ -544,6 +566,12 @@ export class WorkoutGeneratorService {
         userName: scriptInput.userName,
         experienceYears: scriptInput.experienceYears,
         commonRestPeriods: restPeriods.length > 0 ? restPeriods : [60, 90, 120],
+        // Contextual data for storytelling and personalization
+        cycleDay: workoutData?.cycle_day || userProfile?.current_cycle_day || undefined,
+        totalCycleDays: totalCycleDays || (userProfile?.active_split_plan_id ? 8 : undefined), // Default 8 if unknown
+        mesocycleWeek: userProfile?.current_mesocycle_week || undefined,
+        mesocyclePhase: userProfile?.mesocycle_phase || undefined,
+        userWeakPoints: userProfile?.weak_points || [],
       }
 
       // Generate scripts using AI

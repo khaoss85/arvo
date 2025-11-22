@@ -288,12 +288,24 @@ export function ExerciseSubstitution({
       warmupSets: currentExercise.warmupSets,
       setGuidance: currentExercise.setGuidance,
       // Track substitution for workout recap
-      originalExerciseName: currentExercise.exerciseName,
+      // Preserve the first original exercise name if this is a chain of substitutions
+      originalExerciseName: currentExercise.originalExerciseName || currentExercise.exerciseName,
       substitutionReason: 'user_preference', // Default reason, could be made configurable in future
     }
 
-    // Create/update memory for substitution pattern
-    try {
+    // Check if user is reverting to the original exercise
+    // If so, clear substitution tracking (no need to show "Exercise A → Exercise A")
+    const isRevertingToOriginal = currentExercise.originalExerciseName &&
+                                   selectedSuggestion.exercise.name === currentExercise.originalExerciseName
+
+    if (isRevertingToOriginal) {
+      newExercise.originalExerciseName = undefined
+      newExercise.substitutionReason = undefined
+    }
+
+    // Create/update memory for substitution pattern (skip if reverting to original)
+    if (!isRevertingToOriginal) {
+      try {
       const originalExerciseName = currentExercise.exerciseName
       const replacementExerciseName = selectedSuggestion.exercise.name
 
@@ -329,9 +341,10 @@ export function ExerciseSubstitution({
         await memoryService.boostConfidence(existingMemory.id, 0.15)
         console.log('[ExerciseSubstitution] Boosted confidence for existing substitution pattern')
       }
-    } catch (error) {
-      console.error('[ExerciseSubstitution] Failed to create/update memory:', error)
-      // Don't block the substitution if memory creation fails
+      } catch (error) {
+        console.error('[ExerciseSubstitution] Failed to create/update memory:', error)
+        // Don't block the substitution if memory creation fails
+      }
     }
 
     substituteExercise(exerciseIndex, newExercise)

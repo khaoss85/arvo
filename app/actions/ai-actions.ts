@@ -1026,27 +1026,30 @@ export async function suggestExerciseSubstitutionAction(
   try {
     const supabase = await getSupabaseServerClient()
 
-    // Load user profile for context (approach, weak points, equipment, etc.)
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
+    // Load user profile, insights, and memories in parallel for faster response
+    const [
+      { data: profile, error: profileError },
+      { data: insights },
+      { data: memories }
+    ] = await Promise.all([
+      supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single(),
+      (supabase as any).rpc('get_active_insights', {
+        p_user_id: userId,
+        p_min_relevance: 0.3
+      }),
+      (supabase as any).rpc('get_active_memories', {
+        p_user_id: userId,
+        p_min_confidence: 0.5
+      })
+    ])
 
     if (profileError || !profile) {
       throw new Error('Failed to load user profile')
     }
-
-    // Load active insights and memories
-    const { data: insights } = await (supabase as any).rpc('get_active_insights', {
-      p_user_id: userId,
-      p_min_relevance: 0.3
-    })
-
-    const { data: memories } = await (supabase as any).rpc('get_active_memories', {
-      p_user_id: userId,
-      p_min_confidence: 0.5
-    })
 
     // Enrich input with user profile data + insights + memories
     const enrichedInput: SubstitutionInput = {
@@ -1077,7 +1080,8 @@ export async function suggestExerciseSubstitutionAction(
     const targetLanguage = await getUserLanguage(userId)
 
     // Create agent instance with server Supabase client
-    const agent = new ExerciseSubstitutionAgent(supabase)
+    // Using 'none' reasoning for ultra-fast responses (~1s vs ~5s)
+    const agent = new ExerciseSubstitutionAgent(supabase, 'none')
 
     // Generate substitution suggestions
     const result = await agent.suggestSubstitutions(enrichedInput, targetLanguage)

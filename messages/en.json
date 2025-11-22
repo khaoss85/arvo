@@ -1226,7 +1226,8 @@
         "modifications": {
           "title": "Workout Modifications",
           "setsSkipped": "{count, plural, one {{count} set skipped} other {{count} sets skipped}} ({warmup} warmup, {working} working)",
-          "exercisesSubstituted": "{count, plural, one {{count} exercise substituted} other {{count} exercises substituted}}"
+          "exercisesSubstituted": "{count, plural, one {{count} exercise substituted} other {{count} exercises substituted}}",
+          "reason": "Reason: {reason}"
         },
         "buttons": {
           "viewProgress": "View Progress"
@@ -1291,6 +1292,13 @@
         "errors": {
           "failedToLoad": "Failed to load suggestions",
           "unexpectedError": "An unexpected error occurred"
+        },
+        "reasons": {
+          "user_preference": "User preference",
+          "equipment_unavailable": "Equipment unavailable",
+          "injury": "Injury or pain",
+          "fatigue": "Fatigue management",
+          "not_specified": "Not specified"
         }
       }
     },

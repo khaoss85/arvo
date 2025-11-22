@@ -8,6 +8,7 @@ import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import type { Workout } from '@/lib/types/schemas'
 import { formatDuration } from '@/lib/utils/workout-helpers'
 import { getExerciseName } from '@/lib/utils/exercise-helpers'
+import { getSubstitutionReasonKey } from '@/lib/types/substitution'
 
 interface WorkoutRecapProps {
   workout: Workout
@@ -165,12 +166,32 @@ export function WorkoutRecap({ workout, totalVolume, userId, modifications }: Wo
                     </div>
                   )}
                   {hasSubstitutions && (
-                    <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
-                      <span className="text-base">🔄</span>
-                      <span>
-                        {t('modifications.exercisesSubstituted', { count: modifications.exercisesSubstituted })}
-                      </span>
-                    </div>
+                    <>
+                      <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
+                        <span className="text-base">🔄</span>
+                        <span>
+                          {t('modifications.exercisesSubstituted', { count: modifications.exercisesSubstituted })}
+                        </span>
+                      </div>
+                      {modifications.substitutions && modifications.substitutions.length > 0 && (
+                        <div className="mt-3 pl-6 space-y-2">
+                          {modifications.substitutions.map((sub, idx) => (
+                            <div key={idx} className="text-sm text-amber-700 dark:text-amber-300">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{sub.originalExercise}</span>
+                                <span>→</span>
+                                <span className="font-medium">{sub.newExercise}</span>
+                              </div>
+                              {sub.reason && (
+                                <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5 italic">
+                                  {t(getSubstitutionReasonKey(sub.reason))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
