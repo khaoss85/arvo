@@ -256,6 +256,7 @@ export class ExerciseDBService {
       'low bar squat': 'barbell squat',
       'high-bar squat': 'barbell squat',
       'low-bar squat': 'barbell squat',
+      'bulgarian split squat': 'dumbbell single leg split squat',
 
       // Bench press variations
       'flat bench press': 'barbell bench press',
