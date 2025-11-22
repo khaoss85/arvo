@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOpenAIClient } from '@/lib/ai/client'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getUserLanguage } from '@/lib/utils/get-user-language'
+import type { Locale } from '@/i18n'
 
 interface SuggestionRequest {
   step: string
@@ -72,6 +74,17 @@ Be supportive and educational.
   `.trim()
 }
 
+/**
+ * Get language instruction for OpenAI prompt
+ * Same pattern as BaseAgent.getLanguageInstruction()
+ */
+function getLanguageInstruction(targetLanguage: Locale): string {
+  if (targetLanguage === 'it') {
+    return '\n\n🇮🇹 LANGUAGE INSTRUCTION: You MUST respond in Italian (italiano). Use natural, conversational Italian suitable for a gym/fitness environment.'
+  }
+  return '\n\n🇬🇧 LANGUAGE INSTRUCTION: Respond in English.'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await getSupabaseServerClient()
@@ -81,6 +94,9 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Get user's preferred language
+    const targetLanguage = await getUserLanguage(user.id)
 
     const body: SuggestionRequest = await request.json()
     const { step, userData } = body
@@ -94,6 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const systemPrompt = promptGenerator(userData)
+    const languageInstruction = getLanguageInstruction(targetLanguage)
 
     // Call OpenAI with lightweight model
     const openai = getOpenAIClient()
@@ -102,7 +119,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: systemPrompt
+          content: systemPrompt + languageInstruction
         },
         {
           role: 'user',
