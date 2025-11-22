@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   // Check if user has completed onboarding
   const profile = await UserProfileService.getByUserIdServer(user.id);
   if (!profile) {
-    redirect("/onboarding/approach");
+    redirect("/onboarding");
   }
 
   // Get user's workouts

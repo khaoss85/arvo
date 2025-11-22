@@ -74,7 +74,6 @@ export function RefineWorkoutPage({
   const [exercises, setExercises] = useState<Exercise[]>(workout?.exercises as unknown as Exercise[] || [])
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set())
   const [isMarkingReady, setIsMarkingReady] = useState(false)
-  const [isRegenerating, setIsRegenerating] = useState<number | null>(null)
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false)
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [customInputs, setCustomInputs] = useState<Map<number, string>>(new Map())
@@ -540,23 +539,16 @@ export function RefineWorkoutPage({
   }
 
   const handleRegenerateExercise = async (exerciseIndex: number) => {
-    setIsRegenerating(exerciseIndex)
+    // Expand the exercise card if not already expanded
+    const newExpanded = new Set(expandedExercises)
+    if (!newExpanded.has(exerciseIndex)) {
+      newExpanded.add(exerciseIndex)
+      setExpandedExercises(newExpanded)
+    }
 
-    try {
-      // TODO: Call AI to regenerate single exercise
-      // const newExercise = await regenerateSingleExercise(workout.id, exerciseIndex)
-      // const newExercises = [...exercises]
-      // newExercises[exerciseIndex] = newExercise
-      // setExercises(newExercises)
-
-      // Placeholder: simulate regeneration
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Regenerate exercise', exerciseIndex)
-    } catch (error) {
-      console.error('Failed to regenerate exercise:', error)
-      alert(t('errors.failedToRegenerate'))
-    } finally {
-      setIsRegenerating(null)
+    // Load alternatives (which will show AI-suggested alternatives)
+    if (!alternativesLoading.get(exerciseIndex)) {
+      loadAlternatives(exerciseIndex)
     }
   }
 
@@ -1153,10 +1145,10 @@ export function RefineWorkoutPage({
                   variant="outline"
                   size="sm"
                   onClick={() => handleRegenerateExercise(index)}
-                  disabled={isRegenerating === index}
+                  disabled={alternativesLoading.get(index)}
                 >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${isRegenerating === index ? 'animate-spin' : ''}`} />
-                  {isRegenerating === index ? t('buttons.regenerating') : t('buttons.regenerate')}
+                  <RefreshCw className={`w-4 h-4 mr-2 ${alternativesLoading.get(index) ? 'animate-spin' : ''}`} />
+                  {alternativesLoading.get(index) ? t('buttons.regenerating') : t('buttons.regenerate')}
                 </Button>
               </div>
                     </div>
