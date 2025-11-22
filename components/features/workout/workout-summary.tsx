@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Sparkles, TrendingUp, Target, Heart } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
+import { useUIStore } from '@/lib/stores/ui.store'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
@@ -32,6 +33,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
   const t = useTranslations('workout.summary')
   const tMentalReadiness = useTranslations('workout.execution.mentalReadiness')
   const { reset, startedAt, exercises, workout, setOverallMentalReadiness, overallMentalReadiness } = useWorkoutExecutionStore()
+  const { addToast } = useUIStore()
   const [stats, setStats] = useState<{
     duration: number
     totalVolume: number
@@ -94,7 +96,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
   const handleCompleteSummary = async () => {
     if (!mentalReadinessSelected || !stats) {
-      alert(t('mentalReadinessRequired'))
+      addToast(t('mentalReadinessRequired'), 'warning')
       return
     }
 
@@ -156,8 +158,11 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         console.warn('[WorkoutSummary] Completion completed with warnings:', result.warnings)
         // Show warnings in a non-blocking way
         setTimeout(() => {
-          alert(`⚠️ ${t('warning')}: ${result.warnings.join('\n')}`)
+          addToast(`⚠️ ${t('warning')}: ${result.warnings.join(', ')}`, 'warning')
         }, 500)
+      } else {
+        // Show success toast
+        addToast(t('workoutCompleted') || 'Workout completed successfully!', 'success')
       }
 
       // Send workout complete email (async, non-blocking)
@@ -194,16 +199,18 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
 
       // Provide more specific error message
       const specificError = errorMessage.includes('not found')
-        ? t('errors.workoutNotFound')
+        ? t('errors.workoutNotFound') || 'Workout not found'
         : errorMessage.includes('permission') || errorMessage.includes('denied')
-        ? t('errors.databasePermission')
+        ? t('errors.databasePermission') || 'Permission denied'
         : errorMessage.includes('split plan') || errorMessage.includes('cycle')
-        ? t('errors.failedToAdvanceCycle')
+        ? t('errors.failedToAdvanceCycle') || 'Failed to advance cycle'
         : errorMessage.includes('network') || errorMessage.includes('fetch')
-        ? t('errors.networkError')
-        : `${t('errors.failedToCompleteWorkout')}: ${errorMessage}`
+        ? t('errors.networkError') || 'Network error'
+        : errorMessage.includes('not started') || errorMessage.includes('ready')
+        ? 'Workout sync error. Please refresh the page and try again.'
+        : `${t('errors.failedToCompleteWorkout') || 'Failed to complete workout'}: ${errorMessage}`
 
-      alert(specificError)
+      addToast(specificError, 'error')
       setCompletingWorkout(false)
     }
   }

@@ -213,10 +213,29 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           isActive: true
         })
 
-        // Mark workout as started in database (fire-and-forget)
-        WorkoutService.markAsStarted(workout.id).catch(err => {
-          console.error('Failed to mark workout as started:', err)
-        })
+        // Mark workout as started in database with retry logic
+        try {
+          await WorkoutService.markAsStarted(workout.id)
+        } catch (err) {
+          console.error('[Store] Failed to mark workout as started:', err)
+
+          // Import UI store dynamically to avoid circular dependencies
+          const { useUIStore } = await import('./ui.store')
+          useUIStore.getState().addToast(
+            'Workout started but sync failed. Your progress is saved locally.',
+            'warning'
+          )
+
+          // Retry in background after 3 seconds
+          setTimeout(async () => {
+            try {
+              await WorkoutService.markAsStarted(workout.id)
+              console.log('[Store] Successfully synced workout status after retry')
+            } catch (retryErr) {
+              console.error('[Store] Retry failed for markAsStarted:', retryErr)
+            }
+          }, 3000)
+        }
       },
 
       // Resume an interrupted workout
@@ -228,6 +247,38 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
 
         // Load completed sets from database
         const sets = await SetLogService.getByWorkoutId(workoutId)
+
+        // STATE RECOVERY: If sets exist but workout status is "ready", auto-fix to "in_progress"
+        if (sets.length > 0 && workout.status === 'ready' && !workout.started_at) {
+          console.warn('[Store] Inconsistent state detected: sets exist but workout not started. Auto-recovering...')
+
+          try {
+            // Calculate started_at from first set
+            const firstSetTime = sets.reduce((earliest, set) => {
+              const setTime = new Date(set.created_at!)
+              return setTime < earliest ? setTime : earliest
+            }, new Date(sets[0].created_at!))
+
+            // Update workout to in_progress with calculated started_at
+            await WorkoutService.markAsStarted(workout.id, firstSetTime.toISOString())
+
+            // Update local workout object
+            workout.status = 'in_progress'
+            workout.started_at = firstSetTime.toISOString()
+
+            // Import UI store dynamically
+            const { useUIStore } = await import('./ui.store')
+            useUIStore.getState().addToast(
+              'Workout state recovered. You can continue where you left off.',
+              'success'
+            )
+
+            console.log('[Store] State recovery successful. Workout marked as in_progress.')
+          } catch (err) {
+            console.error('[Store] State recovery failed:', err)
+            // Continue anyway - local state will still work
+          }
+        }
 
         // Reconstruct exercise execution state
         const exercises: ExerciseExecution[] = await Promise.all(

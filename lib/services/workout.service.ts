@@ -320,7 +320,7 @@ export class WorkoutService {
    * Mark workout as started
    * Sets started_at timestamp if not already set
    */
-  static async markAsStarted(id: string): Promise<Workout> {
+  static async markAsStarted(id: string, startedAt?: string): Promise<Workout> {
     const supabase = getSupabaseBrowserClient();
 
     // Only update if started_at is not already set
@@ -342,7 +342,7 @@ export class WorkoutService {
     const { data, error } = await supabase
       .from("workouts")
       .update({
-        started_at: new Date().toISOString(),
+        started_at: startedAt || new Date().toISOString(),
         updated_at: new Date().toISOString(),
         status: 'in_progress',
       })
