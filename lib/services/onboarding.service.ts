@@ -4,24 +4,50 @@ import type { OnboardingData } from '@/lib/types/onboarding'
 
 export class OnboardingService {
   /**
+   * Get default approach ID for beginners
+   * Uses Kuba Method - optimal for beginners due to:
+   * - Focus on technique and controlled movements
+   * - Moderate volume with intelligent recovery
+   * - Sustainable progression without advanced techniques
+   */
+  private static readonly DEFAULT_BEGINNER_APPROACH_ID = 'cbb3537b-b5e9-4287-aa56-e95c74de99e8' // Kuba Method
+
+  /**
    * Complete onboarding by creating user profile and generating first AI workout
+   * For beginners, auto-fills certain fields with sensible defaults
    */
   static async completeOnboarding(userId: string, data: OnboardingData) {
     try {
+      const isBeginner = data.experienceLevel === 'beginner'
+
+      // Auto-fill defaults for beginners
+      const approachId = isBeginner && !data.approachId
+        ? this.DEFAULT_BEGINNER_APPROACH_ID
+        : data.approachId
+
+      const weakPoints = isBeginner && (!data.weakPoints || data.weakPoints.length === 0)
+        ? []
+        : data.weakPoints
+
+      const strengthBaseline = isBeginner && !data.strengthBaseline
+        ? {}
+        : data.strengthBaseline
+
       // Create or update user profile with collected data
       await UserProfileService.upsert({
         user_id: userId,
-        approach_id: data.approachId,
-        weak_points: data.weakPoints,
+        approach_id: approachId,
+        weak_points: weakPoints,
         equipment_preferences: data.equipmentPreferences as any,
-        strength_baseline: data.strengthBaseline as any,
-        first_name: null, // Can be collected later in profile settings
+        available_equipment: data.availableEquipment || [],
+        strength_baseline: strengthBaseline as any,
+        first_name: data.firstName || null,
         gender: data.gender || null,
         age: data.age || null,
         weight: data.weight || null,
         height: data.height || null,
-        experience_years: 0, // Can be added to onboarding later
-        preferred_split: null, // Default split, can be updated later
+        experience_years: data.confirmedExperience || null,
+        preferred_split: data.splitType || null,
         active_split_plan_id: null, // No split plan yet
         current_cycle_day: null, // No active cycle yet
         cycles_completed: null, // No cycles completed yet
@@ -30,10 +56,10 @@ export class OnboardingService {
         current_mesocycle_week: null, // No mesocycle started yet
         mesocycle_phase: null, // No phase yet
         mesocycle_start_date: null, // No start date yet
-        caloric_phase: null, // No caloric phase yet
-        caloric_phase_start_date: null, // No caloric phase start date yet
+        caloric_phase: data.trainingObjective === 'maintain' ? 'maintenance' : (data.trainingObjective === 'recomp' ? null : data.trainingObjective) || null, // Store training objective as caloric phase (recomp doesn't map directly)
+        caloric_phase_start_date: data.trainingObjective ? new Date().toISOString() : null,
         caloric_intake_kcal: null, // No caloric intake specified yet
-        preferred_language: 'en', // Default to English, will be auto-detected on first app load
+        preferred_language: 'it', // Default to Italian
         audio_coaching_enabled: true, // Audio coaching enabled by default
         audio_coaching_autoplay: false, // Autoplay disabled by default
         audio_coaching_speed: 1.0 // Normal speed by default
