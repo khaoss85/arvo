@@ -162,7 +162,7 @@ Always provide 3-5 alternatives with varying equipment and difficulty.`
                   additionalProperties: false
                 }
               },
-              required: ['exercise', 'validation', 'rationale', 'swapImpact', 'similarityScore'],
+              required: ['exercise', 'validation', 'rationale', 'swapImpact', 'similarityScore', 'rationalePreview'],
               additionalProperties: false
             }
           },
