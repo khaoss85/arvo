@@ -54,7 +54,7 @@ export abstract class BaseAgent {
   protected getTimeoutForReasoning(): number {
     switch (this.reasoningEffort) {
       case 'none':
-        return 15000      // 15s - ultra-fast responses, no extended reasoning (GPT-5.1 fastest mode)
+        return 30000      // 30s - fast responses with buffer for Structured Outputs (gpt-5-mini)
       case 'low':
         return 180000     // 180s (3min) - increased for complex prompts like split planning
       case 'medium':
