@@ -118,61 +118,6 @@ Always provide 3-5 alternatives with varying equipment and difficulty.`
   }
 
   async suggestSubstitutions(input: SubstitutionInput, targetLanguage?: 'en' | 'it'): Promise<SubstitutionOutput> {
-    // JSON Schema for Structured Outputs (guarantees valid JSON, 50% faster)
-    const substitutionSchema = {
-      name: 'SubstitutionOutput',
-      schema: {
-        type: 'object' as const,
-        properties: {
-          suggestions: {
-            type: 'array' as const,
-            items: {
-              type: 'object' as const,
-              properties: {
-                exercise: {
-                  type: 'object' as const,
-                  properties: {
-                    name: { type: 'string' as const },
-                    equipmentVariant: { type: 'string' as const },
-                    sets: { type: 'number' as const },
-                    repRange: {
-                      type: 'array' as const,
-                      items: { type: 'number' as const },
-                      minItems: 2,
-                      maxItems: 2
-                    },
-                    targetWeight: { type: 'number' as const }
-                  },
-                  required: ['name', 'equipmentVariant', 'sets', 'repRange', 'targetWeight'],
-                  additionalProperties: false
-                },
-                validation: {
-                  type: 'string' as const,
-                  enum: ['approved', 'caution', 'not_recommended']
-                },
-                rationale: { type: 'string' as const },
-                swapImpact: { type: 'string' as const },
-                similarityScore: { type: 'number' as const },
-                rationalePreview: {
-                  type: 'object' as const,
-                  properties: {
-                    workoutIntegration: { type: 'string' as const }
-                  },
-                  required: ['workoutIntegration'],
-                  additionalProperties: false
-                }
-              },
-              required: ['exercise', 'validation', 'rationale', 'swapImpact', 'similarityScore', 'rationalePreview'],
-              additionalProperties: false
-            }
-          },
-          reasoning: { type: 'string' as const }
-        },
-        required: ['suggestions', 'reasoning'],
-        additionalProperties: false
-      }
-    }
-
     // Load user's training approach for context
     const approach = await this.knowledge.loadApproach(input.approachId)
     const approachContext = this.knowledge.formatContextForAI(approach, 'exercise_selection')
@@ -383,10 +328,9 @@ Return JSON format:
   "reasoning": "2-3 sentences"
 }`
 
-    // Use Structured Outputs for guaranteed valid JSON (50% faster, 70% cheaper)
-    return await this.completeWithStructuredOutput<SubstitutionOutput>(
+    // Use standard JSON mode (faster than Structured Outputs for gpt-5-mini)
+    return await this.complete<SubstitutionOutput>(
       prompt,
-      substitutionSchema,
       targetLanguage
     )
   }
