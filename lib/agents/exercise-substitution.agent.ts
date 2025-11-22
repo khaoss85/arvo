@@ -90,9 +90,11 @@ export interface SubstitutionOutput {
  * Optimized for gym use: concise rationales (max 10 words), quick decisions
  */
 export class ExerciseSubstitutionAgent extends BaseAgent {
-  constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'low' | 'medium' | 'high') {
-    super(supabaseClient, reasoningEffort)
-    // Force gpt-5-mini for Structured Outputs compatibility
+  constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high') {
+    // gpt-5-mini doesn't support 'none', map to 'minimal' instead
+    const mappedEffort = reasoningEffort === 'none' ? 'minimal' : reasoningEffort
+    super(supabaseClient, mappedEffort as any)
+    // Force gpt-5-mini for chat.completions API compatibility
     // gpt-5.1 doesn't support chat.completions API (only responses API)
     this.model = 'gpt-5-mini'
   }

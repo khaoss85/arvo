@@ -7,14 +7,14 @@ export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
   protected supabase: any
-  protected reasoningEffort: 'none' | 'low' | 'medium' | 'high' = 'low'
+  protected reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' = 'low'
   protected verbosity: 'low' | 'medium' | 'high' = 'low'
   protected model: string = process.env.OPENAI_MODEL || 'gpt-5-mini'
   protected lastResponseId?: string  // Track response ID for multi-turn CoT persistence
 
   constructor(
     supabaseClient?: any,
-    reasoningEffort?: 'none' | 'low' | 'medium' | 'high',
+    reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high',
     verbosity?: 'low' | 'medium' | 'high'
   ) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
@@ -54,7 +54,8 @@ export abstract class BaseAgent {
   protected getTimeoutForReasoning(): number {
     switch (this.reasoningEffort) {
       case 'none':
-        return 30000      // 30s - fast responses with buffer for Structured Outputs (gpt-5-mini)
+      case 'minimal':
+        return 30000      // 30s - fast responses (gpt-5.1 'none' or gpt-5-mini 'minimal')
       case 'low':
         return 180000     // 180s (3min) - increased for complex prompts like split planning
       case 'medium':
