@@ -71,7 +71,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     }
 
     // If we're still in warmup and have completed some warmup sets,
-    // check if actual performance significantly exceeds the target
+    // check if actual performance significantly differs from the target
     const completedWarmupSets = exercise.completedSets.slice(0, completedWarmupCount)
     if (completedWarmupSets.length > 0) {
       const maxWarmupWeight = Math.max(...completedWarmupSets.map(s => s.weight))
@@ -82,6 +82,32 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       if (maxWarmupWeight > targetWeight * 1.1) {
         return maxWarmupWeight
       }
+
+      // BIDIRECTIONAL ADAPTATION: If warmup performance is significantly below target,
+      // calculate progressive next step based on actual warmup trajectory
+      // This prevents jarring jumps like 5kg → 32.5kg
+      if (completedWarmupSets.length > 0 && maxWarmupWeight < targetWeight * 0.5) {
+        // Calculate progressive next step from actual warmup trajectory
+        if (completedWarmupSets.length === 1) {
+          // Only one warmup completed - suggest conservative 1.5x - 2x increase
+          const firstWeight = completedWarmupSets[0].weight
+          // Use 1.75x multiplier for smooth progression (e.g., 5kg → 8.75kg ≈ 10kg)
+          // Cap at 75% of target to leave room for final warmup step
+          const nextStep = Math.min(firstWeight * 1.75, targetWeight * 0.75)
+          return nextStep
+        } else {
+          // Multiple warmups completed - extrapolate from actual progression rate
+          const weights = completedWarmupSets.map(s => s.weight)
+          // Calculate average increment per warmup (e.g., 5kg → 10kg = +5kg/step)
+          const avgIncrement = (weights[weights.length - 1] - weights[0]) / (weights.length - 1)
+          // Project next step: last weight + average increment
+          const nextStep = weights[weights.length - 1] + avgIncrement
+
+          // Cap at target weight and ensure meaningful progression (at least 20% increase)
+          const progressiveStep = Math.max(nextStep, maxWarmupWeight * 1.2)
+          return Math.min(progressiveStep, targetWeight)
+        }
+      }
     }
 
     // Otherwise use the target weight
@@ -91,12 +117,42 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   // Initialize state based on warmup vs working set
   const getInitialWeight = useCallback(() => {
     if (currentWarmup) {
-      // Use pre-calculated weight if available and valid (not 0)
-      // Check for > 0 to handle old workouts with weight: 0 bug
+      // Check if we should use adaptive calculation instead of pre-calculated weight
+      // This happens when actual warmup performance deviates significantly from plan
+      const completedWarmupCount = Math.min(exercise.completedSets.length, remainingWarmupSets)
+      const completedWarmupSets = exercise.completedSets.slice(0, completedWarmupCount)
+      const maxWarmupWeight = completedWarmupSets.length > 0
+        ? Math.max(...completedWarmupSets.map(s => s.weight))
+        : 0
+      const targetWeight = exercise.targetWeight || 0
+      const shouldAdapt = completedWarmupSets.length > 0 && maxWarmupWeight < targetWeight * 0.5
+
+      // If adaptation needed, calculate progressive next step directly
+      if (shouldAdapt) {
+        if (completedWarmupSets.length === 1) {
+          // After first warmup: suggest 1.5x - 2x increase for smooth progression
+          const firstWeight = completedWarmupSets[0].weight
+          // Use 2x multiplier (e.g., 5kg → 10kg, 10kg → 20kg)
+          // Cap at 50% of target to stay conservative
+          const nextStep = Math.min(firstWeight * 2, targetWeight * 0.5)
+          return Math.round(nextStep * 2) / 2 // Round to nearest 0.5kg
+        } else {
+          // Multiple warmups: extrapolate from actual progression
+          const weights = completedWarmupSets.map(s => s.weight)
+          const avgIncrement = (weights[weights.length - 1] - weights[0]) / (weights.length - 1)
+          const nextStep = weights[weights.length - 1] + avgIncrement
+          // Ensure at least 20% increase, cap at target
+          const progressiveStep = Math.max(nextStep, maxWarmupWeight * 1.2)
+          return Math.round(Math.min(progressiveStep, targetWeight) * 2) / 2
+        }
+      }
+
+      // Use pre-calculated weight if available, valid, and no adaptation needed
       if (currentWarmup.weight !== undefined && currentWarmup.weight > 0) {
         return currentWarmup.weight
       }
-      // Calculate from percentage using effective target (adapts to actual performance)
+
+      // Calculate from percentage using effective target (for upward adaptation)
       if (currentWarmup.weightPercentage !== undefined) {
         const effectiveTarget = getEffectiveTargetWeight()
         // Round to nearest 0.5kg (standard barbell increment)
@@ -105,7 +161,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
     }
     if (suggestion) return suggestion.weight
     return exercise.targetWeight || 0
-  }, [currentWarmup, suggestion, exercise.targetWeight, getEffectiveTargetWeight])
+  }, [currentWarmup, suggestion, exercise.targetWeight, getEffectiveTargetWeight, exercise.completedSets, remainingWarmupSets])
 
   const getInitialReps = useCallback(() => {
     if (currentWarmup) return currentWarmup.reps ?? 8

@@ -10,6 +10,11 @@ interface OnboardingState {
     equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment instead
     availableEquipment?: string[] // New multiselect equipment array
     strengthBaseline?: Record<string, { weight: number; reps: number; rir: number }>
+    // Experience level (for adaptive onboarding)
+    experienceLevel?: 'beginner' | 'intermediate' | 'advanced'
+    // Goals (for intermediate/advanced users)
+    trainingObjective?: 'bulk' | 'cut' | 'maintain' | 'recomp' | null
+    injuries?: string | null // Free text field for injuries/limitations
     // Demographic fields
     firstName?: string | null // User's first name for personalization
     gender?: 'male' | 'female' | 'other' | null

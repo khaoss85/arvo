@@ -10,13 +10,23 @@ import { Button } from '@/components/ui/button'
 
 export default function WeakPointsPage() {
   const t = useTranslations('onboarding.steps.weakPoints')
+  const tCommon = useTranslations('common.buttons')
   const router = useRouter()
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
   const [selectedParts, setSelectedParts] = useState<string[]>(data.weakPoints || [])
 
+  const experienceLevel = data.experienceLevel
+  const currentStepNumber = 6 // Step 6 for intermediate/advanced
+
   useEffect(() => {
-    setStep(4)
-  }, [setStep])
+    // Redirect beginners - they should skip this step
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/equipment')
+      return
+    }
+
+    setStep(currentStepNumber)
+  }, [setStep, experienceLevel, router, currentStepNumber])
 
   const handleToggle = (part: string) => {
     if (selectedParts.includes(part)) {
@@ -36,24 +46,28 @@ export default function WeakPointsPage() {
 
   const handleSkip = () => {
     setStepData('weakPoints', [])
-    completeStep(4)
+    completeStep(currentStepNumber)
     router.push('/onboarding/equipment')
   }
 
   const handleContinue = () => {
-    completeStep(4)
+    completeStep(currentStepNumber)
     router.push('/onboarding/equipment')
+  }
+
+  const handleBack = () => {
+    router.push('/onboarding/split')
   }
 
   return (
     <div className="max-w-3xl mx-auto py-8">
       {/* Back Button */}
       <button
-        onClick={() => router.push('/onboarding/profile')}
+        onClick={handleBack}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>{t('backToProfile')}</span>
+        <span>{tCommon('back')}</span>
       </button>
 
       <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>

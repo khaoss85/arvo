@@ -30,9 +30,18 @@ export default function StrengthBaselinePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
 
+  const experienceLevel = data.experienceLevel
+  const currentStepNumber = 8 // Step 8 for intermediate/advanced
+
   useEffect(() => {
-    setStep(6)
-  }, [setStep])
+    // Redirect beginners - they should skip this step
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/review')
+      return
+    }
+
+    setStep(currentStepNumber)
+  }, [setStep, experienceLevel, router, currentStepNumber])
 
   // Get suggestions - standard lifts not yet added
   const suggestions = STANDARD_LIFTS.filter(
@@ -79,12 +88,12 @@ export default function StrengthBaselinePage() {
 
   const handleSkip = () => {
     setStepData('strengthBaseline', {})
-    completeStep(6)
+    completeStep(currentStepNumber)
     router.push('/onboarding/review')
   }
 
   const handleContinue = () => {
-    completeStep(6)
+    completeStep(currentStepNumber)
     router.push('/onboarding/review')
   }
 

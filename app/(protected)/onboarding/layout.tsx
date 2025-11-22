@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
@@ -9,17 +10,40 @@ export default function OnboardingLayout({
   children: React.ReactNode
 }) {
   const t = useTranslations('onboarding.layout.stepNames')
-  const { currentStep } = useOnboardingStore()
+  const { currentStep, data } = useOnboardingStore()
+  const experienceLevel = data.experienceLevel
 
-  const steps = [
-    { id: 1, name: t('approach') },
-    { id: 2, name: t('split') },
-    { id: 3, name: t('profile') },
-    { id: 4, name: t('weakPoints') },
-    { id: 5, name: t('equipment') },
-    { id: 6, name: t('strength') },
-    { id: 7, name: t('review') }
-  ]
+  // Dynamic steps based on experience level
+  const steps = useMemo(() => {
+    if (!experienceLevel) {
+      // Before level is selected, show minimal progress
+      return [{ id: 1, name: t('level') }]
+    }
+
+    if (experienceLevel === 'beginner') {
+      // Simplified flow for beginners (5 steps)
+      return [
+        { id: 1, name: t('level') },
+        { id: 2, name: t('profile') },
+        { id: 3, name: t('split') },
+        { id: 4, name: t('equipment') },
+        { id: 5, name: t('review') }
+      ]
+    }
+
+    // Full flow for intermediate/advanced (9 steps)
+    return [
+      { id: 1, name: t('level') },
+      { id: 2, name: t('approach') },
+      { id: 3, name: t('profile') },
+      { id: 4, name: t('goals') },
+      { id: 5, name: t('split') },
+      { id: 6, name: t('weakPoints') },
+      { id: 7, name: t('equipment') },
+      { id: 8, name: t('strength') },
+      { id: 9, name: t('review') }
+    ]
+  }, [experienceLevel, t])
 
   return (
     <div className="min-h-screen flex flex-col">

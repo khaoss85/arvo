@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
+import { AISuggestionCard } from '@/components/onboarding/AISuggestionCard'
+import { useAIOnboardingSuggestion } from '@/lib/hooks/useAIOnboardingSuggestion'
 
 type SplitType = 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus'
 
@@ -30,9 +32,25 @@ export default function SplitSelectionPage() {
   const [selectedSplit, setSelectedSplit] = useState<SplitType | null>(data.splitType || null)
   const [weeklyFrequency, setWeeklyFrequency] = useState<number>(data.weeklyFrequency || 4)
 
+  const experienceLevel = data.experienceLevel
+
+  // Calculate correct step number based on experience level
+  const currentStepNumber = experienceLevel === 'beginner' ? 3 : 5
+
   useEffect(() => {
-    setStep(2) // Assuming this is step 2 after approach selection
-  }, [setStep])
+    setStep(currentStepNumber)
+  }, [setStep, currentStepNumber])
+
+  // AI suggestion
+  const { suggestion, isLoading } = useAIOnboardingSuggestion({
+    step: 'split',
+    userData: {
+      experienceLevel,
+      age: data.age || undefined,
+      gender: data.gender || undefined,
+      trainingObjective: data.trainingObjective || undefined
+    }
+  })
 
   const handleSelectSplit = (splitType: SplitType) => {
     setSelectedSplit(splitType)
@@ -43,25 +61,47 @@ export default function SplitSelectionPage() {
 
     setStepData('splitType', selectedSplit)
     setStepData('weeklyFrequency', weeklyFrequency)
-    completeStep(2)
-    router.push('/onboarding/profile')
+    completeStep(currentStepNumber)
+
+    // Navigate based on experience level
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/equipment')
+    } else {
+      router.push('/onboarding/weak-points')
+    }
+  }
+
+  const handleBack = () => {
+    // Navigate back based on experience level
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/profile')
+    } else {
+      router.push('/onboarding/goals')
+    }
   }
 
   return (
     <div className="max-w-3xl mx-auto py-8">
       {/* Back Button */}
       <button
-        onClick={() => router.push('/onboarding/approach')}
+        onClick={handleBack}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>{t('backToApproach')}</span>
+        <span>{tCommon('back')}</span>
       </button>
 
       <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
         {t('description')}
       </p>
+
+      {/* AI Suggestion */}
+      <AISuggestionCard
+        suggestion={suggestion}
+        isLoading={isLoading}
+        className="mb-6"
+      />
 
       {/* Split Type Selection */}
       <div className="space-y-4 mb-8">

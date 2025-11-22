@@ -7,6 +7,8 @@ import { User, Calendar, Scale, Ruler, HelpCircle, ArrowLeft } from 'lucide-reac
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { AISuggestionCard } from '@/components/onboarding/AISuggestionCard'
+import { useAIOnboardingSuggestion } from '@/lib/hooks/useAIOnboardingSuggestion'
 
 export default function ProfilePage() {
   const t = useTranslations('onboarding.steps.profile')
@@ -27,9 +29,22 @@ export default function ProfilePage() {
   const [weightError, setWeightError] = useState<string | null>(null)
   const [heightError, setHeightError] = useState<string | null>(null)
 
+  const experienceLevel = data.experienceLevel
+
+  // Calculate correct step number based on experience level
+  const currentStepNumber = experienceLevel === 'beginner' ? 2 : 3
+
   useEffect(() => {
-    setStep(3)
-  }, [setStep])
+    setStep(currentStepNumber)
+  }, [setStep, currentStepNumber])
+
+  // AI suggestion
+  const { suggestion, isLoading } = useAIOnboardingSuggestion({
+    step: 'profile',
+    userData: {
+      experienceLevel
+    }
+  })
 
   const handleFirstNameChange = (value: string) => {
     setFirstName(value)
@@ -134,24 +149,45 @@ export default function ProfilePage() {
     setStepData('age', null)
     setStepData('weight', null)
     setStepData('height', null)
-    completeStep(3)
-    router.push('/onboarding/weak-points')
+    completeStep(currentStepNumber)
+
+    // Navigate based on experience level
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/split')
+    } else {
+      router.push('/onboarding/goals')
+    }
   }
 
   const handleContinue = () => {
-    completeStep(3)
-    router.push('/onboarding/weak-points')
+    completeStep(currentStepNumber)
+
+    // Navigate based on experience level
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/split')
+    } else {
+      router.push('/onboarding/goals')
+    }
+  }
+
+  const handleBack = () => {
+    // Navigate back based on experience level
+    if (experienceLevel === 'beginner') {
+      router.push('/onboarding/level')
+    } else {
+      router.push('/onboarding/approach')
+    }
   }
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       {/* Back Button */}
       <button
-        onClick={() => router.push('/onboarding/split')}
+        onClick={handleBack}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>{t('backToSplit')}</span>
+        <span>{tCommon('buttons.back')}</span>
       </button>
 
       <div className="mb-8">
@@ -163,6 +199,13 @@ export default function ProfilePage() {
           </span>
         </p>
       </div>
+
+      {/* AI Suggestion */}
+      <AISuggestionCard
+        suggestion={suggestion}
+        isLoading={isLoading}
+        className="mb-6"
+      />
 
       <Card className="p-6 space-y-6">
         {/* First Name */}

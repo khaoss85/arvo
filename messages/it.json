@@ -1330,9 +1330,11 @@
     "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
     "layout": {
       "stepNames": {
+        "level": "Livello",
         "approach": "Approccio",
-        "split": "Suddivisione",
         "profile": "Profilo",
+        "goals": "Obiettivi",
+        "split": "Suddivisione",
         "weakPoints": "Punti Deboli",
         "equipment": "Attrezzatura",
         "strength": "Forza",
@@ -1475,9 +1477,32 @@
       "medicalDisclaimer": "Disclaimer Medico - Si Prega di Leggere Attentamente"
     },
     "steps": {
+      "level": {
+        "title": "Qual è il tuo livello di esperienza?",
+        "description": "Questo ci aiuterà a personalizzare il tuo percorso di onboarding e generare allenamenti adatti al tuo livello.",
+        "options": {
+          "beginner": {
+            "title": "Principiante",
+            "description": "Sono nuovo al sollevamento pesi strutturato",
+            "examples": "Mai seguito un programma di allenamento, inizio da zero, o mi alleno in modo casuale senza un piano strutturato"
+          },
+          "intermediate": {
+            "title": "Intermedio",
+            "description": "Ho esperienza con l'allenamento strutturato",
+            "examples": "1-3 anni di allenamento costante, conosco i principi base, voglio migliorare la mia programmazione"
+          },
+          "advanced": {
+            "title": "Avanzato",
+            "description": "Sono un atleta esperto con anni di allenamento",
+            "examples": "3+ anni di allenamento strutturato, comprendo periodizzazione e tecniche avanzate, voglio ottimizzare ogni dettaglio"
+          }
+        },
+        "continueButton": "Continua"
+      },
       "approach": {
         "title": "Scegli la Tua Filosofia di Allenamento",
         "description": "Seleziona l'approccio che meglio si allinea al tuo stile di allenamento. Questo guiderà come l'AI genera i tuoi allenamenti.",
+        "backToLevel": "Torna al Livello",
         "loading": "Caricamento approcci di allenamento...",
         "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba."
       },
@@ -1678,17 +1703,60 @@
         },
         "skipProfile": "Salta Profilo"
       },
+      "goals": {
+        "title": "I tuoi obiettivi",
+        "description": "Aiutaci a personalizzare il tuo piano di allenamento",
+        "backToProfile": "Torna al Profilo",
+        "objectiveQuestion": "Qual è il tuo obiettivo principale?",
+        "objectives": {
+          "bulk": {
+            "title": "Bulk / Massa",
+            "description": "Aumentare massa muscolare e forza, in surplus calorico"
+          },
+          "cut": {
+            "title": "Cut / Definizione",
+            "description": "Ridurre la percentuale di grasso mantenendo la massa muscolare"
+          },
+          "maintain": {
+            "title": "Mantenimento",
+            "description": "Mantenere peso e composizione corporea attuale"
+          },
+          "recomp": {
+            "title": "Ricomposizione",
+            "description": "Aumentare muscoli e perdere grasso simultaneamente"
+          }
+        },
+        "injuriesSection": {
+          "title": "Hai dolori o limitazioni fisiche? (opzionale)",
+          "subtitle": "Ad esempio: dolore al ginocchio, problemi alla spalla, mobilità limitata, ecc.",
+          "placeholder": "Descrivici eventuali dolori, infortuni pregressi o limitazioni che dovremmo considerare...",
+          "helperText": "Queste informazioni ci aiuteranno a selezionare esercizi più sicuri e adatti a te"
+        },
+        "continueButton": "Continua"
+      },
       "review": {
         "title": "Rivedi il Tuo Profilo",
         "description": "Rivedi le tue selezioni qui sotto. L'AI userà queste informazioni per generare i tuoi allenamenti personalizzati.",
         "completeSteps": "Completa prima i passaggi precedenti.",
         "sections": {
+          "experienceLevel": "Livello di esperienza",
           "approach": "Approccio di Allenamento",
-          "split": "Suddivisione di Allenamento",
           "profile": "Informazioni Personali",
+          "goals": "Obiettivi di Allenamento",
+          "split": "Suddivisione di Allenamento",
           "weakPoints": "Punti Deboli",
           "equipment": "Attrezzatura Disponibile",
           "strength": "Livello di Forza Base"
+        },
+        "experienceLevel": {
+          "beginner": "Principiante",
+          "intermediate": "Intermedio",
+          "advanced": "Avanzato"
+        },
+        "goals": {
+          "objective": "Obiettivo:",
+          "injuries": "Limitazioni:",
+          "noInjuries": "Nessuna limitazione segnalata"
         },
         "labels": {
           "edit": "Modifica",

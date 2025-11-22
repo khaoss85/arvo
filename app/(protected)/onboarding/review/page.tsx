@@ -41,8 +41,14 @@ export default function ReviewPage() {
   const [existingRequestId, setExistingRequestId] = useState<string | null>(null)
   const [existingProgress, setExistingProgress] = useState<number>(0)
 
+  const experienceLevel = data.experienceLevel
+  const isBeginner = experienceLevel === 'beginner'
+
+  // Calculate correct step number based on experience level
+  const currentStepNumber = isBeginner ? 5 : 9
+
   useEffect(() => {
-    setStep(7)
+    setStep(currentStepNumber)
     if (data.approachId) {
       loadApproach()
     }
@@ -59,7 +65,7 @@ export default function ReviewPage() {
         setCustomExperience(estimate.years)
       }
     }
-  }, [data.approachId, data.strengthBaseline, data.gender, data.weight, setStep])
+  }, [data.approachId, data.strengthBaseline, data.gender, data.weight, setStep, currentStepNumber])
 
   // Check on mount if onboarding was already completed or in progress (resume check)
   useEffect(() => {
@@ -278,25 +284,46 @@ export default function ReviewPage() {
       </p>
 
       <div className="space-y-4">
-        {/* Training Approach */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">{t('sections.approach')}</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(1, '/onboarding/approach')}
-            >
-              {tReview('edit')}
-            </Button>
+        {/* Experience Level */}
+        {data.experienceLevel && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">{t('sections.experienceLevel')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(1, '/onboarding/level')}
+              >
+                {tReview('edit')}
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full text-sm font-medium capitalize">
+                {t(`experienceLevel.${data.experienceLevel}`)}
+              </span>
+            </div>
           </div>
-          {approach && (
+        )}
+
+        {/* Training Approach - Only for intermediate/advanced */}
+        {!isBeginner && approach && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">{t('sections.approach')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(2, '/onboarding/approach')}
+              >
+                {tReview('edit')}
+              </Button>
+            </div>
             <div>
               <p className="font-medium">{approach.name}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">{approach.short_philosophy || approach.philosophy}</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Split Selection */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
@@ -305,7 +332,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(2, '/onboarding/split')}
+              onClick={() => handleEdit(isBeginner ? 3 : 5, '/onboarding/split')}
             >
               {tReview('edit')}
             </Button>
@@ -333,7 +360,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(3, '/onboarding/profile')}
+              onClick={() => handleEdit(isBeginner ? 2 : 3, '/onboarding/profile')}
             >
               {tReview('edit')}
             </Button>
@@ -376,18 +403,53 @@ export default function ReviewPage() {
           )}
         </div>
 
-        {/* Weak Points */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">{t('sections.weakPoints')}</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(4, '/onboarding/weak-points')}
-            >
-              {tReview('edit')}
-            </Button>
+        {/* Goals - Only for intermediate/advanced */}
+        {!isBeginner && (data.trainingObjective || data.injuries) && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">{t('sections.goals')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(4, '/onboarding/goals')}
+              >
+                {tReview('edit')}
+              </Button>
+            </div>
+            <div className="space-y-2 text-sm">
+              {data.trainingObjective && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{t('goals.objective')}</span>
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded text-xs font-medium capitalize">
+                    {data.trainingObjective}
+                  </span>
+                </div>
+              )}
+              {data.injuries && (
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400 block mb-1">{t('goals.injuries')}</span>
+                  <p className="text-gray-900 dark:text-gray-100 text-xs bg-orange-50 dark:bg-orange-950/20 p-2 rounded border border-orange-200 dark:border-orange-800">
+                    {data.injuries}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
+        )}
+
+        {/* Weak Points - Only for intermediate/advanced */}
+        {!isBeginner && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">{t('sections.weakPoints')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(6, '/onboarding/weak-points')}
+              >
+                {tReview('edit')}
+              </Button>
+            </div>
           {data.weakPoints && data.weakPoints.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {data.weakPoints.map((point) => (
@@ -399,10 +461,11 @@ export default function ReviewPage() {
                 </span>
               ))}
             </div>
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noWeakPoints')}</p>
-          )}
-        </div>
+            ) : (
+              <p className="text-sm text-gray-600 dark:text-gray-400">{tReview('noWeakPoints')}</p>
+            )}
+          </div>
+        )}
 
         {/* Available Equipment */}
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
@@ -411,7 +474,7 @@ export default function ReviewPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEdit(5, '/onboarding/equipment')}
+              onClick={() => handleEdit(isBeginner ? 4 : 7, '/onboarding/equipment')}
             >
               {tReview('edit')}
             </Button>
@@ -432,18 +495,19 @@ export default function ReviewPage() {
           )}
         </div>
 
-        {/* Strength Baseline */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">{t('sections.strength')}</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleEdit(6, '/onboarding/strength')}
-            >
-              {tReview('edit')}
-            </Button>
-          </div>
+        {/* Strength Baseline - Only for intermediate/advanced */}
+        {!isBeginner && (
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">{t('sections.strength')}</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleEdit(8, '/onboarding/strength')}
+              >
+                {tReview('edit')}
+              </Button>
+            </div>
           {data.strengthBaseline && Object.keys(data.strengthBaseline).length > 0 ? (
             <div className="space-y-2 text-sm">
               {Object.entries(data.strengthBaseline).map(([lift, values]) => {
@@ -474,15 +538,16 @@ export default function ReviewPage() {
                 )
               })}
             </div>
-          ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {tReview('strengthBaseline.noBaseline')}
-            </p>
-          )}
-        </div>
+            ) : (
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {tReview('strengthBaseline.noBaseline')}
+              </p>
+            )}
+          </div>
+        )}
 
-        {/* Experience Estimate (only if strength baseline provided) */}
-        {experienceEstimate && (
+        {/* Experience Estimate (only if strength baseline provided and intermediate/advanced) */}
+        {!isBeginner && experienceEstimate && (
           <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-900">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-semibold">{tReview('strengthBaseline.experienceTitle')}</h3>

@@ -1330,9 +1330,11 @@
     "subtitle": "Let's set up your personalized training program",
     "layout": {
       "stepNames": {
+        "level": "Level",
         "approach": "Approach",
-        "split": "Split",
         "profile": "Profile",
+        "goals": "Goals",
+        "split": "Split",
         "weakPoints": "Weak Points",
         "equipment": "Equipment",
         "strength": "Strength",
@@ -1476,9 +1478,32 @@
       "medicalDisclaimer": "Medical Disclaimer - Please Read Carefully"
     },
     "steps": {
+      "level": {
+        "title": "What's your experience level?",
+        "description": "This will help us tailor your onboarding journey and generate workouts suited to your level.",
+        "options": {
+          "beginner": {
+            "title": "Beginner",
+            "description": "I'm new to structured weightlifting",
+            "examples": "Never followed a workout program, starting from scratch, or train casually without a structured plan"
+          },
+          "intermediate": {
+            "title": "Intermediate",
+            "description": "I have experience with structured training",
+            "examples": "1-3 years of consistent training, understand basic principles, want to improve my programming"
+          },
+          "advanced": {
+            "title": "Advanced",
+            "description": "I'm an experienced athlete with years of training",
+            "examples": "3+ years of structured training, understand periodization and advanced techniques, want to optimize every detail"
+          }
+        },
+        "continueButton": "Continue"
+      },
       "approach": {
         "title": "Choose Your Training Philosophy",
         "description": "Select the approach that best aligns with your training style. This will guide how the AI generates your workouts.",
+        "backToLevel": "Back to Level",
         "loading": "Loading training approaches...",
         "noApproachesFound": "No training approaches found. Please run the seed script to populate the Kuba Method."
       },
@@ -1679,17 +1704,60 @@
         },
         "skipProfile": "Skip Profile"
       },
+      "goals": {
+        "title": "Your Goals",
+        "description": "Help us personalize your training plan",
+        "backToProfile": "Back to Profile",
+        "objectiveQuestion": "What's your primary goal?",
+        "objectives": {
+          "bulk": {
+            "title": "Bulk / Mass Gain",
+            "description": "Build muscle mass and strength in a caloric surplus"
+          },
+          "cut": {
+            "title": "Cut / Definition",
+            "description": "Reduce body fat percentage while maintaining muscle mass"
+          },
+          "maintain": {
+            "title": "Maintenance",
+            "description": "Maintain current weight and body composition"
+          },
+          "recomp": {
+            "title": "Recomposition",
+            "description": "Build muscle and lose fat simultaneously"
+          }
+        },
+        "injuriesSection": {
+          "title": "Do you have any pain or physical limitations? (optional)",
+          "subtitle": "For example: knee pain, shoulder issues, limited mobility, etc.",
+          "placeholder": "Tell us about any pain, past injuries, or limitations we should consider...",
+          "helperText": "This information will help us select safer and more suitable exercises for you"
+        },
+        "continueButton": "Continue"
+      },
       "review": {
         "title": "Review Your Profile",
         "description": "Review your selections below. The AI will use this information to generate your personalized workouts.",
         "completeSteps": "Please complete the previous steps first.",
         "sections": {
+          "experienceLevel": "Experience Level",
           "approach": "Training Approach",
-          "split": "Training Split",
           "profile": "Personal Information",
+          "goals": "Training Goals",
+          "split": "Training Split",
           "weakPoints": "Weak Points",
           "equipment": "Available Equipment",
           "strength": "Strength Baseline"
+        },
+        "experienceLevel": {
+          "beginner": "Beginner",
+          "intermediate": "Intermediate",
+          "advanced": "Advanced"
+        },
+        "goals": {
+          "objective": "Objective:",
+          "injuries": "Limitations:",
+          "noInjuries": "No limitations reported"
         },
         "labels": {
           "edit": "Edit",
