@@ -1076,8 +1076,9 @@ export async function suggestExerciseSubstitutionAction(
       }))
     }
 
-    // Get user's preferred language
-    const targetLanguage = await getUserLanguage(userId)
+    // Get user's preferred language from already-fetched profile
+    const language = (profile as any).preferred_language
+    const targetLanguage = (language === 'en' || language === 'it') ? language : 'en'
 
     // Create agent instance with server Supabase client
     // Using 'none' reasoning for ultra-fast responses (~1s vs ~5s)

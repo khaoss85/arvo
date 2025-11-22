@@ -8,7 +8,7 @@
 export type AIMetricEvent = {
   agentName: string
   operationType: 'workout_generation' | 'split_planning' | 'equipment_validation' | 'exercise_suggestion' | 'other'
-  reasoningEffort: 'none' | 'low' | 'medium' | 'high'
+  reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high'
   model?: string  // e.g., 'gpt-5-mini', 'gpt-5.1'
   attemptNumber: number
   maxAttempts: number

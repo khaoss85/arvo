@@ -152,39 +152,16 @@ ${input.userGender ? `- Gender: ${input.userGender}` : ''}`
       ? `Caloric Phase: ${input.caloricPhase.toUpperCase()}${input.caloricIntakeKcal ? ` (${input.caloricIntakeKcal > 0 ? '+' : ''}${input.caloricIntakeKcal} kcal/day)` : ''}`
       : ''
 
-    // Build cycle fatigue context (NEW - Item 7)
+    // Build cycle fatigue context
     const cycleFatigueContext = input.currentCycleProgress?.avgMentalReadiness !== null &&
                                  input.currentCycleProgress?.avgMentalReadiness !== undefined
-      ? `
-=== CYCLE FATIGUE STATUS ===
-Average Mental Readiness: ${input.currentCycleProgress.avgMentalReadiness.toFixed(1)}/5.0 ${
-  input.currentCycleProgress.avgMentalReadiness < 2.5 ? '(😫 FATIGUED)' :
-  input.currentCycleProgress.avgMentalReadiness < 3.5 ? '(😐 MODERATE FATIGUE)' :
-  '(🔥 FRESH)'
-}
-
-${input.currentCycleProgress.avgMentalReadiness < 2.5 ? `
-⚠️ FATIGUE ALERT: User is fatigued within this cycle.
-Substitution Guidance:
-- PRIORITIZE machines and cables over free weights (lower CNS demand)
-- Avoid high-skill, high-fatigue movements (heavy squats, deadlifts)
-- Prefer exercises with built-in safety (Smith machine, leg press, chest press machine)
-- Example: Barbell Squat → Leg Press or Safety Bar Squat
-- Example: Barbell Bench → Machine Chest Press or Dumbbell Bench (lighter)
-` : input.currentCycleProgress.avgMentalReadiness >= 3.5 ? `
-✅ FRESH STATE: User is well-recovered.
-Substitution Guidance:
-- Can suggest demanding free weight alternatives
-- Technical exercises acceptable (barbell variations, complex movements)
-- No special fatigue considerations needed
-` : `
-MODERATE FATIGUE: User has some fatigue but manageable.
-Substitution Guidance:
-- Balance between free weights and machines
-- Prefer slightly lower-skill alternatives when possible
-- Standard substitution logic applies
-`}
-`
+      ? `Mental Readiness: ${input.currentCycleProgress.avgMentalReadiness.toFixed(1)}/5.0${
+  input.currentCycleProgress.avgMentalReadiness < 2.5
+    ? ' - FATIGUED: Prefer machines/cables over free weights, avoid high-skill movements'
+    : input.currentCycleProgress.avgMentalReadiness < 3.5
+      ? ' - MODERATE: Balance machines and free weights'
+      : ' - FRESH: All alternatives acceptable'
+}`
       : ''
 
     // Build substitution reason context
@@ -194,140 +171,57 @@ Substitution Guidance:
 
     // Build insights context - filter out exercises with issues
     const insightsContext = input.activeInsights && input.activeInsights.length > 0
-      ? `
-=== ⚠️ ACTIVE USER INSIGHTS (FILTER SUGGESTIONS) ===
-
-The user has reported the following issues. DO NOT suggest exercises with similar problems:
-
-${input.activeInsights.map(insight => `
-- ${insight.exerciseName || 'General'} (${insight.severity}): "${insight.userNote}"
-  ${insight.severity === 'critical' || insight.severity === 'warning' ? '🚨 AVOID similar exercises completely' : '⚠️ Be cautious with similar movements'}
-`).join('\n')}
-`
+      ? `User-reported issues (avoid similar): ${input.activeInsights.map(i =>
+          `${i.exerciseName || 'General'} (${i.severity}): ${i.userNote}`
+        ).join('; ')}`
       : '';
 
     // Build memories context - prioritize preferences
     const memoriesContext = input.activeMemories && input.activeMemories.length > 0
-      ? `
-=== 🧠 LEARNED USER PREFERENCES ===
-
-The user has shown these equipment/exercise preferences (PRIORITIZE IN SUGGESTIONS):
-
-${input.activeMemories.filter(m => m.confidenceScore >= 0.6).map(mem => `
-- ${mem.title} (${(mem.confidenceScore * 100).toFixed(0)}% confidence)
-  ${mem.relatedExercises.length > 0 ? `Related: ${mem.relatedExercises.join(', ')}` : ''}
-  ${mem.confidenceScore >= 0.8 ? '🔥 STRONG preference - prioritize highly' : '💪 Moderate preference'}
-`).join('\n')}
-`
+      ? `User preferences (prioritize): ${input.activeMemories.filter(m => m.confidenceScore >= 0.6)
+          .map(m => `${m.title} (${(m.confidenceScore * 100).toFixed(0)}%)`)
+          .join('; ')}`
       : '';
 
-    const prompt = `Generate 3-5 alternative exercises for the following substitution request:
-
-CURRENT EXERCISE:
-- Name: ${input.currentExercise.name}
-- Equipment: ${input.currentExercise.equipmentVariant}
-- Sets × Reps: ${input.currentExercise.sets} × ${input.currentExercise.repRange[0]}-${input.currentExercise.repRange[1]}
-${input.currentExercise.targetWeight ? `- Target Weight: ${input.currentExercise.targetWeight}kg` : ''}
-${input.currentExercise.primaryMuscles ? `- Primary Muscles: ${input.currentExercise.primaryMuscles.join(', ')}` : ''}
-${input.currentExercise.secondaryMuscles ? `- Secondary Muscles: ${input.currentExercise.secondaryMuscles.join(', ')}` : ''}
-${input.currentExercise.movementPattern ? `- Movement Pattern: ${input.currentExercise.movementPattern}` : ''}
-${input.currentExercise.romEmphasis ? `- ROM Emphasis: ${input.currentExercise.romEmphasis}` : ''}
+    const prompt = `Generate 3-5 alternative exercises for: ${input.currentExercise.name} (${input.currentExercise.equipmentVariant}, ${input.currentExercise.sets}×${input.currentExercise.repRange[0]}-${input.currentExercise.repRange[1]}${input.currentExercise.targetWeight ? `, ${input.currentExercise.targetWeight}kg` : ''})
 
 USER CONTEXT:
 ${equipmentContext}
 ${weakPointsContext}
-${demographicContext}
-${periodizationContext}
-${caloricPhaseContext}
-${cycleFatigueContext}
-${reasonContext}
-${insightsContext}
-${memoriesContext}
+${demographicContext ? demographicContext : ''}
+${periodizationContext ? periodizationContext : ''}
+${caloricPhaseContext ? caloricPhaseContext : ''}
+${cycleFatigueContext ? cycleFatigueContext : ''}
+${reasonContext ? reasonContext : ''}
+${insightsContext ? insightsContext : ''}
+${memoriesContext ? memoriesContext : ''}
 
 TRAINING APPROACH:
 ${approachContext}
 
-**HIERARCHY OF CONSTRAINTS:**
-1. 🏆 TRAINING APPROACH PHILOSOPHY (non-negotiable)
-2. 🎯 Periodization phase (if applicable)
-3. 🍽️ Caloric phase (modulate within approach's framework)
-4. 🎨 User insights and preferences (filter bad options, boost good ones)
-
-⚠️ CONFLICT RESOLUTION:
-When suggesting substitutions, if caloric phase or other context conflicts with approach philosophy, THE APPROACH WINS.
-Example: ${approach.name} + ${input.caloricPhase?.toUpperCase() || 'CUT'} → ${approach.variables.setsPerExercise?.working ? `Don't suggest ${approach.variables.setsPerExercise.working + 2}-${approach.variables.setsPerExercise.working + 3} sets when approach says ${approach.variables.setsPerExercise.working} max` : "Respect approach's prescribed set/rep structure"}
+CONSTRAINTS (priority order):
+1. Training approach philosophy (primary)
+2. Periodization/caloric phase (secondary)
+3. User preferences and insights
 
 REQUIREMENTS:
-1. Provide 3-5 alternatives that vary in:
-   - Equipment type (barbell, dumbbell, cable, machine, bodyweight)
-   - Difficulty level (similar, easier, different stimulus)
-   - Movement pattern (same vs. complementary)
+- Vary equipment (barbell/dumbbell/cable/machine/bodyweight) and difficulty
+- Weight adjustments: BB→DB ~40-45%/hand, BB→Machine ~80%, BB→Cable ~70-75%, Bilateral→Unilateral ~45%/limb
+- For each: name, equipment, sets, reps, weight, validation (approved/caution/not_recommended), rationale (max 10 words), swapImpact (max 15 words), similarityScore (0-100), workoutIntegration (max 40 words)
+${input.mesocyclePhase ? `- Phase: ${input.mesocyclePhase === 'deload' ? 'easier alternatives, lower CNS' : input.mesocyclePhase === 'intensification' ? 'maintain intensity' : 'volume focus, variety ok'}` : ''}
+${input.caloricPhase === 'cut' ? '- CUT: prioritize high stimulus-to-fatigue (prefer machines/cables if approach allows)' : input.caloricPhase === 'bulk' ? '- BULK: favor intensity and compound movements (within approach rules)' : ''}
 
-2. For each alternative, provide:
-   - Exercise name and equipment variant
-   - Adjusted target weight (considering equipment biomechanics)
-   - Validation level: "approved", "caution", or "not_recommended"
-   - Brief rationale (MAX 10 words, gym-friendly, specific)
-   - Swap impact (1 sentence, MAX 15 words, what changes)
-   - Similarity score (0-100: how closely it matches original)
-   - Rationale preview: workoutIntegration (1-2 sentences, MAX 40 words, how new exercise integrates into the overall workout flow)
-
-3. Adjust weight recommendations based on equipment:
-   - Barbell → Dumbbells: ~40-45% per hand (accounts for stability demand)
-   - Barbell → Machine: ~80% (machine assistance)
-   - Barbell → Cables: ~70-75% (constant tension vs. gravity)
-   - Bilateral → Unilateral: ~45% per limb (bilateral deficit)
-
-4. Consider mesocycle phase:
-${input.mesocyclePhase === 'deload' ? '   - Deload: Prefer easier alternatives, lower CNS demand' : ''}
-${input.mesocyclePhase === 'intensification' ? '   - Intensification: Maintain intensity, prefer similar stimuli' : ''}
-${input.mesocyclePhase === 'accumulation' ? '   - Accumulation: Volume focus, variety acceptable' : ''}
-
-5. Consider caloric phase (APPROACH-AWARE MODULATION):
-${input.caloricPhase === 'cut' ? `   - CUT: Within approach constraints, prioritize high stimulus-to-fatigue alternatives:
-     * IF approach allows equipment flexibility: Prefer machines > free weights, cables > barbells
-     * IF approach mandates specific equipment: Stay within approach's equipment philosophy, adjust intensity
-     * Example (flexible approach): Suggest Leg Press over Squat, Machine Press over Barbell Bench
-     * Example (barbell-focused approach): Keep barbell variations, suggest reduced volume or lighter intensity` : ''}
-${input.caloricPhase === 'bulk' ? `   - BULK: Within approach constraints, favor intensity and progressive overload:
-     * IF approach allows equipment variety: Suggest compound free weights when appropriate
-     * IF approach has fixed equipment rules: Respect those rules, suggest intensity increases
-     * DO NOT suggest adding sets/exercises if approach has fixed volume constraints` : ''}
-${input.caloricPhase === 'maintenance' ? '   - MAINTENANCE: Balanced suggestions within approach framework, no special bias' : ''}
-
-6. Apply approach philosophy (PRIMARY CONSTRAINT):
-   - Respect exercise selection principles from approach
-   - Prioritize weak point development if relevant
-   - Match ROM emphasis when possible
-
-7. Overall reasoning (2-3 sentences): Why these alternatives fit the workout plan
-
-Example rationalePreview for substitution:
+Return JSON:
 {
-  "workoutIntegration": "Leg Press maintains quad focus like Squat but reduces lower back fatigue, fitting well after RDL in this workout."
-}
-
-Return JSON format:
-{
-  "suggestions": [
-    {
-      "exercise": {
-        "name": "Exercise Name",
-        "equipmentVariant": "Equipment Type",
-        "sets": number,
-        "repRange": [min, max],
-        "targetWeight": number
-      },
-      "validation": "approved" | "caution" | "not_recommended",
-      "rationale": "10 words max",
-      "swapImpact": "15 words max",
-      "similarityScore": number,
-      "rationalePreview": {
-        "workoutIntegration": "1-2 sentences (MAX 40 words)"
-      }
-    }
-  ],
-  "reasoning": "2-3 sentences"
+  "suggestions": [{
+    "exercise": {"name": string, "equipmentVariant": string, "sets": number, "repRange": [number, number], "targetWeight": number},
+    "validation": "approved"|"caution"|"not_recommended",
+    "rationale": string,
+    "swapImpact": string,
+    "similarityScore": number,
+    "rationalePreview": {"workoutIntegration": string}
+  }],
+  "reasoning": string
 }`
 
     // Use standard JSON mode (faster than Structured Outputs for gpt-5-mini)

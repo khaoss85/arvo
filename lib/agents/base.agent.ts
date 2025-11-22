@@ -91,6 +91,15 @@ This task requires immediate response with minimal latency:
 - Direct execution for well-defined tasks
 - Optimized for speed-critical gym/real-time use cases
 `
+      case 'minimal':
+        return `
+⚡ **REASONING GUIDANCE: Minimal - Fast Mode** (gpt-5-mini)
+This task requires quick response with basic reasoning:
+- Respond quickly based on patterns and training
+- Minimal thinking or analysis needed
+- Direct execution for well-defined tasks
+- Optimized for speed-critical use cases
+`
       case 'low':
         return `
 ⚡ **REASONING GUIDANCE: Low Effort Mode**
