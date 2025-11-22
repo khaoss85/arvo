@@ -90,6 +90,13 @@ export interface SubstitutionOutput {
  * Optimized for gym use: concise rationales (max 10 words), quick decisions
  */
 export class ExerciseSubstitutionAgent extends BaseAgent {
+  constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'low' | 'medium' | 'high') {
+    super(supabaseClient, reasoningEffort)
+    // Force gpt-5-mini for Structured Outputs compatibility
+    // gpt-5.1 doesn't support chat.completions API (only responses API)
+    this.model = 'gpt-5-mini'
+  }
+
   get systemPrompt() {
     return `You are an expert strength coach helping athletes substitute exercises during workouts.
 Your role is to suggest intelligent alternatives that maintain workout quality while accommodating constraints.
