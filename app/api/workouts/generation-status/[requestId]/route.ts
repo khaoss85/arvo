@@ -61,27 +61,50 @@ export async function GET(
       }
 
       // Found in database - return status
-      if (queueEntry.status === 'completed' && queueEntry.workout_id) {
-        // Fetch the completed workout
-        const { WorkoutService } = await import('@/lib/services/workout.service')
-        const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
+      if (queueEntry.status === 'completed') {
+        // Handle split generation completion (onboarding)
+        if (queueEntry.split_plan_id) {
+          console.log(`[GenerationStatus] Split generation completed (from database): ${requestId}`, {
+            splitPlanId: queueEntry.split_plan_id,
+            type: queueEntry.context?.type
+          })
 
-        if (!workout) {
-          console.error(`[GenerationStatus] Workout not found for completed generation: ${queueEntry.workout_id}`)
           return Response.json({
-            status: 'error',
-            error: 'Workout not found'
+            status: 'complete',
+            splitPlanId: queueEntry.split_plan_id
           })
         }
 
-        console.log(`[GenerationStatus] Completed (from database): ${requestId}`, {
-          workoutId: workout.id
-        })
+        // Handle workout generation completion
+        if (queueEntry.workout_id) {
+          // Fetch the completed workout
+          const { WorkoutService } = await import('@/lib/services/workout.service')
+          const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
 
+          if (!workout) {
+            console.error(`[GenerationStatus] Workout not found for completed generation: ${queueEntry.workout_id}`)
+            return Response.json({
+              status: 'error',
+              error: 'Workout not found'
+            })
+          }
+
+          console.log(`[GenerationStatus] Workout generation completed (from database): ${requestId}`, {
+            workoutId: workout.id
+          })
+
+          return Response.json({
+            status: 'complete',
+            workout,
+            insightInfluencedChanges: [] // Not stored in queue entry
+          })
+        }
+
+        // Completed but missing both IDs - should not happen
+        console.error(`[GenerationStatus] Completed generation missing both workout_id and split_plan_id: ${requestId}`)
         return Response.json({
-          status: 'complete',
-          workout,
-          insightInfluencedChanges: [] // Not stored in queue entry
+          status: 'error',
+          error: 'Generation completed but result not found'
         })
       }
 

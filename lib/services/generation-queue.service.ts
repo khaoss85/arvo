@@ -172,17 +172,14 @@ export class GenerationQueueService {
       .in('status', ['pending', 'in_progress'])
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return null // No active generation
-      }
       console.error('[GenerationQueueService] Failed to get active generation:', error)
       return null // Don't throw, just return null
     }
 
-    return data as GenerationQueueEntry
+    return data as GenerationQueueEntry | null
   }
 
   /**
