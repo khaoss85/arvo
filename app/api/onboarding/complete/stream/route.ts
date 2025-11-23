@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
         // Initialize generation tracking
         // Use provided ID or generate new one
         let generationRequestId = data.generationRequestId || crypto.randomUUID()
-        let splitGenerationRequestId = crypto.randomUUID() // Separate ID for split generation tracking
         let isResuming = false
 
         try {
@@ -74,7 +73,7 @@ export async function POST(request: NextRequest) {
             if (detail) data.detail = detail
             try {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
-            } catch (e) {
+            } catch {
               // Controller might be closed if client disconnected
               console.log('[Onboarding] Controller closed, cannot send progress')
             }
@@ -316,7 +315,7 @@ export async function POST(request: NextRequest) {
           })
           try {
             controller.enqueue(encoder.encode(`data: ${errorData}\n\n`))
-          } catch (e) {
+          } catch {
             // Ignore if closed
           }
           controller.close()
