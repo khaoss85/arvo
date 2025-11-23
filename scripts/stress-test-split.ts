@@ -22,7 +22,7 @@
 
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
-import EventSource from 'eventsource'
+import { EventSource } from 'eventsource'
 
 // Load environment variables from .env.local
 config({ path: '.env.local' })

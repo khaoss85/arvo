@@ -105,7 +105,7 @@ export async function transformToExerciseExecution(
 /**
  * Determine if exercise is compound (multi-joint) vs isolation (single-joint)
  */
-function isCompoundExercise(name: string, bodyPart?: string): boolean {
+function isCompoundExercise(name: string, _bodyPart?: string): boolean {
   const lowerName = name.toLowerCase()
 
   // Compound movement patterns
