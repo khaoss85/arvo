@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
-import { getSupabaseServerClient, getSupabaseAdminClient } from '@/lib/supabase/server'
+import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import type { SplitType } from '@/lib/services/muscle-groups.service'
 import { getTranslations } from 'next-intl/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await getSupabaseServerClient()
-    const supabaseAdmin = await getSupabaseAdminClient()
+    const supabaseAdmin = getSupabaseAdmin()
     const encoder = new TextEncoder()
 
     const stream = new ReadableStream({
@@ -147,7 +148,8 @@ export async function POST(request: NextRequest) {
             sendProgress('profile', 0, tProgress('starting'), getRemainingEta(0))
             sendProgress('profile', 10, tProgress('creatingProfile'), getRemainingEta(10))
 
-            const { error: profileError } = await supabase
+            // Use admin client to bypass RLS for profile creation/update
+            const { error: profileError } = await supabaseAdmin
               .from('user_profiles')
               .upsert({
                 user_id: data.userId,
@@ -256,8 +258,8 @@ export async function POST(request: NextRequest) {
                 const splitPlan = splitResult.data.splitPlan as any
                 splitPlanId = splitPlan.id
 
-                // Update profile with split plan
-                await supabase
+                // Update profile with split plan (use admin to bypass RLS)
+                await supabaseAdmin
                   .from('user_profiles')
                   .update({
                     active_split_plan_id: splitPlanId,
