@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { CheckCircle, AlertCircle } from 'lucide-react'
@@ -40,6 +40,9 @@ export default function ReviewPage() {
   const [resumingGeneration, setResumingGeneration] = useState(false)
   const [existingRequestId, setExistingRequestId] = useState<string | null>(null)
   const [existingProgress, setExistingProgress] = useState<number>(0)
+
+  // Use ref for requestId to avoid React batching issues - ref is synchronous and immediately available
+  const generationRequestIdRef = useRef<string | null>(null)
 
   const experienceLevel = data.experienceLevel
   const isBeginner = experienceLevel === 'beginner'
@@ -118,6 +121,7 @@ export default function ReviewPage() {
           case 'pending':
             console.log('[ReviewPage] Resuming in-progress generation:', activeGeneration.request_id, 'at', activeGeneration.progress_percent + '%')
             setExistingRequestId(activeGeneration.request_id)
+            generationRequestIdRef.current = activeGeneration.request_id // Set ref for resuming
             setExistingProgress(activeGeneration.progress_percent || 0)
             setResumingGeneration(true)
             setLoading(true) // Show progress bar immediately
@@ -161,6 +165,12 @@ export default function ReviewPage() {
       return
     }
 
+    // Generate requestId BEFORE opening modal (if not resuming)
+    // Use ref instead of state to avoid React batching issues
+    if (!resumingGeneration && !generationRequestIdRef.current) {
+      generationRequestIdRef.current = crypto.randomUUID()
+    }
+
     // Open medical disclaimer modal
     setShowMedicalDisclaimer(true)
   }
@@ -168,6 +178,9 @@ export default function ReviewPage() {
   const handleMedicalDisclaimerAccept = () => {
     // User accepted disclaimer, proceed with onboarding
     setShowMedicalDisclaimer(false)
+
+    // RequestId was already generated in handleCompleteClick
+    // Just start loading the ProgressFeedback component
     setLoading(true)
     setError(null)
   }
@@ -230,8 +243,33 @@ export default function ReviewPage() {
     setLoading(false)
   }
 
-  const handleGenerationCancel = () => {
+  const handleGenerationCancel = async () => {
+    // Mark the generation as cancelled in the database
+    const requestIdToCancel = generationRequestIdRef.current || existingRequestId
+
+    if (requestIdToCancel) {
+      try {
+        const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
+
+        // Mark as failed with "User cancelled" message
+        await GenerationQueueService.markAsFailed({
+          requestId: requestIdToCancel,
+          errorMessage: 'User cancelled generation'
+        })
+
+        console.log('[ReviewPage] Cancelled generation:', requestIdToCancel)
+      } catch (error) {
+        console.error('[ReviewPage] Failed to cancel generation:', error)
+        // Continue with state reset even if DB update fails
+      }
+    }
+
+    // Reset all state
     setLoading(false)
+    setResumingGeneration(false)
+    setExistingRequestId(null)
+    setExistingProgress(0)
+    generationRequestIdRef.current = null // Reset ref
   }
 
   const handleEdit = (step: number, path: string) => {
@@ -712,11 +750,12 @@ export default function ReviewPage() {
               height: data.height || null,
               confirmedExperience: data.confirmedExperience || null,
               splitType: data.splitType,
-              weeklyFrequency: data.weeklyFrequency
+              weeklyFrequency: data.weeklyFrequency,
+              generationRequestId: generationRequestIdRef.current // Pass pre-generated requestId
             }}
             phases={onboardingPhases}
             cancellable={true}
-            existingRequestId={resumingGeneration ? (existingRequestId ?? undefined) : undefined}
+            existingRequestId={resumingGeneration ? (generationRequestIdRef.current ?? undefined) : undefined}
             initialProgress={resumingGeneration ? existingProgress : undefined}
             onComplete={handleGenerationComplete}
             onError={handleGenerationError}

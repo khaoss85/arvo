@@ -128,14 +128,14 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         // Check if the active generation matches this card's day
         // 1. If target_cycle_day is set, it must match this card's day
         // 2. If target_cycle_day is null, it defaults to the user's current day (so match if isCurrentDay is true)
-        const isMatchingDay = activeGeneration.target_cycle_day 
-          ? activeGeneration.target_cycle_day == day 
+        const isMatchingDay = activeGeneration.target_cycle_day
+          ? activeGeneration.target_cycle_day == day
           : isCurrentDay
 
         // Only resume if it's for THIS specific day and status is pending/in_progress
-        if (isMatchingDay && 
-           (activeGeneration.status === 'pending' || activeGeneration.status === 'in_progress')) {
-          
+        if (isMatchingDay &&
+          (activeGeneration.status === 'pending' || activeGeneration.status === 'in_progress')) {
+
           console.log('[TimelineDayCard] Found active generation to resume for day', day, 'at', activeGeneration.progress_percent + '%')
 
           // Store the request ID and initial progress to pass to ProgressFeedback
@@ -309,7 +309,11 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     <div
       className={cn(
         'flex-shrink-0 rounded-lg border-2 p-4 transition-all duration-300',
-        isCurrentDay ? 'w-[320px] shadow-2xl ring-4 ring-purple-400 dark:ring-purple-600 scale-105' : 'w-[280px]',
+        // Mobile: 85vw width, Desktop (sm+): Fixed 280px/320px
+        'w-[85vw] sm:w-[280px]',
+        isCurrentDay && 'sm:w-[320px] sm:shadow-2xl sm:ring-4 sm:ring-purple-400 dark:sm:ring-purple-600 sm:scale-105',
+        // Mobile current day styling (less aggressive than desktop)
+        isCurrentDay && 'border-purple-400 dark:border-purple-600 shadow-lg',
         styles.border,
         styles.bg
       )}
@@ -337,12 +341,12 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
             {status === 'current'
               ? t('today')
               : status === 'in_progress'
-              ? t('inProgress')
-              : status === 'completed'
-              ? t('done')
-              : status === 'pre_generated'
-              ? (preGeneratedWorkout?.status === 'ready' ? t('ready') : t('draft'))
-              : t('upcoming')
+                ? t('inProgress')
+                : status === 'completed'
+                  ? t('done')
+                  : status === 'pre_generated'
+                    ? (preGeneratedWorkout?.status === 'ready' ? t('ready') : t('draft'))
+                    : t('upcoming')
             } {styles.icon}
           </span>
         </div>

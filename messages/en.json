@@ -1325,6 +1325,21 @@
       "continuesInBackground": "Generation continues even if you close this"
     }
   },
+  "split": {
+    "generation": {
+      "complete": "Split Ready!",
+      "failed": "Generation Failed",
+      "inProgress": "Generating Your Split",
+      "redirecting": "Redirecting to your dashboard...",
+      "ready": "Your split is ready",
+      "canCloseMessage": "You can close this and check back later. Generation continues in the background.",
+      "errorDetails": "Something went wrong during generation. Please try again.",
+      "tryAgain": "Try Again",
+      "viewDashboard": "View Dashboard",
+      "closeAndCheckLater": "Close & Check Later",
+      "continuesInBackground": "Generation continues even if you close this"
+    }
+  },
   "onboarding": {
     "welcome": "Welcome to Arvo",
     "subtitle": "Let's set up your personalized training program",
@@ -1738,6 +1753,7 @@
       "review": {
         "title": "Review Your Profile",
         "description": "Review your selections below. The AI will use this information to generate your personalized workouts.",
+        "loading": "Checking your setup...",
         "completeSteps": "Please complete the previous steps first.",
         "sections": {
           "experienceLevel": "Experience Level",
@@ -1801,7 +1817,7 @@
           "userNotFound": "User not found. Please log in again.",
           "completeSteps": "Please complete all required steps."
         },
-        "completeButton": "Complete Onboarding & Generate Workout"
+        "completeButton": "Start Workout"
       }
     }
   },

@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
               })
               console.log(`[WorkoutGenerate] Created queue entry: ${queueEntry.id}`)
 
-              // Trigger Inngest for async background processing (avoids Vercel timeouts)
+              // Trigger Inngest for async background processing
               if (shouldUseInngest) {
                 console.log(`[WorkoutGenerate] Triggering Inngest worker for: ${generationRequestId}`)
                 await inngest.send({
@@ -221,76 +221,16 @@ export async function POST(request: NextRequest) {
                   }
                 })
 
-                // Keep stream open and poll database for Inngest updates
+                // Kickstart: Send initial progress and close stream to force client polling
                 await sendProgress('profile', 5, tProgress('starting'), null)
-
-                // Poll database every 2 seconds for updates from Inngest worker
-                let lastProgress = 5
-                const pollInterval = 2000  // 2 seconds
-                const maxDuration = 5 * 60 * 1000  // 5 minutes max
-                const startTime = Date.now()
-
-                console.log(`[WorkoutGenerate] Starting SSE polling for Inngest updates: ${generationRequestId}`)
-
-                while (lastProgress < 100 && (Date.now() - startTime) < maxDuration) {
-                  await new Promise(resolve => setTimeout(resolve, pollInterval))
-
-                  // Check database for updates
-                  const queueEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
-
-                  if (!queueEntry) {
-                    console.error(`[WorkoutGenerate] Queue entry disappeared: ${generationRequestId}`)
-                    await sendProgress('error', 0, tErrors('failedToGenerate'))
-                    break
-                  }
-
-                  if (queueEntry.status === 'completed' && queueEntry.workout_id) {
-                    // Fetch the workout and send completion
-                    const { WorkoutService } = await import('@/lib/services/workout.service')
-                    const workout = await WorkoutService.getByIdServer(queueEntry.workout_id)
-
-                    if (workout) {
-                      console.log(`[WorkoutGenerate] Inngest generation completed: ${generationRequestId}`)
-                      await sendProgress('complete', 100, tProgress('workoutReady'))
-                      safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
-                        phase: 'complete',
-                        workout,
-                        insightInfluencedChanges: []
-                      })}\n\n`))
-                    }
-                    break
-                  } else if (queueEntry.status === 'failed') {
-                    console.error(`[WorkoutGenerate] Inngest generation failed: ${queueEntry.error_message}`)
-                    await sendProgress('error', 0, queueEntry.error_message || tErrors('failedToGenerate'))
-                    break
-                  } else if (queueEntry.status === 'in_progress' || queueEntry.status === 'pending') {
-                    // Send progress update if it increased
-                    if (queueEntry.progress_percent > lastProgress) {
-                      console.log(`[WorkoutGenerate] Progress update: ${queueEntry.progress_percent}% - ${queueEntry.current_phase}`)
-                      await sendProgress(
-                        queueEntry.current_phase || 'profile',
-                        queueEntry.progress_percent,
-                        queueEntry.current_phase || tProgress('generating'),
-                        null
-                      )
-                      lastProgress = queueEntry.progress_percent
-                    }
-                  }
-                }
-
-                // Timeout check
-                if ((Date.now() - startTime) >= maxDuration) {
-                  console.error(`[WorkoutGenerate] SSE polling timeout after 5 minutes: ${generationRequestId}`)
-                  await sendProgress('error', 0, tErrors('generationTimeout'))
-                }
-
+                console.log(`[WorkoutGenerate] Kickstart: Stream closed, client will poll for updates: ${generationRequestId}`)
                 safeClose(controller)
                 return
               }
             } else if (queueEntry.status === 'pending' || queueEntry.status === 'in_progress') {
               // Resume existing generation - check if Inngest is already processing it
               if (shouldUseInngest) {
-                console.log(`[WorkoutGenerate] Resuming via SSE polling (Inngest is processing): ${generationRequestId}`)
+                console.log(`[WorkoutGenerate] Resuming via Kickstart (Inngest is processing): ${generationRequestId}`)
 
                 // Send current progress from database
                 await sendProgress(
@@ -300,60 +240,8 @@ export async function POST(request: NextRequest) {
                   null
                 )
 
-                // Start polling loop (same as new generation)
-                let lastProgress = queueEntry.progress_percent || 5
-                const pollInterval = 2000
-                const maxDuration = 5 * 60 * 1000
-                const startTime = Date.now()
-
-                while (lastProgress < 100 && (Date.now() - startTime) < maxDuration) {
-                  await new Promise(resolve => setTimeout(resolve, pollInterval))
-
-                  const updatedEntry = await GenerationQueueService.getByRequestIdServer(generationRequestId)
-
-                  if (!updatedEntry) {
-                    console.error(`[WorkoutGenerate] Resumed queue entry disappeared: ${generationRequestId}`)
-                    await sendProgress('error', 0, tErrors('failedToGenerate'))
-                    break
-                  }
-
-                  if (updatedEntry.status === 'completed' && updatedEntry.workout_id) {
-                    const { WorkoutService } = await import('@/lib/services/workout.service')
-                    const workout = await WorkoutService.getByIdServer(updatedEntry.workout_id)
-
-                    if (workout) {
-                      console.log(`[WorkoutGenerate] Resumed Inngest generation completed: ${generationRequestId}`)
-                      await sendProgress('complete', 100, tProgress('workoutReady'))
-                      safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({
-                        phase: 'complete',
-                        workout,
-                        insightInfluencedChanges: []
-                      })}\n\n`))
-                    }
-                    break
-                  } else if (updatedEntry.status === 'failed') {
-                    console.error(`[WorkoutGenerate] Resumed generation failed: ${updatedEntry.error_message}`)
-                    await sendProgress('error', 0, updatedEntry.error_message || tErrors('failedToGenerate'))
-                    break
-                  } else if (updatedEntry.status === 'in_progress' || updatedEntry.status === 'pending') {
-                    if (updatedEntry.progress_percent > lastProgress) {
-                      console.log(`[WorkoutGenerate] Resumed progress update: ${updatedEntry.progress_percent}%`)
-                      await sendProgress(
-                        updatedEntry.current_phase || 'profile',
-                        updatedEntry.progress_percent,
-                        updatedEntry.current_phase || tProgress('generating'),
-                        null
-                      )
-                      lastProgress = updatedEntry.progress_percent
-                    }
-                  }
-                }
-
-                if ((Date.now() - startTime) >= maxDuration) {
-                  console.error(`[WorkoutGenerate] Resumed SSE polling timeout: ${generationRequestId}`)
-                  await sendProgress('error', 0, tErrors('generationTimeout'))
-                }
-
+                // Kickstart: Close stream to force client polling
+                console.log(`[WorkoutGenerate] Kickstart: Stream closed for resume, client will poll: ${generationRequestId}`)
                 safeClose(controller)
                 return
               }

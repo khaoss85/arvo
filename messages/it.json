@@ -107,14 +107,14 @@
     "settings": "Impostazioni",
     "viewProgress": "Visualizza Progressi",
     "recentActivity": "Attività Recente",
-    "viewAllHistory": "Visualizza Tutta la Cronologia",
+    "viewAllHistory": "Vedi Cronologia",
     "noWorkoutsMessage": "Nessun allenamento completato. Completa il tuo primo allenamento per vederlo qui!",
     "workoutsCompleted": "{count} {count, plural, one {allenamento completato} other {allenamenti completati}}",
     "sets": "{count} serie",
     "volume": "{value}kg",
-    "startWorkout": "Inizia Allenamento",
+    "startWorkout": "Inizia",
     "resumeWorkout": "Riprendi Allenamento",
-    "generateWorkout": "Genera Nuovo Allenamento",
+    "generateWorkout": "Genera Allenamento",
     "workoutCard": {
       "unnamedWorkout": "Allenamento Senza Nome",
       "kg": "kg",
@@ -405,7 +405,7 @@
         "warnings": "Avvertenze Importanti",
         "alternatives": "Suggerimenti Alternativi",
         "cancel": "Annulla",
-        "proceedButton": "Procedi con il Cambiamento",
+        "proceedButton": "Procedi",
         "proceedAnywayButton": "Procedi Comunque",
         "generating": "Generazione nuovo split...",
         "successMessage": "Passato con successo a {splitType}!",
@@ -426,7 +426,7 @@
         "reasonPlaceholder": "Spiega perché vuoi fare questa modifica...",
         "reasonHelper": "Questo aiuterà l'AI a migliorare le raccomandazioni future.",
         "cancel": "Annulla",
-        "confirm": "Conferma e Applica",
+        "confirm": "Conferma",
         "applying": "Applicazione..."
       }
     },
@@ -467,15 +467,15 @@
       "variation": "{variation}",
       "targetVolume": "Volume Target:",
       "moreMuscles": "+{count} in più",
-      "generateTodaysWorkout": "Genera l'Allenamento di Oggi",
+      "generateTodaysWorkout": "Genera Allenamento",
       "generating": "Generazione...",
       "exercisesReady": "{count} {count, plural, one {Esercizio Pronto} other {Esercizi Pronti}}",
       "reviewed": "Revisionato",
       "readyStatus": "Pronto",
       "review": "Revisiona",
-      "startWorkout": "Inizia Allenamento",
-      "continueWorkout": "Continua Allenamento",
-      "preGenerateWorkout": "Pre-Genera Allenamento",
+      "startWorkout": "Inizia",
+      "continueWorkout": "Continua",
+      "preGenerateWorkout": "Pre-Genera",
       "exercisesPreGenerated": "{count} {count, plural, one {Esercizio Pre-Generato} other {Esercizi Pre-Generati}}",
       "draftStatus": "Bozza",
       "start": "Inizia",
@@ -737,7 +737,7 @@
         "setsCompleted": "{completed}/{total} serie completate",
         "setsReps": "{sets} serie × {reps} reps",
         "validating": "Validazione in corso...",
-        "validateButton": "Valida Riordino con IA",
+        "validateButton": "Valida con IA",
         "aiRecommendation": "Raccomandazione IA:",
         "workoutFlowPreview": "Anteprima Flusso Allenamento",
         "keyChanges": "Cambiamenti Chiave:",
@@ -754,8 +754,8 @@
         "title": "Terminare la Sessione?",
         "description": "I tuoi progressi sono stati salvati. Puoi riprendere questo allenamento in qualsiasi momento dalla dashboard.",
         "savedNote": "Tutte le serie salvate automaticamente",
-        "exitButton": "Vai alla Dashboard",
-        "continueButton": "Continua Allenamento",
+        "exitButton": "Esci",
+        "continueButton": "Continua",
         "closeAriaLabel": "Chiudi modale"
       },
       "addSet": {
@@ -1325,6 +1325,21 @@
       "continuesInBackground": "La generazione continua anche se chiudi questa finestra"
     }
   },
+  "split": {
+    "generation": {
+      "complete": "Split Pronta!",
+      "failed": "Generazione Fallita",
+      "inProgress": "Generazione Split in Corso",
+      "redirecting": "Reindirizzamento alla dashboard...",
+      "ready": "La tua split è pronta",
+      "canCloseMessage": "Puoi chiudere e tornare dopo. La generazione continua in background.",
+      "errorDetails": "Si è verificato un errore durante la generazione. Riprova.",
+      "tryAgain": "Riprova",
+      "viewDashboard": "Vai alla Dashboard",
+      "closeAndCheckLater": "Chiudi e Controlla Dopo",
+      "continuesInBackground": "La generazione continua anche se chiudi questa finestra"
+    }
+  },
   "onboarding": {
     "welcome": "Benvenuto in Arvo",
     "subtitle": "Configuriamo il tuo programma di allenamento personalizzato",
@@ -1737,6 +1752,7 @@
       "review": {
         "title": "Rivedi il Tuo Profilo",
         "description": "Rivedi le tue selezioni qui sotto. L'AI userà queste informazioni per generare i tuoi allenamenti personalizzati.",
+        "loading": "Controllo della configurazione...",
         "completeSteps": "Completa prima i passaggi precedenti.",
         "sections": {
           "experienceLevel": "Livello di esperienza",
@@ -1800,7 +1816,7 @@
           "userNotFound": "Utente non trovato. Effettua nuovamente l'accesso.",
           "completeSteps": "Completa tutti i passaggi richiesti."
         },
-        "completeButton": "Completa Onboarding & Genera Allenamento"
+        "completeButton": "Inizia Allenamento"
       }
     }
   },

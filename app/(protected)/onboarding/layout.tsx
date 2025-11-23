@@ -50,20 +50,31 @@ export default function OnboardingLayout({
       {/* Progress indicator */}
       <div className="sticky top-0 z-10 p-4 border-b bg-white dark:bg-gray-900">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between mb-2">
+          {/* Desktop View: Steps List */}
+          <div className="hidden md:flex justify-between mb-2">
             {steps.map((step) => (
               <div
                 key={step.id}
-                className={`flex-1 text-center text-xs font-medium ${
-                  step.id <= currentStep
+                className={`flex-1 text-center text-xs font-medium ${step.id <= currentStep
                     ? 'text-blue-600 dark:text-blue-400'
                     : 'text-gray-400 dark:text-gray-600'
-                }`}
+                  }`}
               >
                 {step.name}
               </div>
             ))}
           </div>
+
+          {/* Mobile View: Step Summary */}
+          <div className="flex md:hidden justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {steps.find(s => s.id === currentStep)?.name || t('level')}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Step {currentStep} / {steps.length}
+            </span>
+          </div>
+
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"

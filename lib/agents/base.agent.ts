@@ -66,6 +66,22 @@ export abstract class BaseAgent {
   }
 
   /**
+   * Gets compatible reasoning effort for the current model
+   * Maps 'none' to 'minimal' for models that don't support 'none' (gpt-5-mini, gpt-5-nano)
+   * Only gpt-5.1 supports reasoning='none'
+   * @returns Compatible reasoning effort value
+   */
+  protected getCompatibleReasoning(): 'none' | 'minimal' | 'low' | 'medium' | 'high' {
+    // gpt-5.1 supports 'none', all other models need 'minimal' instead
+    if (this.reasoningEffort === 'none' && !this.model.includes('gpt-5.1')) {
+      // Map 'none' to 'minimal' for gpt-5-mini, gpt-5-nano, and other models
+      // Performance is identical (both use 30s timeout)
+      return 'minimal'
+    }
+    return this.reasoningEffort
+  }
+
+  /**
    * Gets the language instruction to append to the system prompt
    * @param targetLanguage - The target language for AI responses
    */
@@ -598,7 +614,7 @@ ${mems.map(mem => {
           this.openai.responses.create({
             model: this.model,
             input: combinedInput,
-            reasoning: { effort: this.reasoningEffort },
+            reasoning: { effort: this.getCompatibleReasoning() },
             text: { verbosity: this.verbosity },
             ...(responseIdToUse && { previous_response_id: responseIdToUse })
           }),

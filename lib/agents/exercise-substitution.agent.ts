@@ -91,11 +91,9 @@ export interface SubstitutionOutput {
  */
 export class ExerciseSubstitutionAgent extends BaseAgent {
   constructor(supabaseClient?: any, reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high') {
-    // gpt-5-mini doesn't support 'none', map to 'minimal' instead
-    const mappedEffort = reasoningEffort === 'none' ? 'minimal' : reasoningEffort
-    super(supabaseClient, mappedEffort as any)
-    // Force gpt-5-mini for chat.completions API compatibility
-    // gpt-5.1 doesn't support chat.completions API (only responses API)
+    super(supabaseClient, reasoningEffort)
+    // Force gpt-5-mini for this agent
+    // BaseAgent.getCompatibleReasoning() automatically maps 'none' → 'minimal' for gpt-5-mini
     this.model = 'gpt-5-mini'
   }
 

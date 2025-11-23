@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useLocale } from 'next-intl'
 
 interface SuggestionParams {
   step: string
@@ -23,9 +24,10 @@ interface SuggestionResult {
 // Simple in-memory cache to avoid repeated calls for same params
 const cache = new Map<string, string>()
 
-function getCacheKey(params: SuggestionParams): string {
+function getCacheKey(params: SuggestionParams, locale: string): string {
   return JSON.stringify({
     step: params.step,
+    locale,
     experienceLevel: params.userData.experienceLevel,
     age: params.userData.age,
     gender: params.userData.gender,
@@ -34,6 +36,7 @@ function getCacheKey(params: SuggestionParams): string {
 }
 
 export function useAIOnboardingSuggestion(params: SuggestionParams): SuggestionResult {
+  const locale = useLocale()
   const [suggestion, setSuggestion] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -47,7 +50,7 @@ export function useAIOnboardingSuggestion(params: SuggestionParams): SuggestionR
     }
 
     // Check cache first
-    const cacheKey = getCacheKey(params)
+    const cacheKey = getCacheKey(params, locale)
     const cached = cache.get(cacheKey)
     if (cached) {
       setSuggestion(cached)
@@ -65,7 +68,8 @@ export function useAIOnboardingSuggestion(params: SuggestionParams): SuggestionR
         },
         body: JSON.stringify({
           step: params.step,
-          userData: params.userData
+          userData: params.userData,
+          locale
         })
       })
 
@@ -88,7 +92,7 @@ export function useAIOnboardingSuggestion(params: SuggestionParams): SuggestionR
     } finally {
       setIsLoading(false)
     }
-  }, [params, enabled])
+  }, [params, enabled, locale])
 
   useEffect(() => {
     fetchSuggestion()

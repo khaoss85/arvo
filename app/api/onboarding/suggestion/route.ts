@@ -6,6 +6,7 @@ import type { Locale } from '@/i18n'
 
 interface SuggestionRequest {
   step: string
+  locale?: Locale
   userData: {
     experienceLevel?: string
     age?: number
@@ -26,11 +27,11 @@ ${data.age ? `- Age: ${data.age}` : ''}
 ${data.gender ? `- Gender: ${data.gender}` : ''}
 ${data.trainingObjective ? `- Goal: ${data.trainingObjective}` : ''}
 
-Provide a concise (2-3 sentences) recommendation for:
+Provide a very brief (1-2 sentences, max 20-40 words) recommendation for:
 1. Which split type would be best (Push/Pull/Legs, Upper/Lower, Full Body, Bro Split)
 2. Optimal training frequency per week
 
-Be encouraging and specific. Use simple language if beginner, technical if advanced.
+Be extremely concise, encouraging and specific. Use simple language if beginner, technical if advanced.
   `.trim(),
 
   equipment: (data) => `
@@ -40,11 +41,11 @@ User profile:
 - Experience level: ${data.experienceLevel || 'unknown'}
 ${data.trainingObjective ? `- Goal: ${data.trainingObjective}` : ''}
 
-Provide a concise (2-3 sentences) suggestion about:
+Provide a very brief (1-2 sentences, max 20-40 words) suggestion about:
 - Essential equipment for their level and goal
 - What they can prioritize if building a home gym
 
-Keep it practical and encouraging.
+Be extremely concise, practical and encouraging.
   `.trim(),
 
   profile: (data) => `
@@ -52,11 +53,11 @@ You are a supportive fitness coach explaining why we collect user information.
 
 User experience level: ${data.experienceLevel || 'unknown'}
 
-Provide a brief (2 sentences) explanation of why sharing age, weight, and height helps us:
+Provide a very brief (1-2 sentences, max 20-40 words) explanation of why sharing age, weight, and height helps us:
 - Personalize volume and recovery recommendations
 - Calculate realistic strength standards
 
-Use simple, non-technical language for beginners. Be concise and reassuring.
+Be extremely concise, use simple non-technical language for beginners, and be reassuring.
   `.trim(),
 
   goals: (data) => `
@@ -66,11 +67,11 @@ User profile:
 - Experience level: ${data.experienceLevel || 'unknown'}
 ${data.age ? `- Age: ${data.age}` : ''}
 
-Provide a brief (2-3 sentences) guidance on:
+Provide a very brief (1-2 sentences, max 20-40 words) guidance on:
 - How to choose between bulk, cut, maintain, or recomp
 - Why mentioning injuries/limitations is important
 
-Be supportive and educational.
+Be extremely concise, supportive and educational.
   `.trim()
 }
 
@@ -95,11 +96,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's preferred language
-    const targetLanguage = await getUserLanguage(user.id)
-
     const body: SuggestionRequest = await request.json()
-    const { step, userData } = body
+    const { step, userData, locale } = body
+
+    // Get user's preferred language
+    // Priority: 1. Locale from frontend (current UI), 2. DB profile, 3. Default
+    const targetLanguage = locale || await getUserLanguage(user.id)
 
     // Get prompt template for this step
     const promptGenerator = STEP_PROMPTS[step]

@@ -50,14 +50,14 @@ export function ProgressFeedback({
 
   const [phase, setPhase] = useState(activePhases[0]?.id || 'profile')
   const [progress, setProgress] = useState(initialProgress || 0)
-  const [message, setMessage] = useState('Starting...')
+  const [message, setMessage] = useState(initialProgress && initialProgress > 0 ? 'Resuming...' : 'Starting...')
   const [eta, setEta] = useState<number | null>(null) // ETA in seconds
   const [detail, setDetail] = useState<string | null>(null) // Additional details
 
   // Polling fallback for mobile disconnections
   const [generationRequestId, setGenerationRequestId] = useState(() => {
-    // Use existing request ID if resuming, otherwise generate new
-    return existingRequestId || crypto.randomUUID()
+    // Priority: 1) existingRequestId (resuming), 2) requestBody.generationRequestId (pre-generated), 3) generate new
+    return existingRequestId || (requestBody as any).generationRequestId || crypto.randomUUID()
   })
   const [pollingMode, setPollingMode] = useState(!!existingRequestId)
   const [resumedFromDatabase, setResumedFromDatabase] = useState(!!existingRequestId)
