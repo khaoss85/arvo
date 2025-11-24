@@ -41,34 +41,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
-    // Sync user's preferred language from DB
-    const syncLanguageFromDB = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('preferred_language')
-          .eq('user_id', userId)
-          .single();
-
-        if (!error && data?.preferred_language) {
-          const dbLanguage = data.preferred_language;
-          if ((dbLanguage === 'en' || dbLanguage === 'it') && dbLanguage !== locale) {
-            console.log('[Providers] Syncing language from DB:', dbLanguage);
-            setLocale(dbLanguage);
-          }
-        }
-      } catch (err) {
-        console.error('[Providers] Failed to sync language from DB:', err);
-      }
-    };
-
     // Get initial session
+    // Language preference is synced server-side via getUserLanguage() in server components
+    // and via LanguageSelector component for user changes
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      // Sync language from DB if user is logged in
-      if (session?.user) {
-        syncLanguageFromDB(session.user.id);
-      }
     });
 
     // Listen for auth changes
@@ -76,14 +53,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      // Sync language from DB on login
-      if (session?.user) {
-        syncLanguageFromDB(session.user.id);
-      }
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, setLoading, locale, setLocale]);
+  }, [setUser, setLoading]);
 
   // Pre-initialize ExerciseDB cache on app load
   useEffect(() => {
