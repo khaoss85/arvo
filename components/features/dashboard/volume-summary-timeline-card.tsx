@@ -32,7 +32,7 @@ export function VolumeSummaryTimelineCard({ progressData }: VolumeSummaryTimelin
   return (
     <div
       className={cn(
-        'flex-shrink-0 w-[280px] rounded-lg border-2 p-4',
+        'flex-shrink-0 w-[65vw] sm:w-[280px] rounded-lg border-2 p-4',
         'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30',
         'border-purple-300 dark:border-purple-700',
         'shadow-lg'

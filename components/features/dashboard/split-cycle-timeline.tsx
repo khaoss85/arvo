@@ -35,6 +35,18 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
   const [undoing, setUndoing] = useState(false)
   const [cycleStats, setCycleStats] = useState<CycleStatsForTimeline | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const loadTimelineData = useCallback(async () => {
     setLoading(true)
@@ -178,8 +190,13 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
 
       // Find current day card
       const currentDayIndex = data.currentCycleDay - 1 // 0-indexed
-      const cardWidth = 320 // Current day card width (320px when expanded)
-      const gap = 12 // Gap between cards
+
+      // Calculate actual card width based on viewport
+      const isMobile = container.clientWidth < 640 // sm breakpoint
+      const cardWidth = isMobile
+        ? container.clientWidth * 0.65  // 65vw on mobile
+        : 320 // 320px on desktop for current day
+      const gap = 16 // Gap between cards (gap-4)
       const padding = 16 // Container padding
 
       // Calculate scroll position to center current day
@@ -294,11 +311,11 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
             scrollSnapType: 'x proximity'
           }}
         >
-          <div className="flex gap-3 min-w-max px-4">
+          <div className="flex gap-4 min-w-max px-4">
             {days.map((dayData) => (
               <div
                 key={dayData.day}
-                style={{ scrollSnapAlign: 'center' }}
+                style={{ scrollSnapAlign: isMobile ? 'start' : 'center' }}
               >
                 <TimelineDayCard
                   dayData={dayData}
@@ -313,14 +330,14 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
 
             {/* Volume Progress Summary Card */}
             {volumeProgress && volumeProgress.length > 0 && (
-              <div style={{ scrollSnapAlign: 'center' }}>
+              <div style={{ scrollSnapAlign: isMobile ? 'start' : 'center' }}>
                 <VolumeSummaryTimelineCard progressData={volumeProgress} />
               </div>
             )}
 
             {/* Muscle Distribution Card */}
             {cycleStats && !statsLoading && (
-              <div style={{ scrollSnapAlign: 'center' }}>
+              <div style={{ scrollSnapAlign: isMobile ? 'start' : 'center' }}>
                 <MuscleDistributionCard
                   targetData={cycleStats.targetVolumeDistribution}
                   actualData={cycleStats.currentStats.setsByMuscleGroup || cycleStats.currentStats.volumeByMuscleGroup}
@@ -336,9 +353,9 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
           </div>
         </div>
 
-        {/* Scroll fade indicators */}
-        <div className="absolute left-0 top-0 bottom-4 w-8 bg-gradient-to-r from-gray-50 dark:from-gray-950 to-transparent pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-gray-50 dark:from-gray-950 to-transparent pointer-events-none" />
+        {/* Scroll fade indicators - hidden on mobile, visible on desktop after padding */}
+        <div className="absolute left-4 top-0 bottom-4 hidden md:block md:w-16 bg-gradient-to-r from-gray-50 via-gray-50/80 dark:from-gray-950 dark:via-gray-950/80 to-transparent pointer-events-none" />
+        <div className="absolute right-4 top-0 bottom-4 hidden md:block md:w-16 bg-gradient-to-l from-gray-50 via-gray-50/80 dark:from-gray-950 dark:via-gray-950/80 to-transparent pointer-events-none" />
       </div>
 
       {/* Legend (optional - simple visual guide) */}

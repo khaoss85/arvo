@@ -246,7 +246,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     return (
       <div
         className={cn(
-          'flex-shrink-0 w-[280px] rounded-lg border-2 p-4 transition-all',
+          'flex-shrink-0 w-[65vw] sm:w-[280px] rounded-lg border-2 p-4 transition-all',
           styles.border,
           styles.bg
         )}
@@ -309,9 +309,9 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     <div
       className={cn(
         'flex-shrink-0 rounded-lg border-2 p-4 transition-all duration-300',
-        // Mobile: 85vw width, Desktop (sm+): Fixed 280px/320px
-        'w-[85vw] sm:w-[280px]',
-        isCurrentDay && 'sm:w-[320px] sm:shadow-2xl sm:ring-4 sm:ring-purple-400 dark:sm:ring-purple-600 sm:scale-105',
+        // Mobile: 65vw width, Desktop (sm+): Fixed 280px/320px
+        'w-[65vw] sm:w-[280px]',
+        isCurrentDay && 'sm:w-[320px] sm:shadow-2xl sm:scale-105',
         // Mobile current day styling (less aggressive than desktop)
         isCurrentDay && 'border-purple-400 dark:border-purple-600 shadow-lg',
         styles.border,

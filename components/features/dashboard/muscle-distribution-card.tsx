@@ -59,7 +59,7 @@ export function MuscleDistributionCard({
         className={cn(
           'rounded-lg border-2 animate-pulse',
           variant === 'timeline'
-            ? 'flex-shrink-0 w-[280px] p-4 h-[400px]'
+            ? 'flex-shrink-0 w-[65vw] sm:w-[280px] p-4 h-[400px]'
             : 'w-full p-6 h-[500px]',
           'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30',
           'border-blue-300 dark:border-blue-700'
@@ -79,7 +79,7 @@ export function MuscleDistributionCard({
       className={cn(
         'rounded-lg border-2',
         isTimeline
-          ? 'flex-shrink-0 w-[280px] p-4'
+          ? 'flex-shrink-0 w-[65vw] sm:w-[280px] p-4'
           : 'w-full p-6',
         'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30',
         'border-blue-300 dark:border-blue-700',
