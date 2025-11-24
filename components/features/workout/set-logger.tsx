@@ -5,9 +5,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ConfirmDialog } from './confirm-dialog'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
-import { Target, Sparkles, Minus, Plus, Brain, SkipForward } from 'lucide-react'
+import { Target, Sparkles, Minus, Plus, Headphones, Brain, ChevronDown } from 'lucide-react'
 import { audioCoachingService } from '@/lib/services/audio-coaching.service'
 import type { PreSetCoachingScript } from '@/lib/types/pre-set-coaching'
 import { cn } from '@/lib/utils/cn'
@@ -20,32 +19,14 @@ interface SetLoggerProps {
     reps: number
     rirTarget: number
   }
+  technicalCues?: string[]
 }
 
-export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
+export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: SetLoggerProps) {
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { logSet, skipWarmupSets } = useWorkoutExecutionStore()
-
-  // Mental readiness emoji mapping with translations
-  const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
-    const emojis: Record<number, string> = {
-      1: '😫',
-      2: '😕',
-      3: '😐',
-      4: '🙂',
-      5: '🔥',
-    }
-    const labels: Record<number, string> = {
-      1: t('mentalReadiness.drained'),
-      2: t('mentalReadiness.struggling'),
-      3: t('mentalReadiness.neutral'),
-      4: t('mentalReadiness.engaged'),
-      5: t('mentalReadiness.lockedIn'),
-    }
-    return { emoji: emojis[value], label: labels[value] }
-  }
+  const { logSet } = useWorkoutExecutionStore()
 
   // Determine if current set is warmup
   const warmupSetsCount = exercise.warmupSets?.length || 0
@@ -179,13 +160,10 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const [weight, setWeight] = useState(getInitialWeight())
   const [reps, setReps] = useState(getInitialReps())
   const [rir, setRir] = useState(getInitialRir())
-  const [mentalReadiness, setMentalReadiness] = useState<number | undefined>(undefined)
-  const [showMentalSelector, setShowMentalSelector] = useState(false)
   const [isLogging, setIsLogging] = useState(false)
-  const [isSkipping, setIsSkipping] = useState(false)
-  const [showSkipWarmupDialog, setShowSkipWarmupDialog] = useState(false)
   const [isGeneratingScript, setIsGeneratingScript] = useState(false)
   const [cachedScripts, setCachedScripts] = useState<Map<string, PreSetCoachingScript>>(new Map())
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false)
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -197,7 +175,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   const handleLogSet = async () => {
     setIsLogging(true)
     try {
-      await logSet({ weight, reps, rir, mentalReadiness })
+      await logSet({ weight, reps, rir })
     } catch (error) {
       console.error('Failed to log set:', error)
       alert(tCommon('errors.failedToLogSet'))
@@ -245,7 +223,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
               rir: s.rir,
               mentalReadiness: s.mentalReadiness,
             })),
-            mentalReadiness,
+            mentalReadiness: undefined,
             language: locale,
           }),
         })
@@ -277,24 +255,6 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
       })
     } finally {
       setIsGeneratingScript(false)
-    }
-  }
-
-  const handleSkipWarmup = () => {
-    if (!isWarmup) return
-    setShowSkipWarmupDialog(true)
-  }
-
-  const confirmSkipWarmup = async () => {
-    setShowSkipWarmupDialog(false)
-    setIsSkipping(true)
-    try {
-      await skipWarmupSets('user_manual')
-    } catch (error) {
-      console.error('Failed to skip warmup:', error)
-      alert(tCommon('errors.failedToSkipWarmup'))
-    } finally {
-      setIsSkipping(false)
     }
   }
 
@@ -335,18 +295,67 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
                 }
               </span>
             </div>
+
+            {/* Audio Coaching Icon - Only for working sets */}
+            {!isWarmup && (
+              <button
+                onClick={handleStartAudioCoaching}
+                disabled={isGeneratingScript}
+                className={cn(
+                  "p-2 rounded-lg transition-all",
+                  isGeneratingScript
+                    ? "bg-blue-100 dark:bg-blue-900/40 cursor-wait"
+                    : "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 active:scale-95"
+                )}
+                title={t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
+              >
+                <Headphones className={cn(
+                  "w-4 h-4",
+                  isGeneratingScript
+                    ? "text-blue-400 animate-pulse"
+                    : "text-blue-600 dark:text-blue-400"
+                )} />
+              </button>
+            )}
           </div>
         </div>
 
         {/* Guidance Cues */}
         <div className="space-y-2">
-          {/* Technical Focus */}
+          {/* Technical Focus with Expandable Details */}
           {(isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus) && (
-            <div className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2.5">
-              <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-              <span className="leading-relaxed">
-                {isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus}
-              </span>
+            <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
+                className="w-full flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-200 p-2.5 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors"
+              >
+                <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                <span className="leading-relaxed flex-1 text-left">
+                  {isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus}
+                </span>
+                {technicalCues && technicalCues.length > 0 && (
+                  <ChevronDown
+                    className={cn(
+                      "w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 transition-transform duration-200",
+                      showTechnicalDetails && "rotate-180"
+                    )}
+                  />
+                )}
+              </button>
+
+              {showTechnicalDetails && technicalCues && technicalCues.length > 0 && (
+                <div className="px-2.5 pb-2.5 pt-0 animate-in slide-in-from-top-2">
+                  <div className="h-px w-full bg-gray-200 dark:bg-gray-700 mb-2" />
+                  <ul className="space-y-1.5 pl-6">
+                    {technicalCues.map((cue, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-blue-500 flex-shrink-0" />
+                        <span>{cue}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
 
@@ -359,24 +368,49 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
               </span>
             </div>
           )}
-        </div>
 
-        {/* Manual Skip Link (Warmup only) */}
-        {isWarmup && setNumber === 1 && warmupSetsCount > 0 && (
-          <div className="mt-3 flex justify-end">
-            <button
-              onClick={handleSkipWarmup}
-              disabled={isSkipping || isLogging}
-              className="text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
-            >
-              <span>{isSkipping ? t('setLogger.skipping') : t('setLogger.skipWarmup')}</span>
-              <SkipForward className="w-3 h-3" />
-            </button>
-          </div>
-        )}
+          {/* Tempo Display - Integrated (Working Sets only) */}
+          {!isWarmup && exercise.tempo && (() => {
+            const tempoParts = exercise.tempo.split('-')
+            const down = tempoParts[0] || '0'
+            const pause = tempoParts[1] || '0'
+            const up = tempoParts[2] || '0'
+            const squeeze = tempoParts[3] || '0'
+
+            return (
+              <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 border border-blue-100 dark:border-blue-900/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">{t('setLogger.tempo')}</span>
+                </div>
+                <div className="flex items-center justify-center mb-2">
+                  <div className="text-2xl font-black text-gray-800 dark:text-white font-mono tracking-widest">{exercise.tempo}</div>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-blue-500">{down}s</span>
+                    <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoDown')}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-purple-500">{pause}s</span>
+                    <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoPause')}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-green-500">{up}s</span>
+                    <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoUp')}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-amber-500">{squeeze}s</span>
+                    <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoSqueeze')}</span>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="space-y-6 mb-6">
         {/* Weight Input */}
         <div className="space-y-2">
           <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">{t('setLogger.weightLabel')}</label>
@@ -456,109 +490,6 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
         </div>
       </div>
 
-      {/* Tempo Display - Only show for working sets */}
-      {!isWarmup && exercise.tempo && (
-        <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-100 dark:border-blue-900/20 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">{t('setLogger.tempoRequirement')}</label>
-            <span className="text-[10px] font-medium text-gray-500 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full shadow-sm">{t('setLogger.fromYourApproach')}</span>
-          </div>
-          <div className="flex items-center justify-center gap-6">
-            <div className="text-3xl font-black text-gray-800 dark:text-white font-mono tracking-widest">{exercise.tempo}</div>
-          </div>
-          <div className="grid grid-cols-4 gap-2 mt-3 text-center">
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-blue-500">{exercise.tempo.split('-')[0]}s</span>
-              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoDown')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-purple-500">{exercise.tempo.split('-')[1]}s</span>
-              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoPause')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-green-500">{exercise.tempo.split('-')[2]}s</span>
-              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoUp')}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-amber-500">{exercise.tempo.split('-')[3]}s</span>
-              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoSqueeze')}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Optional Mental State Selector */}
-      <div className="mb-6">
-        <button
-          onClick={() => setShowMentalSelector(!showMentalSelector)}
-          className="w-full flex items-center justify-center gap-2 text-xs font-medium text-gray-500 hover:text-purple-500 transition-colors py-2"
-        >
-          <Brain className="w-3.5 h-3.5" />
-          {showMentalSelector ? t('setLogger.hideMentalState') : t('setLogger.mentalDrainedOptional')}
-        </button>
-
-        {showMentalSelector && (
-          <div className="mt-3 bg-white/50 dark:bg-gray-800/50 rounded-2xl p-2 border border-white/20 dark:border-gray-700/50 animate-in fade-in slide-in-from-top-2">
-            <div className="grid grid-cols-5 gap-1">
-              {[1, 2, 3, 4, 5].map((value) => {
-                const readiness = getMentalReadinessEmoji(value)
-                const isSelected = mentalReadiness === value
-
-                return (
-                  <button
-                    key={value}
-                    onClick={() => setMentalReadiness(isSelected ? undefined : value)}
-                    className={cn(
-                      "relative h-14 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-1 group",
-                      isSelected
-                        ? "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/30 scale-105 z-10"
-                        : "hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm"
-                    )}
-                    title={readiness.label}
-                  >
-                    <span className={cn(
-                      "text-2xl transition-transform duration-300",
-                      isSelected ? "scale-110" : "grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110"
-                    )}>
-                      {readiness.emoji}
-                    </span>
-
-                    {/* Selection Indicator Dot */}
-                    {isSelected && (
-                      <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full opacity-50" />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Label Display */}
-            <div className="h-6 mt-2 flex items-center justify-center">
-              {mentalReadiness ? (
-                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 animate-in fade-in">
-                  {getMentalReadinessEmoji(mentalReadiness).label}
-                </span>
-              ) : (
-                <span className="text-[10px] text-gray-400 italic">
-                  {t('setLogger.selectMentalState')}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        {mentalReadiness && !showMentalSelector && (
-          <div className="flex justify-center mt-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 rounded-full">
-              <span className="text-sm">{getMentalReadinessEmoji(mentalReadiness).emoji}</span>
-              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                {getMentalReadinessEmoji(mentalReadiness).label}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
       <div className="space-y-3">
         {/* Primary CTA: Log Set Button */}
         <Button
@@ -575,34 +506,7 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
             t('setLogger.logSetButton')
           )}
         </Button>
-
-        {/* Secondary CTA: Execute Set with Audio Coaching - Only for working sets */}
-        {!isWarmup && (
-          <Button
-            onClick={handleStartAudioCoaching}
-            disabled={isGeneratingScript}
-            variant="outline"
-            className="w-full h-12 text-sm font-medium border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl"
-          >
-            <Target className="h-4 w-4 mr-2" />
-            {isGeneratingScript
-              ? t('setLogger.generatingCoaching', { defaultValue: 'Generating Coaching...' })
-              : t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
-          </Button>
-        )}
       </div>
-
-      {/* Skip Warmup Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showSkipWarmupDialog}
-        onClose={() => setShowSkipWarmupDialog(false)}
-        onConfirm={confirmSkipWarmup}
-        title={t('setLogger.skipWarmupTitle')}
-        message={t('setLogger.skipWarmupConfirm', { count: warmupSetsCount })}
-        confirmText={t('setLogger.confirmSkip')}
-        cancelText={tCommon('buttons.cancel')}
-        type="warning"
-      />
     </div>
   )
 }

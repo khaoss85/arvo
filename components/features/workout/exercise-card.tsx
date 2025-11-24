@@ -57,7 +57,7 @@ export function ExerciseCard({
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -86,7 +86,6 @@ export function ExerciseCard({
   const [showProgressionExplanation, setShowProgressionExplanation] = useState(false)
   const [progressionExplanation, setProgressionExplanation] = useState('')
   const [loadingProgressionExplanation, setLoadingProgressionExplanation] = useState(false)
-  const [showTechnicalCues, setShowTechnicalCues] = useState(false)
   const [showSubstitution, setShowSubstitution] = useState(false)
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [editSetIndex, setEditSetIndex] = useState<number | null>(null)
@@ -791,45 +790,6 @@ export function ExerciseCard({
         )}
       </div>
 
-      {/* Technical Cues (Collapsible Glass Card) */}
-      {exercise.technicalCues && exercise.technicalCues.length > 0 && (
-        <div className="mb-6">
-          <div className="bg-blue-950/20 border border-blue-900/30 rounded-xl overflow-hidden">
-            <button
-              onClick={() => setShowTechnicalCues(!showTechnicalCues)}
-              className="w-full flex items-center justify-between p-4 hover:bg-blue-900/10 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Target className="w-4 h-4 text-blue-400" />
-                </div>
-                <span className="text-sm font-bold text-blue-100">{t('exercise.techniqueCues')}</span>
-              </div>
-              <ChevronDown
-                className={cn(
-                  "w-4 h-4 text-blue-400/50 transition-transform duration-200",
-                  showTechnicalCues && "rotate-180"
-                )}
-              />
-            </button>
-
-            {showTechnicalCues && (
-              <div className="px-4 pb-4 pt-0 animate-in slide-in-from-top-2">
-                <div className="h-px w-full bg-blue-900/30 mb-3" />
-                <ul className="space-y-2.5">
-                  {exercise.technicalCues.map((cue, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm text-blue-200/80 leading-relaxed">
-                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
-                      <span>{cue}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Completed Sets Summary */}
       {exercise.completedSets.length > 0 && (
         <CompletedSetsList
@@ -880,35 +840,40 @@ export function ExerciseCard({
           <h3 className="text-xl font-bold text-white mb-2">{t('exercise.exerciseComplete')}</h3>
           <p className="text-gray-400 mb-6">{t('exercise.greatWork', { exerciseName: exercise.exerciseName })}</p>
 
-          {/* Add Extra Set Option */}
-          <div className="mb-4">
-            <AddSetButton
-              currentSets={exercise.targetSets}
-              onAddSet={() => addSetToExercise(exerciseIndex)}
-              variant="full"
-              userAddedSets={exercise.userAddedSets}
-              enableAIValidation={true}
-              onRequestValidation={handleValidateAddSet}
-              exerciseName={exercise.exerciseName}
-            />
-          </div>
+          {/* Only show add options if this is the current active exercise */}
+          {exerciseIndex === currentExerciseIndex && (
+            <>
+              {/* Add Extra Set Option */}
+              <div className="mb-4">
+                <AddSetButton
+                  currentSets={exercise.targetSets}
+                  onAddSet={() => addSetToExercise(exerciseIndex)}
+                  variant="full"
+                  userAddedSets={exercise.userAddedSets}
+                  enableAIValidation={true}
+                  onRequestValidation={handleValidateAddSet}
+                  exerciseName={exercise.exerciseName}
+                />
+              </div>
 
-          {/* Add Extra Exercise Option */}
-          <div className="mb-4">
-            <AddExerciseButton
-              position="after"
-              onAddExercise={handleOpenAddExercise}
-              variant="full"
-              currentExerciseCount={totalExercises}
-            />
-          </div>
+              {/* Add Extra Exercise Option */}
+              <div className="mb-4">
+                <AddExerciseButton
+                  position="after"
+                  onAddExercise={handleOpenAddExercise}
+                  variant="full"
+                  currentExerciseCount={totalExercises}
+                />
+              </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 border-t border-gray-700"></div>
-            <span className="text-sm text-gray-500">or</span>
-            <div className="flex-1 border-t border-gray-700"></div>
-          </div>
+              {/* Divider */}
+              <div className="flex items-center gap-4 my-6">
+                <div className="flex-1 border-t border-gray-700"></div>
+                <span className="text-sm text-gray-500">or</span>
+                <div className="flex-1 border-t border-gray-700"></div>
+              </div>
+            </>
+          )}
 
           <Button
             onClick={handleMoveToNext}
@@ -947,6 +912,7 @@ export function ExerciseCard({
                 exercise={exercise}
                 setNumber={currentSetNumber}
                 suggestion={exercise.currentAISuggestion?.suggestion}
+                technicalCues={exercise.technicalCues}
               />
 
               {isSuggestionPending && (
@@ -960,32 +926,28 @@ export function ExerciseCard({
         </>
       )}
 
-      {/* Change Exercise Button */}
+      {/* Action Buttons */}
       {!isLastSet && !isResting && (
-        <div className="mt-4 mb-2">
+        <div className="mt-4 mb-2 grid grid-cols-2 gap-3">
           <Button
             onClick={() => setShowSubstitution(true)}
             variant="outline"
-            className="w-full border-gray-700 text-gray-300 hover:border-purple-600 hover:text-purple-400 transition-colors"
+            className="border-gray-700 text-gray-300 hover:border-purple-600 hover:text-purple-400 transition-colors"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             {t('exercise.changeExercise')}
           </Button>
+
+          <Button
+            onClick={() => addSetToExercise(exerciseIndex)}
+            variant="outline"
+            className="border-gray-700 text-gray-300 hover:border-green-600 hover:text-green-400 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Aggiungi set
+          </Button>
         </div>
       )}
-
-      {/* Navigation */}
-      <div className="mt-6 flex gap-3">
-        {exerciseIndex > 0 && (
-          <Button
-            onClick={previousExercise}
-            variant="outline"
-            className="flex-1 border-gray-700 text-gray-300"
-          >
-            {t('exercise.previous')}
-          </Button>
-        )}
-      </div>
 
       {/* Exercise Substitution Modal */}
       {showSubstitution && (
