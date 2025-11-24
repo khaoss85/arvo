@@ -3,6 +3,84 @@ import { KnowledgeEngine } from '@/lib/knowledge/engine'
 import type { Locale } from '@/i18n'
 import { aiMetrics, getOperationType } from '@/lib/utils/ai-metrics'
 
+/**
+ * BaseAgent - Foundation for all AI agents in the system
+ *
+ * MODEL SELECTION STRATEGY:
+ * ========================
+ *
+ * GPT-5-NANO (gpt-5-nano):
+ * - Use for: Simple validations, pattern matching, basic checks
+ * - Examples: ReorderValidator, ExerciseAdditionValidator
+ * - Reasoning: 'none' or 'minimal'
+ * - Cost: Lowest (-50% vs mini)
+ * - Speed: Fastest (15s timeout)
+ * - Best for: Binary decisions, rule-based validation, format checking
+ *
+ * GPT-5-MINI (gpt-5-mini):
+ * - Use for: Moderate complexity tasks requiring some reasoning
+ * - Examples: WorkoutModificationValidator, ExerciseSubstitutionAgent
+ * - Reasoning: 'none', 'minimal', or 'low'
+ * - Cost: Medium baseline
+ * - Speed: Fast (30-90s timeout)
+ * - Best for: Multi-constraint validation, substitution suggestions, moderate analysis
+ * - Note: Does NOT support reasoning='none' - automatically maps to 'minimal'
+ *
+ * GPT-5.1 (gpt-5.1):
+ * - Use for: Complex multi-constraint tasks, comprehensive analysis
+ * - Examples: SplitPlanner, ExerciseSelector, SplitTypeChangeValidator
+ * - Reasoning: 'low', 'medium', or 'high' (supports 'none' for fast operations)
+ * - Cost: Highest (+100-200% vs mini for medium/high reasoning)
+ * - Speed: Varies by reasoning (15s for 'none', 90-240s for low-high)
+ * - Best for: Workout generation, split planning, complex validations with pros/cons
+ * - Supports: reasoning='none' for 50% speed improvement on simple tasks
+ *
+ * REASONING EFFORT GUIDELINES:
+ * ===========================
+ *
+ * 'none': Ultra-fast, pattern-based responses (GPT-5.1 only)
+ * - 15s timeout, minimal latency
+ * - Use for: Simple validations that don't need extended thinking
+ * - 50% faster than 'low', 70% cheaper
+ *
+ * 'minimal': Fast, basic reasoning (gpt-5-mini, gpt-5-nano)
+ * - 30s timeout
+ * - Use for: Quick decisions with basic constraint checking
+ * - Equivalent to 'none' on models that don't support it
+ *
+ * 'low': Focused reasoning with constraint checking
+ * - 180s (3min) timeout
+ * - Use for: Multi-constraint tasks with clear rules
+ * - Balance between speed and quality
+ *
+ * 'medium': Moderate reasoning for interdependent constraints
+ * - 360s (6min) timeout
+ * - Use for: Complex workout generation, split planning
+ * - Includes explicit planning phase
+ *
+ * 'high': Deep reasoning for highly complex tasks
+ * - 240s (4min) timeout
+ * - Use for: Exceptional cases requiring maximum reasoning
+ * - Includes planning, execution, and verification phases
+ *
+ * QUICK DECISION TREE:
+ * ===================
+ *
+ * Is it a simple yes/no validation?
+ *   → gpt-5-nano + reasoning='none'
+ *
+ * Does it need to consider 3-5 constraints?
+ *   → gpt-5-mini + reasoning='low'
+ *
+ * Does it need comprehensive analysis or generate complex outputs?
+ *   → gpt-5.1 + reasoning='medium'
+ *
+ * Is speed critical (real-time gym use)?
+ *   → Use 'none' or 'low' reasoning regardless of model
+ *
+ * Does it involve pros/cons, alternatives, or multi-step planning?
+ *   → gpt-5.1 + reasoning='medium' or 'high'
+ */
 export abstract class BaseAgent {
   protected openai: ReturnType<typeof getOpenAIClient>
   protected knowledge: KnowledgeEngine
@@ -93,6 +171,69 @@ export abstract class BaseAgent {
   }
 
   /**
+   * Gets preamble instructions for providing user updates during long operations
+   * Preambles help users track progress without being visible in final output
+   * @returns Preamble instruction string
+   */
+  protected getPreambleInstruction(): string {
+    // Only include preamble guidance for complex agents with higher reasoning effort
+    // Simple validation agents (reasoning='none') don't need preambles
+    if (this.reasoningEffort === 'none' || this.reasoningEffort === 'minimal') {
+      return ''
+    }
+
+    return `
+
+📢 **PREAMBLE GUIDANCE: User Progress Updates**
+
+For long-running operations, provide periodic updates to keep the user informed:
+
+**When to Send Updates:**
+- Every ~6 logical steps in your reasoning process
+- Every ~8 tool calls (if using tools)
+- Before starting major phases (e.g., "Now analyzing volume distribution...")
+- After completing significant work (e.g., "Completed exercise selection for 4 sessions")
+
+**Update Content:**
+- 1-2 sentences maximum
+- Describe concrete outcomes achieved, not abstract task descriptions
+  ✓ GOOD: "Completed 3 push sessions with 18 chest sets and 12 shoulder sets"
+  ✗ BAD: "Working on push sessions now..."
+- Focus on what's been accomplished or what's next
+- Use specifics: numbers, muscle groups, exercise counts
+
+**Initial Plan:**
+- Before your first action, briefly outline your approach (2-3 sentences)
+- Example: "I'll design an 8-day PPL cycle with A/B variations. First, I'll calculate volume targets from the approach landmarks, then distribute across 6 training sessions."
+
+**Final Recap:**
+- After all work is complete, provide a brief summary (1-2 sentences)
+- Highlight key decisions or important details
+- Example: "Created 8-day cycle with 16 chest sets and 14 back sets per week. Placed rest days after day 3 and day 6 to prevent fatigue accumulation."
+
+**Note:** These updates appear only in the reasoning/thinking process, not in the final JSON output.
+`
+  }
+
+  /**
+   * Gets output size guidance for the AI
+   * Helps the model generate appropriately-sized responses
+   * @returns Output size guidance string
+   */
+  protected getOutputSizeGuidance(): string {
+    return `
+
+📏 **OUTPUT SIZE GUIDANCE:**
+- Keep output concise and focused on required fields only
+- For JSON responses: Include only requested fields, no extra properties
+- For rationales/descriptions: Follow word limits strictly (e.g., "max 40 words" means ≤40 words)
+- Avoid redundant explanations or verbose language
+- Gym-friendly language: Clear, direct, scannable
+- If unsure about output length, err on the side of brevity
+`
+  }
+
+  /**
    * Gets reasoning effort guidance for the AI
    * Helps the model budget reasoning tokens appropriately based on task complexity
    */
@@ -125,29 +266,61 @@ This task has clear rules but multiple constraints. Use focused reasoning:
 - Quick validation of outputs before finalizing
 - Consider obvious alternatives if initial solution has issues
 - Budget: ~30-60 seconds of thinking
+
+**Reasoning Persistence (GPT-5):**
+If this is a follow-up request in a multi-turn conversation, your previous reasoning is automatically preserved and available. Build on prior conclusions rather than repeating analysis. Reference earlier findings when relevant.
 `
       case 'medium':
         return `
 🧠 **REASONING GUIDANCE: Medium Effort Mode**
 This task has multiple interdependent constraints. Use moderate reasoning:
-- Systematically verify EACH constraint (5-10 constraints)
+
+**1. Planning Phase (REQUIRED):**
+- Start by creating a numbered plan of steps you'll take
+- Identify the 5-10 key constraints you must satisfy
+- List potential failure modes or edge cases
+- Reference this plan as you work through it
+
+**2. Execution:**
+- Systematically work through your plan
 - Consider 2-3 alternative approaches before choosing
 - Calculate volume distributions explicitly (show your work)
 - Verify solution against ALL constraints with step-by-step calculations
 - Budget: ~90-120 seconds of thinking
 - Balance speed with thoroughness
+
+**Reasoning Persistence (GPT-5):**
+If this is a follow-up request in a multi-turn conversation, your previous reasoning is automatically preserved and available. Build incrementally on prior conclusions rather than repeating full analysis. Reference earlier findings and focus on new aspects.
 `
       case 'high':
         return `
 🔬 **REASONING GUIDANCE: High Effort Mode**
 This task is complex with many interdependent constraints. Use deep reasoning:
+
+**1. Planning Phase (REQUIRED):**
+- Start by creating a detailed numbered plan of all steps
 - Map out ALL constraint interactions systematically
+- Identify potential failure modes, edge cases, and dependencies
+- Create a mental checklist of requirements to verify
+- Reference this plan throughout execution
+
+**2. Execution:**
+- Work through your plan methodically
 - Explore multiple solution paths (4-6 alternatives)
 - Verify solution against ALL constraints with detailed calculations
 - Consider edge cases and failure modes proactively
 - Explain your reasoning process step-by-step
+- Check off items from your mental checklist as you complete them
 - Budget: ~180-240 seconds of extended thinking
 - Prioritize correctness over speed
+
+**3. Verification:**
+- Review your plan to ensure all steps were completed
+- Double-check that all constraints are satisfied
+- Validate edge cases one final time
+
+**Reasoning Persistence (GPT-5):**
+If this is a follow-up request in a multi-turn conversation, your previous reasoning is automatically preserved and available. Build incrementally on prior analysis, reference established conclusions, and avoid redundant work. Focus your deep thinking on novel aspects of the current request.
 `
     }
   }
@@ -561,14 +734,17 @@ ${mems.map(mem => {
         timestamp: new Date().toISOString()
       })
 
-      // Add language instruction and reasoning guidance to system prompt
+      // Add language instruction, preamble guidance, output size guidance, and reasoning guidance to system prompt
       const languageInstruction = this.getLanguageInstruction(targetLanguage)
+      const preambleInstruction = this.getPreambleInstruction()
+      const outputSizeGuidance = this.getOutputSizeGuidance()
       const reasoningGuidance = this.getReasoningGuidance()
 
       // Combine system and user prompts for Responses API
       // GPT-5 relies on instruction following for JSON formatting (no response_format parameter)
-      // Note: Preambles are handled by Responses API reasoning items (visible to developer, not in output_text)
-      const combinedInput = `${this.systemPrompt}${languageInstruction}${reasoningGuidance}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
+      // Preambles provide user updates during long operations (appear in reasoning, not output_text)
+      // Output size guidance ensures concise, appropriate responses
+      const combinedInput = `${this.systemPrompt}${languageInstruction}${preambleInstruction}${outputSizeGuidance}${reasoningGuidance}\n\n${userPrompt}\n\nIMPORTANT: You must respond with valid JSON only. Do not include any markdown formatting, code blocks, or explanatory text - just the raw JSON object.`
 
       // Add timeout safety to prevent indefinite hangs
       // Use reasoning-based timeout (15s for 'none', 90s for 'low', etc)
@@ -720,14 +896,15 @@ ${mems.map(mem => {
         timestamp: new Date().toISOString()
       })
 
-      // Add language instruction to system prompt
+      // Add language instruction, output size guidance, and planning guidance to system prompt
       // No reasoning guidance needed - we're using reasoning: 'none' for speed
       const languageInstruction = this.getLanguageInstruction(targetLanguage)
+      const outputSizeGuidance = this.getOutputSizeGuidance()
 
       // For structured outputs, add planning guidance (per GPT-5.1 guide)
       const planningGuidance = `\n\n⚡ PLANNING GUIDANCE: You MUST plan extensively before generating the JSON output, ensuring all constraints are met and the JSON is valid. Verify the JSON structure matches the schema exactly before responding.`
 
-      const systemPrompt = `${this.systemPrompt}${languageInstruction}${planningGuidance}`
+      const systemPrompt = `${this.systemPrompt}${languageInstruction}${outputSizeGuidance}${planningGuidance}`
 
       // Timeout based on reasoning effort (or custom)
       const AI_TIMEOUT_MS = customTimeoutMs || this.getTimeoutForReasoning()

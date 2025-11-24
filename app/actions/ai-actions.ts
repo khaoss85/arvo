@@ -1218,7 +1218,8 @@ export async function validateCustomSubstitutionAction(
     const targetLanguage = await getUserLanguage(userId)
 
     // Create agent instance with server Supabase client
-    const agent = new ExerciseSubstitutionAgent(supabase)
+    // Using 'none' reasoning for fast validation (~1s vs ~5s)
+    const agent = new ExerciseSubstitutionAgent(supabase, 'none')
 
     // Validate user's custom exercise
     const result = await agent.validateCustomSubstitution(enrichedInput, targetLanguage)
