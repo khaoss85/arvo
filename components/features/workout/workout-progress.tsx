@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { RefreshCw, PlayCircle, CheckCircle2, Circle, Dumbbell, List } from 'lucide-react'
+import { PlayCircle, CheckCircle2, Circle, Dumbbell, List } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
@@ -10,11 +10,11 @@ import { cn } from '@/lib/utils/cn'
 interface WorkoutProgressProps {
   currentIndex: number
   exercises: ExerciseExecution[]
-  onSwapExercise?: (index: number) => void
   onReorder?: () => void
+  onExerciseClick?: (index: number) => void
 }
 
-export function WorkoutProgress({ currentIndex, exercises, onSwapExercise, onReorder }: WorkoutProgressProps) {
+export function WorkoutProgress({ currentIndex, exercises, onReorder, onExerciseClick }: WorkoutProgressProps) {
   const t = useTranslations('workout.execution.progress')
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const progress = ((currentIndex) / exercises.length) * 100
@@ -60,8 +60,10 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise, onReo
           return (
             <div
               key={idx}
+              onClick={() => onExerciseClick?.(idx)}
               className={cn(
                 "flex items-center justify-between p-2.5 rounded-lg transition-all duration-200 border",
+                onExerciseClick && "cursor-pointer",
                 isCurrent
                   ? "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800 shadow-sm scale-[1.01]"
                   : isCompleted
@@ -121,21 +123,6 @@ export function WorkoutProgress({ currentIndex, exercises, onSwapExercise, onReo
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-center min-w-[3rem]">
                   {ex.completedSets.length}/{ex.targetSets}
                 </span>
-
-                {/* Swap button - only show if not completed and callback provided */}
-                {!isCompleted && onSwapExercise && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onSwapExercise(idx)
-                    }}
-                    className="p-1.5 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors group"
-                    aria-label={`Change ${ex.exerciseName}`}
-                    title={t('changeExercise')}
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
-                  </button>
-                )}
               </div>
             </div>
           )

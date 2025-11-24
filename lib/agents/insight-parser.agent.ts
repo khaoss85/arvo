@@ -178,9 +178,9 @@ Output: {
 Always provide actionable, specific suggestions tailored to the user's note and workout context.`;
   }
 
-  async parseInsight(input: InsightParserInput): Promise<InsightParserOutput> {
+  async parseInsight(input: InsightParserInput, targetLanguage?: 'en' | 'it'): Promise<InsightParserOutput> {
     const userPrompt = this.buildUserPrompt(input);
-    return await this.complete<InsightParserOutput>(userPrompt);
+    return await this.complete<InsightParserOutput>(userPrompt, targetLanguage);
   }
 
   private buildUserPrompt(input: InsightParserInput): string {

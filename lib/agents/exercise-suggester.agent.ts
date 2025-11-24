@@ -105,7 +105,8 @@ Be encouraging but realistic about what's needed vs nice-to-have.`
   }
 
   async suggestExercises(
-    input: ExerciseSuggestionInput
+    input: ExerciseSuggestionInput,
+    targetLanguage?: 'en' | 'it'
   ): Promise<ExerciseSuggestionOutput> {
     // Load training approach
     const approach = await this.knowledge.loadApproach(input.userContext.approachId)
@@ -178,7 +179,7 @@ Required JSON structure:
 }
 `
 
-    return await this.complete<ExerciseSuggestionOutput>(prompt)
+    return await this.complete<ExerciseSuggestionOutput>(prompt, targetLanguage)
   }
 
   private buildApproachContext(approach: any): string {

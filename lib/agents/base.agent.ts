@@ -165,7 +165,7 @@ export abstract class BaseAgent {
    */
   protected getLanguageInstruction(targetLanguage: Locale = 'en'): string {
     if (targetLanguage === 'it') {
-      return '\n\n🇮🇹 LANGUAGE INSTRUCTION: You MUST respond in Italian (italiano). Use natural, conversational Italian suitable for a gym/fitness environment. All text fields in your JSON response should be in Italian. Exercise names can remain in English if they are standard international terms (e.g., "Bench Press", "Squat").'
+      return '\n\n🇮🇹 LANGUAGE INSTRUCTION: You MUST respond in Italian (italiano). Use natural, conversational Italian suitable for a gym/fitness environment. All text fields in your JSON response should be in Italian, including:\n- technicalCues (suggerimenti tecnici)\n- technicalFocus (focus tecnico)\n- mentalFocus (visualizzazioni e cues mentali)\n- setGuidance descriptions\n- rationale and reasoning text\n\nExercise names can remain in English if they are standard international terms (e.g., "Bench Press", "Squat"), but all coaching cues, mental imagery, and technical instructions MUST be in Italian.'
     }
     return '\n\n🇬🇧 LANGUAGE INSTRUCTION: Respond in English.'
   }

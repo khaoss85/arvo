@@ -46,7 +46,7 @@ Provide warnings for suboptimal orders but allow user choice.
 Be practical - gym logistics matter too.`
   }
 
-  async validateReorder(input: ReorderValidationInput): Promise<ReorderValidationOutput> {
+  async validateReorder(input: ReorderValidationInput, targetLanguage?: 'en' | 'it'): Promise<ReorderValidationOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
 
@@ -96,6 +96,6 @@ Required JSON structure:
 }
 `
 
-    return await this.complete<ReorderValidationOutput>(prompt)
+    return await this.complete<ReorderValidationOutput>(prompt, targetLanguage)
   }
 }

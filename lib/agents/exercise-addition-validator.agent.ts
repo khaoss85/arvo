@@ -114,7 +114,8 @@ IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in
   }
 
   async validateExerciseAddition(
-    input: ExerciseAdditionInput
+    input: ExerciseAdditionInput,
+    targetLanguage?: 'en' | 'it'
   ): Promise<ExerciseAdditionOutput> {
     // Load training approach
     const approach = await this.knowledge.loadApproach(input.userContext.approachId)
@@ -212,7 +213,7 @@ Required JSON structure:
 }
 `
 
-    return await this.complete<ExerciseAdditionOutput>(prompt)
+    return await this.complete<ExerciseAdditionOutput>(prompt, targetLanguage)
   }
 
   private buildApproachContext(approach: any): string {

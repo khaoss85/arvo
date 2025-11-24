@@ -26,7 +26,8 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
     resumeWorkout,
     currentExerciseIndex,
     exercises,
-    endWorkout: _endWorkout
+    endWorkout: _endWorkout,
+    goToExercise
   } = useWorkoutExecutionStore()
   const [showReorderModal, setShowReorderModal] = useState(false)
   const [swapExerciseIndex, setSwapExerciseIndex] = useState<number | null>(null)
@@ -134,8 +135,8 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
       <WorkoutProgress
         currentIndex={currentExerciseIndex}
         exercises={exercises}
-        onSwapExercise={(index) => setSwapExerciseIndex(index)}
         onReorder={() => setShowReorderModal(true)}
+        onExerciseClick={goToExercise}
       />
 
       {/* Workout Rationale */}

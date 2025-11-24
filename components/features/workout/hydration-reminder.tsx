@@ -55,7 +55,7 @@ export function HydrationReminder({
   return (
     <div
       className={`
-        relative flex flex-col gap-3 p-4 rounded-lg border
+        relative flex items-center gap-2 px-3 py-2 rounded-lg border
         ${messageTypeColors[suggestion.messageType]}
         ${urgencyBorder[suggestion.urgency]}
         ${className}
@@ -63,60 +63,29 @@ export function HydrationReminder({
       role="alert"
       aria-live="polite"
     >
+      {/* Icon */}
+      <Icon className={`w-4 h-4 flex-shrink-0 ${messageTypeIconColors[suggestion.messageType]}`} />
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 mr-1">
+        <span className={`text-xs font-medium ${messageTypeTextColors[suggestion.messageType]}`}>
+          {suggestion.messageType === 'normal' ? t('title') : t('titleSmallSips')}
+        </span>
+        {suggestion.waterAmount && (
+          <span className="text-[10px] text-gray-400 ml-1.5">
+            ({suggestion.waterAmount})
+          </span>
+        )}
+      </div>
+
       {/* Close button */}
       <button
         onClick={onDismiss}
-        className="absolute top-2 right-2 p-1 rounded-md hover:bg-white/10 transition-colors"
+        className="p-1 rounded-md hover:bg-white/10 transition-colors flex-shrink-0"
         aria-label={t('dismiss')}
       >
-        <X className="w-4 h-4 text-gray-400" />
+        <X className="w-3.5 h-3.5 text-gray-400" />
       </button>
-
-      {/* Header with icon */}
-      <div className="flex items-start gap-3 pr-6">
-        <div className={`
-          flex items-center justify-center w-10 h-10 rounded-full
-          ${messageTypeColors[suggestion.messageType]}
-          border ${messageTypeColors[suggestion.messageType]}
-        `}>
-          <Icon className={`w-5 h-5 ${messageTypeIconColors[suggestion.messageType]}`} />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className={`text-sm font-semibold ${messageTypeTextColors[suggestion.messageType]}`}>
-            {suggestion.messageType === 'normal' ? t('title') : t('titleSmallSips')}
-          </h3>
-          <p className="text-xs text-gray-300 mt-1">
-            {suggestion.reason}
-          </p>
-          {suggestion.waterAmount && (
-            <p className={`text-xs font-medium mt-2 ${messageTypeTextColors[suggestion.messageType]}`}>
-              {suggestion.messageType === 'normal'
-                ? t('recommendedAmount', { amount: suggestion.waterAmount })
-                : t('smallSipsAmount', { amount: suggestion.waterAmount })
-              }
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Action button */}
-      <div className="flex gap-2 mt-1">
-        <button
-          onClick={onDismiss}
-          className={`
-            flex-1 px-4 py-2.5 rounded-lg font-medium text-sm
-            ${messageTypeTextColors[suggestion.messageType]}
-            ${messageTypeColors[suggestion.messageType]}
-            border ${messageTypeColors[suggestion.messageType]}
-            hover:bg-white/5 active:bg-white/10
-            transition-colors touch-manipulation
-            min-h-[44px]
-          `}
-        >
-          {t('alreadyHydrated')}
-        </button>
-      </div>
     </div>
   )
 }

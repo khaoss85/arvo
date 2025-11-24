@@ -164,7 +164,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             const animationUrl =
               ex.animationUrl ||
               (await AnimationService.getAnimationUrl({
-                name: ex.name,
+                name: getExerciseName(ex),
                 canonicalPattern: ex.canonicalPattern,
                 equipmentVariant: ex.equipment,
               }))
@@ -319,7 +319,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
             const animationUrl =
               ex.animationUrl ||
               (await AnimationService.getAnimationUrl({
-                name: ex.name,
+                name: getExerciseName(ex),
                 canonicalPattern: ex.canonicalPattern,
                 equipmentVariant: ex.equipment,
               }))
