@@ -22,6 +22,7 @@ interface OnboardingData {
   strengthBaseline: Record<string, any>
   firstName: string | null
   gender: string | null
+  trainingFocus?: string | null
   age: number | null
   weight: number | null
   height: number | null
@@ -158,6 +159,7 @@ export async function POST(request: NextRequest) {
                 strength_baseline: data.strengthBaseline || {},
                 first_name: data.firstName || null,
                 gender: data.gender || null,
+                training_focus: data.trainingFocus || null,
                 age: data.age || null,
                 weight: data.weight || null,
                 height: data.height || null,
@@ -208,7 +210,8 @@ export async function POST(request: NextRequest) {
                   equipmentAvailable: data.availableEquipment || [],
                   experienceYears: data.confirmedExperience || null,
                   userAge: data.age || null,
-                  userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
+                  userGender: (data.gender as 'male' | 'female' | 'other' | null) || null,
+                  trainingFocus: (data.trainingFocus as 'upper_body' | 'lower_body' | 'balanced' | null) || null
                 }
 
                 // Trigger Inngest for async background processing
@@ -250,7 +253,8 @@ export async function POST(request: NextRequest) {
                 equipmentAvailable: data.availableEquipment || [],
                 experienceYears: data.confirmedExperience || null,
                 userAge: data.age || null,
-                userGender: (data.gender as 'male' | 'female' | 'other' | null) || null
+                userGender: (data.gender as 'male' | 'female' | 'other' | null) || null,
+                trainingFocus: (data.trainingFocus as 'upper_body' | 'lower_body' | 'balanced' | null) || null
               }, generationRequestId)
 
               if (splitResult?.success && splitResult.data) {

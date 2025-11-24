@@ -31,6 +31,7 @@ export interface SplitPlannerInput {
   experienceYears?: number | null
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
+  trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null // User training emphasis preference
   userHeight?: number | null // cm (for work capacity estimation)
   userWeight?: number | null // kg (for recovery capacity estimation)
   // Schedule constraints
@@ -175,11 +176,12 @@ Frequency Guidelines:
 - Muscle-Specific: ${JSON.stringify(approach.frequencyGuidelines.muscleSpecific, null, 2)}
 ` : ''}
 
-=== MUSCLE GROUP BALANCE RULES (MANDATORY) ===
+=== MUSCLE GROUP BALANCE RULES ===
 
-**🔴 CRITICAL: These ratios are MANDATORY for injury prevention and balanced development.**
+${input.experienceYears !== null && input.experienceYears !== undefined && input.experienceYears < 1 ? `
+**🔴 CRITICAL FOR BEGINNERS: These ratios are MANDATORY for injury prevention and balanced development.**
 
-When designing splits, you MUST ensure these minimum volume ratios across the full cycle:
+When designing splits for beginner-level users (<1 year experience), you MUST ensure these minimum volume ratios across the full cycle:
 
 1. **Posterior Chain Balance:**
    - Hamstrings volume MUST be ≥60% of Quads volume
@@ -197,6 +199,35 @@ When designing splits, you MUST ensure these minimum volume ratios across the fu
    - Calculate these ratios BEFORE finalizing the split
    - If ratios are not met, INCREASE volume for under-represented muscle groups
    - Do NOT reduce volume of primary muscles to meet ratios - always ADD volume where needed
+` : `
+**Muscle Group Balance:** User has >1 year experience - balance rules are recommendations but not strictly enforced. Experienced lifters can handle specialized volume distributions.
+`}
+
+${input.splitType === 'bro_split' && input.trainingFocus && input.trainingFocus !== 'balanced' ? `
+=== TRAINING FOCUS VOLUME DISTRIBUTION (BRO SPLIT) ===
+
+**IMPORTANT: User selected ${input.trainingFocus === 'upper_body' ? 'UPPER BODY' : 'LOWER BODY'} focus for this BRO SPLIT.**
+
+${input.trainingFocus === 'upper_body' ? `
+**Upper Body Emphasis:**
+- Target: 55-60% of total weekly volume should be allocated to upper body muscle groups
+- Priority Muscles: Chest, Back (lats + upper back), Shoulders, Arms (biceps + triceps)
+- Suggested Split Structure: Chest day, Back day, Shoulders + Arms day, Legs day (or 2x legs if 5+ days)
+- Example Distribution (4-day): Chest 25%, Back 25%, Shoulders+Arms 15%, Legs 35%
+` : `
+**Lower Body Emphasis:**
+- Target: 55-60% of total weekly volume should be allocated to lower body muscle groups
+- Priority Muscles: Glutes, Hamstrings, Quadriceps
+- Suggested Split Structure: Glute-focused day, Quad-focused day, Hamstring-focused day (if 5+ days), Upper body days
+- Example Distribution (4-day): Glutes 20%, Quads 20%, Hamstrings 15%, Upper Body 45%
+- CRITICAL: Ensure glute exercises are prioritized in lower body sessions (hip thrusts, glute bridges, etc.)
+`}
+
+**Implementation Notes:**
+- This focus ONLY applies to BRO SPLIT type - custom splits and weak_point_focus should follow their own logic
+- Still maintain minimum safety ratios for beginners if applicable
+- Volume emphasis should guide session design and exercise selection
+` : ''}
 
 ${approach.splitVariations ? `
 Split Variation Strategy:
@@ -607,7 +638,8 @@ Output a valid JSON split plan.`
     const parts: string[] = []
 
     if (input.experienceYears !== null && input.experienceYears !== undefined) {
-      parts.push(`Training Experience: ${input.experienceYears} years`)
+      const isBeginnerLevel = input.experienceYears < 1
+      parts.push(`Training Experience: ${input.experienceYears} years${isBeginnerLevel ? ' (beginner level)' : ''}`)
     }
 
     if (input.userAge) {
@@ -616,6 +648,13 @@ Output a valid JSON split plan.`
 
     if (input.userGender) {
       parts.push(`Gender: ${input.userGender}`)
+    }
+
+    if (input.trainingFocus) {
+      const focusLabel = input.trainingFocus === 'upper_body' ? 'Upper Body (chest/back/arms)' :
+                         input.trainingFocus === 'lower_body' ? 'Lower Body (glutes/hamstrings/quads)' :
+                         'Balanced Development'
+      parts.push(`Training Focus Preference: ${focusLabel}`)
     }
 
     if (input.userHeight) {

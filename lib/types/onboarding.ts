@@ -29,6 +29,8 @@ export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced'
 
 export type TrainingObjective = 'bulk' | 'cut' | 'maintain' | 'recomp'
 
+export type TrainingFocus = 'upper_body' | 'lower_body' | 'balanced'
+
 export type OnboardingData = {
   approachId: string
   weakPoints: string[]
@@ -40,9 +42,10 @@ export type OnboardingData = {
   // Goals (optional, for intermediate/advanced users)
   trainingObjective?: TrainingObjective | null
   injuries?: string | null
-  // Demographic fields (optional)
+  // Demographic fields - gender is required, others optional
   firstName?: string | null
-  gender?: 'male' | 'female' | 'other' | null
+  gender: 'male' | 'female' | 'other' // Required field
+  trainingFocus?: TrainingFocus | null // Training emphasis preference
   age?: number | null
   weight?: number | null
   height?: number | null

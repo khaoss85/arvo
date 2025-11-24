@@ -947,8 +947,10 @@
         "rirLabel": "RIR (Ripetizioni di Riserva)",
         "tempoRequirement": "⏱️ Tempo Richiesto",
         "fromYourApproach": "Dal tuo approccio",
+        "tempo": "Tempo",
         "tempoDown": "Discesa",
         "tempoPause": "Pausa",
+        "tempoUp": "Salita",
         "tempoSqueeze": "SQUEEZE",
         "tempoDescription": "Mantieni questo tempo per un'ottimale tensione muscolare",
         "warmupLabel": "Riscaldamento",
@@ -1707,11 +1709,21 @@
           },
           "gender": {
             "label": "Genere",
-            "tooltip": "Usato per standard di forza più accurati e stime iniziali del peso",
+            "tooltip": "Obbligatorio per fornire standard di forza accurati, raccomandazioni iniziali sui pesi e suggerimenti personalizzati sulle split basati sulle preferenze comuni di allenamento.",
+            "required": "Seleziona il tuo genere per continuare",
             "options": {
               "male": "Maschio",
               "female": "Femmina",
               "other": "Altro"
+            }
+          },
+          "trainingFocus": {
+            "label": "Focus di Allenamento",
+            "tooltip": "Scegli l'enfasi di allenamento preferita. Questo influenza la distribuzione del volume nelle tue split: upper body si concentra su petto/dorso/braccia, lower body enfatizza glutei/femorali/quadricipiti, e bilanciato offre uno sviluppo equo.",
+            "options": {
+              "upper_body": "Parte Superiore",
+              "lower_body": "Parte Inferiore",
+              "balanced": "Bilanciato"
             }
           },
           "age": {

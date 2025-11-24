@@ -281,6 +281,7 @@ export class WorkoutGeneratorService {
         experienceYears: profile.experience_years,
         userAge: profile.age,
         userGender: profile.gender,
+        trainingFocus: profile.training_focus as 'upper_body' | 'lower_body' | 'balanced' | null,
         // Periodization context
         mesocycleWeek: profile.current_mesocycle_week,
         mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,

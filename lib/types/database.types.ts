@@ -101,6 +101,7 @@ export type Database = {
           created_at: string | null
           cycle_number: number
           id: string
+          sets_by_muscle_group: Json | null
           split_plan_id: string
           total_duration_seconds: number | null
           total_sets: number
@@ -109,7 +110,6 @@ export type Database = {
           updated_at: string | null
           user_id: string
           volume_by_muscle_group: Json | null
-          sets_by_muscle_group: Json | null
           workouts_by_type: Json | null
         }
         Insert: {
@@ -118,6 +118,7 @@ export type Database = {
           created_at?: string | null
           cycle_number: number
           id?: string
+          sets_by_muscle_group?: Json | null
           split_plan_id: string
           total_duration_seconds?: number | null
           total_sets: number
@@ -126,7 +127,6 @@ export type Database = {
           updated_at?: string | null
           user_id: string
           volume_by_muscle_group?: Json | null
-          sets_by_muscle_group?: Json | null
           workouts_by_type?: Json | null
         }
         Update: {
@@ -135,6 +135,7 @@ export type Database = {
           created_at?: string | null
           cycle_number?: number
           id?: string
+          sets_by_muscle_group?: Json | null
           split_plan_id?: string
           total_duration_seconds?: number | null
           total_sets?: number
@@ -143,7 +144,6 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           volume_by_muscle_group?: Json | null
-          sets_by_muscle_group?: Json | null
           workouts_by_type?: Json | null
         }
         Relationships: [
@@ -761,8 +761,9 @@ export type Database = {
           equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
-          gender: string | null
+          gender: string
           height: number | null
+          injuries_notes: string | null
           last_cycle_completed_at: string | null
           last_email_sent_at: string | null
           mesocycle_phase: string | null
@@ -771,6 +772,7 @@ export type Database = {
           preferred_specialization_muscle: string | null
           preferred_split: string | null
           strength_baseline: Json | null
+          training_focus: string | null
           updated_at: string | null
           user_id: string
           weak_points: string[] | null
@@ -801,8 +803,9 @@ export type Database = {
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
-          gender?: string | null
+          gender: string
           height?: number | null
+          injuries_notes?: string | null
           last_cycle_completed_at?: string | null
           last_email_sent_at?: string | null
           mesocycle_phase?: string | null
@@ -811,6 +814,7 @@ export type Database = {
           preferred_specialization_muscle?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
+          training_focus?: string | null
           updated_at?: string | null
           user_id: string
           weak_points?: string[] | null
@@ -841,8 +845,9 @@ export type Database = {
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
-          gender?: string | null
+          gender?: string
           height?: number | null
+          injuries_notes?: string | null
           last_cycle_completed_at?: string | null
           last_email_sent_at?: string | null
           mesocycle_phase?: string | null
@@ -851,6 +856,7 @@ export type Database = {
           preferred_specialization_muscle?: string | null
           preferred_split?: string | null
           strength_baseline?: Json | null
+          training_focus?: string | null
           updated_at?: string | null
           user_id?: string
           weak_points?: string[] | null
@@ -1264,6 +1270,7 @@ export type Database = {
           p_avg_mental_readiness: number
           p_cycle_number: number
           p_next_cycle_day: number
+          p_sets_by_muscle_group?: Json
           p_split_plan_id: string
           p_total_duration_seconds: number
           p_total_sets: number
@@ -1271,7 +1278,7 @@ export type Database = {
           p_total_workouts_completed: number
           p_user_id: string
           p_volume_by_muscle_group: Json
-          p_workouts_by_type: Json
+          p_workouts_by_type?: Json
         }
         Returns: Json
       }
@@ -1392,8 +1399,7 @@ export type Database = {
         | "back"
         | "shoulders"
         | "arms"
-        | "rest"
-      workout_variation: "A" | "B" | "none"
+      workout_variation: "A" | "B"
     }
     CompositeTypes: {
       [_ in never]: never

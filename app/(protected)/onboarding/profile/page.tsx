@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { User, Calendar, Scale, Ruler, HelpCircle, ArrowLeft } from 'lucide-react'
+import { User, Calendar, Scale, Ruler, HelpCircle, ArrowLeft, Target } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AISuggestionCard } from '@/components/onboarding/AISuggestionCard'
 import { useAIOnboardingSuggestion } from '@/lib/hooks/useAIOnboardingSuggestion'
+import type { TrainingFocus } from '@/lib/types/onboarding'
 
 export default function ProfilePage() {
   const t = useTranslations('onboarding.steps.profile')
@@ -18,6 +19,7 @@ export default function ProfilePage() {
 
   const [firstName, setFirstName] = useState<string>(data.firstName || '')
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(data.gender || null)
+  const [trainingFocus, setTrainingFocus] = useState<TrainingFocus | null>(data.trainingFocus || null)
   const [age, setAge] = useState<number | null>(data.age || null)
   const [weight, setWeight] = useState<number | null>(data.weight || null)
   const [height, setHeight] = useState<number | null>(data.height || null)
@@ -25,6 +27,7 @@ export default function ProfilePage() {
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
   // Error states for validation feedback
+  const [genderError, setGenderError] = useState<string | null>(null)
   const [ageError, setAgeError] = useState<string | null>(null)
   const [weightError, setWeightError] = useState<string | null>(null)
   const [heightError, setHeightError] = useState<string | null>(null)
@@ -54,6 +57,19 @@ export default function ProfilePage() {
   const handleGenderChange = (value: 'male' | 'female' | 'other') => {
     setGender(value)
     setStepData('gender', value)
+    setGenderError(null)
+
+    // Set intelligent default for training_focus if not already set
+    if (!trainingFocus) {
+      const defaultFocus: TrainingFocus = value === 'male' ? 'upper_body' : value === 'female' ? 'lower_body' : 'balanced'
+      setTrainingFocus(defaultFocus)
+      setStepData('trainingFocus', defaultFocus)
+    }
+  }
+
+  const handleTrainingFocusChange = (value: TrainingFocus) => {
+    setTrainingFocus(value)
+    setStepData('trainingFocus', value)
   }
 
   const handleAgeChange = (value: string) => {
@@ -144,8 +160,15 @@ export default function ProfilePage() {
   }
 
   const handleSkip = () => {
+    // Gender is required, cannot skip without it
+    if (!gender) {
+      setGenderError(t('fields.gender.required'))
+      return
+    }
+
     setStepData('firstName', null)
-    setStepData('gender', null)
+    setStepData('gender', gender)
+    setStepData('trainingFocus', trainingFocus || 'balanced')
     setStepData('age', null)
     setStepData('weight', null)
     setStepData('height', null)
@@ -160,6 +183,14 @@ export default function ProfilePage() {
   }
 
   const handleContinue = () => {
+    // Validate that gender is selected
+    if (!gender) {
+      setGenderError(t('fields.gender.required'))
+      return
+    }
+
+    setStepData('gender', gender)
+    setStepData('trainingFocus', trainingFocus || 'balanced')
     completeStep(currentStepNumber)
 
     // Navigate based on experience level
@@ -244,7 +275,7 @@ export default function ProfilePage() {
             <User className="w-5 h-5 text-gray-500" />
             <label className="font-medium text-gray-900 dark:text-white">
               {t('fields.gender.label')}
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
+              <span className="ml-2 text-sm text-red-500">*</span>
             </label>
             <button
               className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
@@ -268,12 +299,58 @@ export default function ProfilePage() {
                   gender === option
                     ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/20'
                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }`}
+                } ${genderError ? 'border-red-500' : ''}`}
               >
                 <div className="text-2xl mb-1">
                   {option === 'male' ? '♂' : option === 'female' ? '♀' : '⚧'}
                 </div>
                 <div className="text-sm font-medium">{t(`fields.gender.options.${option}`)}</div>
+              </button>
+            ))}
+          </div>
+          {genderError && (
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              {genderError}
+            </p>
+          )}
+        </div>
+
+        {/* Training Focus */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="w-5 h-5 text-gray-500" />
+            <label className="font-medium text-gray-900 dark:text-white">
+              {t('fields.trainingFocus.label')}
+              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
+            </label>
+            <button
+              className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+              onMouseEnter={() => setShowTooltip('trainingFocus')}
+              onMouseLeave={() => setShowTooltip(null)}
+            >
+              <HelpCircle className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+          {showTooltip === 'trainingFocus' && (
+            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
+              {t('fields.trainingFocus.tooltip')}
+            </div>
+          )}
+          <div className="grid grid-cols-3 gap-3">
+            {(['upper_body', 'lower_body', 'balanced'] as const).map((option) => (
+              <button
+                key={option}
+                onClick={() => handleTrainingFocusChange(option)}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  trainingFocus === option
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                <div className="text-2xl mb-1">
+                  {option === 'upper_body' ? '💪' : option === 'lower_body' ? '🦵' : '⚖️'}
+                </div>
+                <div className="text-sm font-medium">{t(`fields.trainingFocus.options.${option}`)}</div>
               </button>
             ))}
           </div>

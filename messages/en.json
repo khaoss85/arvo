@@ -1708,11 +1708,21 @@
           },
           "gender": {
             "label": "Gender",
-            "tooltip": "Used for more accurate strength standards and initial weight estimations",
+            "tooltip": "Required to provide accurate strength standards, initial weight recommendations, and personalized split suggestions based on common training preferences.",
+            "required": "Please select your gender to continue",
             "options": {
               "male": "Male",
               "female": "Female",
               "other": "Other"
+            }
+          },
+          "trainingFocus": {
+            "label": "Training Focus",
+            "tooltip": "Choose your preferred training emphasis. This influences volume distribution in your workout splits: upper body focuses on chest/back/arms, lower body emphasizes glutes/hamstrings/quads, and balanced provides equal development.",
+            "options": {
+              "upper_body": "Upper Body",
+              "lower_body": "Lower Body",
+              "balanced": "Balanced"
             }
           },
           "age": {

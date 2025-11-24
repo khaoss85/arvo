@@ -20,6 +20,7 @@ export interface ExerciseSelectionInput {
   experienceYears?: number | null
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
+  trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null
   // Split context (optional)
   sessionFocus?: string[] // Muscle groups for this session
   targetVolume?: Record<string, number> // Target sets per muscle
@@ -647,12 +648,40 @@ Make user safety and preferences your top priority.`
       ? await ExerciseGenerationService.getRecentlyUsedServer(this.supabase, input.userId, 20)
       : []
 
-    const demographicContext = input.experienceYears || input.userAge || input.userGender
+    const demographicContext = input.experienceYears || input.userAge || input.userGender || input.trainingFocus
       ? `
 User Demographics:
 ${input.experienceYears ? `- Training Experience: ${input.experienceYears} years` : ''}
 ${input.userAge ? `- Age: ${input.userAge} years old` : ''}
 ${input.userGender ? `- Gender: ${input.userGender}` : ''}
+${input.trainingFocus ? `- Training Focus: ${input.trainingFocus === 'upper_body' ? 'Upper Body (chest/back/arms)' : input.trainingFocus === 'lower_body' ? 'Lower Body (glutes/hamstrings/quads)' : 'Balanced Development'}` : ''}
+`
+      : ''
+
+    // Training focus context for BRO splits
+    const trainingFocusContext = input.trainingFocus && input.trainingFocus !== 'balanced' && input.workoutType !== 'full_body'
+      ? `
+=== TRAINING FOCUS EXERCISE PRIORITIZATION ===
+
+User has selected ${input.trainingFocus === 'upper_body' ? 'UPPER BODY' : 'LOWER BODY'} focus.
+
+${input.trainingFocus === 'upper_body' ? `
+**Upper Body Focus - Exercise Selection Priorities:**
+- For CHEST workouts: Prioritize compound pressing movements (bench press variations, dips)
+- For BACK workouts: Emphasize rowing and pull-up variations, ensure adequate volume
+- For SHOULDERS: Include overhead pressing and lateral raise variations
+- For ARMS: Ensure direct bicep and tricep work is included when appropriate
+- Exercise variety: Choose exercises that maximize upper body development
+` : `
+**Lower Body Focus - Exercise Selection Priorities:**
+- For LEG workouts: PRIORITIZE glute-focused exercises first (hip thrusts, glute bridges, Bulgarian split squats)
+- Glute emphasis: Select exercise variants that maximize glute activation (e.g., high bar vs low bar squat preference)
+- Hamstring work: Ensure adequate RDL/leg curl variations
+- Quad work: Include squat and lunge variations, but after glute-focused movements
+- Exercise order: Place glute exercises early in the workout when fatigue is lowest
+`}
+
+**Important:** This prioritization influences exercise SELECTION and ORDER, not volume allocation (that's handled at the split design level).
 `
       : ''
 
@@ -1143,6 +1172,46 @@ ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
 `
       : ''
 
+    // Language-specific examples for technical cues
+    const technicalCuesExamples = targetLanguage === 'it'
+      ? '"Braccia semi-piegate durante tutto il movimento", "Contrai forte i pettorali in cima", "Evita il blocco sui gomiti"'
+      : '"Semi-bent arms throughout the movement", "Squeeze pecs hard at top", "Avoid lockout on elbows"'
+
+    const warmupTechnicalFocus = targetLanguage === 'it'
+      ? { set1: 'Senti lo schema del movimento', set2: 'Costruisci la connessione mente-muscolo' }
+      : { set1: 'Feel the movement pattern', set2: 'Build mind-muscle connection' }
+
+    const setGuidanceTechnicalExamples = targetLanguage === 'it'
+      ? '"ROM completo", "Contrai in cima", "Controlla l\'eccentrica"'
+      : '"Full ROM", "Squeeze at top", "Control the eccentric"'
+
+    // Language-specific examples for mental focus cues
+    const mentalFocusExamples = targetLanguage === 'it'
+      ? `- Use imagery/visualization verbs: "immagina", "visualizza", "pensa a", "senti come se"
+    - Make it EXERCISE-SPECIFIC (different cue for each exercise), examples:
+      * Peck Deck: "Immagina di portare i bicipiti vicini mentre tieni il petto il più alto possibile"
+      * Lat Pulldown: "Visualizza i gomiti che tirano dietro al busto, non le mani verso il basso"
+      * Leg Press: "Senti come se spingessi il pavimento lontano da te, non il peso in alto"
+      * Cable Face Pull: "Pensa a separare le mani il più possibile, come se aprissi una porta scorrevole"
+      * Cable Fly: "Visualizza di abbracciare un grande albero davanti a te"
+      * Dumbbell Row: "Immagina di portare il gomito il più indietro possibile, verso il soffitto"
+    - Vary by set intensity and number:
+      * Early sets (1-2): Connection cues - "Senti il muscolo attivarsi"
+      * Middle sets (3-4): Intensity cues - "Visualizza il muscolo contrarsi forte"
+      * Final sets: Power/explosive cues - "Immagina potenza esplosiva attraverso il movimento"`
+      : `- Use imagery/visualization verbs: "imagine", "visualize", "think of", "feel as if"
+    - Make it EXERCISE-SPECIFIC (different cue for each exercise), examples:
+      * Peck Deck: "Imagine bringing your biceps close together while keeping your chest as high as possible"
+      * Lat Pulldown: "Visualize your elbows pulling behind your torso, not your hands pulling down"
+      * Leg Press: "Feel as if you're pushing the floor away from you, not pushing the weight up"
+      * Cable Face Pull: "Think of pulling your hands as far apart as possible, like opening sliding doors"
+      * Cable Fly: "Visualize hugging a large tree in front of you"
+      * Dumbbell Row: "Imagine driving your elbow as far back as possible, toward the ceiling"
+    - Vary by set intensity and number:
+      * Early sets (1-2): Connection cues - "Feel the muscle activate"
+      * Middle sets (3-4): Intensity cues - "Visualize the muscle contracting hard"
+      * Final sets: Power/explosive cues - "Imagine explosive power through the movement"`
+
     const prompt = `
 Create a ${input.workoutType} workout using AI-generated exercises.
 
@@ -1172,6 +1241,7 @@ You MUST generate a COMPLETE workout that satisfies ALL constraints in a SINGLE 
 Approach context:
 ${context}
 ${demographicContext}
+${trainingFocusContext}
 ${exercisePrinciplesContext}
 ${romEmphasisContext}
 ${stimulusToFatigueContext}
@@ -1350,30 +1420,15 @@ COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
   * Keep cues SHORT and CLEAR (max 8-10 words each)
   * Make them ACTIONABLE and easy to remember in the gym
   * Tailor to the ${approach.name} philosophy${approach.romEmphasis ? ` (emphasizes ${Object.entries(approach.romEmphasis).filter(([k, v]) => k !== 'principles' && typeof v === 'number' && v > 30).map(([k]) => k).join(', ')})` : ''}
-  * Examples: "Semi-bent arms throughout the movement", "Squeeze pecs hard at top", "Avoid lockout on elbows"
+  * Examples: ${technicalCuesExamples}
 - warmupSets: ONLY for compound movements (squat, deadlift, bench, overhead press, rows), provide 2 warmup sets:
-  * Set 1: 50% weight, 15 reps, RIR 5, 60s rest, technicalFocus: "Feel the movement pattern"
-  * Set 2: 65% weight, 12 reps, RIR 3, 90s rest, technicalFocus: "Build mind-muscle connection"
+  * Set 1: 50% weight, 15 reps, RIR 5, 60s rest, technicalFocus: "${warmupTechnicalFocus.set1}"
+  * Set 2: 65% weight, 12 reps, RIR 3, 90s rest, technicalFocus: "${warmupTechnicalFocus.set2}"
   * Isolation exercises (curls, raises, flyes) do NOT need warmup sets
 - setGuidance: For ALL exercises, provide per-set technical and mental focus for EACH working set:
-  * technicalFocus: What to focus on technically (e.g., "Full ROM", "Squeeze at top", "Control the eccentric")
+  * technicalFocus: What to focus on technically (e.g., ${setGuidanceTechnicalExamples})
   * mentalFocus: VISUALIZATION-BASED mental imagery specific to exercise execution
-    - Use imagery/visualization verbs (IT): "immagina", "visualizza", "pensa a", "senti come se"
-    - Use imagery/visualization verbs (EN): "imagine", "visualize", "think of", "feel as if"
-    - Make it EXERCISE-SPECIFIC (different cue for each exercise), examples:
-      * Peck Deck (IT): "Immagina di portare i bicipiti vicini mentre tieni il petto il più alto possibile"
-      * Peck Deck (EN): "Imagine bringing your biceps close together while keeping your chest as high as possible"
-      * Lat Pulldown (IT): "Visualizza i gomiti che tirano dietro al busto, non le mani verso il basso"
-      * Lat Pulldown (EN): "Visualize your elbows pulling behind your torso, not your hands pulling down"
-      * Leg Press (IT): "Senti come se spingessi il pavimento lontano da te, non il peso in alto"
-      * Leg Press (EN): "Feel as if you're pushing the floor away from you, not pushing the weight up"
-      * Cable Face Pull (IT): "Pensa a separare le mani il più possibile, come se aprissi una porta scorrevole"
-      * Cable Fly (IT): "Visualizza di abbracciare un grande albero davanti a te"
-      * Dumbbell Row (IT): "Immagina di portare il gomito il più indietro possibile, verso il soffitto"
-    - Vary by set intensity and number:
-      * Early sets (1-2): Connection cues (IT: "Senti il muscolo attivarsi", EN: "Feel the muscle activate")
-      * Middle sets (3-4): Intensity cues (IT: "Visualizza il muscolo contrarsi forte", EN: "Visualize the muscle contracting hard")
-      * Final sets: Power/explosive cues (IT: "Immagina potenza esplosiva attraverso il movimento", EN: "Imagine explosive power through the movement")
+    ${mentalFocusExamples}
   * Progression across sets: early sets focus on mind-muscle connection imagery, later sets on power/intensity imagery
   * Keep concise but descriptive (8-15 words for visualization cues)
 

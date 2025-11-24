@@ -18,6 +18,7 @@ interface OnboardingState {
     // Demographic fields
     firstName?: string | null // User's first name for personalization
     gender?: 'male' | 'female' | 'other' | null
+    trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null // Training emphasis preference
     age?: number | null
     weight?: number | null // kg
     height?: number | null // cm
