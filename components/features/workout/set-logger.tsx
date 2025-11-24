@@ -274,15 +274,32 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
               {isWarmup ? <Sparkles className="w-4 h-4" /> : <Target className="w-4 h-4" />}
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                {isWarmup ? t('setLogger.warmupLabel') : t('setLogger.workingSetLabel')}
-              </span>
-              <span className="text-sm font-bold text-gray-900 dark:text-white">
-                {isWarmup
-                  ? `${setNumber}/${remainingWarmupSets}`
-                  : `${workingSetNumber}/${exercise.targetSets}`
-                }
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className={cn(
+                  "text-xs font-bold uppercase tracking-wider",
+                  isWarmup ? "text-amber-600 dark:text-amber-400" : "text-blue-600 dark:text-blue-400"
+                )}>
+                  {isWarmup ? '🔶 ' : '🔷 '}
+                  {isWarmup ? t('setLogger.warmupLabel') : t('setLogger.workingSetLabel')}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {isWarmup
+                    ? `${setNumber}/${remainingWarmupSets}`
+                    : `${workingSetNumber}/${exercise.targetSets}`
+                  }
+                </span>
+                {/* Show total progress */}
+                {warmupSetsCount > 0 && (
+                  <>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                    <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                      {t('setLogger.totalProgress')}: {setNumber}/{remainingWarmupSets + exercise.targetSets}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

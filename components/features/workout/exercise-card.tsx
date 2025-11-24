@@ -22,6 +22,7 @@ import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
+import { SetStructureDisplay } from './set-structure-display'
 import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
 import { getHydrationSuggestionAction } from '@/app/actions/hydration-actions'
 import type { HydrationOutput } from '@/lib/types/hydration'
@@ -754,13 +755,12 @@ export function ExerciseCard({
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">{t('exercise.setsLabel')}</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-white">
-                {completedWorkingSets}
-              </span>
-              <span className="text-sm text-gray-500 font-medium">/ {exercise.targetSets}</span>
-            </div>
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">
+              {t('exercise.setsLabel')}
+            </span>
+            <span className="text-2xl font-bold text-white">
+              {totalSets}
+            </span>
           </div>
 
           <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
@@ -779,15 +779,10 @@ export function ExerciseCard({
           </div>
         </div>
 
-        {/* Warmup Progress (if applicable) */}
-        {warmupSetsCount > 0 && (
-          <div className="mt-3 flex items-center gap-2 text-xs text-amber-400/80 px-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span>
-              {t('exercise.warmupProgress', { current: completedWarmupSets, total: warmupSetsCount })}
-            </span>
-          </div>
-        )}
+        {/* Set Structure Overview */}
+        <div className="mt-4">
+          <SetStructureDisplay exercise={exercise} />
+        </div>
       </div>
 
       {/* Completed Sets Summary */}

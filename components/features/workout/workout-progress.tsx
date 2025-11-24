@@ -16,6 +16,7 @@ interface WorkoutProgressProps {
 
 export function WorkoutProgress({ currentIndex, exercises, onReorder, onExerciseClick }: WorkoutProgressProps) {
   const t = useTranslations('workout.execution.progress')
+  const tExecution = useTranslations('workout.execution')
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const progress = ((currentIndex) / exercises.length) * 100
 
@@ -53,6 +54,13 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
       {/* Exercise List */}
       <div className="space-y-2.5 max-h-[240px] overflow-y-auto pr-1 custom-scrollbar">
         {exercises.map((ex, idx) => {
+          // Calculate warmup and working sets
+          const warmupSetsCount = ex.warmupSets?.length || 0
+          const warmupSetsSkipped = ex.warmupSetsSkipped || 0
+          const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+          const totalSets = remainingWarmupSets + ex.targetSets
+          const completedWorkingSets = Math.max(0, ex.completedSets.length - remainingWarmupSets)
+
           const isCompleted = ex.completedSets.length >= ex.targetSets
           const isCurrent = idx === currentIndex
           const isFuture = idx > currentIndex
@@ -71,23 +79,24 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
                     : "bg-white/40 dark:bg-gray-800/20 border-transparent hover:bg-gray-50 dark:hover:bg-gray-800/40"
               )}
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                {/* Status Icon */}
-                <div className="flex-shrink-0">
-                  {isCompleted ? (
-                    <CheckCircle2 className="w-4 h-4 text-green-500 dark:text-green-400" />
-                  ) : isCurrent ? (
-                    <div className="relative flex items-center justify-center w-4 h-4">
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-20 animate-ping"></span>
-                      <Circle className="relative w-4 h-4 text-purple-600 dark:text-purple-400 fill-purple-100 dark:fill-purple-900/50" />
-                    </div>
-                  ) : (
-                    <Circle className="w-4 h-4 text-gray-300 dark:text-gray-600" />
-                  )}
-                </div>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {/* Play icon - show if animation is available */}
+                {ex.hasAnimation && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setAnimationModalOpen(idx)
+                    }}
+                    className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-full transition-colors group flex-shrink-0"
+                    aria-label={`View ${ex.exerciseName} animation`}
+                    title={t('viewExercise')}
+                  >
+                    <PlayCircle className="w-4 h-4 text-blue-500/70 dark:text-blue-400/70 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors" />
+                  </button>
+                )}
 
                 {/* Exercise Name */}
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 flex-1">
                   <span className={cn(
                     "text-sm truncate transition-colors",
                     isCurrent ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-600 dark:text-gray-400",
@@ -103,30 +112,56 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
                 </div>
               </div>
 
-              {/* Actions & Stats */}
+              {/* Graphical Set Indicator & Progress */}
               <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                {/* Play icon - show if animation is available */}
-                {ex.hasAnimation && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setAnimationModalOpen(idx)
-                    }}
-                    className="p-1.5 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-full transition-colors group"
-                    aria-label={`View ${ex.exerciseName} animation`}
-                    title={t('viewExercise')}
-                  >
-                    <PlayCircle className="w-4 h-4 text-blue-500/70 dark:text-blue-400/70 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors" />
-                  </button>
-                )}
-
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-center min-w-[3rem]">
-                  {ex.completedSets.length}/{ex.targetSets}
+                {/* Total count - prominently displayed first */}
+                <span className="text-base font-bold text-gray-900 dark:text-white">
+                  {totalSets}
                 </span>
+
+                {/* Colored badges breakdown */}
+                {warmupSetsCount > 0 ? (
+                  <div className="flex items-center gap-1.5">
+                    {/* Warmup badge - amber */}
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
+                      <span className="text-[9px] font-medium text-amber-700 dark:text-amber-300">
+                        {remainingWarmupSets} {tExecution('setStructure.warmupShort')}
+                      </span>
+                    </div>
+
+                    {/* Working badge - blue */}
+                    <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+                      <span className="text-[9px] font-medium text-blue-700 dark:text-blue-300">
+                        {ex.targetSets} {tExecution('setStructure.workingShort')}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+                    <span className="text-[9px] font-medium text-blue-700 dark:text-blue-300">
+                      {ex.targetSets} {tExecution('setStructure.workingShort')}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center gap-4 text-[9px] text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400" />
+          <span>{tExecution('setStructure.warmupShort')} = {tExecution('setStructure.warmupPhase')}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400" />
+          <span>{tExecution('setStructure.workingShort')} = {tExecution('setStructure.workingPhase')}</span>
+        </div>
       </div>
 
       {/* Animation Modal */}
