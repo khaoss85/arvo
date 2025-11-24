@@ -123,7 +123,7 @@ export async function updatePersonalInfo(
       .from('user_profiles')
       .update({
         first_name: data.first_name,
-        gender: data.gender,
+        gender: data.gender ?? undefined,
         training_focus: data.training_focus,
         age: data.age,
         weight: data.weight,

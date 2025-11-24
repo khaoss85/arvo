@@ -153,18 +153,18 @@ export async function POST(request: NextRequest) {
               .from('user_profiles')
               .upsert({
                 user_id: data.userId,
-                approach_id: data.approachId,
+                gender: data.gender || 'other',
+                approach_id: data.approachId ?? undefined,
                 weak_points: data.weakPoints || [],
                 available_equipment: data.availableEquipment || [],
                 strength_baseline: data.strengthBaseline || {},
-                first_name: data.firstName || null,
-                gender: data.gender || null,
-                training_focus: data.trainingFocus || null,
-                age: data.age || null,
-                weight: data.weight || null,
-                height: data.height || null,
-                experience_years: data.confirmedExperience || 0,
-                preferred_split: data.splitType || null,
+                first_name: data.firstName ?? undefined,
+                training_focus: data.trainingFocus ?? undefined,
+                age: data.age ?? undefined,
+                weight: data.weight ?? undefined,
+                height: data.height ?? undefined,
+                experience_years: data.confirmedExperience ?? 0,
+                preferred_split: data.splitType ?? undefined,
                 active_split_plan_id: null,
                 current_cycle_day: null
               }, {

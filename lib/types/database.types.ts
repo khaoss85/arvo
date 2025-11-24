@@ -1399,6 +1399,7 @@ export type Database = {
         | "back"
         | "shoulders"
         | "arms"
+        | "rest"
       workout_variation: "A" | "B"
     }
     CompositeTypes: {

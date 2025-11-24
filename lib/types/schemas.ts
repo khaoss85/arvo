@@ -62,6 +62,7 @@ export const userProfileSchema = z.object({
   // Demographic fields for personalized AI training
   first_name: z.string().max(50).nullable(),
   gender: z.enum(['male', 'female', 'other']).nullable(),
+  training_focus: z.enum(['upper_body', 'lower_body', 'balanced']).nullable(),
   age: z.number().int().min(13).max(120).nullable(),
   weight: z.number().min(0).max(500).nullable(), // kg
   height: z.number().min(0).max(300).nullable(), // cm

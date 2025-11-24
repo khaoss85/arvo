@@ -67,6 +67,7 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
     const result = await updatePersonalInfo(userId, {
       first_name: firstName.trim() || null,
       gender,
+      training_focus: null,
       age: ageNum,
       weight: weightNum,
       height: heightNum,
