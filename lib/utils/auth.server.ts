@@ -45,6 +45,12 @@ export async function isAdmin(): Promise<boolean> {
   const user = await getUser();
   if (!user) return false;
 
+  // Bypass: If user email matches ADMIN_EMAIL env var, always grant admin access
+  // This allows the main admin to test account deletion without losing admin privileges
+  if (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) {
+    return true;
+  }
+
   const { getSupabaseServerClient } = await import("@/lib/supabase/server");
   const supabase = await getSupabaseServerClient();
 

@@ -63,7 +63,8 @@ export async function GET(request: Request) {
         console.error('Error tracking waitlist conversion:', conversionError);
       }
 
-      // Send welcome email to new users (async, non-blocking)
+      // Check if user has completed onboarding
+      let hasProfile = false;
       try {
         const { data: existingProfile } = await supabase
           .from('user_profiles')
@@ -71,7 +72,9 @@ export async function GET(request: Request) {
           .eq('user_id', data.user.id)
           .single();
 
-        // Only send welcome email if user hasn't completed onboarding yet
+        hasProfile = !!existingProfile;
+
+        // Send welcome email to new users (async, non-blocking)
         if (!existingProfile) {
           const { data: waitlistData } = await supabase
             .from('waitlist_entries')
@@ -87,10 +90,12 @@ export async function GET(request: Request) {
           });
         }
       } catch (emailCheckError) {
-        console.error('Error checking if should send welcome email:', emailCheckError);
+        console.error('Error checking profile/sending welcome email:', emailCheckError);
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      // Smart redirect: send to onboarding if no profile exists, otherwise to dashboard
+      const redirectPath = hasProfile ? next : '/onboarding';
+      return NextResponse.redirect(`${origin}${redirectPath}`);
     }
   }
 
