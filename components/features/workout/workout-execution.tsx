@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { List } from 'lucide-react'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import type { Workout } from '@/lib/types/schemas'
 import { ExerciseCard } from './exercise-card'
@@ -12,7 +11,6 @@ import { ReorderExercisesModal } from './reorder-exercises-modal'
 import { WorkoutRationale, type WorkoutRationaleHandle } from './workout-rationale'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AudioCoachPlayer } from './audio-coach-player'
-import { Button } from '@/components/ui/button'
 
 interface WorkoutExecutionProps {
   workout: Workout
@@ -137,6 +135,7 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
         currentIndex={currentExerciseIndex}
         exercises={exercises}
         onSwapExercise={(index) => setSwapExerciseIndex(index)}
+        onReorder={() => setShowReorderModal(true)}
       />
 
       {/* Workout Rationale */}
@@ -147,18 +146,6 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
           exercises={exercises}
           userId={userId}
         />
-      </div>
-
-      {/* Reorder Button */}
-      <div className="mt-4">
-        <Button
-          onClick={() => setShowReorderModal(true)}
-          variant="outline"
-          className="w-full flex items-center justify-center gap-2 border-gray-700 text-gray-300"
-        >
-          <List className="w-4 h-4" />
-          Reorder Exercises
-        </Button>
       </div>
 
       {/* Current Exercise */}

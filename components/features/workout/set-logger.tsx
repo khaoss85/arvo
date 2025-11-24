@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmDialog } from './confirm-dialog'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
-import { Target } from 'lucide-react'
+import { Target, Sparkles, Minus, Plus, Brain, SkipForward } from 'lucide-react'
 import { audioCoachingService } from '@/lib/services/audio-coaching.service'
 import type { PreSetCoachingScript } from '@/lib/types/pre-set-coaching'
+import { cn } from '@/lib/utils/cn'
 
 interface SetLoggerProps {
   exercise: ExerciseExecution
@@ -298,131 +299,156 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Set Type Badge */}
-      <div className="text-center mb-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span
-            className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase ${
+    <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-md border border-white/20 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+      {/* Unified Guidance Card */}
+      <div className="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/30 p-4">
+        {/* Header Row: Set Info & Intensity */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center shadow-sm",
               isWarmup
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                : 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-            }`}
-          >
-            {isWarmup
-              ? `${t('setLogger.warmup', { current: setNumber, total: remainingWarmupSets })} • ${currentWarmup?.weightPercentage || 60}%`
-              : `${t('setLogger.workingSet', { current: workingSetNumber, total: exercise.targetSets })} • ${rirToIntensityPercent(rir)}%`
-            }
-          </span>
+                ? "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400"
+                : "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
+            )}>
+              {isWarmup ? <Sparkles className="w-4 h-4" /> : <Target className="w-4 h-4" />}
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {isWarmup ? t('setLogger.warmupLabel') : t('setLogger.workingSetLabel')}
+              </span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">
+                {isWarmup
+                  ? `${setNumber}/${remainingWarmupSets}`
+                  : `${workingSetNumber}/${exercise.targetSets}`
+                }
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="px-2.5 py-1 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
+              <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                {isWarmup
+                  ? `${currentWarmup?.weightPercentage || 60}%`
+                  : `${rirToIntensityPercent(rir)}%`
+                }
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Manual Skip Link - Only show on first warmup set */}
+        {/* Guidance Cues */}
+        <div className="space-y-2">
+          {/* Technical Focus */}
+          {(isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus) && (
+            <div className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2.5">
+              <Target className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <span className="leading-relaxed">
+                {isWarmup ? currentWarmup?.technicalFocus : currentGuidance?.technicalFocus}
+              </span>
+            </div>
+          )}
+
+          {/* Mental Focus (Working Sets only) */}
+          {!isWarmup && currentGuidance?.mentalFocus && (
+            <div className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-gray-800/50 rounded-lg p-2.5">
+              <Brain className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+              <span className="leading-relaxed">
+                {currentGuidance.mentalFocus}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Manual Skip Link (Warmup only) */}
         {isWarmup && setNumber === 1 && warmupSetsCount > 0 && (
-          <button
-            onClick={handleSkipWarmup}
-            disabled={isSkipping || isLogging}
-            className="text-xs text-gray-400 hover:text-gray-300 underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isSkipping ? t('setLogger.skipping') : t('setLogger.skipWarmup')}
-          </button>
-        )}
-
-        {/* Technical Focus for Warmup Set */}
-        {currentWarmup?.technicalFocus && (
-          <div className="mt-2 bg-amber-900/20 border border-amber-800/30 rounded-lg px-3 py-2">
-            <p className="text-sm text-amber-200">
-              🎯 {currentWarmup.technicalFocus}
-            </p>
-          </div>
-        )}
-
-        {/* Technical & Mental Focus for Working Sets */}
-        {currentGuidance && (currentGuidance.technicalFocus || currentGuidance.mentalFocus) && (
-          <div className="mt-2 space-y-2">
-            {currentGuidance.technicalFocus && (
-              <div className="bg-blue-900/20 border border-blue-800/30 rounded-lg px-3 py-2">
-                <p className="text-base text-blue-200 font-medium">
-                  🎯 {currentGuidance.technicalFocus}
-                </p>
-              </div>
-            )}
-            {currentGuidance.mentalFocus && (
-              <div className="bg-purple-900/20 border border-purple-800/30 rounded-lg px-3 py-2">
-                <p className="text-base text-purple-200 font-medium">
-                  🧠 {currentGuidance.mentalFocus}
-                </p>
-              </div>
-            )}
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={handleSkipWarmup}
+              disabled={isSkipping || isLogging}
+              className="text-xs font-medium text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center gap-1"
+            >
+              <span>{isSkipping ? t('setLogger.skipping') : t('setLogger.skipWarmup')}</span>
+              <SkipForward className="w-3 h-3" />
+            </button>
           </div>
         )}
       </div>
 
-      {/* Weight Input */}
-      <div>
-        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.weightLabel')}</label>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setWeight(Math.max(0, weight - 2.5))}
-            className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-          >
-            -2.5
-          </Button>
-          <Input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
-            onFocus={(e) => e.currentTarget.select()}
-            className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
-            step="0.5"
-          />
-          <Button
-            onClick={() => setWeight(weight + 2.5)}
-            className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-          >
-            +2.5
-          </Button>
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Weight Input */}
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">{t('setLogger.weightLabel')}</label>
+          <div className="relative flex items-center">
+            <Button
+              onClick={() => setWeight(Math.max(0, weight - 2.5))}
+              className="absolute left-0 w-10 h-10 rounded-full p-0 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+              variant="ghost"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Input
+              type="number"
+              value={weight}
+              onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full text-center text-2xl font-bold h-14 bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-500 rounded-none px-10"
+              step="0.5"
+            />
+            <Button
+              onClick={() => setWeight(weight + 2.5)}
+              className="absolute right-0 w-10 h-10 rounded-full p-0 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+              variant="ghost"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Reps Input */}
-      <div>
-        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.repsLabel')}</label>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setReps(Math.max(1, reps - 1))}
-            className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-          >
-            -1
-          </Button>
-          <Input
-            type="number"
-            value={reps}
-            onChange={(e) => setReps(parseInt(e.target.value) || 0)}
-            onFocus={(e) => e.currentTarget.select()}
-            className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
-          />
-          <Button
-            onClick={() => setReps(reps + 1)}
-            className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-          >
-            +1
-          </Button>
+        {/* Reps Input */}
+        <div className="space-y-2">
+          <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center">{t('setLogger.repsLabel')}</label>
+          <div className="relative flex items-center">
+            <Button
+              onClick={() => setReps(Math.max(1, reps - 1))}
+              className="absolute left-0 w-10 h-10 rounded-full p-0 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+              variant="ghost"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Input
+              type="number"
+              value={reps}
+              onChange={(e) => setReps(parseInt(e.target.value) || 0)}
+              onFocus={(e) => e.currentTarget.select()}
+              className="w-full text-center text-2xl font-bold h-14 bg-transparent border-b-2 border-gray-200 dark:border-gray-700 focus:border-purple-500 dark:focus:border-purple-500 rounded-none px-10"
+            />
+            <Button
+              onClick={() => setReps(reps + 1)}
+              className="absolute right-0 w-10 h-10 rounded-full p-0 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+              variant="ghost"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* RIR Selector */}
-      <div>
-        <label className="block text-sm text-gray-400 mb-2">{t('setLogger.rirLabel')}</label>
-        <div className="grid grid-cols-6 gap-2">
+      <div className="mb-6">
+        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide text-center mb-3">{t('setLogger.rirLabel')}</label>
+        <div className="flex justify-between bg-gray-100 dark:bg-gray-800/50 rounded-xl p-1">
           {[0, 1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
               onClick={() => setRir(value)}
-              className={`h-12 rounded font-medium transition-colors ${
+              className={cn(
+                "flex-1 h-10 rounded-lg text-sm font-medium transition-all duration-200",
                 rir === value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+                  ? "bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 shadow-sm scale-105"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              )}
             >
               {value}
             </button>
@@ -432,102 +458,139 @@ export function SetLogger({ exercise, setNumber, suggestion }: SetLoggerProps) {
 
       {/* Tempo Display - Only show for working sets */}
       {!isWarmup && exercise.tempo && (
-        <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-2 border-blue-500/40 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-blue-300">{t('setLogger.tempoRequirement')}</label>
-            <span className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">{t('setLogger.fromYourApproach')}</span>
+        <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-100 dark:border-blue-900/20 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">{t('setLogger.tempoRequirement')}</label>
+            <span className="text-[10px] font-medium text-gray-500 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full shadow-sm">{t('setLogger.fromYourApproach')}</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex-1 bg-gray-900/50 rounded-lg p-3 text-center">
-              <div className="text-3xl font-bold text-white font-mono tracking-wider">{exercise.tempo}</div>
-              <div className="text-xs text-gray-400 mt-1 grid grid-cols-4 gap-1 max-w-[240px] mx-auto mt-2">
-                <div className="flex flex-col">
-                  <span className="font-semibold text-blue-300">{exercise.tempo.split('-')[0]}s</span>
-                  <span className="text-[10px]">{t('setLogger.tempoDown')}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-purple-300">{exercise.tempo.split('-')[1]}s</span>
-                  <span className="text-[10px]">{t('setLogger.tempoPause')}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-green-300">{exercise.tempo.split('-')[2]}s</span>
-                  <span className="text-[10px]">{t('setLogger.tempoUp')}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-amber-300">{exercise.tempo.split('-')[3]}s</span>
-                  <span className="text-[10px]">{t('setLogger.tempoSqueeze')}</span>
-                </div>
-              </div>
+          <div className="flex items-center justify-center gap-6">
+            <div className="text-3xl font-black text-gray-800 dark:text-white font-mono tracking-widest">{exercise.tempo}</div>
+          </div>
+          <div className="grid grid-cols-4 gap-2 mt-3 text-center">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-blue-500">{exercise.tempo.split('-')[0]}s</span>
+              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoDown')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-purple-500">{exercise.tempo.split('-')[1]}s</span>
+              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoPause')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-green-500">{exercise.tempo.split('-')[2]}s</span>
+              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoUp')}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-amber-500">{exercise.tempo.split('-')[3]}s</span>
+              <span className="text-[9px] text-gray-400 uppercase">{t('setLogger.tempoSqueeze')}</span>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-2 text-center italic">
-            {t('setLogger.tempoDescription')}
-          </p>
         </div>
       )}
 
       {/* Optional Mental State Selector */}
-      <div>
+      <div className="mb-6">
         <button
           onClick={() => setShowMentalSelector(!showMentalSelector)}
-          className="text-sm text-gray-400 hover:text-gray-300 mb-2 transition-colors"
+          className="w-full flex items-center justify-center gap-2 text-xs font-medium text-gray-500 hover:text-purple-500 transition-colors py-2"
         >
-          {showMentalSelector ? '▼' : '▶'} {t('setLogger.mentalDrainedOptional')}
+          <Brain className="w-3.5 h-3.5" />
+          {showMentalSelector ? t('setLogger.hideMentalState') : t('setLogger.mentalDrainedOptional')}
         </button>
 
         {showMentalSelector && (
-          <div className="grid grid-cols-5 gap-2 mt-2">
-            {[1, 2, 3, 4, 5].map((value) => {
-              const readiness = getMentalReadinessEmoji(value)
-              return (
-                <button
-                  key={value}
-                  onClick={() => setMentalReadiness(mentalReadiness === value ? undefined : value)}
-                  className={`h-16 rounded font-medium transition-all flex flex-col items-center justify-center gap-1 ${
-                    mentalReadiness === value
-                      ? 'bg-purple-600 text-white ring-2 ring-purple-400'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }`}
-                  title={readiness.label}
-                >
-                  <span className="text-2xl">{readiness.emoji}</span>
-                  <span className="text-xs">{value}</span>
-                </button>
-              )
-            })}
+          <div className="mt-3 bg-white/50 dark:bg-gray-800/50 rounded-2xl p-2 border border-white/20 dark:border-gray-700/50 animate-in fade-in slide-in-from-top-2">
+            <div className="grid grid-cols-5 gap-1">
+              {[1, 2, 3, 4, 5].map((value) => {
+                const readiness = getMentalReadinessEmoji(value)
+                const isSelected = mentalReadiness === value
+
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setMentalReadiness(isSelected ? undefined : value)}
+                    className={cn(
+                      "relative h-14 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-1 group",
+                      isSelected
+                        ? "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/30 scale-105 z-10"
+                        : "hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm"
+                    )}
+                    title={readiness.label}
+                  >
+                    <span className={cn(
+                      "text-2xl transition-transform duration-300",
+                      isSelected ? "scale-110" : "grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110"
+                    )}>
+                      {readiness.emoji}
+                    </span>
+
+                    {/* Selection Indicator Dot */}
+                    {isSelected && (
+                      <div className="absolute -bottom-1 w-1 h-1 bg-white rounded-full opacity-50" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Label Display */}
+            <div className="h-6 mt-2 flex items-center justify-center">
+              {mentalReadiness ? (
+                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 animate-in fade-in">
+                  {getMentalReadinessEmoji(mentalReadiness).label}
+                </span>
+              ) : (
+                <span className="text-[10px] text-gray-400 italic">
+                  {t('setLogger.selectMentalState')}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
-        {mentalReadiness && (
-          <p className="text-xs text-gray-400 mt-2 text-center">
-            {t('setLogger.mentalState', { state: getMentalReadinessEmoji(mentalReadiness).label })}
-          </p>
+        {mentalReadiness && !showMentalSelector && (
+          <div className="flex justify-center mt-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 rounded-full">
+              <span className="text-sm">{getMentalReadinessEmoji(mentalReadiness).emoji}</span>
+              <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                {getMentalReadinessEmoji(mentalReadiness).label}
+              </span>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Primary CTA: Log Set Button */}
-      <Button
-        onClick={handleLogSet}
-        disabled={isLogging}
-        className="w-full h-14 text-lg bg-green-600 hover:bg-green-700 text-white font-medium"
-      >
-        {isLogging ? t('setLogger.logging') : t('setLogger.logSetButton')}
-      </Button>
-
-      {/* Secondary CTA: Execute Set with Audio Coaching - Only for working sets */}
-      {!isWarmup && (
+      <div className="space-y-3">
+        {/* Primary CTA: Log Set Button */}
         <Button
-          onClick={handleStartAudioCoaching}
-          disabled={isGeneratingScript}
-          variant="outline"
-          className="w-full h-12 text-base flex items-center justify-center gap-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 disabled:opacity-50"
+          onClick={handleLogSet}
+          disabled={isLogging}
+          className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-500/20 rounded-xl transition-all active:scale-[0.98]"
         >
-          <Target className="h-4 w-4" />
-          {isGeneratingScript
-            ? t('setLogger.generatingCoaching', { defaultValue: 'Generating Coaching...' })
-            : t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
+          {isLogging ? (
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>{t('setLogger.logging')}</span>
+            </div>
+          ) : (
+            t('setLogger.logSetButton')
+          )}
         </Button>
-      )}
+
+        {/* Secondary CTA: Execute Set with Audio Coaching - Only for working sets */}
+        {!isWarmup && (
+          <Button
+            onClick={handleStartAudioCoaching}
+            disabled={isGeneratingScript}
+            variant="outline"
+            className="w-full h-12 text-sm font-medium border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl"
+          >
+            <Target className="h-4 w-4 mr-2" />
+            {isGeneratingScript
+              ? t('setLogger.generatingCoaching', { defaultValue: 'Generating Coaching...' })
+              : t('setLogger.startSetWithCoaching', { defaultValue: 'Execute Set with Coaching' })}
+          </Button>
+        )}
+      </div>
 
       {/* Skip Warmup Confirmation Dialog */}
       <ConfirmDialog

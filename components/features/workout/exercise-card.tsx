@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus, Check, Info } from 'lucide-react'
+import { cn } from '@/lib/utils/cn'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
 import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
@@ -10,6 +11,9 @@ import type { ModificationValidationInput, ModificationValidationOutput } from '
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { SetLogger } from './set-logger'
+import { RestTimer } from './rest-timer'
+import { AISuggestionCard } from './ai-suggestion-card'
+import { CompletedSetsList } from './completed-sets-list'
 import { ExerciseSubstitution } from './exercise-substitution'
 import { AddSetButton } from './add-set-button'
 import { AddExerciseButton } from './add-exercise-button'
@@ -466,9 +470,9 @@ export function ExerciseCard({
             setNumber: currentSetNumber,
             exerciseName: exercise.exerciseName,
             exerciseType: (exercise.exerciseName?.toLowerCase().includes('squat') ||
-                          exercise.exerciseName?.toLowerCase().includes('deadlift') ||
-                          exercise.exerciseName?.toLowerCase().includes('bench') ||
-                          exercise.exerciseName?.toLowerCase().includes('press'))
+              exercise.exerciseName?.toLowerCase().includes('deadlift') ||
+              exercise.exerciseName?.toLowerCase().includes('bench') ||
+              exercise.exerciseName?.toLowerCase().includes('press'))
               ? 'compound'
               : 'isolation',
             approachId,
@@ -706,263 +710,161 @@ export function ExerciseCard({
     <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
       {/* Exercise Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-white">{exercise.exerciseName}</h2>
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+                {t('exercise.exerciseNumber', { current: exerciseIndex + 1, total: totalExercises })}
+              </span>
+              {exercise.userAddedSets && exercise.userAddedSets > 0 && (
+                <UserModificationBadge
+                  addedSets={exercise.userAddedSets}
+                  aiRecommendedSets={exercise.aiRecommendedSets || exercise.targetSets}
+                  variant="compact"
+                />
+              )}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+              {exercise.exerciseName}
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-1">
             <button
               onClick={loadExerciseExplanation}
               disabled={loadingExerciseExplanation}
-              className="p-1.5 hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors disabled:opacity-50"
               title={t('exercise.whyThisExercise')}
             >
               {loadingExerciseExplanation ? (
-                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               ) : (
-                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-blue-400" />
+                <HelpCircle className="w-5 h-5 text-gray-400 hover:text-blue-400" />
               )}
             </button>
           </div>
-          <span className="text-sm text-gray-400">
-            {t('exercise.exerciseNumber', { current: exerciseIndex + 1, total: totalExercises })}
-          </span>
         </div>
 
         {/* Exercise Explanation */}
         {showExerciseExplanation && exerciseExplanation && (
-          <div className="mb-3 bg-blue-900/20 border border-blue-800/50 rounded-lg p-3">
-            <p className="text-sm text-blue-200">{exerciseExplanation}</p>
+          <div className="mb-4 bg-blue-900/20 border border-blue-800/50 rounded-xl p-4 animate-in fade-in slide-in-from-top-2">
+            <p className="text-sm text-blue-200 leading-relaxed">{exerciseExplanation}</p>
           </div>
         )}
 
-        <div className="flex items-center gap-4 text-sm text-gray-400">
-          {warmupSetsCount > 0 && (
-            <>
-              <span className="text-amber-400">
-                {t('exercise.warmupProgress', { current: completedWarmupSets, total: warmupSetsCount })}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">{t('exercise.setsLabel')}</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-bold text-white">
+                {completedWorkingSets}
               </span>
-              <span>•</span>
-            </>
-          )}
-          <span className="flex items-center gap-2">
-            {t('exercise.setsProgress', { current: completedWorkingSets, total: exercise.targetSets })}
-            {exercise.userAddedSets && exercise.userAddedSets > 0 && (
-              <UserModificationBadge
-                addedSets={exercise.userAddedSets}
-                aiRecommendedSets={exercise.aiRecommendedSets || exercise.targetSets}
-                variant="compact"
-              />
-            )}
-          </span>
-          <span>•</span>
-          <span>{exercise.targetReps[0]}-{exercise.targetReps[1]} {t('exercise.reps')}</span>
-          <span>•</span>
-          <span>{t('exercise.target', { weight: exercise.targetWeight })}</span>
+              <span className="text-sm text-gray-500 font-medium">/ {exercise.targetSets}</span>
+            </div>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">{t('exercise.reps')}</span>
+            <span className="text-xl font-bold text-white">
+              {exercise.targetReps[0]}-{exercise.targetReps[1]}
+            </span>
+          </div>
+
+          <div className="bg-white/5 rounded-xl p-3 border border-white/10 flex flex-col items-center justify-center">
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">{t('exercise.target')}</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-xl font-bold text-white">{exercise.targetWeight}</span>
+              <span className="text-xs text-gray-500 font-medium">kg</span>
+            </div>
+          </div>
         </div>
+
+        {/* Warmup Progress (if applicable) */}
+        {warmupSetsCount > 0 && (
+          <div className="mt-3 flex items-center gap-2 text-xs text-amber-400/80 px-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>
+              {t('exercise.warmupProgress', { current: completedWarmupSets, total: warmupSetsCount })}
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Technical Cues (Collapsible) */}
+      {/* Technical Cues (Collapsible Glass Card) */}
       {exercise.technicalCues && exercise.technicalCues.length > 0 && (
         <div className="mb-6">
-          <button
-            onClick={() => setShowTechnicalCues(!showTechnicalCues)}
-            className="w-full flex items-center justify-between p-3 bg-gray-800/50 hover:bg-gray-800 rounded-lg transition-colors border border-gray-700"
-          >
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-medium text-gray-300">{t('exercise.techniqueCues')}</span>
-            </div>
-            <ChevronDown
-              className={`w-4 h-4 text-gray-400 transition-transform ${
-                showTechnicalCues ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
+          <div className="bg-blue-950/20 border border-blue-900/30 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowTechnicalCues(!showTechnicalCues)}
+              className="w-full flex items-center justify-between p-4 hover:bg-blue-900/10 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  <Target className="w-4 h-4 text-blue-400" />
+                </div>
+                <span className="text-sm font-bold text-blue-100">{t('exercise.techniqueCues')}</span>
+              </div>
+              <ChevronDown
+                className={cn(
+                  "w-4 h-4 text-blue-400/50 transition-transform duration-200",
+                  showTechnicalCues && "rotate-180"
+                )}
+              />
+            </button>
 
-          {showTechnicalCues && (
-            <div className="mt-2 bg-blue-900/10 border border-blue-800/30 rounded-lg p-4">
-              <ul className="space-y-2">
-                {exercise.technicalCues.map((cue, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span>
-                    <span className="text-base text-gray-200">{cue}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            {showTechnicalCues && (
+              <div className="px-4 pb-4 pt-0 animate-in slide-in-from-top-2">
+                <div className="h-px w-full bg-blue-900/30 mb-3" />
+                <ul className="space-y-2.5">
+                  {exercise.technicalCues.map((cue, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm text-blue-200/80 leading-relaxed">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                      <span>{cue}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Completed Sets Summary */}
       {exercise.completedSets.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-3">{t('exercise.completedSets')}</h3>
-          <div className="space-y-2">
-            {exercise.completedSets.map((set, idx) => {
-              const mentalReadiness = set.mentalReadiness ? getMentalReadinessEmoji(set.mentalReadiness) : null
-              return (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between bg-gray-800 rounded p-3 group"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-300">
-                      {idx + 1 <= remainingWarmupSets
-                        ? t('setLogger.warmup', { current: idx + 1, total: remainingWarmupSets })
-                        : t('setLogger.workingSet', { current: idx + 1 - remainingWarmupSets, total: exercise.targetSets })
-                      }
-                    </span>
-                    {mentalReadiness && (
-                      <span
-                        className="text-lg"
-                        title={t('exercise.mentalStateLabel', { state: mentalReadiness.label })}
-                      >
-                        {mentalReadiness.emoji}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-white font-medium">
-                      {set.weight}kg × {set.reps} @ RIR {set.rir}
-                    </span>
-                    <button
-                      onClick={() => setEditSetIndex(idx)}
-                      className="p-1.5 rounded hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
-                      title={t('exercise.editSet')}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
+        <CompletedSetsList
+          sets={exercise.completedSets}
+          remainingWarmupSets={remainingWarmupSets}
+          targetSets={exercise.targetSets}
+          onEditSet={setEditSetIndex}
+        />
       )}
 
       {/* AI Suggestion */}
       {showSuggestion && exercise.currentAISuggestion && (
-        <div className="mb-6 bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-300">{t('exercise.aiSuggestion', { number: currentSetNumber })}</h3>
-            <button
-              onClick={loadProgressionExplanation}
-              disabled={loadingProgressionExplanation}
-              className="p-1 hover:bg-blue-800/50 rounded transition-colors disabled:opacity-50"
-              title={t('exercise.whyThisProgression')}
-            >
-              {loadingProgressionExplanation ? (
-                <div className="w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <HelpCircle className="w-3.5 h-3.5 text-blue-400 hover:text-blue-300" />
-              )}
-            </button>
-          </div>
-          <div className="text-white font-medium mb-2">
-            {exercise.currentAISuggestion.suggestion.weight}kg × {exercise.currentAISuggestion.suggestion.reps} @ RIR {exercise.currentAISuggestion.suggestion.rirTarget}
-          </div>
-          <p className="text-sm text-blue-200 mb-2">{exercise.currentAISuggestion.rationale}</p>
-
-          {/* Progression Explanation */}
-          {showProgressionExplanation && progressionExplanation && (
-            <div className="mt-3 pt-3 border-t border-blue-800/50">
-              <p className="text-xs text-blue-300 italic">{progressionExplanation}</p>
-            </div>
-          )}
+        <div className="mb-6">
+          <AISuggestionCard
+            suggestion={exercise.currentAISuggestion}
+            setNumber={currentSetNumber}
+            onExplain={loadProgressionExplanation}
+            isLoadingExplanation={loadingProgressionExplanation}
+            explanation={progressionExplanation}
+            showExplanation={showProgressionExplanation}
+          />
         </div>
       )}
 
       {/* Rest Timer */}
       {isResting && !isLastSet && (() => {
-        const timerInfo = getRestTimerInfo()
-        const statusColors = timerInfo ? getRestTimerStatusColor(timerInfo.status) : null
-        const hasModified = restTimeRemaining !== originalRestSeconds
-
         return (
-          <div className="mb-6 bg-gradient-to-br from-amber-900/40 to-orange-900/40 border-2 border-amber-500/50 rounded-lg p-6">
-            {/* Header with Skip button */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-400 animate-pulse" />
-                <h3 className="text-lg font-medium text-amber-200">{t('exercise.restPeriod')}</h3>
-              </div>
-              <button
-                onClick={skipRest}
-                className="flex items-center gap-1 px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-500/40 rounded text-sm text-amber-300 transition-colors"
-              >
-                <SkipForward className="w-3.5 h-3.5" />
-                {t('exercise.skip')}
-              </button>
-            </div>
-
-            {/* Status Badge */}
-            {timerInfo && hasModified && (
-              <div className={`mb-3 px-3 py-1.5 rounded-lg border ${statusColors?.border} ${statusColors?.bg} ${statusColors?.text} text-xs font-medium text-center`}>
-                {timerInfo.status === 'optimal' && t('exercise.restTimer.status.optimal')}
-                {timerInfo.status === 'acceptable' && t('exercise.restTimer.status.acceptable')}
-                {timerInfo.status === 'warning' && t('exercise.restTimer.status.warning')}
-                {timerInfo.status === 'critical' && t('exercise.restTimer.status.critical')}
-                {timerInfo.status === 'warning' || timerInfo.status === 'critical' ? (
-                  <span className="block mt-1 opacity-80">
-                    {t('exercise.restTimer.recommendedRange', { min: Math.floor(timerInfo.min / 60), max: Math.floor(timerInfo.max / 60) })}
-                  </span>
-                ) : null}
-              </div>
-            )}
-
-            {/* Countdown Display */}
-            <div className="flex flex-col items-center justify-center py-4">
-              <div className="text-6xl font-bold text-white font-mono mb-2">
-                {Math.floor(restTimeRemaining / 60)}:{String(restTimeRemaining % 60).padStart(2, '0')}
-              </div>
-              <div className="text-sm text-amber-300">
-                {exercise.restSeconds ? t('exercise.restSeconds', { seconds: exercise.restSeconds }) : t('exercise.defaultRestPeriod')}
-              </div>
-            </div>
-
-            {/* Timer Adjustment Buttons */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <button
-                onClick={() => modifyRestTimer(-15)}
-                disabled={restTimeRemaining <= 15}
-                className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-600 rounded-lg text-white font-medium transition-colors active:scale-95"
-              >
-                <Minus className="w-4 h-4" />
-                <span>15s</span>
-              </button>
-
-              <div className="text-xs text-gray-400 font-medium min-w-[60px] text-center">
-                {hasModified ? (
-                  <span className="text-amber-400">
-                    {restTimeRemaining > originalRestSeconds ? '+' : ''}{restTimeRemaining - originalRestSeconds}s
-                  </span>
-                ) : (
-                  <span>{t('exercise.restTimer.original')}</span>
-                )}
-              </div>
-
-              <button
-                onClick={() => modifyRestTimer(15)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-lg text-white font-medium transition-colors active:scale-95"
-              >
-                <Plus className="w-4 h-4" />
-                <span>15s</span>
-              </button>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-amber-500 to-orange-500 h-full transition-all duration-1000 ease-linear"
-                style={{
-                  width: `${originalRestSeconds ? ((originalRestSeconds - restTimeRemaining) / originalRestSeconds) * 100 : 0}%`
-                }}
-              />
-            </div>
-
-            <p className="text-xs text-gray-400 mt-3 text-center italic">
-              {t('exercise.restDescription')}
-            </p>
+          <div className="mb-6">
+            <RestTimer
+              restTimeRemaining={restTimeRemaining}
+              originalRestSeconds={originalRestSeconds}
+              onSkip={skipRest}
+              onModify={modifyRestTimer}
+              defaultRestSeconds={exercise.restSeconds || 90}
+            />
           </div>
         )
       })()}
@@ -1021,7 +923,10 @@ export function ExerciseCard({
           {hydrationSuggestion && hydrationSuggestion.shouldSuggest && (
             <HydrationReminder
               suggestion={hydrationSuggestion}
-              onDismiss={() => setHydrationDismissedAt(new Date())}
+              onDismiss={() => {
+                setHydrationDismissedAt(new Date())
+                setHydrationSuggestion(null)
+              }}
               className="mb-4"
             />
           )}
@@ -1114,11 +1019,11 @@ export function ExerciseCard({
               },
               movementPattern: undefined, // Could be enhanced later
               isCompound: ex.exerciseName.toLowerCase().includes('press') ||
-                         ex.exerciseName.toLowerCase().includes('squat') ||
-                         ex.exerciseName.toLowerCase().includes('deadlift') ||
-                         ex.exerciseName.toLowerCase().includes('row') ||
-                         ex.exerciseName.toLowerCase().includes('pull-up') ||
-                         ex.exerciseName.toLowerCase().includes('chin-up'),
+                ex.exerciseName.toLowerCase().includes('squat') ||
+                ex.exerciseName.toLowerCase().includes('deadlift') ||
+                ex.exerciseName.toLowerCase().includes('row') ||
+                ex.exerciseName.toLowerCase().includes('pull-up') ||
+                ex.exerciseName.toLowerCase().includes('chin-up'),
             }
           }),
           totalExercises: allExercises.length,
@@ -1139,6 +1044,18 @@ export function ExerciseCard({
             rir: exercise.completedSets[editSetIndex].rir,
             mentalReadiness: exercise.completedSets[editSetIndex].mentalReadiness,
             notes: exercise.completedSets[editSetIndex].notes,
+          }}
+        />
+      )}
+      {/* Exercise Substitution Modal */}
+      {showSubstitution && (
+        <ExerciseSubstitution
+          currentExercise={exercise}
+          exerciseIndex={exerciseIndex}
+          userId={userId}
+          onClose={() => setShowSubstitution(false)}
+          onRationaleInvalidate={() => {
+            // Optional: invalidate rationale if needed
           }}
         />
       )}

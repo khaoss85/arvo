@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2 } from 'lucide-react'
+import { cn } from '@/lib/utils/cn'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
@@ -640,12 +641,12 @@ export function RefineWorkoutPage({
         name: selectedExercise.name,
         equipmentVariant: selectedExercise.equipment,
         sets: selectedExercise.bodyPart?.toLowerCase().includes('chest') ||
-              selectedExercise.bodyPart?.toLowerCase().includes('back') ||
-              selectedExercise.bodyPart?.toLowerCase().includes('legs') ? 3 : 2,
+          selectedExercise.bodyPart?.toLowerCase().includes('back') ||
+          selectedExercise.bodyPart?.toLowerCase().includes('legs') ? 3 : 2,
         repRange: selectedExercise.name.toLowerCase().includes('curl') ||
-                  selectedExercise.name.toLowerCase().includes('raise') ? [10, 15] : [8, 12],
+          selectedExercise.name.toLowerCase().includes('raise') ? [10, 15] : [8, 12],
         restSeconds: selectedExercise.name.toLowerCase().includes('squat') ||
-                     selectedExercise.name.toLowerCase().includes('deadlift') ? 180 : 90,
+          selectedExercise.name.toLowerCase().includes('deadlift') ? 180 : 90,
         targetWeight: 20,
         targetReps: 10,
         animationUrl: selectedExercise.animationUrl || undefined,
@@ -764,8 +765,8 @@ export function RefineWorkoutPage({
             disabled={isMarkingReady}
             size="sm"
           >
-            <List className="w-4 h-4 mr-2" />
-            {t('buttons.reorder')}
+            <List className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('buttons.reorder')}</span>
           </Button>
         </div>
       )}
@@ -835,6 +836,32 @@ export function RefineWorkoutPage({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  {/* Replace Button (formerly Regenerate) */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!expandedExercises.has(index)) {
+                        toggleExerciseExpanded(index)
+                      }
+                      // If alternatives not loaded, load them. If loaded, maybe just focus? 
+                      // For now, let's just ensure it opens the section.
+                      // If we want to force re-fetch, we'd call handleRegenerateExercise(index)
+                      // But usually "Replace" implies "Show me alternatives".
+                      // If the user wants to explicitly re-generate via AI, we might keep that logic inside the expanded view.
+                      // Let's make this button toggle the expanded view AND trigger generation if empty.
+                      if (!alternatives.get(index)) {
+                        handleRegenerateExercise(index)
+                      }
+                    }}
+                    className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                    title={t('buttons.replace')}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span className="sr-only">{t('buttons.replace')}</span>
+                  </Button>
+
                   {/* Show remove button only for user-added exercises */}
                   {exercise.aiRecommendedSets === undefined && (
                     <Button
@@ -919,91 +946,108 @@ export function RefineWorkoutPage({
 
               {/* Alternatives (Expanded) */}
               {expandedExercises.has(index) && (
-                <div className="pt-2 border-t space-y-2">
-                  <p className="text-sm text-muted-foreground font-medium">{t('rationale.alternatives')}</p>
+                <div className="pt-3 border-t space-y-3">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('rationale.alternatives')}</p>
                   {alternativesLoading.get(index) ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-sm text-muted-foreground">{t('rationale.loadingAlternatives')}</span>
+                    <div className="flex items-center justify-center py-6 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+                      <span className="ml-3 text-sm text-gray-500">{t('rationale.loadingAlternatives')}</span>
                     </div>
                   ) : alternatives.get(index) && alternatives.get(index)!.length > 0 ? (
-                    alternatives.get(index)!.map((alt, altIndex) => (
-                      <div
-                        key={altIndex}
-                        className="flex items-start justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            {/* Animation Preview Icon */}
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation()
-                                // Load animation URL dynamically
-                                const animationUrl = await AnimationService.getAnimationUrl({
-                                  name: alt.exercise.name,
-                                  canonicalPattern: alt.exercise.name,
-                                  equipmentVariant: alt.exercise.equipmentVariant,
-                                })
-                                setAlternativeAnimationModal({
-                                  name: alt.exercise.name,
-                                  equipmentVariant: alt.exercise.equipmentVariant,
-                                  animationUrl: animationUrl || null,
-                                })
-                              }}
-                              className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                              aria-label={t('exercise.viewAnimationAria', { name: alt.exercise.name })}
-                              title={t('exercise.viewAnimation')}
-                            >
-                              <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
-                            </button>
-                            <p className="font-medium text-sm">{alt.exercise.name}</p>
+                    <div className="space-y-2">
+                      {alternatives.get(index)!.map((alt, altIndex) => (
+                        <div
+                          key={altIndex}
+                          className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-800 transition-all"
+                        >
+                          <div className="flex-1 min-w-0 mr-3">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              {/* Animation Preview Icon */}
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  // Load animation URL dynamically
+                                  const animationUrl = await AnimationService.getAnimationUrl({
+                                    name: alt.exercise.name,
+                                    canonicalPattern: alt.exercise.name,
+                                    equipmentVariant: alt.exercise.equipmentVariant,
+                                  })
+                                  setAlternativeAnimationModal({
+                                    name: alt.exercise.name,
+                                    equipmentVariant: alt.exercise.equipmentVariant,
+                                    animationUrl: animationUrl || null,
+                                  })
+                                }}
+                                className="p-1 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-full transition-colors group flex-shrink-0"
+                                aria-label={t('exercise.viewAnimationAria', { name: alt.exercise.name })}
+                                title={t('exercise.viewAnimation')}
+                              >
+                                <PlayCircle className="w-4 h-4 text-purple-500 group-hover:text-purple-600 transition-colors" />
+                              </button>
+                              <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{alt.exercise.name}</p>
+                            </div>
+                            {alt.exercise.equipmentVariant && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{alt.exercise.equipmentVariant}</p>
+                            )}
+                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{alt.rationale}</p>
                           </div>
-                          {alt.exercise.equipmentVariant && (
-                            <p className="text-xs text-muted-foreground">{alt.exercise.equipmentVariant}</p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-1">{alt.rationale}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="shrink-0 h-8 px-3 text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:hover:bg-purple-900/40 border-0"
+                            onClick={() => handleSwapExercise(index, altIndex)}
+                          >
+                            {t('buttons.swap')}
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                        size="sm"
-                        onClick={() => handleSwapExercise(index, altIndex)}
-                      >
-                        {t('buttons.swap')}
-                      </Button>
+                      ))}
                     </div>
-                  ))
                   ) : (
-                    <p className="text-sm text-muted-foreground py-2">{t('rationale.noAlternatives')}</p>
+                    <p className="text-sm text-gray-500 italic py-2 text-center bg-gray-50 dark:bg-gray-900/50 rounded-lg">{t('rationale.noAlternatives')}</p>
                   )}
 
                   {/* Custom Exercise Input */}
-                  <div className="pt-2 space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium">{t('rationale.custom')}</p>
+                  <div className="pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{t('rationale.custom')}</p>
+                    </div>
+
                     {!customValidationResults.get(index) ? (
-                      <>
-                        {/* Mode Toggle */}
-                        <div className="flex gap-2 mb-3">
-                          <Button
-                            variant={!photoMode.get(index) ? 'default' : 'outline'}
-                            size="sm"
+                      <div className="bg-gray-50 dark:bg-gray-900/30 rounded-xl p-3 border border-gray-100 dark:border-gray-800">
+                        {/* Segmented Control */}
+                        <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-lg mb-3 relative">
+                          <div
+                            className="absolute inset-y-1 bg-white dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 ease-in-out"
+                            style={{
+                              left: photoMode.get(index) ? '50%' : '4px',
+                              width: 'calc(50% - 4px)'
+                            }}
+                          />
+                          <button
                             onClick={() => handleModeSwitch(index, false)}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md z-10 transition-colors",
+                              !photoMode.get(index) ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            )}
                           >
-                            <Type className="w-4 h-4 mr-2" />
+                            <Type className="w-3.5 h-3.5" />
                             {t('customInput.textMode')}
-                          </Button>
-                          <Button
-                            variant={photoMode.get(index) ? 'default' : 'outline'}
-                            size="sm"
+                          </button>
+                          <button
                             onClick={() => handleModeSwitch(index, true)}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md z-10 transition-colors",
+                              photoMode.get(index) ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            )}
                           >
-                            <Camera className="w-4 h-4 mr-2" />
+                            <Camera className="w-3.5 h-3.5" />
                             {t('customInput.photoMode')}
-                          </Button>
+                          </button>
                         </div>
 
                         {/* Conditional Input */}
                         {!photoMode.get(index) ? (
-                          <>
+                          <div className="space-y-2">
                             <div className="flex gap-2">
                               <input
                                 type="text"
@@ -1019,21 +1063,27 @@ export function RefineWorkoutPage({
                                     handleValidateCustom(index)
                                   }
                                 }}
-                                className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-shadow"
                               />
-                              <Button
-                                variant="default"
-                                size="sm"
-                                onClick={() => handleValidateCustom(index)}
-                                disabled={!customInputs.get(index)?.trim() || customValidating.get(index)}
-                              >
-                                {customValidating.get(index) ? t('customInput.validating') : t('customInput.validate')}
-                              </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                              onClick={() => handleValidateCustom(index)}
+                              disabled={!customInputs.get(index)?.trim() || customValidating.get(index)}
+                            >
+                              {customValidating.get(index) ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                  {t('customInput.validating')}
+                                </>
+                              ) : t('customInput.validate')}
+                            </Button>
+                            <p className="text-[10px] text-gray-400 text-center">
                               {t('customInput.hint')}
                             </p>
-                          </>
+                          </div>
                         ) : (
                           <div>
                             <PhotoUploader
@@ -1042,31 +1092,30 @@ export function RefineWorkoutPage({
                               isLoading={extractingNames.get(index) || customValidating.get(index)}
                             />
                             {extractingNames.get(index) && (
-                              <div className="mt-2 p-2 bg-blue-950/20 rounded-lg border border-blue-800">
-                                <p className="text-sm text-blue-400 flex items-center gap-2">
-                                  <Loader2 className="w-4 h-4 animate-spin" />
+                              <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/50">
+                                <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center justify-center gap-2">
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                   {t('customInput.recognizing')}
                                 </p>
                               </div>
                             )}
                             {customInputs.get(index) && !extractingNames.get(index) && (
-                              <div className="mt-2 p-2 bg-blue-950/20 border border-blue-800 rounded-lg">
-                                <p className="text-xs text-blue-400">
+                              <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 rounded-lg text-center">
+                                <p className="text-xs text-green-700 dark:text-green-400">
                                   <strong>{t('customInput.detected')}:</strong> {customInputs.get(index)}
                                 </p>
                               </div>
                             )}
                           </div>
                         )}
-                      </>
+                      </div>
                     ) : (
-                      <div className={`border-2 rounded-lg p-3 ${
-                        customValidationResults.get(index)!.validation === 'approved'
-                          ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
-                          : customValidationResults.get(index)!.validation === 'caution'
+                      <div className={`border-2 rounded-lg p-3 ${customValidationResults.get(index)!.validation === 'approved'
+                        ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
+                        : customValidationResults.get(index)!.validation === 'caution'
                           ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20'
                           : 'border-red-500 bg-red-50 dark:bg-red-950/20'
-                      }`}>
+                        }`}>
                         <div className="flex items-start gap-2 mb-2">
                           {customValidationResults.get(index)!.validation === 'approved' ? (
                             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -1124,14 +1173,14 @@ export function RefineWorkoutPage({
                           </Button>
                           {(customValidationResults.get(index)!.validation === 'approved' ||
                             customValidationResults.get(index)!.validation === 'caution') && (
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleCustomSwap(index)}
-                            >
-                              {t('buttons.swap')}
-                            </Button>
-                          )}
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleCustomSwap(index)}
+                              >
+                                {t('buttons.swap')}
+                              </Button>
+                            )}
                         </div>
                       </div>
                     )}
@@ -1139,22 +1188,14 @@ export function RefineWorkoutPage({
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRegenerateExercise(index)}
-                  disabled={alternativesLoading.get(index)}
-                >
-                  <RefreshCw className={`w-4 h-4 mr-2 ${alternativesLoading.get(index) ? 'animate-spin' : ''}`} />
-                  {alternativesLoading.get(index) ? t('buttons.regenerating') : t('buttons.regenerate')}
-                </Button>
-              </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              {/* Action Buttons - Removed old Regenerate button as it's now in header */}
+              {/* <div className="flex gap-2 pt-2">
+                <Button ... > ... </Button>
+              </div> */}
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {/* Add Exercise Section */}
       <div className="mb-6">
@@ -1172,16 +1213,25 @@ export function RefineWorkoutPage({
       </div>
 
       {/* Footer Actions */}
-      <div className="sticky bottom-0 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-4 border-t border-gray-200 dark:border-gray-800">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="sticky bottom-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-4 px-4 border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="max-w-4xl mx-auto">
           <Button
-            variant="outline"
+            variant="default"
             onClick={handleMarkAsReady}
             disabled={isMarkingReady}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all h-12 text-base font-semibold"
           >
-            <Check className="w-4 h-4 mr-2" />
-            {isMarkingReady ? t('buttons.saving') : t('buttons.saveAndReturn')}
+            {isMarkingReady ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                {t('buttons.saving')}
+              </>
+            ) : (
+              <>
+                <Check className="w-5 h-5 mr-2" />
+                {t('buttons.saveAndReturn')}
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -1242,11 +1292,11 @@ export function RefineWorkoutPage({
               },
               movementPattern: undefined, // Could be enhanced later
               isCompound: exerciseName.includes('press') ||
-                         exerciseName.includes('squat') ||
-                         exerciseName.includes('deadlift') ||
-                         exerciseName.includes('row') ||
-                         exerciseName.includes('pull-up') ||
-                         exerciseName.includes('chin-up'),
+                exerciseName.includes('squat') ||
+                exerciseName.includes('deadlift') ||
+                exerciseName.includes('row') ||
+                exerciseName.includes('pull-up') ||
+                exerciseName.includes('chin-up'),
             }
           }),
           totalExercises: exercises.length,

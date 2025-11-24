@@ -67,33 +67,25 @@ export function AddExerciseButton({
 
   if (variant === 'full') {
     return (
-      <div className={`bg-gray-800/50 border border-gray-700 rounded-lg p-4 ${className}`}>
-        <div className="text-center">
-          <p className="text-sm text-gray-400 mb-3">
-            {t('prompt')}
-          </p>
-          <Button
-            onClick={handleClick}
-            disabled={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
-          >
-            {isAdding ? (
-              <>
-                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                {t('opening')}
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" />
-                {t('addButton')}
-              </>
-            )}
-          </Button>
-          <p className="text-xs text-gray-500 mt-2">
-            {t('currentExercises', { count: currentExerciseCount })}
-          </p>
+      <button
+        onClick={handleClick}
+        disabled={isLoading}
+        className={`w-full group relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl hover:border-purple-500 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-all duration-200 ${className}`}
+      >
+        <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors mb-3">
+          {isAdding ? (
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 dark:border-purple-400"></div>
+          ) : (
+            <Plus className="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400" />
+          )}
         </div>
-      </div>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-300">
+          {isAdding ? t('opening') : t('addButton')}
+        </span>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {t('currentExercises', { count: currentExerciseCount })}
+        </p>
+      </button>
     )
   }
 

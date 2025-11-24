@@ -13,6 +13,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
+import { Brain, Trash2, Save, X } from 'lucide-react'
+import { cn } from '@/lib/utils/cn'
 
 interface EditSetModalProps {
   isOpen: boolean
@@ -101,31 +103,34 @@ export function EditSetModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-gray-900 text-white border-gray-800 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-white/20 dark:border-gray-800 text-gray-900 dark:text-white max-h-[90vh] overflow-y-auto shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white">
+          <DialogTitle className="text-xl font-bold text-center">
             {t('editSet.title', { setNumber: setIndex + 1 })}
           </DialogTitle>
         </DialogHeader>
 
         {showDeleteConfirm ? (
-          <div className="space-y-4">
-            <div className="bg-red-900/20 border border-red-800/30 rounded-lg p-4">
-              <p className="text-red-200 text-center">
+          <div className="space-y-6 py-4 animate-in fade-in zoom-in-95">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/40 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <p className="text-red-800 dark:text-red-200 font-medium">
                 {t('editSet.deleteConfirmMessage')}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <Button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 bg-gray-800 hover:bg-gray-700"
+                className="flex-1 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                 disabled={isLoading}
               >
                 {tCommon('actions.cancel')}
               </Button>
               <Button
                 onClick={handleDelete}
-                className="flex-1 bg-red-600 hover:bg-red-700"
+                className="flex-1 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20"
                 disabled={isLoading}
               >
                 {isLoading ? tCommon('actions.deleting') : tCommon('actions.confirmDelete')}
@@ -133,85 +138,93 @@ export function EditSetModal({
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* Weight Input */}
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">
-                {t('setLogger.weightLabel')}
-              </label>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setWeight(Math.max(0, weight - 2.5))}
-                  className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-                  disabled={isLoading}
-                >
-                  -2.5
-                </Button>
-                <Input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
-                  step="0.5"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={() => setWeight(weight + 2.5)}
-                  className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-                  disabled={isLoading}
-                >
-                  +2.5
-                </Button>
+          <div className="space-y-6 py-2">
+            {/* Main Inputs Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Weight Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
+                  {t('setLogger.weightLabel')}
+                </label>
+                <div className="relative flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 p-1">
+                  <Button
+                    onClick={() => setWeight(Math.max(0, weight - 2.5))}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-xl hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    <span className="text-xl font-medium">-</span>
+                  </Button>
+                  <Input
+                    type="number"
+                    value={weight}
+                    onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 text-center text-2xl font-bold h-12 bg-transparent border-none focus-visible:ring-0 p-0 text-gray-900 dark:text-white"
+                    step="0.5"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={() => setWeight(weight + 2.5)}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-xl hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    <span className="text-xl font-medium">+</span>
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            {/* Reps Input */}
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">
-                {t('setLogger.repsLabel')}
-              </label>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={() => setReps(Math.max(1, reps - 1))}
-                  className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-                  disabled={isLoading}
-                >
-                  -1
-                </Button>
-                <Input
-                  type="number"
-                  value={reps}
-                  onChange={(e) => setReps(parseInt(e.target.value) || 0)}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="flex-1 text-center text-lg h-12 bg-gray-800 border-gray-700 text-white"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={() => setReps(reps + 1)}
-                  className="w-12 h-12 bg-gray-800 hover:bg-gray-700"
-                  disabled={isLoading}
-                >
-                  +1
-                </Button>
+              {/* Reps Input */}
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
+                  {t('setLogger.repsLabel')}
+                </label>
+                <div className="relative flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 p-1">
+                  <Button
+                    onClick={() => setReps(Math.max(1, reps - 1))}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-xl hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    <span className="text-xl font-medium">-</span>
+                  </Button>
+                  <Input
+                    type="number"
+                    value={reps}
+                    onChange={(e) => setReps(parseInt(e.target.value) || 0)}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 text-center text-2xl font-bold h-12 bg-transparent border-none focus-visible:ring-0 p-0 text-gray-900 dark:text-white"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={() => setReps(reps + 1)}
+                    variant="ghost"
+                    className="h-12 w-12 rounded-xl hover:bg-white dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    <span className="text-xl font-medium">+</span>
+                  </Button>
+                </div>
               </div>
             </div>
 
             {/* RIR Selector */}
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
                 {t('setLogger.rirLabel')}
               </label>
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-6 gap-1 bg-gray-50 dark:bg-gray-800/50 p-1 rounded-2xl border border-gray-200 dark:border-gray-700">
                 {[0, 1, 2, 3, 4, 5].map((value) => (
                   <button
                     key={value}
                     onClick={() => setRir(value)}
-                    className={`h-12 rounded font-medium transition-colors ${
+                    className={cn(
+                      "h-10 rounded-xl font-bold text-sm transition-all duration-200",
                       rir === value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
+                        ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm scale-105 ring-1 ring-black/5 dark:ring-white/10"
+                        : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+                    )}
                     disabled={isLoading}
                   >
                     {value}
@@ -224,72 +237,100 @@ export function EditSetModal({
             <div>
               <button
                 onClick={() => setShowMentalSelector(!showMentalSelector)}
-                className="text-sm text-gray-400 hover:text-gray-300 mb-2 transition-colors"
+                className="w-full flex items-center justify-center gap-2 text-xs font-medium text-gray-500 hover:text-purple-500 transition-colors py-2"
                 disabled={isLoading}
               >
-                {showMentalSelector ? '▼' : '▶'} {t('setLogger.mentalDrainedOptional')}
+                <Brain className="w-3.5 h-3.5" />
+                {showMentalSelector ? t('setLogger.hideMentalState') : t('setLogger.mentalDrainedOptional')}
               </button>
 
               {showMentalSelector && (
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {[1, 2, 3, 4, 5].map((value) => {
-                    const readiness = getMentalReadinessEmoji(value)
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => setMentalReadiness(mentalReadiness === value ? undefined : value)}
-                        className={`h-16 rounded font-medium transition-all flex flex-col items-center justify-center gap-1 ${
-                          mentalReadiness === value
-                            ? 'bg-purple-600 text-white ring-2 ring-purple-400'
-                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                        }`}
-                        title={readiness.label}
-                        disabled={isLoading}
-                      >
-                        <span className="text-2xl">{readiness.emoji}</span>
-                        <span className="text-xs">{value}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
+                <div className="mt-2 bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-2 border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
+                  <div className="grid grid-cols-5 gap-1">
+                    {[1, 2, 3, 4, 5].map((value) => {
+                      const readiness = getMentalReadinessEmoji(value)
+                      const isSelected = mentalReadiness === value
 
-              {mentalReadiness && (
-                <p className="text-xs text-gray-400 mt-2 text-center">
-                  {t('setLogger.mentalState', { state: getMentalReadinessEmoji(mentalReadiness).label })}
-                </p>
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => setMentalReadiness(isSelected ? undefined : value)}
+                          className={cn(
+                            "relative h-12 rounded-xl transition-all duration-300 flex flex-col items-center justify-center gap-1 group",
+                            isSelected
+                              ? "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/30 scale-105 z-10"
+                              : "hover:bg-white dark:hover:bg-gray-700 hover:shadow-sm"
+                          )}
+                          title={readiness.label}
+                          disabled={isLoading}
+                        >
+                          <span className={cn(
+                            "text-xl transition-transform duration-300",
+                            isSelected ? "scale-110" : "grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110"
+                          )}>
+                            {readiness.emoji}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Label Display */}
+                  <div className="h-5 mt-1 flex items-center justify-center">
+                    {mentalReadiness ? (
+                      <span className="text-xs font-bold text-purple-600 dark:text-purple-400 animate-in fade-in">
+                        {getMentalReadinessEmoji(mentalReadiness).label}
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-gray-400 italic">
+                        {t('setLogger.selectMentalState')}
+                      </span>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Notes Input */}
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">
-                {t('editSet.notesLabel')}
-              </label>
+            <div className="relative">
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t('editSet.notesPlaceholder')}
-                className="bg-gray-800 border-gray-700 text-white min-h-[80px]"
+                className="bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white min-h-[80px] rounded-2xl resize-none focus:ring-blue-500/20"
                 disabled={isLoading}
               />
             </div>
 
-            <DialogFooter className="flex-col sm:flex-col gap-2">
+            <DialogFooter className="flex-col sm:flex-col gap-3 pt-2">
               <Button
                 onClick={handleSave}
                 disabled={isLoading}
-                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-medium"
+                className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                {isLoading ? tCommon('actions.saving') : t('editSet.saveButton')}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>{tCommon('actions.saving')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Save className="w-4 h-4" />
+                    <span>{t('editSet.saveButton')}</span>
+                  </div>
+                )}
               </Button>
+
               <Button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={isLoading}
-                variant="outline"
-                className="w-full h-12 border-red-600 text-red-400 hover:bg-red-950 hover:text-red-300"
+                variant="ghost"
+                className="w-full h-12 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
               >
-                {t('editSet.deleteButton')}
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-4 h-4" />
+                  <span>{t('editSet.deleteButton')}</span>
+                </div>
               </Button>
             </DialogFooter>
           </div>

@@ -169,28 +169,30 @@ export function AddSetButton({
   // Inline variant (for review page)
   return (
     <>
-      <button
+      <Button
         onClick={handleClick}
         disabled={isLoading}
-        className={`flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+        variant="ghost"
+        size="sm"
+        className={`h-7 px-3 rounded-full text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 border border-blue-100 dark:border-blue-800 transition-all ${className}`}
       >
         {isValidating ? (
           <>
-            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
+            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
             {t('validating')}
           </>
         ) : isAdding ? (
           <>
-            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
+            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
             {t('adding')}
           </>
         ) : (
           <>
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
             {t('addButtonInline')}
           </>
         )}
-      </button>
+      </Button>
 
       {/* Validation Modal */}
       {validationResult && (

@@ -86,64 +86,62 @@ export function SplitReferenceCard({
           {t('volumeExplanation')}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(sessionDefinition.targetVolume).map(([muscle, targetSets]) => {
             const volumeBreakdown = actualVolumes[muscle] || { total: 0, direct: 0, indirect: 0 }
             const actualSets = volumeBreakdown.total
             const status = getVolumeStatus(targetSets, actualSets)
 
+            // Calculate progress percentage for the bar (capped at 100% for visual cleanliness, unless over)
+            const progressPercent = Math.min(100, Math.max(0, (actualSets / targetSets) * 100))
+
             return (
               <div
                 key={muscle}
-                className={cn(
-                  'flex items-center justify-between bg-white/60 dark:bg-gray-800/60 rounded-md px-3 py-2.5 border',
-                  status.status === 'perfect' && 'border-green-300 dark:border-green-700',
-                  status.status === 'good' && 'border-blue-300 dark:border-blue-700',
-                  status.status === 'under' && 'border-orange-300 dark:border-orange-700',
-                  status.status === 'over' && 'border-yellow-300 dark:border-yellow-700'
-                )}
+                className="bg-white/60 dark:bg-gray-800/60 rounded-md px-3 py-2 border border-gray-100 dark:border-gray-700"
               >
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {getMuscleGroupLabel(muscle)}
-                </span>
-
-                <div className="flex items-center gap-2">
-                  {/* Actual Volume with Direct/Indirect Breakdown */}
-                  <div className="flex flex-col items-end">
-                    <span className="text-sm font-bold text-purple-700 dark:text-purple-300 leading-tight">
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                    {getMuscleGroupLabel(muscle)}
+                  </span>
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className={cn(
+                      "font-bold",
+                      status.status === 'perfect' && "text-green-600 dark:text-green-400",
+                      status.status === 'good' && "text-blue-600 dark:text-blue-400",
+                      status.status === 'under' && "text-amber-600 dark:text-amber-400",
+                      status.status === 'over' && "text-purple-600 dark:text-purple-400"
+                    )}>
                       {actualSets}
                     </span>
-                    {volumeBreakdown.indirect > 0 && (
-                      <span
-                        className="text-[10px] text-gray-500 dark:text-gray-500 leading-none"
-                        title={`${volumeBreakdown.direct} direct + ${volumeBreakdown.indirect} indirect sets`}
-                      >
-                        {volumeBreakdown.direct}+{volumeBreakdown.indirect}
-                      </span>
-                    )}
+                    <span className="text-gray-400">/</span>
+                    <span className="text-gray-500">{targetSets}</span>
                   </div>
+                </div>
 
-                  <span className="text-xs text-gray-400">→</span>
+                {/* Progress Bar */}
+                <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-500",
+                      status.status === 'perfect' && "bg-green-500",
+                      status.status === 'good' && "bg-blue-500",
+                      status.status === 'under' && "bg-amber-400",
+                      status.status === 'over' && "bg-purple-500"
+                    )}
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
 
-                  {/* Target */}
-                  <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
-                    {targetSets}
+                {/* Status Text (Optional, for extra clarity) */}
+                <div className="flex justify-between mt-1">
+                  <span className="text-[10px] text-gray-400">
+                    {volumeBreakdown.indirect > 0 ? `${volumeBreakdown.direct} direct + ${volumeBreakdown.indirect} indirect` : ''}
                   </span>
-
-                  {/* Status Indicator */}
-                  {status.status === 'perfect' && (
-                    <Minus className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  )}
-                  {status.status === 'good' && (
-                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                      {status.diff > 0 ? `+${status.diff}` : status.diff}
-                    </span>
-                  )}
-                  {status.status === 'under' && (
-                    <TrendingDown className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                  )}
                   {status.status === 'over' && (
-                    <TrendingUp className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                    <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400">
+                      +{actualSets - targetSets} extra
+                    </span>
                   )}
                 </div>
               </div>

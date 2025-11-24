@@ -33,11 +33,38 @@ export function SettingsClientWrapper({ userId, children }: SettingsClientWrappe
         </div>
 
         <div className="space-y-8">
+          {/* Quick Nav (Mobile Only) */}
+          <div className="md:hidden sticky top-0 z-20 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-2 -mx-4 px-4 border-b border-gray-200 dark:border-gray-800 overflow-x-auto flex gap-2 no-scrollbar">
+            {[
+              { id: 'preferences', label: t('preferences.title') },
+              { id: 'caloric', label: 'Calorie' },
+              { id: 'weak-points', label: 'Punti Deboli' },
+              { id: 'equipment', label: 'Attrezzatura' },
+              { id: 'approach', label: 'Approccio' },
+              { id: 'personal', label: 'Personale' },
+              { id: 'account', label: 'Account' }
+            ].map((item) => (
+              <a
+                key={item.id}
+                href={`#${item.id}`}
+                className="whitespace-nowrap px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
+
           {/* Language Preferences */}
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">{t("preferences.title")}</h2>
-            <LanguageSelector userId={userId} />
-          </Card>
+          <section id="preferences" className="scroll-mt-20">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">{t("preferences.title")}</h2>
+              <LanguageSelector userId={userId} />
+            </Card>
+          </section>
 
           {/* Other settings sections */}
           {children}
