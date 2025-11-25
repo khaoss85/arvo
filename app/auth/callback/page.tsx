@@ -1,33 +1,57 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/ui/logo";
+import { exchangeCodeForSession, verifyOtpToken } from "./actions";
 
 /**
- * Client-side auth callback handler for implicit flow (hash fragment tokens).
- *
- * When Supabase redirects with tokens in the hash fragment (#access_token=...),
- * the server-side route.ts cannot see them. This page handles that case.
- *
- * Flow:
- * 1. Supabase redirects to /auth/callback#access_token=xxx&refresh_token=yyy
- * 2. This page reads the hash fragment
- * 3. Sets the session using supabase.auth.setSession()
- * 4. Redirects to /onboarding or /dashboard based on profile existence
+ * Auth callback page that handles all authentication flows:
+ * 1. PKCE flow (code query param) - uses server action for cookie handling
+ * 2. OTP flow (token_hash query param) - uses server action
+ * 3. Implicit flow (hash fragment) - handles client-side with setSession
  */
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const hash = window.location.hash;
+        // Get query params
+        const code = searchParams.get("code");
+        const tokenHash = searchParams.get("token_hash");
+        const type = searchParams.get("type");
 
-        // Check for hash fragment tokens (implicit flow)
+        // 1. Handle PKCE flow (magic link login)
+        if (code) {
+          const result = await exchangeCodeForSession(code);
+          if (result.success) {
+            router.replace(result.redirectTo);
+          } else {
+            setStatus("error");
+            setErrorMessage(result.error || "Failed to complete sign in");
+          }
+          return;
+        }
+
+        // 2. Handle OTP flow (email verification)
+        if (tokenHash && type) {
+          const result = await verifyOtpToken(tokenHash, type);
+          if (result.success) {
+            router.replace(result.redirectTo);
+          } else {
+            setStatus("error");
+            setErrorMessage(result.error || "Failed to verify email");
+          }
+          return;
+        }
+
+        // 3. Handle implicit flow (hash fragment tokens)
+        const hash = window.location.hash;
         if (hash && hash.includes("access_token")) {
           const params = new URLSearchParams(hash.substring(1));
           const accessToken = params.get("access_token");
@@ -49,8 +73,8 @@ export default function AuthCallbackPage() {
               return;
             }
 
-            if (data.user) {
-              // Track waitlist conversion if applicable
+            if (data.user && data.user.email) {
+              // Track waitlist conversion
               try {
                 const { data: waitlistEntry } = await supabase
                   .from('waitlist_entries')
@@ -69,19 +93,16 @@ export default function AuthCallbackPage() {
                     .eq('id', waitlistEntry.id);
                 }
               } catch {
-                // Non-blocking - continue even if tracking fails
+                // Non-blocking
               }
 
-              // Check if user has completed onboarding
+              // Check onboarding status
               const { data: profile } = await supabase
                 .from("user_profiles")
                 .select("user_id, first_name")
                 .eq("user_id", data.user.id)
                 .single();
 
-              // Redirect based on profile existence
-              // Profile exists with first_name = user completed onboarding
-              // Profile exists without first_name = user needs to complete onboarding
               const hasCompletedOnboarding = profile?.first_name != null;
               router.replace(hasCompletedOnboarding ? "/dashboard" : "/onboarding");
               return;
@@ -89,8 +110,9 @@ export default function AuthCallbackPage() {
           }
         }
 
-        // No valid tokens found - redirect to login with error
-        router.replace("/login?error=auth_callback_error");
+        // No valid auth data found
+        setStatus("error");
+        setErrorMessage("No authentication data found. Please try signing in again.");
       } catch (err) {
         console.error("Auth callback error:", err);
         setStatus("error");
@@ -99,18 +121,18 @@ export default function AuthCallbackPage() {
     };
 
     handleCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   if (status === "error") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-geometric-pattern">
         <Logo size="sm" showTagline={false} animated={false} />
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center max-w-md">
           <h1 className="text-xl font-semibold text-red-600">Authentication Error</h1>
           <p className="mt-2 text-muted-foreground">{errorMessage || "Failed to complete sign in"}</p>
           <button
             onClick={() => router.replace("/login")}
-            className="mt-4 text-primary underline"
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
           >
             Return to login
           </button>
@@ -120,7 +142,7 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-geometric-pattern">
       <Logo size="sm" showTagline={false} animated={true} />
       <div className="mt-8 text-center">
         <div className="flex items-center justify-center gap-2">
@@ -148,5 +170,44 @@ export default function AuthCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-geometric-pattern">
+          <Logo size="sm" showTagline={false} animated={true} />
+          <div className="mt-8 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-primary"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span className="text-muted-foreground">Loading...</span>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
