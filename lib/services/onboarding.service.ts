@@ -63,7 +63,8 @@ export class OnboardingService {
         preferred_language: 'it', // Default to Italian
         audio_coaching_enabled: true, // Audio coaching enabled by default
         audio_coaching_autoplay: false, // Autoplay disabled by default
-        audio_coaching_speed: 1.0 // Normal speed by default
+        audio_coaching_speed: 1.0, // Normal speed by default
+        app_mode: 'advanced' // Default to advanced mode
       })
 
       // Generate first AI-powered workout using the collected preferences

@@ -5,10 +5,11 @@ import { motion, type Variants } from 'framer-motion';
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   showTagline?: boolean;
+  showSubtitle?: boolean;
   animated?: boolean;
 }
 
-export function Logo({ size = 'md', showTagline = true, animated = true }: LogoProps) {
+export function Logo({ size = 'md', showTagline = true, showSubtitle = true, animated = true }: LogoProps) {
   const sizes = {
     sm: { icon: 32, text: 'text-2xl', tagline: 'text-xs' },
     md: { icon: 48, text: 'text-4xl', tagline: 'text-sm' },
@@ -109,24 +110,28 @@ export function Logo({ size = 'md', showTagline = true, animated = true }: LogoP
         </div>
       </Icon>
 
-      <Text
-        className="flex flex-col items-center gap-1"
-        variants={animated ? textVariants : undefined}
-        initial={animated ? 'initial' : undefined}
-        animate={animated ? 'animate' : undefined}
-      >
-        {/* Subtitle */}
-        <p className={`${currentSize.tagline} font-medium text-muted-foreground tracking-wide`}>
-          AI Routine, Very Optimized
-        </p>
+      {(showSubtitle || showTagline) && (
+        <Text
+          className="flex flex-col items-center gap-1"
+          variants={animated ? textVariants : undefined}
+          initial={animated ? 'initial' : undefined}
+          animate={animated ? 'animate' : undefined}
+        >
+          {/* Subtitle */}
+          {showSubtitle && (
+            <p className={`${currentSize.tagline} font-medium text-muted-foreground tracking-wide`}>
+              AI Routine, Very Optimized
+            </p>
+          )}
 
-        {/* Tagline */}
-        {showTagline && (
-          <p className="text-xs text-muted-foreground/70 mt-1">
-            Your AI-powered training companion
-          </p>
-        )}
-      </Text>
+          {/* Tagline */}
+          {showTagline && (
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              Your AI-powered training companion
+            </p>
+          )}
+        </Text>
+      )}
     </div>
   );
 }

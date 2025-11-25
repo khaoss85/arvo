@@ -18,6 +18,7 @@ import { ApproachSwitcher } from "@/components/features/settings/approach-switch
 import { ApproachHistoryTimeline } from "@/components/features/settings/approach-history-timeline"
 import { AudioCoachingSettings } from "@/components/features/settings/audio-coaching-settings"
 import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
+import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
 import { Card } from "@/components/ui/card"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -59,9 +60,25 @@ export default async function SettingsPage() {
   // Get translations
   const locale = await getUserLanguage(user.id)
   const t = await getTranslations({ locale, namespace: 'settings.page' })
+  const tSimple = await getTranslations({ locale, namespace: 'simpleMode.settings' })
 
   return (
     <SettingsClientWrapper userId={user.id}>
+      {/* App Mode Section */}
+      <section id="app-mode" className="scroll-mt-20">
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-1">{tSimple('title')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {tSimple('description')}
+              </p>
+            </div>
+            <AppModeToggle />
+          </div>
+        </Card>
+      </section>
+
       {/* Caloric Phase Section */}
       <section id="caloric" className="scroll-mt-20">
         <Card className="p-4 sm:p-6">

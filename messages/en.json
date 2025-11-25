@@ -193,6 +193,15 @@
         "all": "No activity yet. Complete your first workout to get started!",
         "workouts": "No workouts completed yet. Start training to see your progress here!",
         "milestones": "No milestones yet. Complete a cycle or modify your split to see milestones!"
+      },
+      "viewMode": {
+        "list": "List",
+        "calendar": "Calendar"
+      },
+      "calendarView": {
+        "selectDay": "Click a day to see details",
+        "noWorkouts": "No workouts this day",
+        "milestonesNotSupported": "Calendar view shows workouts only. Switch to list view to see milestones."
       }
     },
     "splitCycle": {
@@ -4655,5 +4664,111 @@
     "bro_split": "Bro Split",
     "weak_point_focus": "Weak Point Focus",
     "custom": "Custom"
+  },
+  "simpleMode": {
+    "navigation": {
+      "home": "Home",
+      "report": "Report",
+      "progress": "Progress",
+      "check": "Check",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "greeting": "Hi",
+      "subtitle": "You've been working hard! Here's your next session",
+      "noWorkouts": "No workout available",
+      "noWorkoutsDescription": "Talk to your coach to plan your workouts",
+      "contactCoach": "Contact Coach",
+      "swipeHint": "Swipe to navigate"
+    },
+    "workoutCard": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "completed": "Completed",
+      "exercises": "exercises",
+      "estimatedMinutes": "estimated minutes",
+      "startWorkout": "Start Workout",
+      "continueWorkout": "Continue Workout",
+      "review": "Review"
+    },
+    "workout": {
+      "greatJob": "Great job!",
+      "exerciseCompleted": "You completed this exercise",
+      "set": "Set",
+      "sets": "Sets",
+      "of": "of",
+      "nextExercise": "Next exercise",
+      "completeWorkout": "Complete Workout",
+      "finish": "Finish",
+      "workoutCompleted": "Workout Completed",
+      "completed": "Completed!"
+    },
+    "exercise": {
+      "warmupNote": "Warmup - Perform with reduced weight",
+      "reps": "reps",
+      "tempo": "Execution tempo",
+      "tempoDown": "Down",
+      "tempoPause": "Pause",
+      "tempoUp": "Up",
+      "mindMuscle": "Focus on the mind-muscle connection during each rep.",
+      "coachNotes": "Coach Notes"
+    },
+    "setLogger": {
+      "weight": "Weight (kg)",
+      "reps": "Reps",
+      "logSet": "Log Set"
+    },
+    "recap": {
+      "workout": "Workout",
+      "completed": "Completed!",
+      "setsCompleted": "completed",
+      "exercisesDone": "done",
+      "keepStreak": "Give your best to keep your streak!",
+      "daysStreak": "day streak!",
+      "dayStreak": "day streak!",
+      "startStreak": "Start your streak!",
+      "firstDayComplete": "You completed the first day!",
+      "keepGoing": "Keep going to build your consistency",
+      "backToHome": "Back to Home"
+    },
+    "report": {
+      "title": "Your Progress",
+      "subtitle": "View your results",
+      "consecutiveDay": "consecutive day",
+      "consecutiveDays": "consecutive days",
+      "muscleDistribution": "Muscle Distribution",
+      "noDataYet": "Complete some workouts to see your progress",
+      "activity": "Activity",
+      "summary": "Summary",
+      "totalWorkouts": "Total workouts",
+      "totalSets": "Total sets"
+    },
+    "calendar": {
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "daysShort": ["M", "T", "W", "T", "F", "S", "S"],
+      "workout": "workout",
+      "workouts": "workouts",
+      "workoutCompleted": "Workout completed",
+      "today": "Today"
+    },
+    "settings": {
+      "title": "App Mode",
+      "description": "Choose the experience that suits your needs",
+      "simpleMode": "Simple Mode",
+      "simpleModeDescription": "Receive the workout from your coach and execute it. Perfect for those who just want to train.",
+      "advancedMode": "Advanced Mode",
+      "advancedModeDescription": "Full features: AI suggestions, exercise customization, detailed analytics.",
+      "changingMode": "Changing mode..."
+    },
+    "restTimer": {
+      "recovery": "Recovery",
+      "ready": "Ready!",
+      "skip": "Skip"
+    },
+    "hydration": {
+      "drinkWater": "Take a sip of water",
+      "smallSips": "Small sips to avoid feeling heavy",
+      "stayHydrated": "Stay hydrated!"
+    }
   }
 }

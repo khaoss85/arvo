@@ -24,6 +24,11 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
+  // Redirect to simple mode if user has simple mode enabled
+  if (profile.app_mode === "simple") {
+    redirect("/simple");
+  }
+
   // Get user's workouts
   const workouts = await WorkoutService.getByUserIdServer(user.id);
 

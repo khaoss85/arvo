@@ -9,6 +9,7 @@ import { CheckRoomCard } from "./check-room-card"
 import { CycleCompletionModal } from "./cycle-completion-modal"
 import { SplitSelectionDialog } from "./split-selection-dialog"
 import { SplitAdaptationProgress } from "./split-adaptation-progress"
+import { ModeQuickSwitch } from "@/components/ui/mode-quick-switch"
 import type { User } from "@supabase/supabase-js"
 import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
 import type { UserProfile } from "@/lib/types/schemas"
@@ -134,6 +135,7 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
               )}
             </div>
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <ModeQuickSwitch />
               <Link
                 href="/settings"
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base"

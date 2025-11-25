@@ -77,6 +77,17 @@ export function CTASection({ isAuthenticated, showWaitlist = false }: CTASection
               <div className="pt-4">
                 <WaitlistForm inline />
               </div>
+
+              {/* Login link for existing users */}
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-primary hover:text-primary/80 underline transition-colors"
+                >
+                  Login
+                </Link>
+              </p>
             </>
           ) : (
             <>

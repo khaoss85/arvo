@@ -72,6 +72,8 @@ export const userProfileSchema = z.object({
   audio_coaching_enabled: z.boolean().default(true),
   audio_coaching_autoplay: z.boolean().default(false),
   audio_coaching_speed: z.number().min(0.5).max(2.0).default(1.0),
+  // App mode preference (simple for basic users, advanced for power users)
+  app_mode: z.enum(['simple', 'advanced']).optional().default('advanced'),
 });
 
 export const insertUserProfileSchema = userProfileSchema;

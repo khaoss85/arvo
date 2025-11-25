@@ -100,6 +100,15 @@ export function HeroSection({ isAuthenticated, showWaitlist = false }: HeroSecti
               </Button>
             </Link>
 
+            {showWaitlist && !isAuthenticated && (
+              <Link
+                href="/login"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Already have an account? <span className="underline">Login</span>
+              </Link>
+            )}
+
             <button
               onClick={() => {
                 document.getElementById('ai-showcase')?.scrollIntoView({ behavior: 'smooth' });

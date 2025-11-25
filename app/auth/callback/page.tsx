@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/ui/logo";
@@ -17,14 +17,25 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double execution (React Strict Mode in dev)
+    if (isProcessingRef.current) {
+      console.log("[AuthCallback] Already processing, skipping...");
+      return;
+    }
+
     const handleCallback = async () => {
+      isProcessingRef.current = true;
+
       try {
         // Get query params
         const code = searchParams.get("code");
         const tokenHash = searchParams.get("token_hash");
         const type = searchParams.get("type");
+
+        console.log("[AuthCallback] Processing:", { code: !!code, tokenHash: !!tokenHash, type, hash: !!window.location.hash });
 
         // 1. Handle PKCE flow (magic link login)
         // Must use browser client because code_verifier is stored in localStorage
@@ -145,7 +156,28 @@ function AuthCallbackContent() {
           }
         }
 
-        // No valid auth data found
+        // No valid auth data found in URL params
+        // BUT check if session was already established (race condition with double request)
+        console.log("[AuthCallback] No auth params, checking for existing session...");
+        const supabase = getSupabaseBrowserClient();
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session) {
+          console.log("[AuthCallback] Found existing session, redirecting...");
+          // Session exists, redirect based on onboarding status
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("first_name")
+            .eq("user_id", session.user.id)
+            .single();
+
+          const hasCompletedOnboarding = profile?.first_name != null;
+          router.replace(hasCompletedOnboarding ? "/dashboard" : "/onboarding");
+          return;
+        }
+
+        // No session either, show error
+        console.log("[AuthCallback] No session found, showing error");
         setStatus("error");
         setErrorMessage("No authentication data found. Please try signing in again.");
       } catch (err) {

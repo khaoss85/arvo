@@ -193,6 +193,15 @@
         "all": "Nessuna attività ancora. Completa il tuo primo allenamento per iniziare!",
         "workouts": "Nessun allenamento completato ancora. Inizia ad allenarti per vedere i tuoi progressi qui!",
         "milestones": "Nessun traguardo ancora. Completa un ciclo o modifica la tua split per vedere i traguardi!"
+      },
+      "viewMode": {
+        "list": "Lista",
+        "calendar": "Calendario"
+      },
+      "calendarView": {
+        "selectDay": "Clicca un giorno per vedere i dettagli",
+        "noWorkouts": "Nessun allenamento in questo giorno",
+        "milestonesNotSupported": "La vista calendario mostra solo gli allenamenti. Passa alla vista lista per vedere i traguardi."
       }
     },
     "splitCycle": {
@@ -4657,5 +4666,111 @@
     "bro_split": "Bro Split",
     "weak_point_focus": "Focus Punti Deboli",
     "custom": "Personalizzato"
+  },
+  "simpleMode": {
+    "navigation": {
+      "home": "Home",
+      "report": "Report",
+      "progress": "Progressi",
+      "check": "Check",
+      "settings": "Impostazioni"
+    },
+    "dashboard": {
+      "greeting": "Ciao",
+      "subtitle": "Hai lavorato sodo! Ecco la tua prossima sessione",
+      "noWorkouts": "Nessun workout disponibile",
+      "noWorkoutsDescription": "Parla con il tuo coach per pianificare i tuoi allenamenti",
+      "contactCoach": "Contatta il Coach",
+      "swipeHint": "Swipe per navigare"
+    },
+    "workoutCard": {
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "completed": "Completato",
+      "exercises": "esercizi",
+      "estimatedMinutes": "minuti stimati",
+      "startWorkout": "Inizia Workout",
+      "continueWorkout": "Continua Workout",
+      "review": "Rivedi"
+    },
+    "workout": {
+      "greatJob": "Ottimo lavoro!",
+      "exerciseCompleted": "Hai completato questo esercizio",
+      "set": "Serie",
+      "sets": "Serie",
+      "of": "di",
+      "nextExercise": "Esercizio successivo",
+      "completeWorkout": "Completa Workout",
+      "finish": "Termina",
+      "workoutCompleted": "Workout Completato",
+      "completed": "Completata!"
+    },
+    "exercise": {
+      "warmupNote": "Riscaldamento - Eseguire con peso ridotto",
+      "reps": "reps",
+      "tempo": "Tempo di esecuzione",
+      "tempoDown": "Giù",
+      "tempoPause": "Pausa",
+      "tempoUp": "Su",
+      "mindMuscle": "Concentrati sulla connessione mente-muscolo durante ogni ripetizione.",
+      "coachNotes": "Note dal Coach"
+    },
+    "setLogger": {
+      "weight": "Peso (kg)",
+      "reps": "Ripetizioni",
+      "logSet": "Registra Serie"
+    },
+    "recap": {
+      "workout": "Workout",
+      "completed": "Completato!",
+      "setsCompleted": "completate",
+      "exercisesDone": "svolti",
+      "keepStreak": "Dai il massimo per non perdere il tuo streak!",
+      "daysStreak": "giorni di streak!",
+      "dayStreak": "giorno di streak!",
+      "startStreak": "Inizia il tuo streak!",
+      "firstDayComplete": "Hai completato il primo giorno!",
+      "keepGoing": "Continua così per costruire la tua costanza",
+      "backToHome": "Torna alla Home"
+    },
+    "report": {
+      "title": "I Tuoi Progressi",
+      "subtitle": "Visualizza i tuoi risultati",
+      "consecutiveDay": "giorno consecutivo",
+      "consecutiveDays": "giorni consecutivi",
+      "muscleDistribution": "Distribuzione Muscolare",
+      "noDataYet": "Completa alcuni workout per vedere i tuoi progressi",
+      "activity": "Attività",
+      "summary": "Riepilogo",
+      "totalWorkouts": "Workout totali",
+      "totalSets": "Set totali"
+    },
+    "calendar": {
+      "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      "daysShort": ["L", "M", "M", "G", "V", "S", "D"],
+      "workout": "workout",
+      "workouts": "workouts",
+      "workoutCompleted": "Workout completato",
+      "today": "Oggi"
+    },
+    "settings": {
+      "title": "Modalità App",
+      "description": "Scegli l'esperienza più adatta alle tue esigenze",
+      "simpleMode": "Modalità Semplice",
+      "simpleModeDescription": "Ricevi il workout dal coach ed eseguilo. Perfetto per chi vuole solo allenarsi.",
+      "advancedMode": "Modalità Avanzata",
+      "advancedModeDescription": "Funzionalità complete: AI suggestions, personalizzazione esercizi, analytics dettagliati.",
+      "changingMode": "Cambio modalità..."
+    },
+    "restTimer": {
+      "recovery": "Recupero",
+      "ready": "Pronto!",
+      "skip": "Salta"
+    },
+    "hydration": {
+      "drinkWater": "Bevi un sorso d'acqua",
+      "smallSips": "Piccoli sorsi per non appesantirti",
+      "stayHydrated": "Mantieniti idratato!"
+    }
   }
 }

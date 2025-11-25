@@ -3,6 +3,7 @@ import { getUser } from '@/lib/utils/auth.server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
+import { UserProfileService } from '@/lib/services/user-profile.service'
 import { RefineWorkoutPage } from '@/components/features/workout/refine-workout-page'
 
 export default async function WorkoutReviewPage({ params }: { params: { id: string } }) {
@@ -14,6 +15,12 @@ export default async function WorkoutReviewPage({ params }: { params: { id: stri
 
   // Create Supabase client for server-side operations
   const supabase = await getSupabaseServerClient()
+
+  // Check if user is in simple mode - redirect to simple workout directly
+  const profile = await UserProfileService.getByUserIdServer(user.id)
+  if (profile?.app_mode === 'simple') {
+    redirect(`/simple/workout/${params.id}`)
+  }
 
   // Load workout using server-side method
   const workout = await WorkoutService.getByIdServer(params.id, supabase)

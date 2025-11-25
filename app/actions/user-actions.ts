@@ -77,6 +77,51 @@ export async function getUserPreferredLanguage(
 }
 
 /**
+ * Update user's app mode preference (simple/advanced)
+ *
+ * @param mode - The app mode ('simple' or 'advanced')
+ * @returns Success status and optional error message
+ */
+export async function updateAppModeAction(
+  mode: 'simple' | 'advanced'
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return {
+        success: false,
+        error: 'Not authenticated'
+      }
+    }
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ app_mode: mode })
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('[updateAppModeAction] Database error:', error)
+      return {
+        success: false,
+        error: 'Failed to update app mode'
+      }
+    }
+
+    console.log('[updateAppModeAction] Successfully updated app mode to:', mode, 'for user:', user.id)
+    return { success: true }
+  } catch (error) {
+    console.error('[updateAppModeAction] Unexpected error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
  * Update user's personal information (demographic data)
  *
  * @param userId - The user's ID

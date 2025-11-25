@@ -741,6 +741,7 @@ export type Database = {
         Row: {
           active_split_plan_id: string | null
           age: number | null
+          app_mode: string | null
           approach_id: string | null
           audio_coaching_autoplay: boolean
           audio_coaching_enabled: boolean
@@ -781,6 +782,7 @@ export type Database = {
         Insert: {
           active_split_plan_id?: string | null
           age?: number | null
+          app_mode?: string | null
           approach_id?: string | null
           audio_coaching_autoplay?: boolean
           audio_coaching_enabled?: boolean
@@ -803,7 +805,7 @@ export type Database = {
           equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
-          gender: string
+          gender?: string
           height?: number | null
           injuries_notes?: string | null
           last_cycle_completed_at?: string | null
@@ -823,6 +825,7 @@ export type Database = {
         Update: {
           active_split_plan_id?: string | null
           age?: number | null
+          app_mode?: string | null
           approach_id?: string | null
           audio_coaching_autoplay?: boolean
           audio_coaching_enabled?: boolean
@@ -1550,6 +1553,7 @@ export const Constants = {
         "back",
         "shoulders",
         "arms",
+        "rest",
       ],
       workout_variation: ["A", "B"],
     },
