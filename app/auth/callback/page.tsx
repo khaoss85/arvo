@@ -4,11 +4,11 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/ui/logo";
-import { exchangeCodeForSession, verifyOtpToken } from "./actions";
+import { verifyOtpToken } from "./actions";
 
 /**
  * Auth callback page that handles all authentication flows:
- * 1. PKCE flow (code query param) - uses server action for cookie handling
+ * 1. PKCE flow (code query param) - uses browser client (code_verifier in localStorage)
  * 2. OTP flow (token_hash query param) - uses server action
  * 3. Implicit flow (hash fragment) - handles client-side with setSession
  */
@@ -27,14 +27,49 @@ function AuthCallbackContent() {
         const type = searchParams.get("type");
 
         // 1. Handle PKCE flow (magic link login)
+        // Must use browser client because code_verifier is stored in localStorage
         if (code) {
-          const result = await exchangeCodeForSession(code);
-          if (result.success) {
-            router.replace(result.redirectTo);
-          } else {
+          const supabase = getSupabaseBrowserClient();
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+          if (error || !data.user || !data.user.email) {
+            console.error("PKCE exchange error:", error);
             setStatus("error");
-            setErrorMessage(result.error || "Failed to complete sign in");
+            setErrorMessage(error?.message || "Failed to complete sign in");
+            return;
           }
+
+          // Track waitlist conversion
+          try {
+            const { data: waitlistEntry } = await supabase
+              .from('waitlist_entries')
+              .select('id, status')
+              .eq('email', data.user.email)
+              .single();
+
+            if (waitlistEntry && waitlistEntry.status !== 'converted') {
+              await supabase
+                .from('waitlist_entries')
+                .update({
+                  status: 'converted',
+                  converted_user_id: data.user.id,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', waitlistEntry.id);
+            }
+          } catch {
+            // Non-blocking
+          }
+
+          // Check onboarding status
+          const { data: profile } = await supabase
+            .from("user_profiles")
+            .select("user_id, first_name")
+            .eq("user_id", data.user.id)
+            .single();
+
+          const hasCompletedOnboarding = profile?.first_name != null;
+          router.replace(hasCompletedOnboarding ? "/dashboard" : "/onboarding");
           return;
         }
 
