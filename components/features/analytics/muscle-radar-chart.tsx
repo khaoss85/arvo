@@ -11,6 +11,7 @@ import {
   Legend,
   Tooltip,
 } from 'recharts'
+import { useTranslations } from 'next-intl'
 import { useMuscleGroupLabel } from '@/lib/hooks/use-muscle-group-label'
 
 interface MuscleRadarChartProps {
@@ -38,6 +39,7 @@ export function MuscleRadarChart({
   previousData,
   maxMuscles = 6,
 }: MuscleRadarChartProps) {
+  const t = useTranslations('radarChart.labels')
   const getMuscleLabel = useMuscleGroupLabel()
 
   // Prepare data for radar chart - memoized to prevent infinite re-renders
@@ -91,15 +93,15 @@ export function MuscleRadarChart({
           {comparisonMode === 'target' ? (
             <>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-blue-400">Target:</span>
-                <span className="text-white font-medium">{data.target} sets</span>
+                <span className="text-blue-400">{t('target')}:</span>
+                <span className="text-white font-medium">{data.target} {t('sets')}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-green-400">Actual:</span>
-                <span className="text-white font-medium">{data.actual} sets</span>
+                <span className="text-green-400">{t('actual')}:</span>
+                <span className="text-white font-medium">{data.actual} {t('sets')}</span>
               </div>
               <div className="flex items-center justify-between gap-4 pt-1 border-t border-gray-700">
-                <span className="text-gray-400">Progress:</span>
+                <span className="text-gray-400">{t('progress')}:</span>
                 <span className={`font-medium ${
                   data.percentage >= 80 ? 'text-green-400' :
                   data.percentage >= 50 ? 'text-yellow-400' :
@@ -112,22 +114,22 @@ export function MuscleRadarChart({
           ) : (
             <>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-green-400">Current:</span>
-                <span className="text-white font-medium">{data.actual} sets</span>
+                <span className="text-green-400">{t('current')}:</span>
+                <span className="text-white font-medium">{data.actual} {t('sets')}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-purple-400">Previous:</span>
-                <span className="text-white font-medium">{data.previous || 0} sets</span>
+                <span className="text-purple-400">{t('previous')}:</span>
+                <span className="text-white font-medium">{data.previous || 0} {t('sets')}</span>
               </div>
               {data.previous > 0 && (
                 <div className="flex items-center justify-between gap-4 pt-1 border-t border-gray-700">
-                  <span className="text-gray-400">Change:</span>
+                  <span className="text-gray-400">{t('change')}:</span>
                   <span className={`font-medium ${
                     data.actual > data.previous ? 'text-green-400' :
                     data.actual < data.previous ? 'text-red-400' :
                     'text-gray-400'
                   }`}>
-                    {data.actual > data.previous ? '+' : ''}{data.actual - data.previous} sets
+                    {data.actual > data.previous ? '+' : ''}{data.actual - data.previous} {t('sets')}
                   </span>
                 </div>
               )}
@@ -136,13 +138,13 @@ export function MuscleRadarChart({
         </div>
       </div>
     )
-  }, [comparisonMode])
+  }, [comparisonMode, t])
 
   // Early returns AFTER all hooks
   if (loading) {
     return (
       <div className="h-80 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded animate-pulse">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Loading chart...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('loading')}</p>
       </div>
     )
   }
@@ -151,8 +153,8 @@ export function MuscleRadarChart({
     return (
       <div className="h-80 flex items-center justify-center bg-gray-50 dark:bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700">
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">No muscle group data available</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">Complete workouts to see distribution</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('noData')}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500">{t('noDataHint')}</p>
         </div>
       </div>
     )
@@ -183,7 +185,7 @@ export function MuscleRadarChart({
           <>
             {/* Target volume radar */}
             <Radar
-              name="Target"
+              name={t('target')}
               dataKey="target"
               stroke="#3b82f6"
               fill="#3b82f6"
@@ -192,7 +194,7 @@ export function MuscleRadarChart({
             />
             {/* Actual volume radar */}
             <Radar
-              name="Actual"
+              name={t('actual')}
               dataKey="actual"
               stroke="#10b981"
               fill="#10b981"
@@ -204,7 +206,7 @@ export function MuscleRadarChart({
           <>
             {/* Current cycle radar */}
             <Radar
-              name="Current"
+              name={t('current')}
               dataKey="actual"
               stroke="#10b981"
               fill="#10b981"
@@ -214,7 +216,7 @@ export function MuscleRadarChart({
             {/* Previous cycle radar */}
             {previousData && (
               <Radar
-                name="Previous"
+                name={t('previous')}
                 dataKey="previous"
                 stroke="#a855f7"
                 fill="#a855f7"

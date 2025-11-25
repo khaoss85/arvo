@@ -1776,26 +1776,26 @@
         "skipProfile": "Skip Profile"
       },
       "goals": {
-        "title": "Your Goals",
-        "description": "Help us personalize your training plan",
+        "title": "What phase are you in?",
+        "description": "Your phase determines how we personalize volume and intensity",
         "backToProfile": "Back to Profile",
-        "objectiveQuestion": "What's your primary goal?",
+        "objectiveQuestion": "Select your current phase",
         "objectives": {
           "bulk": {
             "title": "Bulk / Mass Gain",
-            "description": "Build muscle mass and strength in a caloric surplus"
+            "description": "Caloric surplus to build muscle mass and strength"
           },
           "cut": {
             "title": "Cut / Definition",
-            "description": "Reduce body fat percentage while maintaining muscle mass"
+            "description": "Caloric deficit to reduce fat while maintaining muscle"
           },
           "maintain": {
             "title": "Maintenance",
-            "description": "Maintain current weight and body composition"
+            "description": "Maintenance calories to stabilize weight and composition"
           },
           "recomp": {
             "title": "Recomposition",
-            "description": "Build muscle and lose fat simultaneously"
+            "description": "Moderate calories to build muscle and lose fat"
           }
         },
         "injuriesSection": {
@@ -4374,6 +4374,20 @@
     "feature2": "Compare actual vs target split plan",
     "feature3": "Cycle-to-cycle evolution tracking",
     "feature4": "Identify muscle group imbalances instantly"
+  },
+  "radarChart": {
+    "labels": {
+      "target": "Target",
+      "actual": "Actual",
+      "current": "Current",
+      "previous": "Previous",
+      "progress": "Progress",
+      "change": "Change",
+      "sets": "sets",
+      "loading": "Loading chart...",
+      "noData": "No muscle group data available",
+      "noDataHint": "Complete workouts to see distribution"
+    }
   },
   "landingPro": {
     "hero": {

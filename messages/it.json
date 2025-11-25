@@ -1777,26 +1777,26 @@
         "skipProfile": "Salta Profilo"
       },
       "goals": {
-        "title": "I tuoi obiettivi",
-        "description": "Aiutaci a personalizzare il tuo piano di allenamento",
+        "title": "In quale fase sei?",
+        "description": "La fase determina come personalizzeremo volume e intensità",
         "backToProfile": "Torna al Profilo",
-        "objectiveQuestion": "Qual è il tuo obiettivo principale?",
+        "objectiveQuestion": "Seleziona la tua fase attuale",
         "objectives": {
           "bulk": {
             "title": "Bulk / Massa",
-            "description": "Aumentare massa muscolare e forza, in surplus calorico"
+            "description": "Surplus calorico per aumentare massa muscolare e forza"
           },
           "cut": {
             "title": "Cut / Definizione",
-            "description": "Ridurre la percentuale di grasso mantenendo la massa muscolare"
+            "description": "Deficit calorico per ridurre il grasso mantenendo la massa"
           },
           "maintain": {
             "title": "Mantenimento",
-            "description": "Mantenere peso e composizione corporea attuale"
+            "description": "Calorie di mantenimento per stabilizzare peso e composizione"
           },
           "recomp": {
             "title": "Ricomposizione",
-            "description": "Aumentare muscoli e perdere grasso simultaneamente"
+            "description": "Calorie moderate per costruire muscolo e perdere grasso"
           }
         },
         "injuriesSection": {
@@ -4376,6 +4376,20 @@
     "feature2": "Confronta effettivo vs piano split target",
     "feature3": "Tracciamento evoluzione ciclo-dopo-ciclo",
     "feature4": "Identifica istantaneamente squilibri tra gruppi muscolari"
+  },
+  "radarChart": {
+    "labels": {
+      "target": "Target",
+      "actual": "Effettivo",
+      "current": "Corrente",
+      "previous": "Precedente",
+      "progress": "Progresso",
+      "change": "Variazione",
+      "sets": "serie",
+      "loading": "Caricamento grafico...",
+      "noData": "Nessun dato gruppo muscolare disponibile",
+      "noDataHint": "Completa gli allenamenti per vedere la distribuzione"
+    }
   },
   "landingPro": {
     "hero": {
