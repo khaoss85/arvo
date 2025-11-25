@@ -66,19 +66,20 @@ export async function GET(request: Request) {
         console.error('Error tracking waitlist conversion:', conversionError);
       }
 
-      // Check if user has completed onboarding
-      let hasProfile = false;
+      // Check if user has completed onboarding (first_name is set during onboarding)
+      let hasCompletedOnboarding = false;
       try {
         const { data: existingProfile } = await supabase
           .from('user_profiles')
-          .select('user_id')
+          .select('user_id, first_name')
           .eq('user_id', data.user.id)
           .single();
 
-        hasProfile = !!existingProfile;
+        // Profile may exist (created by trigger) but onboarding not completed
+        hasCompletedOnboarding = existingProfile?.first_name != null;
 
-        // Send welcome email to new users (async, non-blocking)
-        if (!existingProfile) {
+        // Send welcome email to new users who haven't completed onboarding
+        if (!hasCompletedOnboarding) {
           const { data: waitlistData } = await supabase
             .from('waitlist_entries')
             .select('first_name')
@@ -96,8 +97,8 @@ export async function GET(request: Request) {
         console.error('Error checking profile/sending welcome email:', emailCheckError);
       }
 
-      // Smart redirect: send to onboarding if no profile exists, otherwise to dashboard
-      const redirectPath = hasProfile ? next : '/onboarding';
+      // Smart redirect: send to onboarding if not completed, otherwise to dashboard
+      const redirectPath = hasCompletedOnboarding ? next : '/onboarding';
       return NextResponse.redirect(`${origin}${redirectPath}`);
     }
 
@@ -168,19 +169,20 @@ export async function GET(request: Request) {
         console.error('Error tracking waitlist conversion:', conversionError);
       }
 
-      // Check if user has completed onboarding
-      let hasProfile = false;
+      // Check if user has completed onboarding (first_name is set during onboarding)
+      let hasCompletedOnboarding = false;
       try {
         const { data: existingProfile } = await supabase
           .from('user_profiles')
-          .select('user_id')
+          .select('user_id, first_name')
           .eq('user_id', data.user.id)
           .single();
 
-        hasProfile = !!existingProfile;
+        // Profile may exist (created by trigger) but onboarding not completed
+        hasCompletedOnboarding = existingProfile?.first_name != null;
 
-        // Send welcome email to new users (async, non-blocking)
-        if (!existingProfile) {
+        // Send welcome email to new users who haven't completed onboarding
+        if (!hasCompletedOnboarding) {
           const { data: waitlistData } = await supabase
             .from('waitlist_entries')
             .select('first_name')
@@ -198,8 +200,8 @@ export async function GET(request: Request) {
         console.error('Error checking profile/sending welcome email:', emailCheckError);
       }
 
-      // Smart redirect: send to onboarding if no profile exists, otherwise to dashboard
-      const redirectPath = hasProfile ? next : '/onboarding';
+      // Smart redirect: send to onboarding if not completed, otherwise to dashboard
+      const redirectPath = hasCompletedOnboarding ? next : '/onboarding';
       return NextResponse.redirect(`${origin}${redirectPath}`);
     }
 
