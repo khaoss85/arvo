@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseServerClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/utils/auth.server'
 
 export async function DELETE(request: NextRequest) {
@@ -23,16 +23,41 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = await getSupabaseServerClient()
+    const supabase = getSupabaseAdmin()
 
-    // Get entry before deleting (for logging)
+    // Get entry before deleting (for logging and to check if converted)
     const { data: entry } = await supabase
       .from('waitlist_entries')
-      .select('email')
+      .select('email, status, converted_user_id')
       .eq('id', entryId)
       .single()
 
-    // Delete entry
+    if (!entry) {
+      return NextResponse.json(
+        { error: 'Entry not found' },
+        { status: 404 }
+      )
+    }
+
+    // If user has converted (has an auth account), delete the full account first
+    // This will CASCADE delete all user data (profiles, workouts, etc.)
+    if (entry.status === 'converted' && entry.converted_user_id) {
+      const { error: authDeleteError } = await supabase.auth.admin.deleteUser(
+        entry.converted_user_id
+      )
+
+      if (authDeleteError) {
+        console.error('Error deleting user account:', authDeleteError)
+        return NextResponse.json(
+          { error: 'Failed to delete user account' },
+          { status: 500 }
+        )
+      }
+
+      console.log('Deleted user account:', entry.email, entry.converted_user_id)
+    }
+
+    // Delete waitlist entry
     const { error: deleteError } = await supabase
       .from('waitlist_entries')
       .delete()
@@ -41,16 +66,18 @@ export async function DELETE(request: NextRequest) {
     if (deleteError) {
       console.error('Error deleting waitlist entry:', deleteError)
       return NextResponse.json(
-        { error: 'Failed to remove entry' },
+        { error: 'Failed to remove waitlist entry' },
         { status: 500 }
       )
     }
 
-    console.log('Removed waitlist entry:', entry?.email)
+    console.log('Removed waitlist entry:', entry.email)
 
     return NextResponse.json({
       success: true,
-      message: 'Entry removed from waitlist',
+      message: entry.status === 'converted'
+        ? 'User account and waitlist entry removed'
+        : 'Entry removed from waitlist',
     })
   } catch (error) {
     console.error('Unexpected error in admin remove:', error)
