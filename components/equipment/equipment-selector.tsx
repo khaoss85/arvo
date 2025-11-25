@@ -58,6 +58,25 @@ export function EquipmentSelector({
     onSelectionChange([])
   }
 
+  // Select all equipment
+  const selectAll = () => {
+    const allIds: string[] = []
+    Object.values(EQUIPMENT_TAXONOMY).forEach(category => {
+      category.items.forEach(item => allIds.push(item.id))
+    })
+    const newSelection = new Set(allIds)
+    setSelectedEquipment(newSelection)
+    onSelectionChange(allIds)
+  }
+
+  // Get total equipment count for determining if all are selected
+  const totalEquipmentCount = useMemo(() => {
+    return Object.values(EQUIPMENT_TAXONOMY).reduce(
+      (total, category) => total + category.items.length,
+      0
+    )
+  }, [])
+
   // Total selected count
   const selectedCount = selectedEquipment.size
 
@@ -74,15 +93,26 @@ export function EquipmentSelector({
               {t('itemsSelected', { count: selectedCount })}
             </p>
           </div>
-          {selectedCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearAll}
-            >
-              {t('clearAll')}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {selectedCount < totalEquipmentCount && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectAll}
+              >
+                {t('selectAll')}
+              </Button>
+            )}
+            {selectedCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAll}
+              >
+                {t('clearAll')}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 

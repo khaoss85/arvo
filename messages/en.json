@@ -1623,6 +1623,7 @@
           "title": "Equipment Selection",
           "itemsSelected": "{count} {count, plural, one {item} other {items}} selected",
           "clearAll": "Clear All",
+          "selectAll": "Select All",
           "continueButton": "Continue ({count} selected)"
         }
       },

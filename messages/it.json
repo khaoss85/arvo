@@ -1624,6 +1624,7 @@
           "title": "Selezione Attrezzatura",
           "itemsSelected": "{count} {count, plural, one {elemento} other {elementi}} selezionato",
           "clearAll": "Cancella Tutto",
+          "selectAll": "Seleziona Tutto",
           "continueButton": "Continua ({count} selezionati)"
         }
       },
