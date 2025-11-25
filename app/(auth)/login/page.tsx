@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { AuthService } from "@/lib/services/auth.service";
 import { Button } from "@/components/ui/button";
@@ -15,11 +16,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+const ERROR_MESSAGES: Record<string, string> = {
+  auth_callback_error: "There was a problem signing you in. Please try requesting a new magic link.",
+  invalid_credentials: "Invalid email or link. Please try again.",
+  link_expired: "Your magic link has expired. Please request a new one.",
+};
+
+function LoginForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Check for error from URL params (e.g., from auth callback)
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    if (errorParam) {
+      const errorMessage = ERROR_MESSAGES[errorParam] || "An unexpected error occurred. Please try again.";
+      setError(errorMessage);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,5 +206,21 @@ export default function LoginPage() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-geometric-pattern">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <Logo size="md" showTagline={true} animated={false} />
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
