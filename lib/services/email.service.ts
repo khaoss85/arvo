@@ -214,6 +214,57 @@ export class EmailService {
   }
 
   /**
+   * Send login magic link email (for user-initiated login requests)
+   */
+  static async sendLoginMagicLinkEmail(email: string, firstName: string, magicLink: string): Promise<boolean> {
+    try {
+      const resend = this.getResendClient();
+      const { data, error } = await resend.emails.send({
+        from: this.getFromAddress('ARVO'),
+        to: [email],
+        subject: '🔑 Il tuo link di accesso ad ARVO',
+        html: `
+          <h2>Accedi ad ARVO</h2>
+
+          <p>Ciao ${firstName},</p>
+
+          <p>Hai richiesto l'accesso ad <strong>ARVO AI Training</strong>.</p>
+
+          <p>Clicca il link qui sotto per accedere:</p>
+
+          <a href="${magicLink}" style="background-color: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; font-size: 16px; font-weight: bold;">
+            Accedi a ARVO
+          </a>
+
+          <p style="color: #666; font-size: 14px;">
+            ⏰ Il link è valido per 1 ora.
+          </p>
+
+          <p style="color: #666; font-size: 12px;">
+            Se non hai richiesto tu questo link, ignora questa email.
+          </p>
+
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="color: #666; font-size: 12px;">
+            ARVO - AI Personal Trainer for Serious Lifters
+          </p>
+        `,
+      });
+
+      if (error) {
+        console.error('Error sending login magic link email:', error);
+        return false;
+      }
+
+      console.log('Login magic link email sent to:', email, data?.id);
+      return true;
+    } catch (error) {
+      console.error('Error in sendLoginMagicLinkEmail:', error);
+      return false;
+    }
+  }
+
+  /**
    * Helper: Track email event in database
    */
   private static async trackEmailEvent(

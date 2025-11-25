@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { AuthService } from "@/lib/services/auth.service";
+import { sendMagicLinkAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/ui/logo";
@@ -46,8 +46,12 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      await AuthService.sendMagicLink(email);
-      setIsEmailSent(true);
+      const result = await sendMagicLinkAction(email);
+      if (result.success) {
+        setIsEmailSent(true);
+      } else {
+        setError(result.error || "Failed to send magic link");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send magic link");
     } finally {
