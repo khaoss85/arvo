@@ -10,6 +10,7 @@ import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { generateWorkoutSummaryAction } from '@/app/actions/ai-actions'
+import { revalidateDashboardCacheAction } from '@/app/actions/workout-actions'
 import { Button } from '@/components/ui/button'
 import { formatDuration } from '@/lib/utils/workout-helpers'
 import type { WorkoutSummaryOutput } from '@/lib/agents/workout-summary.agent'
@@ -152,6 +153,10 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       console.log('[WorkoutSummary] Workout marked as completed successfully', {
         warnings: result.warnings
       })
+
+      // Invalidate dashboard cache so status updates immediately
+      await revalidateDashboardCacheAction()
+      console.log('[WorkoutSummary] Dashboard cache invalidated')
 
       // Show warnings if any (e.g., failed to advance cycle)
       if (result.warnings.length > 0) {

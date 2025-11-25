@@ -38,6 +38,11 @@ export default async function SimpleWorkoutRecapPage({
     0
   );
 
+  // Calculate duration from started_at
+  const durationSeconds = workout.started_at
+    ? Math.floor((Date.now() - new Date(workout.started_at).getTime()) / 1000)
+    : null;
+
   // Mark workout as completed if not already
   // Note: This might fail if the workout was deleted in another tab
   // We handle the error gracefully since we already have the workout data
@@ -45,6 +50,7 @@ export default async function SimpleWorkoutRecapPage({
     const result = await markWorkoutCompletedAction(workout.id, {
       totalSets,
       totalVolume,
+      durationSeconds: durationSeconds ?? undefined,
     });
     if (!result.success) {
       console.error("[SimpleRecapPage] Failed to mark workout as completed:", result.error);

@@ -1,5 +1,6 @@
 'use server'
 
+import { revalidatePath } from 'next/cache'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 
 /**
@@ -14,6 +15,7 @@ export async function markWorkoutCompletedAction(
   stats: {
     totalSets?: number;
     totalVolume?: number;
+    durationSeconds?: number;
   }
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -49,6 +51,7 @@ export async function markWorkoutCompletedAction(
         completed_at: new Date().toISOString(),
         total_sets: stats.totalSets || 0,
         total_volume: stats.totalVolume || 0,
+        duration_seconds: stats.durationSeconds || null,
       })
       .eq('id', workoutId)
 
@@ -60,6 +63,10 @@ export async function markWorkoutCompletedAction(
       }
     }
 
+    // Invalidate cache so dashboard shows updated status
+    revalidatePath('/simple')
+    revalidatePath('/dashboard')
+
     console.log('[markWorkoutCompletedAction] Successfully marked workout as completed:', workoutId)
     return { success: true }
   } catch (error) {
@@ -69,4 +76,14 @@ export async function markWorkoutCompletedAction(
       error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
+}
+
+/**
+ * Revalidate dashboard cache (for use after browser-side workout completion)
+ * Call this from client components after WorkoutService.markAsCompletedWithStats()
+ */
+export async function revalidateDashboardCacheAction(): Promise<{ success: boolean }> {
+  revalidatePath('/dashboard')
+  revalidatePath('/simple')
+  return { success: true }
 }
