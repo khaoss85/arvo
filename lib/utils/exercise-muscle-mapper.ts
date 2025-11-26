@@ -82,6 +82,18 @@ const EXERCISE_MUSCLE_MAPPING: Record<
     primary: ['triceps'],
     secondary: [],
   },
+  'triceps pushdown': {
+    primary: ['triceps'],
+    secondary: [],
+  },
+  'triceps extension': {
+    primary: ['triceps'],
+    secondary: [],
+  },
+  'biceps curl': {
+    primary: ['biceps'],
+    secondary: ['forearms'],
+  },
   'skull crusher': {
     primary: ['triceps'],
     secondary: [],
@@ -219,6 +231,7 @@ const FALLBACK_PATTERNS: Record<
   pull: { primary: ['lats', 'back'], secondary: ['biceps'] },
   curl: { primary: ['biceps'], secondary: ['forearms'] },
   extension: { primary: ['triceps'], secondary: [] },
+  pushdown: { primary: ['triceps'], secondary: [] },
   raise: { primary: ['shoulders'], secondary: [] },
   squat: { primary: ['quads'], secondary: ['glutes'] },
   lunge: { primary: ['quads'], secondary: ['glutes'] },
