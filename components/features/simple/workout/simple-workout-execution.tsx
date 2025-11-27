@@ -27,10 +27,8 @@ export function SimpleWorkoutExecution({
   const [isInitialized, setIsInitialized] = useState(false);
 
   const {
-    workoutId,
     exercises,
     currentExerciseIndex,
-    isActive,
     startWorkout,
     resumeWorkout,
     nextExercise,
@@ -40,11 +38,13 @@ export function SimpleWorkoutExecution({
   // Initialize or resume workout
   useEffect(() => {
     const initWorkout = async () => {
-      if (isActive && workoutId === workout.id) {
-        // Resume existing workout
+      // Use workout.status from database (passed from server) instead of local isActive state
+      // This fixes hydration race condition where isActive is false before Zustand hydrates
+      if (workout.status === 'in_progress') {
+        // Workout already started - load sets from database
         await resumeWorkout(workout.id);
       } else {
-        // Start new workout
+        // New workout - initialize fresh
         await startWorkout(workout);
       }
       setIsInitialized(true);
@@ -167,6 +167,20 @@ export function SimpleWorkoutExecution({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.2 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              style={{ touchAction: "pan-y" }}
+              onDragEnd={(_, { offset, velocity }) => {
+                const swipe = Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 500;
+                if (swipe) {
+                  if (offset.x > 0 && currentExerciseIndex > 0) {
+                    goToExercise(currentExerciseIndex - 1);
+                  } else if (offset.x < 0 && currentExerciseIndex < exercises.length - 1) {
+                    goToExercise(currentExerciseIndex + 1);
+                  }
+                }
+              }}
             >
               {/* Exercise Card */}
               <SimpleExerciseCard

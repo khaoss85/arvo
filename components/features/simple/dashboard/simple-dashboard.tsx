@@ -38,9 +38,16 @@ export function SimpleDashboard({
       day.status === "pre_generated"
   );
 
-  // Find the current day index in the filtered array (always reset to current day on reload)
+  // Find the current day index in the filtered array (only on initial mount)
   useEffect(() => {
-    const currentDayIndex = upcomingDays.findIndex(
+    const filteredDays = timelineData.filter(
+      (day) =>
+        day.status === "current" ||
+        day.status === "in_progress" ||
+        day.status === "upcoming" ||
+        day.status === "pre_generated"
+    );
+    const currentDayIndex = filteredDays.findIndex(
       (day) => day.status === "current" || day.status === "in_progress"
     );
     if (currentDayIndex !== -1) {
@@ -48,7 +55,8 @@ export function SimpleDashboard({
     } else {
       setCurrentIndex(0); // Default to first day if not found
     }
-  }, [upcomingDays]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-120px)] px-4 py-6">
@@ -88,6 +96,7 @@ export function SimpleDashboard({
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
                   dragElastic={0.2}
+                  style={{ touchAction: "pan-y" }}
                   onDragEnd={(_, { offset, velocity }) => {
                     const swipe = Math.abs(offset.x) > 50 || Math.abs(velocity.x) > 500;
                     if (swipe) {
