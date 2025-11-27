@@ -26,16 +26,6 @@ export function SimpleDashboard({
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Find the current day index (the day with status 'current' or 'in_progress')
-  useEffect(() => {
-    const currentDayIndex = timelineData.findIndex(
-      (day) => day.status === "current" || day.status === "in_progress"
-    );
-    if (currentDayIndex !== -1) {
-      setCurrentIndex(currentDayIndex);
-    }
-  }, [timelineData]);
-
   // Get the display name
   const displayName = profile.first_name || user.email?.split("@")[0] || "there";
 
@@ -47,6 +37,18 @@ export function SimpleDashboard({
       day.status === "upcoming" ||
       day.status === "pre_generated"
   );
+
+  // Find the current day index in the filtered array (always reset to current day on reload)
+  useEffect(() => {
+    const currentDayIndex = upcomingDays.findIndex(
+      (day) => day.status === "current" || day.status === "in_progress"
+    );
+    if (currentDayIndex !== -1) {
+      setCurrentIndex(currentDayIndex);
+    } else {
+      setCurrentIndex(0); // Default to first day if not found
+    }
+  }, [upcomingDays]);
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-120px)] px-4 py-6">
@@ -79,8 +81,8 @@ export function SimpleDashboard({
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
-                  initial={{ opacity: 0, x: 100 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   exit={{ opacity: 0, x: -100 }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   drag="x"
@@ -146,7 +148,7 @@ export function SimpleDashboard({
       {/* Quick Actions */}
       <div className="flex items-center justify-center gap-4 mt-8">
         <Link
-          href="/progress-checks"
+          href="/simple/progress-checks"
           className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">

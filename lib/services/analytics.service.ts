@@ -299,4 +299,199 @@ export class AnalyticsService {
     return 'elite'
   }
 
+  /**
+   * Get E1RM trend analysis for powerlifting
+   * Useful for tracking progress in competition lifts (SBD)
+   * Uses simple linear regression to determine trend direction
+   */
+  static async getE1RMTrend(
+    userId: string,
+    exerciseName: string,
+    weeks: number = 8
+  ): Promise<{
+    trend: 'increasing' | 'decreasing' | 'plateau' | 'insufficient_data'
+    percentChange: number
+    dataPoints: Array<{ date: string; e1rm: number }>
+    currentE1RM: number | null
+    peakE1RM: number | null
+    peakDate: string | null
+  }> {
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - weeks * 7)
+
+    const supabase = getSupabaseBrowserClient()
+
+    // Query sets by exercise name pattern (case-insensitive)
+    const { data, error } = await supabase
+      .from('sets_log')
+      .select(`
+        weight_actual,
+        reps_actual,
+        created_at,
+        workouts!inner(user_id, completed_at)
+      `)
+      .eq('workouts.user_id', userId)
+      .ilike('exercise_name', `%${exerciseName}%`)
+      .gte('workouts.completed_at', startDate.toISOString())
+      .not('weight_actual', 'is', null)
+      .not('reps_actual', 'is', null)
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('[AnalyticsService] Error fetching E1RM trend:', error)
+      return {
+        trend: 'insufficient_data',
+        percentChange: 0,
+        dataPoints: [],
+        currentE1RM: null,
+        peakE1RM: null,
+        peakDate: null
+      }
+    }
+
+    if (!data || data.length < 3) {
+      return {
+        trend: 'insufficient_data',
+        percentChange: 0,
+        dataPoints: [],
+        currentE1RM: null,
+        peakE1RM: null,
+        peakDate: null
+      }
+    }
+
+    // Calculate E1RM for each workout (best set per workout)
+    const byWorkout = new Map<string, { e1rm: number; date: string }>()
+
+    data.forEach((set: any) => {
+      const workoutDate = (set.workouts as any)?.completed_at || set.created_at
+      const dateKey = new Date(workoutDate).toISOString().split('T')[0]
+      const e1rm = this.calculateE1RM(set.weight_actual, set.reps_actual)
+
+      const existing = byWorkout.get(dateKey)
+      if (!existing || e1rm > existing.e1rm) {
+        byWorkout.set(dateKey, { e1rm: Math.round(e1rm * 10) / 10, date: dateKey })
+      }
+    })
+
+    const dataPoints = Array.from(byWorkout.values())
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    if (dataPoints.length < 3) {
+      return {
+        trend: 'insufficient_data',
+        percentChange: 0,
+        dataPoints,
+        currentE1RM: dataPoints.length > 0 ? dataPoints[dataPoints.length - 1].e1rm : null,
+        peakE1RM: null,
+        peakDate: null
+      }
+    }
+
+    // Find peak
+    const peak = dataPoints.reduce((max, dp) => dp.e1rm > max.e1rm ? dp : max, dataPoints[0])
+
+    // Calculate percent change (first vs last)
+    const firstE1RM = dataPoints[0].e1rm
+    const lastE1RM = dataPoints[dataPoints.length - 1].e1rm
+    const percentChange = ((lastE1RM - firstE1RM) / firstE1RM) * 100
+
+    // Simple linear regression to determine trend
+    // y = mx + b, where m is the slope
+    const n = dataPoints.length
+    const xValues = dataPoints.map((_, i) => i) // 0, 1, 2, ...
+    const yValues = dataPoints.map(dp => dp.e1rm)
+
+    const sumX = xValues.reduce((a, b) => a + b, 0)
+    const sumY = yValues.reduce((a, b) => a + b, 0)
+    const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0)
+    const sumXX = xValues.reduce((sum, x) => sum + x * x, 0)
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+
+    // Determine trend based on slope relative to average E1RM
+    const avgE1RM = sumY / n
+    const slopePercentage = (slope / avgE1RM) * 100 * n // Normalized slope per data point
+
+    let trend: 'increasing' | 'decreasing' | 'plateau'
+    if (slopePercentage > 2) {
+      trend = 'increasing'
+    } else if (slopePercentage < -2) {
+      trend = 'decreasing'
+    } else {
+      trend = 'plateau'
+    }
+
+    return {
+      trend,
+      percentChange: Math.round(percentChange * 10) / 10,
+      dataPoints,
+      currentE1RM: lastE1RM,
+      peakE1RM: peak.e1rm,
+      peakDate: peak.date
+    }
+  }
+
+  /**
+   * Get competition lift summary (Squat, Bench, Deadlift) for powerlifters
+   * Calculates total and individual lift trends
+   */
+  static async getCompetitionLiftSummary(
+    userId: string,
+    weeks: number = 8
+  ): Promise<{
+    squat: { currentE1RM: number | null; trend: string; percentChange: number }
+    bench: { currentE1RM: number | null; trend: string; percentChange: number }
+    deadlift: { currentE1RM: number | null; trend: string; percentChange: number }
+    total: number | null
+    totalTrend: 'increasing' | 'decreasing' | 'plateau' | 'insufficient_data'
+  }> {
+    const [squatTrend, benchTrend, deadliftTrend] = await Promise.all([
+      this.getE1RMTrend(userId, 'squat', weeks),
+      this.getE1RMTrend(userId, 'bench press', weeks),
+      this.getE1RMTrend(userId, 'deadlift', weeks)
+    ])
+
+    // Calculate total (only if all three lifts have data)
+    const total = (squatTrend.currentE1RM && benchTrend.currentE1RM && deadliftTrend.currentE1RM)
+      ? Math.round(squatTrend.currentE1RM + benchTrend.currentE1RM + deadliftTrend.currentE1RM)
+      : null
+
+    // Determine overall trend
+    const trends = [squatTrend.trend, benchTrend.trend, deadliftTrend.trend]
+    const increasingCount = trends.filter(t => t === 'increasing').length
+    const decreasingCount = trends.filter(t => t === 'decreasing').length
+
+    let totalTrend: 'increasing' | 'decreasing' | 'plateau' | 'insufficient_data'
+    if (trends.every(t => t === 'insufficient_data')) {
+      totalTrend = 'insufficient_data'
+    } else if (increasingCount >= 2) {
+      totalTrend = 'increasing'
+    } else if (decreasingCount >= 2) {
+      totalTrend = 'decreasing'
+    } else {
+      totalTrend = 'plateau'
+    }
+
+    return {
+      squat: {
+        currentE1RM: squatTrend.currentE1RM,
+        trend: squatTrend.trend,
+        percentChange: squatTrend.percentChange
+      },
+      bench: {
+        currentE1RM: benchTrend.currentE1RM,
+        trend: benchTrend.trend,
+        percentChange: benchTrend.percentChange
+      },
+      deadlift: {
+        currentE1RM: deadliftTrend.currentE1RM,
+        trend: deadliftTrend.trend,
+        percentChange: deadliftTrend.percentChange
+      },
+      total,
+      totalTrend
+    }
+  }
+
 }

@@ -2,6 +2,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { CycleCompletion, InsertCycleCompletion } from "@/lib/types/schemas";
 import { calculateMuscleGroupVolumes } from "@/lib/utils/workout-helpers";
 import type { Database } from "@/lib/types/database.types";
+import { AnalyticsService } from "./analytics.service";
 
 export interface CycleStats {
   totalVolume: number;
@@ -284,5 +285,141 @@ export class CycleStatsService {
     }
 
     return (data || []) as CycleCompletion[];
+  }
+
+  /**
+   * Check if user should deload based on approach-specific triggers
+   * Bodybuilding: Mental readiness, volume MRV, fatigue accumulation
+   * Powerlifting: Scheduled deloads (Wendler), E1RM decline, RPE drift
+   */
+  static async checkDeloadTriggers(
+    userId: string,
+    approachCategory: 'bodybuilding' | 'powerlifting' | undefined,
+    approachName: string,
+    currentMesocycleWeek: number | null,
+    currentStats: CycleStats
+  ): Promise<{
+    shouldDeload: boolean;
+    reason: string;
+    confidence: number; // 0-1 confidence in recommendation
+    urgency: 'low' | 'medium' | 'high';
+  }> {
+    // Default response
+    const noDeloadNeeded = {
+      shouldDeload: false,
+      reason: 'No deload triggers detected',
+      confidence: 0.8,
+      urgency: 'low' as const
+    };
+
+    // === POWERLIFTING DELOAD TRIGGERS ===
+    if (approachCategory === 'powerlifting') {
+      const nameLower = approachName.toLowerCase();
+
+      // Wendler 5/3/1: Week 4 is ALWAYS deload
+      if ((nameLower.includes('wendler') || nameLower.includes('5/3/1')) && currentMesocycleWeek === 4) {
+        return {
+          shouldDeload: true,
+          reason: 'Wendler 5/3/1 scheduled deload week (Week 4)',
+          confidence: 1.0,
+          urgency: 'high'
+        };
+      }
+
+      // Check E1RM trends for strength decline (affects all powerlifting)
+      try {
+        const squatTrend = await AnalyticsService.getE1RMTrend(userId, 'squat', 6);
+
+        if (squatTrend.trend === 'decreasing' && squatTrend.percentChange < -5) {
+          return {
+            shouldDeload: true,
+            reason: `Squat E1RM declining (${squatTrend.percentChange.toFixed(1)}% over 6 weeks)`,
+            confidence: 0.85,
+            urgency: 'high'
+          };
+        }
+
+        if (squatTrend.trend === 'decreasing' && squatTrend.percentChange < -3) {
+          return {
+            shouldDeload: true,
+            reason: `Squat E1RM showing decline trend (${squatTrend.percentChange.toFixed(1)}%)`,
+            confidence: 0.7,
+            urgency: 'medium'
+          };
+        }
+      } catch (e) {
+        // E1RM trend data not available, skip this check
+        console.log('[CycleStatsService] Could not fetch E1RM trend:', e);
+      }
+
+      // Sheiko: Deload if accumulated fatigue is high (>10 workouts without break)
+      if (nameLower.includes('sheiko') && currentStats.totalWorkoutsCompleted > 10) {
+        return {
+          shouldDeload: true,
+          reason: 'Sheiko high volume accumulation - recommend active recovery',
+          confidence: 0.75,
+          urgency: 'medium'
+        };
+      }
+
+      // RTS/DUP: Deload if average mental readiness is low
+      if ((nameLower.includes('rts') || nameLower.includes('dup')) &&
+          currentStats.avgMentalReadiness !== null &&
+          currentStats.avgMentalReadiness < 2.5) {
+        return {
+          shouldDeload: true,
+          reason: 'Low mental readiness indicates accumulated fatigue',
+          confidence: 0.8,
+          urgency: 'medium'
+        };
+      }
+    }
+
+    // === BODYBUILDING DELOAD TRIGGERS ===
+    // These apply to bodybuilding approaches and as fallback for powerlifting
+
+    // Mental readiness trigger (universal)
+    if (currentStats.avgMentalReadiness !== null && currentStats.avgMentalReadiness < 2.0) {
+      return {
+        shouldDeload: true,
+        reason: `Very low mental readiness (${currentStats.avgMentalReadiness.toFixed(1)}/5) indicates overreaching`,
+        confidence: 0.9,
+        urgency: 'high'
+      };
+    }
+
+    if (currentStats.avgMentalReadiness !== null && currentStats.avgMentalReadiness < 2.5) {
+      return {
+        shouldDeload: true,
+        reason: `Low mental readiness (${currentStats.avgMentalReadiness.toFixed(1)}/5) suggests accumulated fatigue`,
+        confidence: 0.75,
+        urgency: 'medium'
+      };
+    }
+
+    // Mesocycle length trigger (for bodybuilding)
+    if (approachCategory === 'bodybuilding' || !approachCategory) {
+      // Typical 4-6 week mesocycles
+      if (currentMesocycleWeek && currentMesocycleWeek >= 5 && currentStats.totalWorkoutsCompleted >= 12) {
+        return {
+          shouldDeload: true,
+          reason: 'Reached typical mesocycle length (5+ weeks) - scheduled deload recommended',
+          confidence: 0.7,
+          urgency: 'medium'
+        };
+      }
+    }
+
+    // Volume accumulation without mental readiness data
+    if (currentStats.totalWorkoutsCompleted >= 16 && currentStats.avgMentalReadiness === null) {
+      return {
+        shouldDeload: true,
+        reason: 'Extended training block without recovery - consider proactive deload',
+        confidence: 0.6,
+        urgency: 'low'
+      };
+    }
+
+    return noDeloadNeeded;
   }
 }

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type AppMode = "simple" | "advanced";
+export type AppMode = "simple" | "advanced" | "coach";
 
 interface AppModeState {
   mode: AppMode;

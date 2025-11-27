@@ -90,7 +90,10 @@ export function ExerciseAnimation({
               src={animationUrl}
               alt={exerciseName}
               className="w-full h-auto object-contain"
-              style={{ maxHeight: '400px' }}
+              style={{
+                maxHeight: '400px',
+                imageRendering: 'crisp-edges'
+              }}
               loading="lazy"
             />
           </motion.div>

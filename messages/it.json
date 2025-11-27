@@ -4867,6 +4867,58 @@
       "duration": "Durata",
       "workout": "Workout",
       "moreExercises": "altri esercizi"
+    },
+    "progressChecks": {
+      "title": "Progress Check",
+      "subtitle": "{count, plural, =0 {Nessun check} =1 {1 check} other {# check}}",
+      "filters": {
+        "all": "Tutti",
+        "milestones": "Milestone"
+      },
+      "empty": {
+        "title": "Nessun Progress Check",
+        "description": "Scatta le tue prime foto per tracciare i tuoi progressi",
+        "cta": "Nuovo Check"
+      },
+      "photoAlt": "Foto progress check",
+      "milestone": "Milestone",
+      "today": "Oggi",
+      "daysAgo": "{days, plural, =1 {1 giorno fa} other {# giorni fa}}"
+    },
+    "progressCheckDetail": {
+      "backToGallery": "Galleria",
+      "noPhotos": "Nessuna foto",
+      "date": "Data",
+      "weight": "Peso",
+      "milestone": "Milestone",
+      "notes": "Note",
+      "measurementsTitle": "Misurazioni",
+      "photoTypes": {
+        "front": "Frontale",
+        "sideLeft": "Laterale Sx",
+        "sideRight": "Laterale Dx",
+        "back": "Posteriore"
+      },
+      "measurements": {
+        "chest": "Petto",
+        "waist": "Vita",
+        "hips": "Fianchi",
+        "armLeft": "Braccio Sx",
+        "armRight": "Braccio Dx",
+        "thighLeft": "Coscia Sx",
+        "thighRight": "Coscia Dx",
+        "calfLeft": "Polpaccio Sx",
+        "calfRight": "Polpaccio Dx",
+        "shoulders": "Spalle"
+      },
+      "deleteError": "Errore durante l'eliminazione",
+      "deleteConfirm": {
+        "title": "Elimina Progress Check",
+        "message": "Sei sicuro di voler eliminare questo check? Questa azione non può essere annullata.",
+        "confirm": "Elimina",
+        "deleting": "Eliminazione...",
+        "cancel": "Annulla"
+      }
     }
   }
 }

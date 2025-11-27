@@ -5,6 +5,7 @@ import {
   type TrainingApproach,
   type InsertTrainingApproach,
   type UpdateTrainingApproach,
+  type ApproachCategory,
 } from "@/lib/types/schemas";
 
 export class TrainingApproachService {
@@ -120,6 +121,45 @@ export class TrainingApproachService {
     const { data, error } = await supabase
       .from("training_approaches")
       .select("*")
+      .order("name");
+
+    if (error) {
+      throw new Error(`Failed to fetch training approaches: ${error.message}`);
+    }
+
+    return data as TrainingApproach[];
+  }
+
+  /**
+   * Get training approaches by category (client-side)
+   */
+  static async getByCategory(category: ApproachCategory): Promise<TrainingApproach[]> {
+    const supabase = getSupabaseBrowserClient();
+
+    const { data, error } = await supabase
+      .from("training_approaches")
+      .select("*")
+      .eq("category", category)
+      .order("name");
+
+    if (error) {
+      throw new Error(`Failed to fetch training approaches: ${error.message}`);
+    }
+
+    return data as TrainingApproach[];
+  }
+
+  /**
+   * Get training approaches by category (server-side)
+   */
+  static async getByCategoryServer(category: ApproachCategory): Promise<TrainingApproach[]> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    const { data, error } = await supabase
+      .from("training_approaches")
+      .select("*")
+      .eq("category", category)
       .order("name");
 
     if (error) {

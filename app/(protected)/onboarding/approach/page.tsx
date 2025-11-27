@@ -1,13 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { ArrowLeft } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { ApproachCard } from '@/components/features/onboarding/approach-card'
-import type { TrainingApproach } from '@/lib/types/schemas'
+import { ApproachCategoryTabs } from '@/components/features/onboarding/approach-category-tabs'
+import type { TrainingApproach, ApproachCategory } from '@/lib/types/schemas'
 
 export default function ApproachSelectionPage() {
   const t = useTranslations('onboarding.steps.approach')
@@ -15,7 +16,27 @@ export default function ApproachSelectionPage() {
   const router = useRouter()
   const [approaches, setApproaches] = useState<TrainingApproach[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState<ApproachCategory>('bodybuilding')
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
+
+  // Filter approaches by active category
+  const filteredApproaches = useMemo(() => {
+    return approaches.filter(
+      (approach) => ((approach as any).category || 'bodybuilding') === activeCategory
+    )
+  }, [approaches, activeCategory])
+
+  // Count approaches per category
+  const categoryCounts = useMemo(() => {
+    return approaches.reduce(
+      (acc, approach) => {
+        const cat = ((approach as any).category || 'bodybuilding') as ApproachCategory
+        acc[cat] = (acc[cat] || 0) + 1
+        return acc
+      },
+      { bodybuilding: 0, powerlifting: 0 } as Record<ApproachCategory, number>
+    )
+  }, [approaches])
 
   const experienceLevel = data.experienceLevel
   const currentStepNumber = 2 // Step 2 for intermediate/advanced
@@ -68,12 +89,19 @@ export default function ApproachSelectionPage() {
         {t('description')}
       </p>
 
+      {/* Category Tabs */}
+      <ApproachCategoryTabs
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        counts={categoryCounts}
+      />
+
       {loading ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-500"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">{t('loading')}</p>
         </div>
-      ) : approaches.length === 0 ? (
+      ) : filteredApproaches.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400">
             {t('noApproachesFound')}
@@ -81,7 +109,7 @@ export default function ApproachSelectionPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {approaches.map((approach) => (
+          {filteredApproaches.map((approach) => (
             <ApproachCard
               key={approach.id}
               approach={approach}

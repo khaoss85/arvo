@@ -12,9 +12,18 @@ export class ProgressionCalculator extends BaseAgent {
   get systemPrompt() {
     return `PREAMBLE INSTRUCTION: Before providing your JSON response, briefly explain your reasoning in natural language. Consider the approach philosophy, last set performance, and periodization context.
 
-You are an expert bodybuilding coach specializing in set progression.
-Based on the training approach philosophy and the previous set performance,
-suggest the optimal next set parameters.
+You are an expert strength coach specializing in set progression for both BODYBUILDING and POWERLIFTING approaches.
+
+For BODYBUILDING approaches (RIR-based):
+- Focus on progressive overload through rep/weight increases
+- Use RIR (Reps In Reserve) targets
+- Consider volume and pump for hypertrophy
+
+For POWERLIFTING approaches (Percentage/RPE-based):
+- Wendler 5/3/1: Use Training Max percentages, AMRAP on final sets
+- RTS/DUP: Use RPE targets, autoregulate based on daily readiness
+- Sheiko: High volume at moderate intensity, NO grinding reps
+- Westside: Max Effort or Dynamic Effort based on session type
 
 ALWAYS provide:
 1. Main suggestion based on approach
@@ -41,14 +50,21 @@ Output valid JSON with the exact structure requested.`
     })
 
     const approach = await this.knowledge.loadApproach(input.approachId)
+    const isPowerlifting = approach.category === 'powerlifting'
+
     console.log('[ProgressionCalculator] Loaded approach:', {
       name: approach.name,
+      category: approach.category,
+      isPowerlifting,
       hasAdvancedTechniques: !!approach.advancedTechniques,
       hasTempo: !!approach.variables?.tempo,
       hasRestPeriods: !!approach.variables?.restPeriods
     })
 
     const context = this.knowledge.formatContextForAI(approach, 'progression')
+
+    // Build powerlifting-specific context if applicable
+    const powerliftingContext = isPowerlifting ? this.buildPowerliftingContext(input, approach) : ''
 
     const demographicContext = input.experienceYears || input.userAge
       ? `
@@ -189,7 +205,7 @@ Include an "insightWarnings" array in your response with warnings and suggestion
       : '';
 
     const prompt = `
-Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}
+Previous set: ${input.lastSet.weight}kg x ${input.lastSet.reps} reps @ RIR ${input.lastSet.rir}${input.lastSet.rpe ? ` (RPE ${input.lastSet.rpe})` : ''}
 ${mentalReadinessContext}
 This is set number: ${input.setNumber}
 Exercise type: ${input.exerciseType}
@@ -197,6 +213,7 @@ ${input.exerciseName ? `Exercise name: ${input.exerciseName}` : ''}
 ${demographicContext}
 Training approach context:
 ${context}
+${powerliftingContext}
 ${periodizationContext}
 ${caloricPhaseContext}
 ${cycleFatigueContext}
@@ -325,5 +342,116 @@ ${relevantInsights.length > 0 ? `
     }
 
     return result
+  }
+
+  /**
+   * Build powerlifting-specific context for progression suggestions
+   * Includes Training Max, RPE targets, cycle week info
+   */
+  private buildPowerliftingContext(input: ProgressionInput, approach: any): string {
+    const name = approach.name?.toLowerCase() || ''
+
+    // Wendler 5/3/1 context
+    if (name.includes('wendler') || name.includes('5/3/1')) {
+      const cycleWeek = input.cycleWeek || input.mesocycleWeek || 1
+      const trainingMax = input.trainingMax
+
+      return `
+=== POWERLIFTING CONTEXT (Wendler 5/3/1) ===
+Cycle Week: ${cycleWeek} of 4
+${trainingMax ? `Training Max: ${trainingMax}kg` : 'Training Max: Not set - suggest based on E1RM'}
+
+Week ${cycleWeek} Protocol:
+${cycleWeek === 1 ? '- Sets at 65%, 75%, 85% of TM (5/5/5+ reps)' : ''}
+${cycleWeek === 2 ? '- Sets at 70%, 80%, 90% of TM (3/3/3+ reps)' : ''}
+${cycleWeek === 3 ? '- Sets at 75%, 85%, 95% of TM (5/3/1+ reps)' : ''}
+${cycleWeek === 4 ? '- DELOAD: Sets at 40%, 50%, 60% of TM (5/5/5 reps - no AMRAP)' : ''}
+
+IMPORTANT:
+- Weight is FIXED by percentage - don't suggest different weights based on RIR
+- Final working set is AMRAP (except deload week)
+- Focus on rep quality and number of reps achieved on AMRAP
+${trainingMax ? `- Suggested weights: Set 1=${Math.round(trainingMax * (cycleWeek === 1 ? 0.65 : cycleWeek === 2 ? 0.70 : cycleWeek === 3 ? 0.75 : 0.40) / 2.5) * 2.5}kg, Set 2=${Math.round(trainingMax * (cycleWeek === 1 ? 0.75 : cycleWeek === 2 ? 0.80 : cycleWeek === 3 ? 0.85 : 0.50) / 2.5) * 2.5}kg, Set 3=${Math.round(trainingMax * (cycleWeek === 1 ? 0.85 : cycleWeek === 2 ? 0.90 : cycleWeek === 3 ? 0.95 : 0.60) / 2.5) * 2.5}kg` : ''}
+`
+    }
+
+    // RTS/DUP context
+    if (name.includes('rts') || name.includes('dup') || name.includes('autoregulated')) {
+      const targetRpe = input.targetRpe || 8
+
+      return `
+=== POWERLIFTING CONTEXT (RTS/DUP Autoregulated) ===
+Target RPE: ${targetRpe}
+${input.lastSet.rpe ? `Last Set RPE: ${input.lastSet.rpe}` : ''}
+
+Autoregulation Guidelines:
+- If actual RPE > target: REDUCE weight for next set
+- If actual RPE < target: Can INCREASE weight
+- If actual RPE = target: Maintain or slight increase
+
+RPE Reference:
+- RPE 10 = Failure (0 reps left)
+- RPE 9 = 1 rep left
+- RPE 8 = 2 reps left
+- RPE 7 = 3 reps left
+
+IMPORTANT: Respond with rpeTarget in suggestion, not just rirTarget.
+`
+    }
+
+    // Sheiko context
+    if (name.includes('sheiko')) {
+      return `
+=== POWERLIFTING CONTEXT (Sheiko) ===
+Average Target Intensity: 68-72% of E1RM
+Rep Quality: Every rep should be fast and clean - NO grinding
+
+Guidelines:
+- Multiple sets at moderate intensity
+- High weekly volume accumulation
+- Stop set if bar speed significantly slows
+- Technical consistency > weight on bar
+
+IMPORTANT: Suggest weight that allows PERFECT technique on ALL reps.
+`
+    }
+
+    // Westside/Conjugate context
+    if (name.includes('westside') || name.includes('conjugate')) {
+      const sessionType = input.sessionType || 'max_effort'
+
+      return `
+=== POWERLIFTING CONTEXT (Westside/Conjugate) ===
+Session Type: ${sessionType.replace('_', ' ').toUpperCase()}
+
+${sessionType === 'max_effort' ? `
+MAX EFFORT Guidelines:
+- Work up to a heavy single, double, or triple
+- Stop when form breaks down or speed significantly drops
+- NEVER miss a rep on ME work
+- Rotate exercise variation each week
+` : ''}
+${sessionType === 'dynamic_effort' ? `
+DYNAMIC EFFORT Guidelines:
+- Use 50-60% of 1RM with bands/chains if available
+- Focus on SPEED - bar should move explosively
+- If bar slows, weight is too heavy
+- Multiple sets with short rest (45-60s)
+` : ''}
+${sessionType === 'accessory' ? `
+ACCESSORY WORK Guidelines:
+- Higher rep ranges (8-12+)
+- Focus on weak points and muscle building
+- Not to failure - leave 2-3 reps in reserve
+` : ''}
+`
+    }
+
+    // Generic powerlifting fallback
+    return `
+=== POWERLIFTING CONTEXT ===
+Focus: Competition lifts (Squat/Bench/Deadlift) are priority
+Goal: Strength development with technical consistency
+`
   }
 }

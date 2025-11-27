@@ -16,6 +16,7 @@ interface ApproachDetailsProps {
 
 export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
   const t = useTranslations('onboarding.approachDetails')
+  const tCommon = useTranslations('common')
   const tExp = useTranslations('onboarding.approachDetails.experienceLevels')
   const tPerfect = useTranslations('onboarding.approachDetails.perfectFor')
   const tSections = useTranslations('onboarding.approachDetails.sections')
@@ -128,7 +129,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
           </h2>
           {approach.creator && (
             <p className="text-sm text-muted-foreground mt-1">
-              {t('by')} {approach.creator}
+              {tCommon('by')} {approach.creator}
             </p>
           )}
         </div>
@@ -179,7 +180,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('workingSets')}</div>
-                    <div className="font-semibold">{variables?.setsPerExercise?.working || 'N/A'}</div>
+                    <div className="font-semibold">{variables?.setsPerExercise?.working || tCommon('notAvailable')}</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('warmup')}</div>
@@ -187,11 +188,11 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                   </div>
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('compoundReps')}</div>
-                    <div className="font-semibold">{variables?.repRanges?.compound?.join('-') || 'N/A'}</div>
+                    <div className="font-semibold">{variables?.repRanges?.compound?.join('-') || tCommon('notAvailable')}</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('isolationReps')}</div>
-                    <div className="font-semibold">{variables?.repRanges?.isolation?.join('-') || 'N/A'}</div>
+                    <div className="font-semibold">{variables?.repRanges?.isolation?.join('-') || tCommon('notAvailable')}</div>
                   </div>
                 </div>
               </div>
@@ -202,15 +203,15 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('normal')}</div>
-                    <div className="font-semibold">{variables?.rirTarget?.normal ?? 'N/A'} RIR</div>
+                    <div className="font-semibold">{variables?.rirTarget?.normal ?? tCommon('notAvailable')} RIR</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('intense')}</div>
-                    <div className="font-semibold">{variables?.rirTarget?.intense ?? 'N/A'} RIR</div>
+                    <div className="font-semibold">{variables?.rirTarget?.intense ?? tCommon('notAvailable')} RIR</div>
                   </div>
                   <div className="bg-background p-3 rounded border">
                     <div className="text-muted-foreground">{tVars('deload')}</div>
-                    <div className="font-semibold">{variables?.rirTarget?.deload ?? 'N/A'} RIR</div>
+                    <div className="font-semibold">{variables?.rirTarget?.deload ?? tCommon('notAvailable')} RIR</div>
                   </div>
                 </div>
                 {variables?.rirTarget?.context && (
@@ -246,7 +247,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                       <div className="bg-background p-3 rounded border col-span-2">
                         <div className="text-muted-foreground">{tVars('betweenSets')}</div>
                         <div className="font-semibold">
-                          {variables.rest.betweenSets.join('-')}s ({Math.floor(variables.rest.betweenSets[0]/60)}-{Math.floor(variables.rest.betweenSets[1]/60)} min)
+                          {variables.rest.betweenSets.join('-')}s ({Math.floor(variables.rest.betweenSets[0]/60)}-{Math.floor(variables.rest.betweenSets[1]/60)} {tCommon('units.minutes')})
                         </div>
                       </div>
                     )}
@@ -311,7 +312,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     {variables.frequency.muscleGroupDays && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{tVars('perMuscleGroup')}</span>
-                        <span className="font-semibold">{variables.frequency.muscleGroupDays}x/week</span>
+                        <span className="font-semibold">{variables.frequency.muscleGroupDays}x/{tCommon('units.week')}</span>
                       </div>
                     )}
                     {variables.frequency.weeklyPattern && (
@@ -332,14 +333,14 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     <div className="bg-background p-3 rounded border">
                       <div className="text-muted-foreground">{tVars('duration')}</div>
                       <div className="font-semibold">
-                        {variables.sessionDuration.typical?.join('-')} min
+                        {variables.sessionDuration.typical?.join('-')} {tCommon('units.minutes')}
                       </div>
                     </div>
                     {variables.sessionDuration.totalSets && (
                       <div className="bg-background p-3 rounded border">
                         <div className="text-muted-foreground">{tVars('totalSets')}</div>
                         <div className="font-semibold">
-                          {variables.sessionDuration.totalSets.join('-')} sets
+                          {variables.sessionDuration.totalSets.join('-')} {tCommon('units.sets')}
                         </div>
                       </div>
                     )}
@@ -371,7 +372,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                           .split(' ')
                           .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                           .join(' ')
-                      : 'N/A'}
+                      : tCommon('notAvailable')}
                   </div>
                 </div>
                 {progression?.weightIncrement && (
@@ -392,7 +393,7 @@ export function ApproachDetails({ approach, onClose }: ApproachDetailsProps) {
                     <div className="text-sm">
                       {typeof progression.setProgression === 'string'
                         ? progression.setProgression
-                        : progression.setProgression.strategy?.replace(/_/g, ' ') || 'N/A'}
+                        : progression.setProgression.strategy?.replace(/_/g, ' ') || tCommon('notAvailable')}
                     </div>
                     {typeof progression.setProgression === 'object' && progression.setProgression.conditions && (
                       <div className="mt-2 flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-950/30 rounded border border-blue-200 dark:border-blue-800">

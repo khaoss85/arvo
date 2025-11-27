@@ -527,17 +527,20 @@ export type Database = {
       training_approaches: {
         Row: {
           advanced_techniques: Json | null
+          category: string
           created_at: string | null
           creator: string | null
           exercise_rules: Json
           exercise_selection_principles: Json | null
           frequency_guidelines: Json | null
           id: string
+          level_notes: Json | null
           name: string
           periodization: Json | null
           philosophy: string | null
           progression_rules: Json
           rationales: Json | null
+          recommended_level: string | null
           rest_timer_guidelines: Json | null
           rom_emphasis: Json | null
           short_philosophy: string | null
@@ -548,17 +551,20 @@ export type Database = {
         }
         Insert: {
           advanced_techniques?: Json | null
+          category?: string
           created_at?: string | null
           creator?: string | null
           exercise_rules: Json
           exercise_selection_principles?: Json | null
           frequency_guidelines?: Json | null
           id?: string
+          level_notes?: Json | null
           name: string
           periodization?: Json | null
           philosophy?: string | null
           progression_rules: Json
           rationales?: Json | null
+          recommended_level?: string | null
           rest_timer_guidelines?: Json | null
           rom_emphasis?: Json | null
           short_philosophy?: string | null
@@ -569,17 +575,20 @@ export type Database = {
         }
         Update: {
           advanced_techniques?: Json | null
+          category?: string
           created_at?: string | null
           creator?: string | null
           exercise_rules?: Json
           exercise_selection_principles?: Json | null
           frequency_guidelines?: Json | null
           id?: string
+          level_notes?: Json | null
           name?: string
           periodization?: Json | null
           philosophy?: string | null
           progression_rules?: Json
           rationales?: Json | null
+          recommended_level?: string | null
           rest_timer_guidelines?: Json | null
           rom_emphasis?: Json | null
           short_philosophy?: string | null
@@ -774,6 +783,7 @@ export type Database = {
           preferred_split: string | null
           strength_baseline: Json | null
           training_focus: string | null
+          training_maxes: Json | null
           updated_at: string | null
           user_id: string
           weak_points: string[] | null
@@ -817,6 +827,7 @@ export type Database = {
           preferred_split?: string | null
           strength_baseline?: Json | null
           training_focus?: string | null
+          training_maxes?: Json | null
           updated_at?: string | null
           user_id: string
           weak_points?: string[] | null
@@ -860,6 +871,7 @@ export type Database = {
           preferred_split?: string | null
           strength_baseline?: Json | null
           training_focus?: string | null
+          training_maxes?: Json | null
           updated_at?: string | null
           user_id?: string
           weak_points?: string[] | null

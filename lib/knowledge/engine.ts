@@ -25,12 +25,15 @@ export class KnowledgeEngine {
       name: data.name,
       creator: data.creator || '',
       philosophy: data.philosophy || '',
+      category: data.category as 'bodybuilding' | 'powerlifting' | undefined,
+      recommendedLevel: data.recommended_level as 'beginner' | 'intermediate' | 'advanced' | 'all_levels' | undefined,
+      levelNotes: data.level_notes as { en?: string; it?: string } | undefined,
       variables: data.variables as TrainingApproach['variables'],
       progression: data.progression_rules as TrainingApproach['progression'],
       exerciseSelection: data.exercise_rules as TrainingApproach['exerciseSelection'],
       rationales: data.rationales as Record<string, string> || {},
 
-      // Optional Kuba methodology fields (approach-agnostic)
+      // Optional methodology fields (approach-agnostic)
       volumeLandmarks: data.volume_landmarks || undefined,
       frequencyGuidelines: data.frequency_guidelines || undefined,
       romEmphasis: data.rom_emphasis || undefined,
@@ -113,6 +116,10 @@ export class KnowledgeEngine {
     // Format specific aspect of approach for AI context
     switch (aspect) {
       case 'progression':
+        // Branch based on approach category
+        if (approach.category === 'powerlifting') {
+          return this.formatPowerliftingProgressionContext(approach)
+        }
         return `
 Training approach: ${approach.name}
 Philosophy: ${approach.philosophy}
@@ -211,5 +218,101 @@ ${tempoPhilosophy}
       default:
         return JSON.stringify(approach, null, 2)
     }
+  }
+
+  /**
+   * Format progression context specifically for powerlifting approaches
+   * Handles percentage-based and RPE-based systems differently from RIR-based bodybuilding
+   */
+  private formatPowerliftingProgressionContext(approach: TrainingApproach): string {
+    const name = approach.name.toLowerCase()
+    const vars = approach.variables as any
+
+    // Detect approach type and format appropriately
+    if (name.includes('wendler') || name.includes('5/3/1')) {
+      return `
+Training approach: ${approach.name} (POWERLIFTING - Percentage-Based)
+Category: Powerlifting
+Philosophy: ${approach.philosophy}
+
+PROGRESSION SYSTEM: Training Max Percentages
+- Uses Training Max (TM) = 90% of true 1RM
+- Weekly percentage cycles:
+  • Week 1: 65/75/85% TM (5/5/5+ reps)
+  • Week 2: 70/80/90% TM (3/3/3+ reps)
+  • Week 3: 75/85/95% TM (5/3/1+ reps)
+  • Week 4: Deload (40-60% TM)
+- Last set is AMRAP (As Many Reps As Possible)
+- TM increases by 2.5kg (upper) or 5kg (lower) per cycle
+
+KEY PRINCIPLE: Use PERCENTAGES, not RIR. Weight is fixed by program.
+The user should focus on completing prescribed reps at prescribed weight.
+AMRAP sets determine progress - more reps = good performance.
+      `.trim()
+    }
+
+    if (name.includes('rts') || name.includes('dup') || name.includes('autoregulated')) {
+      return `
+Training approach: ${approach.name} (POWERLIFTING - RPE-Based)
+Category: Powerlifting
+Philosophy: ${approach.philosophy}
+
+PROGRESSION SYSTEM: RPE Autoregulation
+- Uses RPE (Rate of Perceived Exertion) scale, NOT RIR
+- RPE 10 = failure, RPE 8 = ~2 reps left, RPE 7 = ~3 reps left
+- Target RPE typically 7-9 depending on phase and set
+- Weight adjusted based on RPE outcome vs target
+
+KEY PRINCIPLE: Self-regulation based on daily readiness.
+If target was 5 reps @ RPE 8, but user felt RPE 9, reduce weight next set.
+If user felt RPE 7, can increase weight.
+      `.trim()
+    }
+
+    if (name.includes('sheiko')) {
+      return `
+Training approach: ${approach.name} (POWERLIFTING - High Volume/Low Intensity)
+Category: Powerlifting
+Philosophy: ${approach.philosophy}
+
+PROGRESSION SYSTEM: Volume Accumulation at Moderate Intensity
+- Average intensity: 68-72% of E1RM
+- High weekly rep volumes (50-100 reps per lift)
+- NO grinding reps - all reps should be clean and fast
+- Multiple sessions per week for competition lifts
+
+KEY PRINCIPLE: Technical mastery through high volume practice.
+Weight should feel manageable. If form breaks down, weight is too heavy.
+Speed and technique > intensity.
+      `.trim()
+    }
+
+    if (name.includes('westside') || name.includes('conjugate')) {
+      return `
+Training approach: ${approach.name} (POWERLIFTING - Conjugate System)
+Category: Powerlifting
+Philosophy: ${approach.philosophy}
+
+PROGRESSION SYSTEM: Max Effort + Dynamic Effort
+- Max Effort (ME) days: Work up to 1-3RM, rotate exercises weekly
+- Dynamic Effort (DE) days: 50-60% with bands/chains, focus on speed
+- Accessory work: Higher reps (8-12) for hypertrophy
+
+KEY PRINCIPLE: Never miss reps on ME work. Stop when form breaks.
+On DE work, bar speed is the indicator - if slow, too heavy.
+Exercise rotation prevents accommodation.
+      `.trim()
+    }
+
+    // Generic powerlifting fallback
+    return `
+Training approach: ${approach.name} (POWERLIFTING)
+Category: Powerlifting
+Philosophy: ${approach.philosophy}
+Progression system: ${vars?.progressionSystem || 'Percentage or RPE based'}
+
+KEY PRINCIPLE: Competition lifts (Squat/Bench/Deadlift) are the priority.
+Focus on technique consistency and strength in SBD movements.
+    `.trim()
   }
 }

@@ -1,10 +1,15 @@
 import { z } from "zod";
 
+// Training Approach Category
+export const approachCategorySchema = z.enum(['bodybuilding', 'powerlifting']);
+export type ApproachCategory = z.infer<typeof approachCategorySchema>;
+
 // Training Approaches Schema
 export const trainingApproachSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1, "Name is required"),
   creator: z.string().nullable(),
+  category: approachCategorySchema.default('bodybuilding'),
   philosophy: z.string().nullable(),
   short_philosophy: z.string().nullable(),
   variables: z.record(z.string(), z.unknown()),

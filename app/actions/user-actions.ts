@@ -194,3 +194,120 @@ export async function updatePersonalInfo(
     }
   }
 }
+
+/**
+ * Training Max type definition
+ */
+export interface TrainingMaxes {
+  squat?: number
+  bench_press?: number
+  deadlift?: number
+  overhead_press?: number
+  [key: string]: number | undefined // Allow other lifts
+}
+
+/**
+ * Update user's Training Maxes for powerlifting programs
+ *
+ * @param userId - The user's ID
+ * @param trainingMaxes - Object with lift names and TM values in kg
+ * @returns Success status and optional error message
+ */
+export async function updateTrainingMaxes(
+  userId: string,
+  trainingMaxes: TrainingMaxes
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Validate TM values
+    for (const [lift, value] of Object.entries(trainingMaxes)) {
+      if (value !== undefined && value !== null) {
+        if (typeof value !== 'number' || isNaN(value)) {
+          return {
+            success: false,
+            error: `Invalid value for ${lift}: must be a number`
+          }
+        }
+        if (value < 0 || value > 1000) {
+          return {
+            success: false,
+            error: `Invalid value for ${lift}: must be between 0 and 1000 kg`
+          }
+        }
+      }
+    }
+
+    const supabase = await getSupabaseServerClient()
+
+    // Get current training_maxes to merge
+    const { data: currentProfile } = await supabase
+      .from('user_profiles')
+      .select('training_maxes')
+      .eq('user_id', userId)
+      .single()
+
+    const currentMaxes = (currentProfile?.training_maxes as TrainingMaxes) || {}
+
+    // Merge new values with existing
+    const mergedMaxes = { ...currentMaxes, ...trainingMaxes }
+
+    // Remove undefined/null values
+    const cleanedMaxes: TrainingMaxes = {}
+    for (const [key, value] of Object.entries(mergedMaxes)) {
+      if (value !== undefined && value !== null) {
+        cleanedMaxes[key] = value
+      }
+    }
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ training_maxes: cleanedMaxes })
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('[updateTrainingMaxes] Database error:', error)
+      return {
+        success: false,
+        error: 'Failed to update Training Maxes'
+      }
+    }
+
+    console.log('[updateTrainingMaxes] Successfully updated Training Maxes for user:', userId, cleanedMaxes)
+    return { success: true }
+  } catch (error) {
+    console.error('[updateTrainingMaxes] Unexpected error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+/**
+ * Get user's Training Maxes
+ *
+ * @param userId - The user's ID
+ * @returns Training Maxes object or null
+ */
+export async function getTrainingMaxes(
+  userId: string
+): Promise<TrainingMaxes | null> {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('training_maxes')
+      .eq('user_id', userId)
+      .single()
+
+    if (error || !data) {
+      console.error('[getTrainingMaxes] Error fetching Training Maxes:', error)
+      return null
+    }
+
+    return (data.training_maxes as TrainingMaxes) || null
+  } catch (error) {
+    console.error('[getTrainingMaxes] Unexpected error:', error)
+    return null
+  }
+}

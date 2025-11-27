@@ -3,6 +3,9 @@ export interface TrainingApproach {
   name: string // "Kuba Method"
   creator: string
   philosophy: string
+  category?: 'bodybuilding' | 'powerlifting' // Approach category for logic branching
+  recommendedLevel?: 'beginner' | 'intermediate' | 'advanced' | 'all_levels'
+  levelNotes?: { en?: string; it?: string }
 
   variables: {
     setsPerExercise: {

@@ -22,6 +22,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const y3tApproach = {
   name: 'Y3T (Yoda 3 Training - Neil Hill)',
   creator: 'Neil Hill',
+  category: 'bodybuilding',
+  recommended_level: 'intermediate',
+  level_notes: {
+    it: 'Periodizzazione avanzata con 3 settimane di rotazione',
+    en: 'Advanced periodization with 3-week rotation'
+  },
   philosophy: `Y3T (Yoda 3 Training) is an undulating periodization system built around a 3-week microcycle that rotates training stress weekly to prevent adaptation plateaus and optimize progressive overload. Each week has a distinct character: Week 1 (Heavy Week) uses low reps (6-8) with compound movements and longer rest for maximum mechanical tension and strength; Week 2 (Hybrid Week) uses moderate reps (8-12) with mixed compound and isolation work for balanced hypertrophy; Week 3 (Hell Week) uses high reps (15-30+) with predominantly isolation exercises, short rest, and advanced intensity techniques (drop sets, supersets, rest-pause) for extreme metabolic stress and muscle damage. This systematic variation prevents neural and muscular adaptation, allowing continuous progression without plateaus. The body never fully adapts to any single stimulus because it constantly changes. After 9 weeks (3 complete cycles), exercises are rotated to provide novelty. Y3T was developed by UK coach Neil Hill and famously used by 4x Mr. Olympia winner William "Flex" Wheeler in his comeback, plus numerous IFBB pros. The method balances strength, hypertrophy, and metabolic conditioning in a simple, sustainable structure.`,
   short_philosophy: 'Undulating periodization system rotating training stress across a 3-week microcycle: Heavy Week (6-8 reps, strength focus), Hybrid Week (8-12 reps, balanced hypertrophy), Hell Week (15-30+ reps, metabolic stress). Prevents adaptation plateaus through systematic variation. Used by 4x Mr. Olympia Flex Wheeler.',
 
@@ -1279,46 +1285,79 @@ async function seedY3T() {
       throw checkError
     }
 
+    let result
+
     if (existing) {
-      console.log('⚠️  Y3T approach already exists in database')
+      console.log('⚠️  Y3T approach already exists in database. Updating...')
       console.log('   ID:', existing.id)
-      console.log('   Name:', existing.name)
-      console.log('\n   To re-seed, delete the existing entry first.\n')
-      return
-    }
 
-    // Insert Y3T approach
-    console.log('📝 Inserting Y3T training approach...')
-    const { data: inserted, error: insertError } = await supabase
-      .from('training_approaches')
-      .insert([{
-        name: y3tApproach.name,
-        creator: y3tApproach.creator,
-        philosophy: y3tApproach.philosophy,
-        short_philosophy: y3tApproach.short_philosophy,
-        variables: y3tApproach.variables,
-        progression_rules: y3tApproach.progression,
-        exercise_rules: y3tApproach.exerciseSelection,
-        exercise_selection_principles: y3tApproach.exerciseSelectionPrinciples,
-        rationales: y3tApproach.rationales,
-        rom_emphasis: y3tApproach.romEmphasis,
-        stimulus_to_fatigue: y3tApproach.stimulusToFatigue,
-        volume_landmarks: y3tApproach.volumeLandmarks,
-        frequency_guidelines: y3tApproach.frequencyGuidelines,
-        advanced_techniques: y3tApproach.advancedTechniques,
-        split_variations: y3tApproach.splitVariations,
-        periodization: y3tApproach.periodization
-      }])
-      .select()
+      const { data: updated, error: updateError } = await supabase
+        .from('training_approaches')
+        .update({
+          creator: y3tApproach.creator,
+          category: y3tApproach.category,
+          recommended_level: y3tApproach.recommended_level,
+          level_notes: y3tApproach.level_notes,
+          philosophy: y3tApproach.philosophy,
+          short_philosophy: y3tApproach.short_philosophy,
+          variables: y3tApproach.variables,
+          progression_rules: y3tApproach.progression,
+          exercise_rules: y3tApproach.exerciseSelection,
+          exercise_selection_principles: y3tApproach.exerciseSelectionPrinciples,
+          rationales: y3tApproach.rationales,
+          rom_emphasis: y3tApproach.romEmphasis,
+          stimulus_to_fatigue: y3tApproach.stimulusToFatigue,
+          volume_landmarks: y3tApproach.volumeLandmarks,
+          frequency_guidelines: y3tApproach.frequencyGuidelines,
+          advanced_techniques: y3tApproach.advancedTechniques,
+          split_variations: y3tApproach.splitVariations,
+          periodization: y3tApproach.periodization
+        })
+        .eq('id', existing.id)
+        .select()
 
-    if (insertError) {
-      throw insertError
+      if (updateError) {
+        throw updateError
+      }
+      result = updated
+    } else {
+      // Insert Y3T approach
+      console.log('📝 Inserting Y3T training approach...')
+      const { data: inserted, error: insertError } = await supabase
+        .from('training_approaches')
+        .insert([{
+          name: y3tApproach.name,
+          creator: y3tApproach.creator,
+          category: y3tApproach.category,
+          recommended_level: y3tApproach.recommended_level,
+          level_notes: y3tApproach.level_notes,
+          philosophy: y3tApproach.philosophy,
+          short_philosophy: y3tApproach.short_philosophy,
+          variables: y3tApproach.variables,
+          progression_rules: y3tApproach.progression,
+          exercise_rules: y3tApproach.exerciseSelection,
+          exercise_selection_principles: y3tApproach.exerciseSelectionPrinciples,
+          rationales: y3tApproach.rationales,
+          rom_emphasis: y3tApproach.romEmphasis,
+          stimulus_to_fatigue: y3tApproach.stimulusToFatigue,
+          volume_landmarks: y3tApproach.volumeLandmarks,
+          frequency_guidelines: y3tApproach.frequencyGuidelines,
+          advanced_techniques: y3tApproach.advancedTechniques,
+          split_variations: y3tApproach.splitVariations,
+          periodization: y3tApproach.periodization
+        }])
+        .select()
+
+      if (insertError) {
+        throw insertError
+      }
+      result = inserted
     }
 
     console.log('✅ Y3T training approach seeded successfully!\n')
-    console.log('   ID:', inserted[0].id)
-    console.log('   Name:', inserted[0].name)
-    console.log('   Creator:', inserted[0].creator)
+    console.log('   ID:', result[0].id)
+    console.log('   Name:', result[0].name)
+    console.log('   Creator:', result[0].creator)
     console.log('\n🎯 Y3T Key Features:')
     console.log('   • 3-week microcycle: Heavy (6-8 reps) → Hybrid (8-12 reps) → Hell (15-30+ reps)')
     console.log('   • Weekly intensity rotation prevents adaptation plateaus')

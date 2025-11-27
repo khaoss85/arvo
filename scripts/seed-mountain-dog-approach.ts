@@ -21,6 +21,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const mountainDogApproach = {
   name: 'Mountain Dog Training (John Meadows)',
   creator: 'John Meadows',
+  category: 'bodybuilding',
+  recommended_level: 'intermediate',
+  level_notes: {
+    it: 'Volume elevato, richiede esperienza e buona capacità di recupero',
+    en: 'High volume, requires experience and good recovery capacity'
+  },
   philosophy: `Mountain Dog Training is a multi-faceted hypertrophy approach that combines scientific principles with practical intensity techniques. Created by legendary bodybuilding coach John Meadows, this system is built around a unique 4-phase workout structure designed to maximize muscle growth through systematic progression of stimulus.
 
 KEY PHILOSOPHICAL PILLARS:
@@ -1607,27 +1613,73 @@ DELOAD PHILOSOPHY:
 async function seedMountainDog() {
   console.log('🏔️  Seeding Mountain Dog Training approach...')
 
-  const { data, error } = await supabase
+  // Check if already exists
+  const { data: existing } = await supabase
     .from('training_approaches')
-    .insert({
-      name: mountainDogApproach.name,
-      creator: mountainDogApproach.creator,
-      philosophy: mountainDogApproach.philosophy,
-      short_philosophy: mountainDogApproach.short_philosophy,
-      variables: mountainDogApproach.variables,
-      progression_rules: mountainDogApproach.progression,
-      exercise_rules: mountainDogApproach.exerciseSelection,
-      rationales: mountainDogApproach.rationales,
-      volume_landmarks: mountainDogApproach.volumeLandmarks,
-      frequency_guidelines: mountainDogApproach.frequencyGuidelines,
-      advanced_techniques: mountainDogApproach.advancedTechniques,
-      split_variations: mountainDogApproach.splitVariations,
-      periodization: mountainDogApproach.periodization,
-      rom_emphasis: mountainDogApproach.romEmphasis,
-      exercise_selection_principles: mountainDogApproach.exerciseSelectionPrinciples,
-      stimulus_to_fatigue: mountainDogApproach.stimulusToFatigue
-    })
-    .select()
+    .select('id')
+    .eq('name', mountainDogApproach.name)
+    .single()
+
+  let data, error
+
+  if (existing) {
+    console.log('⚠️  Mountain Dog approach already exists. Updating...')
+    const result = await supabase
+      .from('training_approaches')
+      .update({
+        creator: mountainDogApproach.creator,
+        category: mountainDogApproach.category,
+        recommended_level: mountainDogApproach.recommended_level,
+        level_notes: mountainDogApproach.level_notes,
+        philosophy: mountainDogApproach.philosophy,
+        short_philosophy: mountainDogApproach.short_philosophy,
+        variables: mountainDogApproach.variables,
+        progression_rules: mountainDogApproach.progression,
+        exercise_rules: mountainDogApproach.exerciseSelection,
+        rationales: mountainDogApproach.rationales,
+        volume_landmarks: mountainDogApproach.volumeLandmarks,
+        frequency_guidelines: mountainDogApproach.frequencyGuidelines,
+        advanced_techniques: mountainDogApproach.advancedTechniques,
+        split_variations: mountainDogApproach.splitVariations,
+        periodization: mountainDogApproach.periodization,
+        rom_emphasis: mountainDogApproach.romEmphasis,
+        exercise_selection_principles: mountainDogApproach.exerciseSelectionPrinciples,
+        stimulus_to_fatigue: mountainDogApproach.stimulusToFatigue
+      })
+      .eq('id', existing.id)
+      .select()
+
+    data = result.data
+    error = result.error
+  } else {
+    const result = await supabase
+      .from('training_approaches')
+      .insert({
+        name: mountainDogApproach.name,
+        creator: mountainDogApproach.creator,
+        category: mountainDogApproach.category,
+        recommended_level: mountainDogApproach.recommended_level,
+        level_notes: mountainDogApproach.level_notes,
+        philosophy: mountainDogApproach.philosophy,
+        short_philosophy: mountainDogApproach.short_philosophy,
+        variables: mountainDogApproach.variables,
+        progression_rules: mountainDogApproach.progression,
+        exercise_rules: mountainDogApproach.exerciseSelection,
+        rationales: mountainDogApproach.rationales,
+        volume_landmarks: mountainDogApproach.volumeLandmarks,
+        frequency_guidelines: mountainDogApproach.frequencyGuidelines,
+        advanced_techniques: mountainDogApproach.advancedTechniques,
+        split_variations: mountainDogApproach.splitVariations,
+        periodization: mountainDogApproach.periodization,
+        rom_emphasis: mountainDogApproach.romEmphasis,
+        exercise_selection_principles: mountainDogApproach.exerciseSelectionPrinciples,
+        stimulus_to_fatigue: mountainDogApproach.stimulusToFatigue
+      })
+      .select()
+
+    data = result.data
+    error = result.error
+  }
 
   if (error) {
     console.error('Error:', error)
@@ -1635,8 +1687,8 @@ async function seedMountainDog() {
   }
 
   console.log('✅ Mountain Dog Training approach seeded successfully!')
-  console.log('📊 Approach ID:', data[0].id)
-  console.log('🏔️  Created by:', data[0].creator)
+  console.log('📊 Approach ID:', data?.[0]?.id)
+  console.log('🏔️  Created by:', data?.[0]?.creator)
   console.log('\n🔑 Key Features:')
   console.log('  - 4-Phase Workout Structure (Pre-Activation → Explosive → Supramax Pump → Loaded Stretching)')
   console.log('  - Chains/Bands for Accommodating Resistance (Phase 2)')

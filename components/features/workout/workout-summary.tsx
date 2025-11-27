@@ -146,6 +146,7 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
       const result = await WorkoutService.markAsCompletedWithStats(workoutId, {
         totalVolume: stats.totalVolume,
         duration: stats.duration,
+        totalSets: stats.totalSets,
         mentalReadinessOverall: mentalReadinessSelected,
         learnedTargetWeights
       })

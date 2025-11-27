@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useTranslations } from 'next-intl'
+import { useState, useEffect, useMemo } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { ApproachDetails } from '@/components/features/onboarding/approach-details'
+import { ApproachCategoryTabs } from '@/components/features/onboarding/approach-category-tabs'
 import {
   getAllApproachesAction,
   switchTrainingApproachAction
 } from '@/app/actions/approach-actions'
-import type { TrainingApproach } from '@/lib/types/schemas'
+import type { TrainingApproach, ApproachCategory } from '@/lib/types/schemas'
 import {
   Dialog,
   DialogContent,
@@ -26,12 +27,30 @@ interface ApproachSwitcherProps {
   currentApproachName?: string
 }
 
+// Get badge styling based on recommended level
+function getLevelBadgeStyles(level: string | null | undefined): { bg: string; text: string } {
+  switch (level) {
+    case 'beginner':
+      return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' }
+    case 'intermediate':
+      return { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' }
+    case 'advanced':
+      return { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400' }
+    case 'all_levels':
+    default:
+      return { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' }
+  }
+}
+
 export function ApproachSwitcher({
   userId,
   currentApproachId,
   currentApproachName
 }: ApproachSwitcherProps) {
   const t = useTranslations('settings.approachSwitcher')
+  const tCard = useTranslations('onboarding.approachCard')
+  const tCommon = useTranslations('common')
+  const locale = useLocale()
   const [approaches, setApproaches] = useState<TrainingApproach[]>([])
   const [selectedApproach, setSelectedApproach] = useState<TrainingApproach | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -40,6 +59,26 @@ export function ApproachSwitcher({
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [activeCategory, setActiveCategory] = useState<ApproachCategory>('bodybuilding')
+
+  // Filter approaches by active category
+  const filteredApproaches = useMemo(() => {
+    return approaches.filter(
+      (approach) => ((approach as any).category || 'bodybuilding') === activeCategory
+    )
+  }, [approaches, activeCategory])
+
+  // Count approaches per category
+  const categoryCounts = useMemo(() => {
+    return approaches.reduce(
+      (acc, approach) => {
+        const cat = ((approach as any).category || 'bodybuilding') as ApproachCategory
+        acc[cat] = (acc[cat] || 0) + 1
+        return acc
+      },
+      { bodybuilding: 0, powerlifting: 0 } as Record<ApproachCategory, number>
+    )
+  }, [approaches])
 
   // Confirm modal state
   const [switchReason, setSwitchReason] = useState('')
@@ -152,10 +191,23 @@ export function ApproachSwitcher({
         )}
       </div>
 
+      {/* Category Tabs */}
+      <ApproachCategoryTabs
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        counts={categoryCounts}
+      />
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {approaches.map((approach) => {
+        {filteredApproaches.map((approach) => {
           const variables = approach.variables as any
           const isCurrent = approach.id === currentApproachId
+
+          // Level badge info
+          const recommendedLevel = (approach as any).recommended_level || 'all_levels'
+          const levelNotes = (approach as any).level_notes as { it?: string; en?: string } | null
+          const levelNote = levelNotes?.[locale as 'it' | 'en'] || levelNotes?.en
+          const levelStyles = getLevelBadgeStyles(recommendedLevel)
 
           return (
             <Card
@@ -173,9 +225,20 @@ export function ApproachSwitcher({
                     <h4 className="font-semibold text-base">{approach.name}</h4>
                     {approach.creator && (
                       <p className="text-xs text-muted-foreground">
-                        by {approach.creator}
+                        {tCommon('by')} {approach.creator}
                       </p>
                     )}
+                    {/* Level Badge */}
+                    <div className="mt-1.5 flex flex-col gap-0.5">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${levelStyles.bg} ${levelStyles.text}`}>
+                        {tCard(`levels.${recommendedLevel}`)}
+                      </span>
+                      {levelNote && (
+                        <p className="text-[10px] text-muted-foreground italic">
+                          {levelNote}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {isCurrent && (
                     <div className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-medium">
@@ -193,17 +256,17 @@ export function ApproachSwitcher({
                 <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('workingSets')}</span>
-                    <span className="font-medium">{variables?.setsPerExercise?.working || 'N/A'}</span>
+                    <span className="font-medium">{variables?.setsPerExercise?.working || tCommon('notAvailable')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('repRange')}</span>
                     <span className="font-medium">
-                      {variables?.repRanges?.compound?.[0]}-{variables?.repRanges?.compound?.[1] || variables?.repRanges?.isolation?.[1] || 'N/A'}
+                      {variables?.repRanges?.compound?.[0]}-{variables?.repRanges?.compound?.[1] || variables?.repRanges?.isolation?.[1] || tCommon('notAvailable')}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t('rirTarget')}</span>
-                    <span className="font-medium">{variables?.rirTarget?.normal ?? 'N/A'}</span>
+                    <span className="font-medium">{variables?.rirTarget?.normal ?? tCommon('notAvailable')}</span>
                   </div>
                 </div>
 
@@ -415,7 +478,7 @@ export function ApproachSwitcher({
       {isLoading && (
         <div className="text-sm text-muted-foreground flex items-center gap-2">
           <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          Processing approach switch...
+          {tCommon('processing')}
         </div>
       )}
     </div>

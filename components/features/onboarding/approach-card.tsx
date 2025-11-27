@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Info } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import { Card } from '@/components/ui/card'
 import { ApproachDetails } from './approach-details'
@@ -13,11 +13,33 @@ interface ApproachCardProps {
   onSelect: () => void
 }
 
+// Get badge styling based on recommended level
+function getLevelBadgeStyles(level: string | null | undefined): { bg: string; text: string } {
+  switch (level) {
+    case 'beginner':
+      return { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400' }
+    case 'intermediate':
+      return { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400' }
+    case 'advanced':
+      return { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-400' }
+    case 'all_levels':
+    default:
+      return { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-400' }
+  }
+}
+
 export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps) {
   const t = useTranslations('onboarding.approachCard')
+  const locale = useLocale()
   const variables = approach.variables as any
   const progression = approach.progression_rules as any
   const [showDetails, setShowDetails] = useState(false)
+
+  // Get level info from approach
+  const recommendedLevel = (approach as any).recommended_level || 'all_levels'
+  const levelNotes = (approach as any).level_notes as { it?: string; en?: string } | null
+  const levelNote = levelNotes?.[locale as 'it' | 'en'] || levelNotes?.en
+  const levelStyles = getLevelBadgeStyles(recommendedLevel)
 
   const handleLearnMore = (e: React.MouseEvent) => {
     e.stopPropagation() // Prevent card selection when clicking Learn More
@@ -42,6 +64,17 @@ export function ApproachCard({ approach, selected, onSelect }: ApproachCardProps
               {t('by')} {approach.creator}
             </p>
           )}
+          {/* Level Badge */}
+          <div className="mt-2 flex flex-col gap-1">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${levelStyles.bg} ${levelStyles.text}`}>
+              {t(`levels.${recommendedLevel}`)}
+            </span>
+            {levelNote && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                {levelNote}
+              </p>
+            )}
+          </div>
         </div>
         <div
           className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${

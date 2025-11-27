@@ -23,7 +23,7 @@ export function useAppMode() {
     }
   }, [mode, setMode, setLoading]);
 
-  const switchToMode = useCallback(async (newMode: AppMode) => {
+  const switchToMode = useCallback(async (newMode: "simple" | "advanced") => {
     if (newMode === mode) return;
 
     setLoading(true);

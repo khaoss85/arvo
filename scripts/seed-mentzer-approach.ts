@@ -39,6 +39,12 @@ async function seedMentzerApproach() {
   const mentzerApproach: any = {
     name: 'Heavy Duty (Mike Mentzer)',
     creator: 'Mike Mentzer',
+    category: 'bodybuilding',
+    recommended_level: 'advanced',
+    level_notes: {
+      it: 'Intensità estrema oltre il cedimento, richiede esperienza e recupero ottimale',
+      en: 'Extreme intensity beyond failure, requires experience and optimal recovery'
+    },
     philosophy: `Heavy Duty training is based on high-intensity, low-volume principles.
 The core belief is that muscle growth is stimulated by brief, infrequent, high-intensity workouts.
 Training beyond momentary muscular failure is essential for maximum growth stimulus.
@@ -456,6 +462,9 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
       .from('training_approaches')
       .update({
         creator: mentzerApproach.creator,
+        category: mentzerApproach.category,
+        recommended_level: mentzerApproach.recommended_level,
+        level_notes: mentzerApproach.level_notes,
         philosophy: mentzerApproach.philosophy,
         short_philosophy: mentzerApproach.short_philosophy,
         variables: mentzerApproach.variables as any,

@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from "react";
 
 interface FAQSectionProps {
-  variant?: 'default' | 'pro';
+  variant?: 'default' | 'pro' | 'simple';
 }
 
 export function FAQSection({ variant = 'default' }: FAQSectionProps) {

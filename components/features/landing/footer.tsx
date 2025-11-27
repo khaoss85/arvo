@@ -118,7 +118,7 @@ export function Footer() {
             {/* Show Casual Users card on main and pro pages */}
             {(isMainPage || isProPage) && (
               <Link
-                href="/simple"
+                href="/lite"
                 className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
               >
                 <div className="flex items-start gap-3">

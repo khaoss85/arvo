@@ -173,15 +173,14 @@ export class SplitTimelineService {
 
     const exercises = workout.exercises as any[];
 
-    // ALWAYS query sets_log for accurate working set counts
-    // JSON completedSets includes warmup sets, which skews the numbers
+    // Query sets_log for accurate set counts (includes all sets: warmup + working)
+    // Consistent with workout recap which counts all completedSets
     const setsByExercise = new Map<string, number>();
     try {
       const { data: loggedSets, error } = await supabase
         .from('sets_log')
         .select('exercise_name')
         .eq('workout_id', workout.id)
-        .eq('set_type', 'working')
         .eq('skipped', false);
 
       if (!error && loggedSets) {
@@ -199,11 +198,8 @@ export class SplitTimelineService {
         if (name === 'Unknown Exercise') continue;
 
         const completedSets = exercise.completedSets || exercise.sets || [];
-        // Filter for working sets only (if set_type field exists)
-        const workingSets = Array.isArray(completedSets)
-          ? completedSets.filter((s: any) => s.set_type === 'working' || !s.set_type)
-          : [];
-        const actualSets = workingSets.length;
+        // Count all sets (warmup + working) for consistency with workout recap
+        const actualSets = Array.isArray(completedSets) ? completedSets.length : 0;
         const normalizedName = name.toLowerCase().trim();
         setsByExercise.set(normalizedName, actualSets);
       }

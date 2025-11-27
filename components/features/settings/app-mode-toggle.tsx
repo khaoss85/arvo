@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Sparkles, Zap, Check } from "lucide-react";
+import { Sparkles, Zap, Check, Users } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAppMode } from "@/lib/hooks/useAppMode";
 import { Card } from "@/components/ui/card";
@@ -21,12 +21,13 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
   const modes = [
     {
       id: "simple" as const,
-      name: t("simpleMode"),
-      description: t("simpleModeDescription"),
+      name: t("trainingMode"),
+      description: t("trainingModeDescription"),
       icon: Zap,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
       borderColor: "border-green-500",
+      disabled: false,
     },
     {
       id: "advanced" as const,
@@ -36,6 +37,18 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
       color: "text-primary-500",
       bgColor: "bg-primary-500/10",
       borderColor: "border-primary-500",
+      disabled: false,
+    },
+    {
+      id: "coach" as const,
+      name: t("coachMode"),
+      description: t("coachModeDescription"),
+      icon: Users,
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/10",
+      borderColor: "border-orange-500",
+      disabled: true,
+      badge: t("comingSoon"),
     },
   ];
 
@@ -57,21 +70,25 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
       {modes.map((modeOption) => {
         const isSelected = mode === modeOption.id;
         const Icon = modeOption.icon;
+        const isDisabled = modeOption.disabled;
 
         return (
           <motion.div
             key={modeOption.id}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={!isDisabled ? { scale: 1.01 } : undefined}
+            whileTap={!isDisabled ? { scale: 0.99 } : undefined}
           >
             <Card
-              onClick={() => handleModeSelect(modeOption.id)}
+              onClick={() => !isDisabled && handleModeSelect(modeOption.id as "simple" | "advanced")}
               className={cn(
-                "relative cursor-pointer p-4 transition-all",
+                "relative p-4 transition-all",
                 "border-2",
-                isSelected
+                isDisabled
+                  ? "opacity-60 cursor-not-allowed border-transparent"
+                  : "cursor-pointer",
+                !isDisabled && isSelected
                   ? cn(modeOption.borderColor, modeOption.bgColor)
-                  : "border-transparent hover:border-gray-200 dark:hover:border-gray-700",
+                  : !isDisabled && "border-transparent hover:border-gray-200 dark:hover:border-gray-700",
                 isLoading && "opacity-50 cursor-not-allowed"
               )}
             >
@@ -87,10 +104,17 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
 
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {modeOption.name}
-                    </h3>
-                    {isSelected && (
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {modeOption.name}
+                      </h3>
+                      {modeOption.badge && (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                          {modeOption.badge}
+                        </span>
+                      )}
+                    </div>
+                    {isSelected && !isDisabled && (
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}

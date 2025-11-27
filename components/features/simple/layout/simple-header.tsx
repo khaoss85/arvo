@@ -19,7 +19,7 @@ export function SimpleHeader({ userName }: SimpleHeaderProps) {
   const navigation = [
     { href: "/simple", label: t("home"), icon: Home },
     { href: "/simple/report", label: t("progress"), icon: BarChart3 },
-    { href: "/progress-checks", label: t("check"), icon: Camera },
+    { href: "/simple/progress-checks", label: t("check"), icon: Camera },
     { href: "/settings", label: t("settings"), icon: Settings },
   ];
 

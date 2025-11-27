@@ -4841,6 +4841,58 @@
       "duration": "Duration",
       "workout": "Workout",
       "moreExercises": "more exercises"
+    },
+    "progressChecks": {
+      "title": "Progress Check",
+      "subtitle": "{count, plural, =0 {No checks} =1 {1 check} other {# checks}}",
+      "filters": {
+        "all": "All",
+        "milestones": "Milestones"
+      },
+      "empty": {
+        "title": "No Progress Checks",
+        "description": "Take your first photos to track your progress",
+        "cta": "New Check"
+      },
+      "photoAlt": "Progress check photo",
+      "milestone": "Milestone",
+      "today": "Today",
+      "daysAgo": "{days, plural, =1 {1 day ago} other {# days ago}}"
+    },
+    "progressCheckDetail": {
+      "backToGallery": "Gallery",
+      "noPhotos": "No photos",
+      "date": "Date",
+      "weight": "Weight",
+      "milestone": "Milestone",
+      "notes": "Notes",
+      "measurementsTitle": "Measurements",
+      "photoTypes": {
+        "front": "Front",
+        "sideLeft": "Side Left",
+        "sideRight": "Side Right",
+        "back": "Back"
+      },
+      "measurements": {
+        "chest": "Chest",
+        "waist": "Waist",
+        "hips": "Hips",
+        "armLeft": "Left Arm",
+        "armRight": "Right Arm",
+        "thighLeft": "Left Thigh",
+        "thighRight": "Right Thigh",
+        "calfLeft": "Left Calf",
+        "calfRight": "Right Calf",
+        "shoulders": "Shoulders"
+      },
+      "deleteError": "Error deleting check",
+      "deleteConfirm": {
+        "title": "Delete Progress Check",
+        "message": "Are you sure you want to delete this check? This action cannot be undone.",
+        "confirm": "Delete",
+        "deleting": "Deleting...",
+        "cancel": "Cancel"
+      }
     }
   }
 }
