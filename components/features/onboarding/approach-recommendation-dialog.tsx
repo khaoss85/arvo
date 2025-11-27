@@ -156,12 +156,10 @@ export function ApproachRecommendationDialog({
                   </span>
                 </div>
 
-                {/* Show rationale for advanced users */}
-                {appMode === 'advanced' && (
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    {recommendation.rationale}
-                  </p>
-                )}
+                {/* Show rationale */}
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                  {recommendation.rationale}
+                </p>
 
                 {/* Confidence badge */}
                 <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
