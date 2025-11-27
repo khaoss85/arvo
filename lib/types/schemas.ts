@@ -4,6 +4,22 @@ import { z } from "zod";
 export const approachCategorySchema = z.enum(['bodybuilding', 'powerlifting']);
 export type ApproachCategory = z.infer<typeof approachCategorySchema>;
 
+// Sport Goal for approach recommendations
+export const sportGoalSchema = z.enum([
+  'none',           // Default - no specific sport goal
+  'running',        // Running/Marathon
+  'swimming',       // Swimming
+  'cycling',        // Cycling
+  'soccer',         // Soccer/Football
+  'skiing',         // Pre-ski conditioning
+  'hyrox',          // Hyrox competition
+  'triathlon',      // Triathlon
+  'climbing',       // Rock climbing
+  'martial_arts',   // Martial arts
+  'other'           // Other (with notes)
+]);
+export type SportGoal = z.infer<typeof sportGoalSchema>;
+
 // Training Approaches Schema
 export const trainingApproachSchema = z.object({
   id: z.string().uuid(),
@@ -44,7 +60,6 @@ export const userProfileSchema = z.object({
   weak_points: z.array(z.string()).nullable(),
   experience_years: z.number().int().min(0).nullable(),
   strength_baseline: z.record(z.string(), z.unknown()).nullable(),
-  equipment_preferences: z.record(z.string(), z.unknown()).nullable(),
   available_equipment: z.array(z.string()).nullable().optional(),
   custom_equipment: z.array(z.any()).nullable().optional(), // Custom equipment added by user
   preferred_split: z.string().nullable(),
@@ -79,6 +94,8 @@ export const userProfileSchema = z.object({
   audio_coaching_speed: z.number().min(0.5).max(2.0).default(1.0),
   // App mode preference (simple for basic users, advanced for power users)
   app_mode: z.enum(['simple', 'advanced']).optional().default('advanced'),
+  // Sport-specific goal for approach recommendations
+  sport_goal: sportGoalSchema.nullable().optional().default('none'),
 });
 
 export const insertUserProfileSchema = userProfileSchema;
@@ -218,7 +235,6 @@ export const workoutSchema = z.object({
   approach_id: z.string().uuid().nullable(),
   planned_at: z.string().date().nullable(),
   exercises: z.array(z.record(z.string(), z.unknown())).nullable(),
-  completed: z.boolean().nullable(),
   started_at: z.string().datetime().nullable(),
   completed_at: z.string().datetime().nullable(),
   duration_seconds: z.number().int().min(0).nullable(),

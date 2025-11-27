@@ -1585,7 +1585,38 @@
         "description": "Seleziona l'approccio che meglio si allinea al tuo stile di allenamento. Questo guiderà come l'AI genera i tuoi allenamenti.",
         "backToLevel": "Torna al Livello",
         "loading": "Caricamento approcci di allenamento...",
-        "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba."
+        "noApproachesFound": "Nessun approccio di allenamento trovato. Esegui lo script di seed per popolare il Metodo Kuba.",
+        "getRecommendation": "Ottieni Raccomandazione AI",
+        "sportGoal": {
+          "title": "Obiettivo Sportivo",
+          "optional": "opzionale",
+          "description": "Se ti alleni per uno sport specifico, ti consiglieremo un approccio che complementi i tuoi obiettivi atletici.",
+          "options": {
+            "none": "Fitness Generale",
+            "running": "Corsa",
+            "swimming": "Nuoto",
+            "cycling": "Ciclismo",
+            "soccer": "Calcio",
+            "skiing": "Sci",
+            "hyrox": "Hyrox",
+            "triathlon": "Triathlon",
+            "climbing": "Arrampicata",
+            "martial_arts": "Arti Marziali",
+            "other": "Altro Sport"
+          }
+        },
+        "recommendation": {
+          "title": "Raccomandazione AI",
+          "description": "Ottieni un approccio di allenamento personalizzato basato sul tuo profilo, attrezzatura e obiettivi.",
+          "analyzing": "Analisi del tuo profilo...",
+          "error": "Impossibile ottenere la raccomandazione. Riprova.",
+          "retry": "Riprova",
+          "confidence": "Confidenza",
+          "alternatives": "Altre Buone Opzioni",
+          "chooseManually": "Scegli Manualmente",
+          "useRecommendation": "Usa Questo Approccio",
+          "getRecommendation": "Ottieni la Mia Raccomandazione"
+        }
       },
       "split": {
         "title": "Scegli la Tua Suddivisione di Allenamento",

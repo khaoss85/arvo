@@ -47,7 +47,6 @@ export async function markWorkoutCompletedAction(
       .from('workouts')
       .update({
         status: 'completed',
-        completed: true,
         completed_at: new Date().toISOString(),
         total_sets: stats.totalSets || 0,
         total_volume: stats.totalVolume || 0,

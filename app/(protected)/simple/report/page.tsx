@@ -41,7 +41,7 @@ export default async function SimpleReportPageRoute() {
 
   // Get completed workouts for calendar
   const workouts = await WorkoutService.getByUserIdServer(user.id);
-  const completedWorkouts = workouts.filter((w) => w.completed);
+  const completedWorkouts = workouts.filter((w) => w.status === 'completed');
 
   // Calculate target and actual data for radar chart
   const targetData: Record<string, number> = splitPlan?.volume_distribution || {};

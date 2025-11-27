@@ -167,15 +167,16 @@ export async function generateSplitPlanAction(
         weeklyScheduleExample: splitPlanData.weeklyScheduleExample,
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating split plan:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Split generation failed'
 
     // Mark as failed in queue
     if (generationRequestId) {
       try {
         await GenerationQueueService.markAsFailed({
           requestId: generationRequestId,
-          errorMessage: error?.message || 'Split generation failed'
+          errorMessage
         })
         console.log(`[GenerateSplit] Marked as failed: ${generationRequestId}`)
       } catch (dbError) {
@@ -185,7 +186,7 @@ export async function generateSplitPlanAction(
 
     return {
       success: false,
-      error: error?.message || 'Failed to generate split plan'
+      error: errorMessage
     }
   }
 }
@@ -234,11 +235,11 @@ export async function getActiveSplitPlanAction(userId: string) {
       success: true,
       data: splitPlan
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting active split plan:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get active split plan'
+      error: error instanceof Error ? error.message : 'Failed to get active split plan'
     }
   }
 }
@@ -274,11 +275,11 @@ export async function getNextWorkoutPreviewAction(userId: string) {
         sessions: splitPlan.sessions as any[], // Include all sessions for customization dialog
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting next workout preview:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get next workout preview'
+      error: error instanceof Error ? error.message : 'Failed to get next workout preview'
     }
   }
 }
@@ -414,11 +415,11 @@ export async function advanceSplitCycleAction(userId: string) {
       success: true,
       data: { nextDay }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error advancing split cycle:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to advance split cycle'
+      error: error instanceof Error ? error.message : 'Failed to advance split cycle'
     }
   }
 }
@@ -434,11 +435,11 @@ export async function deactivateSplitPlanAction(userId: string) {
       success: true,
       data: null
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deactivating split plan:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to deactivate split plan'
+      error: error instanceof Error ? error.message : 'Failed to deactivate split plan'
     }
   }
 }
@@ -454,11 +455,11 @@ export async function getAllSplitPlansAction(userId: string) {
       success: true,
       data: splitPlans
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting split plans:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get split plans'
+      error: error instanceof Error ? error.message : 'Failed to get split plans'
     }
   }
 }
@@ -497,11 +498,11 @@ export async function activateSplitPlanAction(
       success: true,
       data: null
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error activating split plan:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to activate split plan'
+      error: error instanceof Error ? error.message : 'Failed to activate split plan'
     }
   }
 }
@@ -517,11 +518,11 @@ export async function getSplitTimelineDataAction(userId: string) {
       success: true,
       data: timelineData
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting split timeline data:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get split timeline data'
+      error: error instanceof Error ? error.message : 'Failed to get split timeline data'
     }
   }
 }
@@ -537,11 +538,11 @@ export async function getLastCycleCompletionAction(userId: string) {
       success: true,
       data: lastCycle
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting last cycle completion:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get last cycle completion'
+      error: error instanceof Error ? error.message : 'Failed to get last cycle completion'
     }
   }
 }
@@ -591,11 +592,11 @@ export async function getCycleComparisonAction(userId: string) {
         previousVolumeByMuscleGroup: previousCycle?.volume_by_muscle_group || null
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error getting cycle comparison:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get cycle comparison'
+      error: error instanceof Error ? error.message : 'Failed to get cycle comparison'
     }
   }
 }
@@ -634,11 +635,11 @@ export async function changeSplitPlanAction(
       success: true,
       data: null
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error changing split plan:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to change split plan'
+      error: error instanceof Error ? error.message : 'Failed to change split plan'
     }
   }
 }
@@ -817,11 +818,11 @@ export async function adaptSplitAfterCycleAction(userId: string) {
         }
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('[adaptSplitAfterCycleAction] Error:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to adapt split plan'
+      error: error instanceof Error ? error.message : 'Failed to adapt split plan'
     }
   }
 }

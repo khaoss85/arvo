@@ -20,6 +20,30 @@ import { AudioCoachingSettings } from "@/components/features/settings/audio-coac
 import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
 import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
 import { Card } from "@/components/ui/card"
+import type { SportGoal } from "@/lib/types/schemas"
+
+// Helper to convert experience years to level
+function getExperienceLevel(years: number | null): 'beginner' | 'intermediate' | 'advanced' {
+  if (years === null || years < 2) return 'beginner'
+  if (years < 5) return 'intermediate'
+  return 'advanced'
+}
+
+// Helper to map caloric phase to training objective
+function mapCaloricPhaseToObjective(
+  phase: string | null
+): 'bulk' | 'cut' | 'maintain' | 'recomp' | null {
+  switch (phase) {
+    case 'bulk':
+      return 'bulk'
+    case 'cut':
+      return 'cut'
+    case 'maintenance':
+      return 'maintain'
+    default:
+      return null
+  }
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const user = await getUser()
@@ -126,6 +150,13 @@ export default async function SettingsPage() {
             userId={user.id}
             currentApproachId={profile.approach_id}
             currentApproachName={currentApproach?.name}
+            availableEquipment={profile.available_equipment || []}
+            experienceLevel={getExperienceLevel(profile.experience_years)}
+            trainingObjective={mapCaloricPhaseToObjective(profile.caloric_phase)}
+            weeklyFrequency={4}
+            age={profile.age}
+            gender={profile.gender as 'male' | 'female' | 'other' | null}
+            sportGoal={(profile as any).sport_goal as SportGoal}
           />
         </Card>
       </section>

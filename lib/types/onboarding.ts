@@ -8,8 +8,8 @@ export const WeakPointsSchema = z.object({
   weakPoints: z.array(z.string()).min(0).max(5)
 })
 
-export const EquipmentPreferencesSchema = z.object({
-  equipmentPreferences: z.record(z.string(), z.string())
+export const AvailableEquipmentSchema = z.object({
+  availableEquipment: z.array(z.string())
 })
 
 export const StrengthBaselineSchema = z.object({
@@ -34,8 +34,7 @@ export type TrainingFocus = 'upper_body' | 'lower_body' | 'balanced'
 export type OnboardingData = {
   approachId: string
   weakPoints: string[]
-  equipmentPreferences: Record<string, string> // DEPRECATED: Use availableEquipment
-  availableEquipment?: string[] // New multiselect equipment array
+  availableEquipment: string[] // Equipment IDs available to user
   strengthBaseline: Record<string, { weight: number; reps: number; rir: number }>
   // Experience level (required for adaptive flow)
   experienceLevel?: ExperienceLevel
@@ -53,4 +52,6 @@ export type OnboardingData = {
   // Split selection (optional)
   splitType?: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom'
   weeklyFrequency?: number
+  // Sport-specific goal for approach recommendation
+  sportGoal?: 'none' | 'running' | 'swimming' | 'cycling' | 'soccer' | 'skiing' | 'hyrox' | 'triathlon' | 'climbing' | 'martial_arts' | 'other'
 }

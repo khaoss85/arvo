@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { Info, AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { Info, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { ApproachDetails } from '@/components/features/onboarding/approach-details'
 import { ApproachCategoryTabs } from '@/components/features/onboarding/approach-category-tabs'
+import { ApproachRecommendationDialog } from '@/components/features/onboarding/approach-recommendation-dialog'
 import {
   getAllApproachesAction,
   switchTrainingApproachAction
 } from '@/app/actions/approach-actions'
-import type { TrainingApproach, ApproachCategory } from '@/lib/types/schemas'
+import type { TrainingApproach, ApproachCategory, SportGoal } from '@/lib/types/schemas'
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,15 @@ interface ApproachSwitcherProps {
   userId: string
   currentApproachId?: string | null
   currentApproachName?: string
+  // Optional props for AI recommendation
+  availableEquipment?: string[]
+  experienceLevel?: 'beginner' | 'intermediate' | 'advanced'
+  trainingObjective?: 'bulk' | 'cut' | 'maintain' | 'recomp' | null
+  weeklyFrequency?: number
+  age?: number | null
+  gender?: 'male' | 'female' | 'other' | null
+  sportGoal?: SportGoal
+  onSportGoalChange?: (goal: SportGoal) => void
 }
 
 // Get badge styling based on recommended level
@@ -45,9 +55,18 @@ function getLevelBadgeStyles(level: string | null | undefined): { bg: string; te
 export function ApproachSwitcher({
   userId,
   currentApproachId,
-  currentApproachName
+  currentApproachName,
+  availableEquipment,
+  experienceLevel,
+  trainingObjective,
+  weeklyFrequency,
+  age,
+  gender,
+  sportGoal,
+  onSportGoalChange
 }: ApproachSwitcherProps) {
   const t = useTranslations('settings.approachSwitcher')
+  const tApproach = useTranslations('onboarding.steps.approach')
   const tCard = useTranslations('onboarding.approachCard')
   const tCommon = useTranslations('common')
   const locale = useLocale()
@@ -55,6 +74,7 @@ export function ApproachSwitcher({
   const [selectedApproach, setSelectedApproach] = useState<TrainingApproach | null>(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [showRecommendation, setShowRecommendation] = useState(false)
   const [detailsApproach, setDetailsApproach] = useState<TrainingApproach | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
@@ -79,6 +99,24 @@ export function ApproachSwitcher({
       { bodybuilding: 0, powerlifting: 0 } as Record<ApproachCategory, number>
     )
   }, [approaches])
+
+  // Create approach name map for the recommendation dialog
+  const approachNames = useMemo(() => {
+    return approaches.reduce(
+      (acc, approach) => {
+        acc[approach.id] = approach.name
+        return acc
+      },
+      {} as Record<string, string>
+    )
+  }, [approaches])
+
+  // Check if we have enough data to show the recommendation button
+  const canShowRecommendation = Boolean(
+    experienceLevel &&
+    availableEquipment &&
+    availableEquipment.length > 0
+  )
 
   // Confirm modal state
   const [switchReason, setSwitchReason] = useState('')
@@ -110,6 +148,13 @@ export function ApproachSwitcher({
 
     setSelectedApproach(approach)
     setShowConfirmModal(true)
+  }
+
+  const handleRecommendationSelect = (approachId: string) => {
+    const approach = approaches.find(a => a.id === approachId)
+    if (approach) {
+      handleSelectApproach(approach)
+    }
   }
 
   const handleConfirmSwitch = async () => {
@@ -190,6 +235,18 @@ export function ApproachSwitcher({
           </div>
         )}
       </div>
+
+      {/* AI Recommendation Button */}
+      {canShowRecommendation && (
+        <Button
+          variant="outline"
+          onClick={() => setShowRecommendation(true)}
+          className="w-full sm:w-auto"
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          {tApproach('getRecommendation')}
+        </Button>
+      )}
 
       {/* Category Tabs */}
       <ApproachCategoryTabs
@@ -480,6 +537,24 @@ export function ApproachSwitcher({
           <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           {tCommon('processing')}
         </div>
+      )}
+
+      {/* AI Recommendation Dialog */}
+      {canShowRecommendation && (
+        <ApproachRecommendationDialog
+          open={showRecommendation}
+          onOpenChange={setShowRecommendation}
+          onSelectApproach={handleRecommendationSelect}
+          availableEquipment={availableEquipment || []}
+          experienceLevel={experienceLevel || 'intermediate'}
+          trainingObjective={trainingObjective || null}
+          weeklyFrequency={weeklyFrequency || 4}
+          age={age}
+          gender={gender}
+          approachNames={approachNames}
+          initialSportGoal={sportGoal}
+          onSportGoalChange={onSportGoalChange}
+        />
       )}
     </div>
   )

@@ -354,6 +354,72 @@ export const EQUIPMENT_EXERCISE_MAP: Record<string, EquipmentExerciseMapping> = 
       { name: 'hip abduction machine', description: 'Outer glute and hip isolation' },
     ],
   },
+
+  // Resistance Accessories
+  resistance_bands: {
+    equipmentId: 'resistance_bands',
+    exercises: [
+      { name: 'band pull apart', description: 'Rear delt and upper back activation' },
+      { name: 'banded squat', description: 'Accommodating resistance for squats' },
+      { name: 'band face pull', description: 'Shoulder health and rear delts' },
+    ],
+  },
+  chains: {
+    equipmentId: 'chains',
+    exercises: [
+      { name: 'chain bench press', description: 'Variable resistance pressing' },
+      { name: 'chain squat', description: 'Accommodating resistance for squats' },
+      { name: 'chain deadlift', description: 'Variable resistance deadlift' },
+    ],
+  },
+  ab_wheel: {
+    equipmentId: 'ab_wheel',
+    exercises: [
+      { name: 'ab wheel rollout', description: 'Anti-extension core training' },
+      { name: 'kneeling ab wheel', description: 'Beginner rollout variation' },
+    ],
+  },
+
+  // Functional Equipment
+  trx_suspension: {
+    equipmentId: 'trx_suspension',
+    exercises: [
+      { name: 'trx row', description: 'Bodyweight back training' },
+      { name: 'trx push up', description: 'Unstable pushing movement' },
+      { name: 'trx pike', description: 'Core and shoulder stability' },
+    ],
+  },
+  medicine_ball: {
+    equipmentId: 'medicine_ball',
+    exercises: [
+      { name: 'medicine ball slam', description: 'Power and conditioning' },
+      { name: 'wall ball', description: 'Full body explosive movement' },
+      { name: 'medicine ball rotation throw', description: 'Rotational power' },
+    ],
+  },
+  battle_ropes: {
+    equipmentId: 'battle_ropes',
+    exercises: [
+      { name: 'battle rope wave', description: 'Cardiovascular conditioning' },
+      { name: 'battle rope slam', description: 'Full body power endurance' },
+    ],
+  },
+  landmine: {
+    equipmentId: 'landmine',
+    exercises: [
+      { name: 'landmine press', description: 'Shoulder-friendly pressing' },
+      { name: 'landmine row', description: 'Back training variation' },
+      { name: 'landmine rotation', description: 'Rotational core work' },
+    ],
+  },
+  sled_prowler: {
+    equipmentId: 'sled_prowler',
+    exercises: [
+      { name: 'sled push', description: 'Leg drive and conditioning' },
+      { name: 'sled pull', description: 'Back and hamstring work' },
+      { name: 'prowler sprint', description: 'High intensity conditioning' },
+    ],
+  },
 }
 
 /**

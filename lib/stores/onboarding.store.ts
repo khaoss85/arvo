@@ -7,8 +7,7 @@ interface OnboardingState {
   data: {
     approachId?: string
     weakPoints?: string[]
-    equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment instead
-    availableEquipment?: string[] // New multiselect equipment array
+    availableEquipment?: string[] // Equipment IDs available to user
     strengthBaseline?: Record<string, { weight: number; reps: number; rir: number }>
     // Experience level (for adaptive onboarding)
     experienceLevel?: 'beginner' | 'intermediate' | 'advanced'
@@ -27,6 +26,8 @@ interface OnboardingState {
     splitType?: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus'
     weeklyFrequency?: number // days per week user can train
     specializationMuscle?: string | null // For weak_point_focus split
+    // Sport-specific goal for approach recommendation
+    sportGoal?: 'none' | 'running' | 'swimming' | 'cycling' | 'soccer' | 'skiing' | 'hyrox' | 'triathlon' | 'climbing' | 'martial_arts' | 'other'
   }
   setStep: (step: number) => void
   setStepData: <K extends keyof OnboardingState['data']>(

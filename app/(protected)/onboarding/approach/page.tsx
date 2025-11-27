@@ -3,12 +3,14 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { ApproachCard } from '@/components/features/onboarding/approach-card'
 import { ApproachCategoryTabs } from '@/components/features/onboarding/approach-category-tabs'
-import type { TrainingApproach, ApproachCategory } from '@/lib/types/schemas'
+import { ApproachRecommendationDialog } from '@/components/features/onboarding/approach-recommendation-dialog'
+import { Button } from '@/components/ui/button'
+import type { TrainingApproach, ApproachCategory, SportGoal } from '@/lib/types/schemas'
 
 export default function ApproachSelectionPage() {
   const t = useTranslations('onboarding.steps.approach')
@@ -17,6 +19,7 @@ export default function ApproachSelectionPage() {
   const [approaches, setApproaches] = useState<TrainingApproach[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<ApproachCategory>('bodybuilding')
+  const [showRecommendation, setShowRecommendation] = useState(false)
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
   // Filter approaches by active category
@@ -37,6 +40,21 @@ export default function ApproachSelectionPage() {
       { bodybuilding: 0, powerlifting: 0 } as Record<ApproachCategory, number>
     )
   }, [approaches])
+
+  // Create approach name map for the recommendation dialog
+  const approachNames = useMemo(() => {
+    return approaches.reduce(
+      (acc, approach) => {
+        acc[approach.id] = approach.name
+        return acc
+      },
+      {} as Record<string, string>
+    )
+  }, [approaches])
+
+  const handleSportGoalChange = (goal: SportGoal) => {
+    setStepData('sportGoal', goal)
+  }
 
   const experienceLevel = data.experienceLevel
   const currentStepNumber = 2 // Step 2 for intermediate/advanced
@@ -85,9 +103,19 @@ export default function ApproachSelectionPage() {
       </button>
 
       <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
-      <p className="text-gray-600 dark:text-gray-400 mb-8">
+      <p className="text-gray-600 dark:text-gray-400 mb-4">
         {t('description')}
       </p>
+
+      {/* AI Recommendation Button */}
+      <Button
+        variant="outline"
+        onClick={() => setShowRecommendation(true)}
+        className="mb-6 w-full sm:w-auto"
+      >
+        <Sparkles className="w-4 h-4 mr-2" />
+        {t('getRecommendation')}
+      </Button>
 
       {/* Category Tabs */}
       <ApproachCategoryTabs
@@ -119,6 +147,22 @@ export default function ApproachSelectionPage() {
           ))}
         </div>
       )}
+
+      {/* AI Recommendation Dialog */}
+      <ApproachRecommendationDialog
+        open={showRecommendation}
+        onOpenChange={setShowRecommendation}
+        onSelectApproach={selectApproach}
+        availableEquipment={data.availableEquipment || []}
+        experienceLevel={data.experienceLevel || 'intermediate'}
+        trainingObjective={data.trainingObjective || null}
+        weeklyFrequency={data.weeklyFrequency || 4}
+        age={data.age}
+        gender={data.gender}
+        approachNames={approachNames}
+        initialSportGoal={data.sportGoal}
+        onSportGoalChange={handleSportGoalChange}
+      />
     </div>
   )
 }

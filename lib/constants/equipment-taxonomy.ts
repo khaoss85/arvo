@@ -159,6 +159,28 @@ export const EQUIPMENT_TAXONOMY: EquipmentTaxonomy = {
       { id: "olympic_platform", label: "Olympic Lifting Platform", commonFor: ["Olympic lifts", "Heavy drops"] },
       { id: "deadlift_platform", label: "Deadlift Platform", commonFor: ["Deadlifts", "Floor protection"] },
     ]
+  },
+
+  resistance_accessories: {
+    label: "Resistance Accessories",
+    icon: "🔄",
+    items: [
+      { id: "resistance_bands", label: "Resistance Bands", commonFor: ["Warm-up", "Accommodating resistance", "Rehab"] },
+      { id: "chains", label: "Chains", commonFor: ["Accommodating resistance", "Powerlifting"] },
+      { id: "ab_wheel", label: "Ab Wheel", commonFor: ["Core training", "Anti-extension"] },
+    ]
+  },
+
+  functional_equipment: {
+    label: "Functional Equipment",
+    icon: "⚡",
+    items: [
+      { id: "trx_suspension", label: "TRX / Suspension Trainer", commonFor: ["Bodyweight training", "Core stability"] },
+      { id: "medicine_ball", label: "Medicine Ball", commonFor: ["Throws", "Rotational work", "Power"] },
+      { id: "battle_ropes", label: "Battle Ropes", commonFor: ["HIIT", "Conditioning", "Upper body endurance"] },
+      { id: "landmine", label: "Landmine", commonFor: ["Press variations", "Rows", "Rotational movements"] },
+      { id: "sled_prowler", label: "Sled / Prowler", commonFor: ["Conditioning", "Leg drive", "GPP"] },
+    ]
   }
 }
 

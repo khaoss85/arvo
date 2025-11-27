@@ -9,8 +9,7 @@ import type { Locale } from '@/i18n'
 export interface ExerciseSelectionInput {
   workoutType: Exclude<WorkoutType, 'rest'>
   weakPoints: string[]
-  equipmentPreferences?: Record<string, string> // DEPRECATED: Use availableEquipment
-  availableEquipment?: string[] // New multiselect equipment array
+  availableEquipment?: string[] // Equipment IDs available to user
   customEquipment?: Array<{ id: string; name: string; exampleExercises: string[] }> // Custom user equipment
   recentExercises: string[]
   approachId: string
@@ -1268,9 +1267,7 @@ ${input.availableEquipment && input.availableEquipment.length > 0
       // Fallback
       return `- ${id}`
     }).join('\n')
-  : input.equipmentPreferences
-    ? `DEPRECATED FORMAT: ${JSON.stringify(input.equipmentPreferences)}`
-    : 'No equipment specified - use bodyweight exercises or basic equipment'}
+  : 'No equipment specified - use bodyweight exercises or basic equipment'}
 
 When selecting exercises, you may use ANY of the available equipment above. Choose equipment that:
 1. Matches the movement pattern requirements

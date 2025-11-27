@@ -24,7 +24,7 @@ export default async function WorkoutRecapPage({ params }: { params: { id: strin
   }
 
   // Verify workout is completed
-  if (!workout.completed) {
+  if (workout.status !== 'completed') {
     // Redirect to workout execution if not completed
     redirect(`/workout/${params.id}`)
   }

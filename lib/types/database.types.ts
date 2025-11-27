@@ -768,7 +768,6 @@ export type Database = {
           email_frequency: Database["public"]["Enums"]["email_frequency"] | null
           email_notifications_enabled: boolean | null
           email_unsubscribed_at: string | null
-          equipment_preferences: Json | null
           experience_years: number | null
           first_name: string | null
           gender: string
@@ -781,6 +780,7 @@ export type Database = {
           preferred_language: string
           preferred_specialization_muscle: string | null
           preferred_split: string | null
+          sport_goal: string | null
           strength_baseline: Json | null
           training_focus: string | null
           training_maxes: Json | null
@@ -812,7 +812,6 @@ export type Database = {
             | null
           email_notifications_enabled?: boolean | null
           email_unsubscribed_at?: string | null
-          equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string
@@ -825,6 +824,7 @@ export type Database = {
           preferred_language?: string
           preferred_specialization_muscle?: string | null
           preferred_split?: string | null
+          sport_goal?: string | null
           strength_baseline?: Json | null
           training_focus?: string | null
           training_maxes?: Json | null
@@ -856,7 +856,6 @@ export type Database = {
             | null
           email_notifications_enabled?: boolean | null
           email_unsubscribed_at?: string | null
-          equipment_preferences?: Json | null
           experience_years?: number | null
           first_name?: string | null
           gender?: string
@@ -869,6 +868,7 @@ export type Database = {
           preferred_language?: string
           preferred_specialization_muscle?: string | null
           preferred_split?: string | null
+          sport_goal?: string | null
           strength_baseline?: Json | null
           training_focus?: string | null
           training_maxes?: Json | null
@@ -1153,7 +1153,6 @@ export type Database = {
           ai_response_id: string | null
           approach_id: string | null
           audio_scripts: Json | null
-          completed: boolean | null
           completed_at: string | null
           created_at: string | null
           cycle_day: number | null
@@ -1182,7 +1181,6 @@ export type Database = {
           ai_response_id?: string | null
           approach_id?: string | null
           audio_scripts?: Json | null
-          completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           cycle_day?: number | null
@@ -1211,7 +1209,6 @@ export type Database = {
           ai_response_id?: string | null
           approach_id?: string | null
           audio_scripts?: Json | null
-          completed?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           cycle_day?: number | null

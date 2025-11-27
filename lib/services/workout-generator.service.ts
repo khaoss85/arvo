@@ -274,7 +274,6 @@ export class WorkoutGeneratorService {
         weakPoints: profile.weak_points || [],
         availableEquipment: allAvailableEquipment,
         customEquipment: customEquipment, // Pass custom equipment metadata
-        equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for backward compatibility
         recentExercises: this.extractRecentExercises(recentWorkouts),
         approachId: profile.approach_id,
         userId,
@@ -439,7 +438,6 @@ export class WorkoutGeneratorService {
       approach_id: profile.approach_id,
       planned_at: new Date().toISOString().split('T')[0],
       exercises: exercisesWithTargets as any,
-      completed: false,
       started_at: null,
       completed_at: null,
       duration_seconds: null,

@@ -64,7 +64,7 @@ export class WorkoutService {
       .from("workouts")
       .select("*")
       .eq("user_id", userId)
-      .eq("completed", false)
+      .neq("status", "completed")
       .gte("planned_at", today)
       .order("planned_at", { ascending: true })
       .limit(limit);
@@ -175,7 +175,7 @@ export class WorkoutService {
    * Mark workout as completed (client-side)
    */
   static async markCompleted(id: string): Promise<Workout> {
-    return this.update(id, { completed: true });
+    return this.update(id, { status: 'completed', completed_at: new Date().toISOString() });
   }
 
   /**
@@ -261,8 +261,8 @@ export class WorkoutService {
       .from("workouts")
       .select("*")
       .eq("user_id", userId)
-      .eq("completed", false)
-      .order("planned_at", { ascending: false })
+      .eq("status", "in_progress")
+      .order("started_at", { ascending: false })
       .limit(1)
       .single();
 
@@ -411,19 +411,18 @@ export class WorkoutService {
     console.log('[WorkoutService] Workout found:', {
       workoutId: id,
       userId: workout.user_id,
-      completed: workout.completed,
+      status: workout.status,
       splitPlanId: workout.split_plan_id,
       approachId: workout.approach_id
     });
 
     // Check if already completed
-    if (workout.completed) {
+    if (workout.status === 'completed') {
       console.warn('[WorkoutService] Workout already marked as completed:', id);
       return { workout, warnings: [] };
     }
 
     const updateData: any = {
-      completed: true,
       completed_at: stats.completedAt ? stats.completedAt.toISOString() : new Date().toISOString(),
       updated_at: new Date().toISOString(),
       status: 'completed',

@@ -38,7 +38,6 @@ export class OnboardingService {
         user_id: userId,
         approach_id: approachId,
         weak_points: weakPoints,
-        equipment_preferences: data.equipmentPreferences as any,
         available_equipment: data.availableEquipment || [],
         strength_baseline: strengthBaseline as any,
         first_name: data.firstName || null,
@@ -64,7 +63,8 @@ export class OnboardingService {
         audio_coaching_enabled: true, // Audio coaching enabled by default
         audio_coaching_autoplay: false, // Autoplay disabled by default
         audio_coaching_speed: 1.0, // Normal speed by default
-        app_mode: 'advanced' // Default to advanced mode
+        app_mode: 'advanced', // Default to advanced mode
+        sport_goal: data.sportGoal || 'none' // Sport-specific goal for approach recommendation
       })
 
       // Generate first AI-powered workout using the collected preferences

@@ -53,7 +53,6 @@ export async function completeOnboardingAction(
         approach_id: data.approachId,
         weak_points: data.weakPoints,
         available_equipment: data.availableEquipment || [],
-        equipment_preferences: data.equipmentPreferences, // Keep for backward compatibility
         strength_baseline: data.strengthBaseline,
         first_name: data.firstName || null,
         gender: data.gender || null,
@@ -150,7 +149,7 @@ async function generateWorkoutWithServerClient(
     .from('workouts')
     .select('*')
     .eq('user_id', userId)
-    .eq('completed', true)
+    .eq('status', 'completed')
     .order('planned_at', { ascending: false })
     .limit(3)
 
@@ -218,7 +217,6 @@ async function generateWorkoutWithServerClient(
     weakPoints: (profile as any).weak_points || [],
     availableEquipment: allAvailableEquipment,
     customEquipment: customEquipment, // Pass custom equipment metadata
-    equipmentPreferences: (profile.equipment_preferences as Record<string, string>) || {}, // Fallback for old data
     recentExercises: extractRecentExercises(recentWorkouts || []),
     approachId: (profile as any).approach_id,
     experienceYears: (profile as any).experience_years,
@@ -290,7 +288,7 @@ async function generateWorkoutWithServerClient(
     approach_id: approachId,
     planned_at: new Date().toISOString().split('T')[0],
     exercises: exercisesWithTargets as any,
-    completed: false,
+    status: 'ready',
     started_at: null,
     completed_at: null,
     duration_seconds: null,
@@ -305,8 +303,7 @@ async function generateWorkoutWithServerClient(
     split_plan_id: null,
     cycle_day: null,
     variation: null,
-    mental_readiness_overall: null,
-    status: 'ready'
+    mental_readiness_overall: null
   }
 
   const { data: workout, error: workoutError } = await supabase
@@ -738,36 +735,6 @@ export async function updateCaloricPhaseAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to update caloric phase'
-    }
-  }
-}
-
-/**
- * Server action to update user's equipment preferences
- * Updates the user_profiles table with equipment preferences for each category
- */
-export async function updateEquipmentPreferencesAction(
-  userId: string,
-  equipmentPreferences: Record<string, string>
-) {
-  try {
-    const supabase = await getSupabaseServerClient()
-
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ equipment_preferences: equipmentPreferences })
-      .eq('user_id', userId)
-
-    if (error) {
-      throw new Error(`Failed to update equipment preferences: ${error.message}`)
-    }
-
-    return { success: true }
-  } catch (error) {
-    console.error('Server action - Update equipment preferences error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to update equipment preferences'
     }
   }
 }

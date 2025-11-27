@@ -60,14 +60,14 @@ export interface HistoricalCycleStats {
  */
 export async function getCurrentCycleStatsAction(userId: string) {
   try {
-    const supabase = await getSupabaseServerClient() as any
+    const supabase = await getSupabaseServerClient()
 
     // Get user profile
-    const { data: profile } = (await supabase
+    const { data: profile } = await supabase
       .from("user_profiles")
       .select("active_split_plan_id, cycles_completed")
       .eq("user_id", userId)
-      .single()) as any
+      .single()
 
     if (!profile?.active_split_plan_id) {
       return {
@@ -77,7 +77,7 @@ export async function getCurrentCycleStatsAction(userId: string) {
     }
 
     // Get split plan for target volume distribution
-    const splitPlan = await SplitPlanService.getActiveServer(userId) as any
+    const splitPlan = await SplitPlanService.getActiveServer(userId)
     if (!splitPlan) {
       return {
         success: false,
@@ -89,16 +89,16 @@ export async function getCurrentCycleStatsAction(userId: string) {
     const currentStats = await CycleStatsService.calculateCycleStats(
       userId,
       profile.active_split_plan_id
-    ) as any
+    )
 
     // Get comparison with previous cycle
     const comparison = await CycleStatsService.getComparisonWithPreviousCycle(
       currentStats,
       userId
-    ) as any
+    )
 
     // Get previous cycle for muscle group comparison
-    const previousCycle = await CycleStatsService.getLastCycleCompletion(userId) as any
+    const previousCycle = await CycleStatsService.getLastCycleCompletion(userId)
 
     return {
       success: true,
@@ -116,11 +116,11 @@ export async function getCurrentCycleStatsAction(userId: string) {
         previousVolumeByMuscleGroup: (previousCycle?.volume_by_muscle_group as Record<string, number>) || null,
       }
     }
-  } catch (error: any) {
-    console.error('Error getting current cycle stats:', error) as any
+  } catch (error) {
+    console.error('Error getting current cycle stats:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get cycle stats'
+      error: error instanceof Error ? error.message : 'Failed to get cycle stats'
     }
   }
 }
@@ -134,14 +134,14 @@ export async function getHistoricalCycleStatsAction(
   limit: number = 6
 ) {
   try {
-    const supabase = await getSupabaseServerClient() as any
+    const supabase = await getSupabaseServerClient()
 
     // Get completed cycles
-    const completedCycles = await CycleStatsService.getAllCycleCompletions(userId) as any
-    const recentCycles = completedCycles.slice(0, limit) as any
+    const completedCycles = await CycleStatsService.getAllCycleCompletions(userId)
+    const recentCycles = completedCycles.slice(0, limit)
 
     // Transform to simplified format
-    const cycles = recentCycles.map((cycle: any) => ({
+    const cycles = recentCycles.map((cycle) => ({
       id: cycle.id,
       cycleNumber: cycle.cycle_number,
       completedAt: cycle.completed_at,
@@ -152,23 +152,23 @@ export async function getHistoricalCycleStatsAction(
       volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
       setsByMuscleGroup: (cycle.sets_by_muscle_group as Record<string, number>) || (cycle.volume_by_muscle_group as Record<string, number>) || {},
       splitType: 'completed', // Could fetch split plan name if needed
-    })) as any
+    }))
 
     // Get current cycle stats
-    const { data: profile } = (await supabase
+    const { data: profile } = await supabase
       .from("user_profiles")
       .select("active_split_plan_id, cycles_completed")
       .eq("user_id", userId)
-      .single()) as any
+      .single()
 
     let currentCycleStats = null
 
     if (profile?.active_split_plan_id) {
-      const splitPlan = await SplitPlanService.getActiveServer(userId) as any
+      const splitPlan = await SplitPlanService.getActiveServer(userId)
       const currentStats = await CycleStatsService.calculateCycleStats(
         userId,
         profile.active_split_plan_id
-      ) as any
+      )
 
       if (splitPlan) {
         currentCycleStats = {
@@ -191,25 +191,25 @@ export async function getHistoricalCycleStatsAction(
         currentCycleStats,
       }
     }
-  } catch (error: any) {
-    console.error('Error getting historical cycle stats:', error) as any
+  } catch (error) {
+    console.error('Error getting historical cycle stats:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get historical cycle stats'
+      error: error instanceof Error ? error.message : 'Failed to get historical cycle stats'
     }
   }
 }
 
 /**
- * Get all completed cycles for a user (for dropdown selection) as any
+ * Get all completed cycles for a user (for dropdown selection)
  */
 export async function getAllCycleCompletionsAction(userId: string) {
   try {
-    const cycles = await CycleStatsService.getAllCycleCompletions(userId) as any
+    const cycles = await CycleStatsService.getAllCycleCompletions(userId)
 
     return {
       success: true,
-      data: cycles.map((cycle: any) => ({
+      data: cycles.map((cycle) => ({
         id: cycle.id,
         cycleNumber: cycle.cycle_number,
         completedAt: cycle.completed_at,
@@ -220,13 +220,13 @@ export async function getAllCycleCompletionsAction(userId: string) {
         volumeByMuscleGroup: (cycle.volume_by_muscle_group as Record<string, number>) || {},
         setsByMuscleGroup: (cycle.sets_by_muscle_group as Record<string, number>) || (cycle.volume_by_muscle_group as Record<string, number>) || {},
         avgMentalReadiness: cycle.avg_mental_readiness,
-      })) as any
+      }))
     }
-  } catch (error: any) {
-    console.error('Error getting all cycle completions:', error) as any
+  } catch (error) {
+    console.error('Error getting all cycle completions:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get cycle completions'
+      error: error instanceof Error ? error.message : 'Failed to get cycle completions'
     }
   }
 }
@@ -236,7 +236,7 @@ export async function getAllCycleCompletionsAction(userId: string) {
  */
 export async function getCycleCompletionByIdAction(cycleId: string) {
   try {
-    const cycle = await CycleStatsService.getCycleCompletion(cycleId) as any
+    const cycle = await CycleStatsService.getCycleCompletion(cycleId)
 
     if (!cycle) {
       return {
@@ -260,11 +260,11 @@ export async function getCycleCompletionByIdAction(cycleId: string) {
         avgMentalReadiness: cycle.avg_mental_readiness,
       }
     }
-  } catch (error: any) {
-    console.error('Error getting cycle completion by ID:', error) as any
+  } catch (error) {
+    console.error('Error getting cycle completion by ID:', error)
     return {
       success: false,
-      error: error?.message || 'Failed to get cycle completion'
+      error: error instanceof Error ? error.message : 'Failed to get cycle completion'
     }
   }
 }

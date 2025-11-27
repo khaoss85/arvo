@@ -638,7 +638,7 @@ export async function analyzeSplitTypeChangeAction(
       .select('id, cycle_day, completed_at, mental_readiness_overall')
       .eq('user_id', userId)
       .eq('split_plan_id', splitPlan.id)
-      .eq('completed', true)
+      .eq('status', 'completed')
       .order('completed_at', { ascending: false })
 
     if (workoutsError) {

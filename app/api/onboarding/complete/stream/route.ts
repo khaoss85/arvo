@@ -18,7 +18,6 @@ interface OnboardingData {
   approachId: string
   weakPoints: string[]
   availableEquipment: string[]
-  equipmentPreferences: Record<string, any>
   strengthBaseline: Record<string, any>
   firstName: string | null
   gender: string | null

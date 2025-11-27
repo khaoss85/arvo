@@ -26,7 +26,11 @@ export const EQUIPMENT_PRESETS: EquipmentPreset[] = [
       // Bodyweight
       "pull_up_bar", "dip_station",
       // Plate-loaded
-      "t_bar_row", "linear_leg_press", "hack_squat"
+      "t_bar_row", "linear_leg_press", "hack_squat",
+      // Resistance Accessories
+      "resistance_bands", "ab_wheel",
+      // Functional
+      "medicine_ball", "battle_ropes", "landmine"
     ]
   },
 
@@ -132,7 +136,28 @@ export const EQUIPMENT_PRESETS: EquipmentPreset[] = [
     description: "Functional fitness with free weights and bodyweight",
     icon: "🎯",
     equipment: [
-      "barbell", "dumbbells", "trap_bar", "kettlebell",
+      "barbell", "dumbbells", "trap_bar", "kettlebells",
+      "pull_up_bar", "dip_station",
+      // Functional
+      "medicine_ball", "battle_ropes", "sled_prowler", "resistance_bands"
+    ]
+  },
+
+  {
+    id: "powerlifting_gym",
+    name: "Powerlifting Gym",
+    description: "Specialized for strength training with accommodating resistance",
+    icon: "🏆",
+    equipment: [
+      // Core lifts
+      "barbell", "dumbbells", "trap_bar",
+      // Racks & Platforms
+      "power_rack", "flat_bench", "adjustable_bench", "deadlift_platform",
+      // Accommodating resistance
+      "chains", "resistance_bands",
+      // Specialty
+      "glute_ham_raise", "reverse_hyper",
+      // Bodyweight
       "pull_up_bar", "dip_station"
     ]
   }

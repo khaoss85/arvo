@@ -741,7 +741,6 @@ export default function ReviewPage() {
               approachId: data.approachId,
               weakPoints: data.weakPoints || [],
               availableEquipment: data.availableEquipment || [],
-              equipmentPreferences: data.equipmentPreferences || {},
               strengthBaseline: data.strengthBaseline || {},
               firstName: data.firstName || null,
               gender: data.gender || null,

@@ -6,7 +6,9 @@ import { UserProfileService } from '@/lib/services/user-profile.service'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
+import { ApproachRecommender, type ApproachRecommendationInput, type ApproachRecommendationOutput } from '@/lib/agents/approach-recommender.agent'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
+import { getUser } from '@/lib/utils/auth.server'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import type { Tables } from '@/lib/types/database.types'
 
@@ -69,7 +71,7 @@ export async function getApproachHistoryAction(userId: string) {
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
           .eq('approach_id', entry.approach_id)
-          .eq('completed', true)
+          .eq('status', 'completed')
 
         return {
           ...entry,
@@ -152,7 +154,7 @@ export async function switchTrainingApproachAction(
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('approach_id', currentApproachId)
-        .eq('completed', true)
+        .eq('status', 'completed')
 
       totalWorkouts = count || 0
 
@@ -301,6 +303,95 @@ export async function switchTrainingApproachAction(
     return {
       success: false,
       error: error?.message || 'Failed to switch training approach'
+    }
+  }
+}
+
+/**
+ * Server action to get AI-driven approach recommendation
+ * Based on user's equipment, experience, goals, and sport-specific requirements
+ */
+export async function getApproachRecommendationAction(
+  input: ApproachRecommendationInput
+): Promise<{
+  success: boolean
+  recommendation?: ApproachRecommendationOutput
+  error?: string
+}> {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const user = await getUser()
+    const language = user ? await getUserLanguage(user.id) : 'en'
+
+    // Fetch all available training approaches
+    const { data: approaches, error: approachesError } = await supabase
+      .from('training_approaches')
+      .select('id, name, category, recommended_level')
+      .order('name')
+
+    if (approachesError) {
+      console.error('[getApproachRecommendationAction] Failed to fetch approaches:', approachesError)
+      return { success: false, error: 'Failed to fetch training approaches' }
+    }
+
+    if (!approaches || approaches.length === 0) {
+      return { success: false, error: 'No training approaches available' }
+    }
+
+    // Initialize the recommender agent
+    const recommender = new ApproachRecommender(supabase)
+
+    // Get recommendation
+    const recommendation = await recommender.recommend(
+      input,
+      approaches.map(a => ({
+        id: a.id,
+        name: a.name,
+        category: a.category,
+        recommendedLevel: a.recommended_level
+      })),
+      language
+    )
+
+    return {
+      success: true,
+      recommendation
+    }
+  } catch (error) {
+    console.error('[getApproachRecommendationAction] Error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get approach recommendation'
+    }
+  }
+}
+
+/**
+ * Server action to update user's sport goal
+ */
+export async function updateSportGoalAction(
+  userId: string,
+  sportGoal: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ sport_goal: sportGoal })
+      .eq('user_id', userId)
+
+    if (error) {
+      console.error('[updateSportGoalAction] Failed to update sport goal:', error)
+      return { success: false, error: 'Failed to update sport goal' }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('[updateSportGoalAction] Error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update sport goal'
     }
   }
 }

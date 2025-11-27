@@ -750,7 +750,7 @@ export class EmailService {
         .from('workouts')
         .select('workout_name, id')
         .eq('user_id', userId)
-        .eq('completed', false)
+        .neq('status', 'completed')
         .order('planned_at', { ascending: true })
         .limit(1)
         .single();
