@@ -18,26 +18,30 @@ export function ModeQuickSwitch({ className }: ModeQuickSwitchProps) {
   const { mode, isLoading } = useAppMode();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Get current mode info
+  // Get current mode info with background colors
   const currentModeInfo = {
     simple: {
       icon: Zap,
-      color: "text-green-500",
+      color: "text-white",
+      bgColor: "bg-green-600 hover:bg-green-700",
       name: t("trainingMode"),
     },
     advanced: {
       icon: Sparkles,
-      color: "text-primary-500",
+      color: "text-white",
+      bgColor: "bg-purple-600 hover:bg-purple-700",
       name: t("advancedMode"),
     },
     coach: {
       icon: Users,
-      color: "text-orange-500",
+      color: "text-white",
+      bgColor: "bg-orange-600 hover:bg-orange-700",
       name: t("coachMode"),
     },
   }[mode] || {
     icon: Sparkles,
-    color: "text-primary-500",
+    color: "text-white",
+    bgColor: "bg-purple-600 hover:bg-purple-700",
     name: t("advancedMode"),
   };
 
@@ -49,8 +53,8 @@ export function ModeQuickSwitch({ className }: ModeQuickSwitchProps) {
         onClick={() => setDrawerOpen(true)}
         disabled={isLoading}
         className={cn(
-          "relative flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all",
-          "bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700",
+          "relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+          currentModeInfo.bgColor,
           "disabled:opacity-50 disabled:cursor-not-allowed",
           className
         )}
@@ -65,10 +69,10 @@ export function ModeQuickSwitch({ className }: ModeQuickSwitchProps) {
           className="flex items-center gap-2"
         >
           <CurrentIcon className={cn("h-4 w-4", currentModeInfo.color)} />
-          <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">
+          <span className="text-white">
             {currentModeInfo.name}
           </span>
-          <RefreshCw className="h-3.5 w-3.5 text-gray-400" />
+          <RefreshCw className="h-3.5 w-3.5 text-white/70" />
         </motion.div>
       </button>
 
