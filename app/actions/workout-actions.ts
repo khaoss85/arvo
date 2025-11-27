@@ -87,3 +87,55 @@ export async function revalidateDashboardCacheAction(): Promise<{ success: boole
   revalidatePath('/simple')
   return { success: true }
 }
+
+/**
+ * Get set logs for multiple workouts (server action)
+ * Used by WorkoutDetailsDrawer to show actual logged weights/reps
+ */
+export async function getSetLogsByWorkoutIdsAction(
+  workoutIds: string[]
+): Promise<{
+  success: boolean
+  data?: Array<{
+    id: string
+    workout_id: string | null
+    exercise_name: string
+    set_number: number | null
+    weight_actual: number | null
+    reps_actual: number | null
+    rir_actual: number | null
+    set_type: string | null
+    skipped: boolean
+  }>
+  error?: string
+}> {
+  try {
+    if (!workoutIds.length) {
+      return { success: true, data: [] }
+    }
+
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('sets_log')
+      .select('id, workout_id, exercise_name, set_number, weight_actual, reps_actual, rir_actual, set_type, skipped')
+      .in('workout_id', workoutIds)
+      .order('set_number', { ascending: true })
+
+    if (error) {
+      console.error('[getSetLogsByWorkoutIdsAction] Failed to fetch set logs:', error)
+      return {
+        success: false,
+        error: 'Failed to fetch set logs'
+      }
+    }
+
+    return { success: true, data: data || [] }
+  } catch (error) {
+    console.error('[getSetLogsByWorkoutIdsAction] Unexpected error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}

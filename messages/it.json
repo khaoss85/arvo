@@ -39,6 +39,14 @@
       "saving": "Salvataggio...",
       "deleting": "Eliminazione...",
       "confirmDelete": "Conferma Eliminazione"
+    },
+    "notAvailable": "N/D",
+    "by": "di",
+    "processing": "Elaborazione...",
+    "units": {
+      "minutes": "min",
+      "week": "settimana",
+      "sets": "serie"
     }
   },
   "navigation": {
@@ -894,6 +902,7 @@
     "summary": {
       "title": "Riepilogo Allenamento",
       "workoutComplete": "Allenamento Completato!",
+      "workoutCompleted": "Allenamento Completato",
       "greatWork": "Ottimo lavoro! Ecco il tuo riepilogo:",
       "mentalReadinessTitle": "Come ti sei sentito mentalmente durante questo allenamento?",
       "mentalReadinessDescription": "Questo ci aiuta a capire il tuo stato mentale generale e ottimizzare gli allenamenti futuri",
@@ -1403,13 +1412,23 @@
         "review": "Revisione"
       }
     },
+    "approachCategories": {
+      "bodybuilding": "Bodybuilding",
+      "powerlifting": "Powerlifting"
+    },
     "approachCard": {
       "by": "di",
       "workingSets": "Serie di Lavoro:",
       "repRanges": "Range Ripetizioni (Composti):",
       "rirTarget": "RIR Target:",
       "progression": "Progressione:",
-      "learnMore": "Scopri di Più"
+      "learnMore": "Scopri di Più",
+      "levels": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzato",
+        "all_levels": "Tutti i Livelli"
+      }
     },
     "approachDetails": {
       "by": "di",
@@ -1967,6 +1986,31 @@
       },
       "note": "Queste informazioni aiutano a personalizzare il tuo allenamento e l'esperienza di coaching AI"
     },
+    "trainingMax": {
+      "title": "Training Max",
+      "description": "Imposta il tuo Training Max (TM) per i programmi di powerlifting. Il TM è tipicamente il 90% del tuo vero 1RM.",
+      "lifts": {
+        "squat": "TM Squat",
+        "benchPress": "TM Panca Piana",
+        "deadlift": "TM Stacco",
+        "overheadPress": "TM Military Press"
+      },
+      "calculateFromE1rm": "Calcola da E1RM",
+      "e1rmCalculatorHelp": "Inserisci la tua migliore serie recente (peso x ripetizioni) per calcolare il Training Max (90% dell'E1RM)",
+      "weight": "Peso (kg)",
+      "reps": "Ripetizioni",
+      "calculate": "Imposta TM",
+      "wendlerTip": "Per Wendler 5/3/1: il Training Max dovrebbe essere il 90% del tuo vero 1RM. Nel dubbio, parti più leggero - il programma funziona meglio quando riesci a fare le ripetizioni!",
+      "buttons": {
+        "save": "Salva Training Max",
+        "saving": "Salvataggio..."
+      },
+      "messages": {
+        "saveSuccess": "Training Max aggiornati con successo!",
+        "saveFailed": "Errore nell'aggiornamento dei Training Max"
+      },
+      "note": "I Training Max sono utilizzati per calcolare i pesi di lavoro nei programmi basati su percentuali come Wendler 5/3/1"
+    },
     "account": {
       "title": "Account",
       "signOut": "Esci",
@@ -2483,7 +2527,30 @@
         "optimization": "Ottimizzazione allenamento",
         "finalize": "Finalizzazione"
       }
-    }
+    },
+    "muscleDistributionTitle": "Analisi Distribuzione Muscolare",
+    "cycleNumber": "Ciclo #{number}",
+    "comparisonModeTarget": "vs Obiettivo",
+    "comparisonModePrevious": "vs Ciclo Precedente",
+    "currentCycleProgress": "Progresso Ciclo Corrente",
+    "muscleGroupDistribution": "Distribuzione Gruppi Muscolari",
+    "historicalCycles": "Cicli Storici",
+    "viewAll": "Visualizza Tutti ({count})",
+    "showLess": "Mostra Meno",
+    "cycleHash": "Ciclo #{number}",
+    "last": "Ultimi",
+    "workouts": "allenamenti",
+    "sets": "serie",
+    "compareWith": "Confronta con",
+    "compareTwoCycles": "Confronta Due Cicli",
+    "cycleA": "Ciclo A",
+    "cycleB": "Ciclo B",
+    "comparingCycles": "Confronto Ciclo #{{a}} vs Ciclo #{{b}}",
+    "volumeTrendTitle": "Tendenza Volume nel Tempo",
+    "selectMuscles": "Seleziona muscoli da visualizzare",
+    "noTrendData": "Servono almeno 2 cicli completati per l'analisi del trend",
+    "isCurrentCycle": "è il tuo ciclo corrente",
+    "sameCycleWarning": "Stai confrontando lo stesso ciclo. Seleziona cicli diversi per un confronto significativo."
   },
   "Analytics": {
     "Metrics": {
@@ -4771,10 +4838,15 @@
     "settings": {
       "title": "Modalità App",
       "description": "Scegli l'esperienza più adatta alle tue esigenze",
-      "simpleMode": "Modalità Semplice",
-      "simpleModeDescription": "Ricevi il workout dal coach ed eseguilo. Perfetto per chi vuole solo allenarsi.",
-      "advancedMode": "Modalità Avanzata",
-      "advancedModeDescription": "Funzionalità complete: AI suggestions, personalizzazione esercizi, analytics dettagliati.",
+      "changeMode": "Cambia Modalità",
+      "selectMode": "Seleziona Modalità",
+      "trainingMode": "Allenamento",
+      "trainingModeDescription": "Ricevi il workout ed eseguilo. Perfetto per chi vuole solo allenarsi.",
+      "advancedMode": "Avanzata",
+      "advancedModeDescription": "Funzionalità complete: AI suggestions, personalizzazione, analytics.",
+      "coachMode": "Coach",
+      "coachModeDescription": "Gestisci i tuoi clienti e crea schede personalizzate.",
+      "comingSoon": "Prossimamente",
       "changingMode": "Cambio modalità..."
     },
     "restTimer": {
@@ -4786,6 +4858,15 @@
       "drinkWater": "Bevi un sorso d'acqua",
       "smallSips": "Piccoli sorsi per non appesantirti",
       "stayHydrated": "Mantieniti idratato!"
+    },
+    "workoutDetails": {
+      "title": "Workout del {date}",
+      "noWorkouts": "Nessun workout in questo giorno",
+      "volume": "Volume (kg)",
+      "sets": "serie",
+      "duration": "Durata",
+      "workout": "Workout",
+      "moreExercises": "altri esercizi"
     }
   }
 }

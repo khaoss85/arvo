@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { MuscleRadarChart } from "@/components/features/analytics/muscle-radar-chart";
 import { ActivityCalendar } from "./activity-calendar";
+import { WorkoutDetailsDrawer, type SetLogData } from "./workout-details-drawer";
 import { Card } from "@/components/ui/card";
 import type { Workout } from "@/lib/types/schemas";
+import { getSetLogsByWorkoutIdsAction } from "@/app/actions/workout-actions";
 
 interface SimpleReportPageProps {
   targetData: Record<string, number>;
@@ -18,6 +21,34 @@ export function SimpleReportPage({
   completedWorkouts,
 }: SimpleReportPageProps) {
   const t = useTranslations("simpleMode.report");
+
+  // Drawer state
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedWorkouts, setSelectedWorkouts] = useState<Workout[]>([]);
+  const [setLogs, setSetLogs] = useState<SetLogData[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+  // Handle day click on calendar
+  const handleDayClick = async (date: Date, workouts: Workout[]) => {
+    setSelectedDate(date);
+    setSelectedWorkouts(workouts);
+    setIsDrawerOpen(true);
+
+    // Load set logs for these workouts
+    if (workouts.length > 0) {
+      setIsLoadingLogs(true);
+      const workoutIds = workouts.map(w => w.id);
+      const result = await getSetLogsByWorkoutIdsAction(workoutIds);
+      if (result.success && result.data) {
+        setSetLogs(result.data);
+      }
+      setIsLoadingLogs(false);
+    } else {
+      setSetLogs([]);
+    }
+  };
+
   // Calculate streak
   const streak = calculateStreak(completedWorkouts);
 
@@ -80,7 +111,12 @@ export function SimpleReportPage({
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           {t("activity")}
         </h2>
-        <ActivityCalendar completedWorkouts={completedWorkouts} />
+        <ActivityCalendar
+          completedWorkouts={completedWorkouts}
+          interactive={true}
+          onDayClick={handleDayClick}
+          selectedDate={selectedDate}
+        />
       </Card>
 
       {/* Stats Summary */}
@@ -105,6 +141,18 @@ export function SimpleReportPage({
           </div>
         </div>
       </Card>
+
+      {/* Workout Details Drawer */}
+      {selectedDate && (
+        <WorkoutDetailsDrawer
+          open={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          workouts={selectedWorkouts}
+          selectedDate={selectedDate}
+          setLogs={setLogs}
+          isLoading={isLoadingLogs}
+        />
+      )}
     </div>
   );
 }

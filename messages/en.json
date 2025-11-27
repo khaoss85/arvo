@@ -39,6 +39,14 @@
       "saving": "Saving...",
       "deleting": "Deleting...",
       "confirmDelete": "Confirm Delete"
+    },
+    "notAvailable": "N/A",
+    "by": "by",
+    "processing": "Processing...",
+    "units": {
+      "minutes": "min",
+      "week": "week",
+      "sets": "sets"
     }
   },
   "navigation": {
@@ -1401,13 +1409,23 @@
         "review": "Review"
       }
     },
+    "approachCategories": {
+      "bodybuilding": "Bodybuilding",
+      "powerlifting": "Powerlifting"
+    },
     "approachCard": {
       "by": "by",
       "workingSets": "Working Sets:",
       "repRanges": "Rep Ranges (Compound):",
       "rirTarget": "RIR Target:",
       "progression": "Progression:",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "levels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced",
+        "all_levels": "All Levels"
+      }
     },
     "approachDetails": {
       "by": "by",
@@ -1965,6 +1983,31 @@
         "invalidHeight": "Height must be between 0 and 300 cm"
       },
       "note": "This information helps personalize your training and AI coaching experience"
+    },
+    "trainingMax": {
+      "title": "Training Maxes",
+      "description": "Set your Training Max (TM) for powerlifting programs. TM is typically 90% of your true 1RM.",
+      "lifts": {
+        "squat": "Squat TM",
+        "benchPress": "Bench Press TM",
+        "deadlift": "Deadlift TM",
+        "overheadPress": "Overhead Press TM"
+      },
+      "calculateFromE1rm": "Calculate from E1RM",
+      "e1rmCalculatorHelp": "Enter your best recent set (weight x reps) to calculate your Training Max (90% of E1RM)",
+      "weight": "Weight (kg)",
+      "reps": "Reps",
+      "calculate": "Set TM",
+      "wendlerTip": "For Wendler 5/3/1: Training Max should be 90% of your true 1RM. When in doubt, start lighter - the program works best when you can hit reps!",
+      "buttons": {
+        "save": "Save Training Maxes",
+        "saving": "Saving..."
+      },
+      "messages": {
+        "saveSuccess": "Training Maxes updated successfully!",
+        "saveFailed": "Failed to update Training Maxes"
+      },
+      "note": "Training Maxes are used to calculate your working weights for percentage-based programs like Wendler 5/3/1"
     },
     "account": {
       "title": "Account",
@@ -4769,10 +4812,15 @@
     "settings": {
       "title": "App Mode",
       "description": "Choose the experience that suits your needs",
-      "simpleMode": "Simple Mode",
-      "simpleModeDescription": "Receive the workout from your coach and execute it. Perfect for those who just want to train.",
-      "advancedMode": "Advanced Mode",
+      "changeMode": "Change Mode",
+      "selectMode": "Select Mode",
+      "trainingMode": "Training",
+      "trainingModeDescription": "Receive the workout and execute it. Perfect for those who just want to train.",
+      "advancedMode": "Advanced",
       "advancedModeDescription": "Full features: AI suggestions, exercise customization, detailed analytics.",
+      "coachMode": "Coach",
+      "coachModeDescription": "Manage your clients and create personalized workout plans.",
+      "comingSoon": "Coming Soon",
       "changingMode": "Changing mode..."
     },
     "restTimer": {
@@ -4784,6 +4832,15 @@
       "drinkWater": "Take a sip of water",
       "smallSips": "Small sips to avoid feeling heavy",
       "stayHydrated": "Stay hydrated!"
+    },
+    "workoutDetails": {
+      "title": "Workout on {date}",
+      "noWorkouts": "No workouts on this day",
+      "volume": "Volume (kg)",
+      "sets": "sets",
+      "duration": "Duration",
+      "workout": "Workout",
+      "moreExercises": "more exercises"
     }
   }
 }
