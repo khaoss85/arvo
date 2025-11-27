@@ -179,6 +179,20 @@ export function SimpleExerciseCard({
                   </div>
                 )}
 
+                {/* Mental Focus / Cue */}
+                {exercise.setGuidance &&
+                  exercise.setGuidance.length > 0 &&
+                  exercise.setGuidance.some((sg) => sg.mentalFocus) && (
+                    <div>
+                      <p className="text-sm font-semibold text-gray-300 mb-2">
+                        🧠 Focus mentale:
+                      </p>
+                      <p className="text-sm text-gray-400 bg-gray-800 p-3 rounded-lg italic">
+                        {exercise.setGuidance.find((sg) => sg.mentalFocus)?.mentalFocus}
+                      </p>
+                    </div>
+                  )}
+
                 {/* Tempo */}
                 {tempo && (
                   <div>
@@ -203,6 +217,18 @@ export function SimpleExerciseCard({
                         <p className="text-xs text-gray-400">Contrazione</p>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* AI Suggestion rationale */}
+                {exercise.currentAISuggestion?.rationale && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-300 mb-2">
+                      🤖 Suggerimento AI:
+                    </p>
+                    <p className="text-sm text-gray-400 bg-gray-800 p-3 rounded-lg">
+                      {exercise.currentAISuggestion.rationale}
+                    </p>
                   </div>
                 )}
 

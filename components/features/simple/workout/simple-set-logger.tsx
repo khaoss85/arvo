@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Check, Loader2 } from "lucide-react";
 import type { ExerciseExecution } from "@/lib/stores/workout-execution.store";
 import { useWorkoutExecutionStore } from "@/lib/stores/workout-execution.store";
+import { useProgressionSuggestion } from "@/lib/hooks/useAI";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
@@ -20,7 +21,8 @@ export function SimpleSetLogger({
   exercise,
   exerciseIndex,
 }: SimpleSetLoggerProps) {
-  const { logSet, workout, startedAt, exercises } = useWorkoutExecutionStore();
+  const { logSet, workout, startedAt, exercises, setAISuggestion } = useWorkoutExecutionStore();
+  const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion();
 
   // Get suggestion or use target values
   const suggestion = exercise.currentAISuggestion;
@@ -51,6 +53,67 @@ export function SimpleSetLogger({
   const totalSets = remainingWarmupSets + exercise.targetSets;
   const currentSetNumber = exercise.completedSets.length + 1;
   const isExerciseComplete = exercise.completedSets.length >= totalSets;
+
+  // Determine exercise type for AI suggestions and hydration
+  const isCompoundExercise =
+    exercise.exerciseName.toLowerCase().includes("squat") ||
+    exercise.exerciseName.toLowerCase().includes("deadlift") ||
+    exercise.exerciseName.toLowerCase().includes("press") ||
+    exercise.exerciseName.toLowerCase().includes("row") ||
+    exercise.exerciseName.toLowerCase().includes("pull");
+
+  // AI progression suggestion after each completed set
+  useEffect(() => {
+    // Only fetch if we have a completed set, no current suggestion, and exercise not complete
+    if (
+      lastSet &&
+      !exercise.currentAISuggestion &&
+      !isExerciseComplete &&
+      workout?.user_id &&
+      workout?.approach_id
+    ) {
+      console.log('[SimpleSetLogger] Fetching AI suggestion for next set', {
+        lastSet: { weight: lastSet.weight, reps: lastSet.reps },
+        currentSetNumber,
+        exerciseName: exercise.exerciseName,
+      });
+      getSuggestion(
+        {
+          userId: workout.user_id,
+          input: {
+            lastSet: {
+              weight: lastSet.weight,
+              reps: lastSet.reps,
+              rir: lastSet.rir || 2, // Default RIR for Simple Mode
+            },
+            setNumber: currentSetNumber,
+            exerciseName: exercise.exerciseName,
+            exerciseType: isCompoundExercise ? "compound" : "isolation",
+            approachId: workout.approach_id,
+          },
+        },
+        {
+          onSuccess: (suggestionResult) => {
+            if (suggestionResult) {
+              console.log('[SimpleSetLogger] AI suggestion received:', {
+                weight: suggestionResult.suggestion.weight,
+                reps: suggestionResult.suggestion.reps,
+                rationale: suggestionResult.rationale,
+              });
+              setAISuggestion(suggestionResult);
+              // Update weight/reps with AI suggestion
+              setWeight(suggestionResult.suggestion.weight);
+              setReps(suggestionResult.suggestion.reps);
+            }
+          },
+          onError: (error) => {
+            console.error('[SimpleSetLogger] AI suggestion error:', error);
+          },
+        }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exercise.completedSets.length]);
 
   const handleLogSet = async () => {
     if (isLogging || isExerciseComplete) return;
@@ -108,14 +171,6 @@ export function SimpleSetLogger({
       </Card>
     );
   }
-
-  // Determine exercise type for hydration (compound if it targets multiple large muscle groups)
-  const isCompoundExercise =
-    exercise.exerciseName.toLowerCase().includes("squat") ||
-    exercise.exerciseName.toLowerCase().includes("deadlift") ||
-    exercise.exerciseName.toLowerCase().includes("press") ||
-    exercise.exerciseName.toLowerCase().includes("row") ||
-    exercise.exerciseName.toLowerCase().includes("pull");
 
   // If resting, show the rest timer instead of the form
   if (isResting) {
