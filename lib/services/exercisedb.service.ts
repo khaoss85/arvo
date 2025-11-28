@@ -648,14 +648,14 @@ export class ExerciseDBService {
     const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
 
     for (const exercise of Array.from(this.cache.exercises.values())) {
-      // Check all searchable fields
-      const nameMatch = exercise.name.toLowerCase().includes(normalizedQuery)
-      const equipmentMatch = exercise.equipment.toLowerCase().includes(normalizedQuery)
-      const targetMatch = exercise.target.toLowerCase().includes(normalizedQuery)
-      const bodyPartMatch = exercise.bodyPart.toLowerCase().includes(normalizedQuery)
-      const secondaryMatch = exercise.secondaryMuscles.some(m =>
-        m.toLowerCase().includes(normalizedQuery)
-      )
+      // Check all searchable fields (with null-safety)
+      const nameMatch = exercise.name?.toLowerCase().includes(normalizedQuery) ?? false
+      const equipmentMatch = exercise.equipment?.toLowerCase().includes(normalizedQuery) ?? false
+      const targetMatch = exercise.target?.toLowerCase().includes(normalizedQuery) ?? false
+      const bodyPartMatch = exercise.bodyPart?.toLowerCase().includes(normalizedQuery) ?? false
+      const secondaryMatch = exercise.secondaryMuscles?.some(m =>
+        m?.toLowerCase().includes(normalizedQuery)
+      ) ?? false
 
       if (nameMatch || equipmentMatch || targetMatch || bodyPartMatch || secondaryMatch) {
         // Assign priority: name > target > equipment/bodyPart/secondary
