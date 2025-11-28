@@ -632,6 +632,7 @@ export class ExerciseDBService {
   /**
    * Search exercises for autocomplete/library mode
    * Returns full exercise objects matching the query
+   * Searches both exercise name AND equipment (e.g., "lat machine", "cable", "barbell")
    */
   static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
     if (!query || query.length < 2) return []
@@ -642,18 +643,28 @@ export class ExerciseDBService {
     const results: ExerciseDBExercise[] = []
 
     for (const exercise of Array.from(this.cache.exercises.values())) {
-      if (exercise.name.toLowerCase().includes(normalizedQuery)) {
+      // Search in both name and equipment
+      if (
+        exercise.name.toLowerCase().includes(normalizedQuery) ||
+        exercise.equipment.toLowerCase().includes(normalizedQuery)
+      ) {
         results.push(exercise)
         if (results.length >= limit) break
       }
     }
 
-    // Sort by relevance: exercises starting with the query come first
+    // Sort by relevance: name matches first, then equipment matches
     results.sort((a, b) => {
+      const aNameMatch = a.name.toLowerCase().includes(normalizedQuery)
+      const bNameMatch = b.name.toLowerCase().includes(normalizedQuery)
+      if (aNameMatch && !bNameMatch) return -1
+      if (!aNameMatch && bNameMatch) return 1
+
       const aStartsWith = a.name.toLowerCase().startsWith(normalizedQuery)
       const bStartsWith = b.name.toLowerCase().startsWith(normalizedQuery)
       if (aStartsWith && !bStartsWith) return -1
       if (!aStartsWith && bStartsWith) return 1
+
       return a.name.localeCompare(b.name)
     })
 
