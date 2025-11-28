@@ -635,9 +635,35 @@ export class ExerciseDBService {
   }
 
   /**
+   * Common search aliases for gym equipment/machine names
+   * Maps user-friendly terms to ExerciseDB terminology
+   */
+  private static readonly SEARCH_ALIASES: Record<string, string[]> = {
+    'lat machine': ['lats', 'leverage machine', 'lat pulldown'],
+    'lat pulldown': ['lats', 'cable', 'pulldown'],
+    'chest press': ['pectorals', 'leverage machine'],
+    'leg press': ['quads', 'leverage machine', 'sled'],
+    'shoulder press': ['delts', 'leverage machine'],
+    'row machine': ['back', 'leverage machine', 'row'],
+    'curl machine': ['biceps', 'leverage machine'],
+    'tricep machine': ['triceps', 'leverage machine'],
+    'fly machine': ['pectorals', 'leverage machine', 'pec deck', 'fly'],
+    'pec deck': ['pectorals', 'leverage machine', 'fly'],
+    'leg curl': ['hamstrings', 'leverage machine'],
+    'leg extension': ['quads', 'leverage machine'],
+    'calf machine': ['calves', 'leverage machine'],
+    'ab machine': ['abs', 'leverage machine'],
+    'smith machine': ['smith'],
+    'cable machine': ['cable'],
+    'pull up': ['pullup', 'pull-up'],
+    'push up': ['pushup', 'push-up'],
+  }
+
+  /**
    * Search exercises for autocomplete/library mode
    * Returns full exercise objects matching the query
    * Searches: name, equipment, target muscle, body part, and secondary muscles
+   * Supports common aliases (e.g., "lat machine" → finds lat exercises)
    */
   static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
     if (!query || query.length < 2) return []
@@ -645,29 +671,52 @@ export class ExerciseDBService {
     await this.initializeCache()
 
     const normalizedQuery = query.toLowerCase().trim()
+
+    // Expand query with aliases if applicable
+    const searchTerms = [normalizedQuery]
+    for (const [alias, expansions] of Object.entries(this.SEARCH_ALIASES)) {
+      if (normalizedQuery.includes(alias) || alias.includes(normalizedQuery)) {
+        searchTerms.push(...expansions)
+      }
+    }
+
     const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
+    const seenIds = new Set<string>()
 
     for (const exercise of Array.from(this.cache.exercises.values())) {
-      // Check all searchable fields (with null-safety)
-      const nameMatch = exercise.name?.toLowerCase().includes(normalizedQuery) ?? false
-      const equipmentMatch = exercise.equipment?.toLowerCase().includes(normalizedQuery) ?? false
-      const targetMatch = exercise.target?.toLowerCase().includes(normalizedQuery) ?? false
-      const bodyPartMatch = exercise.bodyPart?.toLowerCase().includes(normalizedQuery) ?? false
-      const secondaryMatch = exercise.secondaryMuscles?.some(m =>
-        m?.toLowerCase().includes(normalizedQuery)
-      ) ?? false
+      // Skip duplicates
+      if (exercise.id && seenIds.has(exercise.id)) continue
 
-      if (nameMatch || equipmentMatch || targetMatch || bodyPartMatch || secondaryMatch) {
-        // Assign priority: name > target > equipment/bodyPart/secondary
-        let priority = 3
-        if (nameMatch) {
-          priority = exercise.name.toLowerCase().startsWith(normalizedQuery) ? 0 : 1
-        } else if (targetMatch) {
-          priority = 2
+      // Check if any search term matches any field
+      let matched = false
+      let bestPriority = 999
+
+      for (const term of searchTerms) {
+        const nameMatch = exercise.name?.toLowerCase().includes(term) ?? false
+        const equipmentMatch = exercise.equipment?.toLowerCase().includes(term) ?? false
+        const targetMatch = exercise.target?.toLowerCase().includes(term) ?? false
+        const bodyPartMatch = exercise.bodyPart?.toLowerCase().includes(term) ?? false
+        const secondaryMatch = exercise.secondaryMuscles?.some(m =>
+          m?.toLowerCase().includes(term)
+        ) ?? false
+
+        if (nameMatch || equipmentMatch || targetMatch || bodyPartMatch || secondaryMatch) {
+          matched = true
+          // Calculate priority for this match
+          let priority = 3
+          if (nameMatch) {
+            priority = exercise.name?.toLowerCase().startsWith(term) ? 0 : 1
+          } else if (targetMatch) {
+            priority = 2
+          }
+          bestPriority = Math.min(bestPriority, priority)
         }
+      }
 
-        results.push({ exercise, priority })
-        if (results.length >= limit * 2) break // Get extra for sorting
+      if (matched) {
+        if (exercise.id) seenIds.add(exercise.id)
+        results.push({ exercise, priority: bestPriority })
+        if (results.length >= limit * 3) break // Get extra for sorting
       }
     }
 
