@@ -134,11 +134,11 @@ export default function StrengthBaselinePage() {
     <div className="max-w-3xl mx-auto py-8 px-4">
       {/* Back Button */}
       <button
-        onClick={() => router.push('/onboarding/equipment')}
+        onClick={() => router.push('/onboarding/approach')}
         className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span>{t('backToEquipment')}</span>
+        <span>{t('backToApproach')}</span>
       </button>
 
       <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>

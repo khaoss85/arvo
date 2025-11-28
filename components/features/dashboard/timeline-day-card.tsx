@@ -180,10 +180,15 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
     handleGenerate(day)
   }
 
-  const handleGenerationComplete = (workout: any, changes?: InsightInfluencedChange[]) => {
+  const handleGenerationComplete = async (workout: any, changes?: InsightInfluencedChange[]) => {
     // Always reset loading state first
     setIsGenerating(false)
     setShowProgress(false)
+
+    // Small delay to ensure DB consistency after Inngest worker completion
+    // This prevents race conditions where the queue is marked complete
+    // but the workout hasn't fully propagated to the timeline query
+    await new Promise(resolve => setTimeout(resolve, 300))
 
     // Always refresh timeline to show the newly generated workout
     onRefreshTimeline?.()

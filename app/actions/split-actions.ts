@@ -1,5 +1,6 @@
 'use server'
 
+import { unstable_noStore } from 'next/cache'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
@@ -509,8 +510,11 @@ export async function activateSplitPlanAction(
 
 /**
  * Get complete timeline data for split cycle
+ * NOTE: unstable_noStore() disables caching to ensure fresh data when user returns from workout
  */
 export async function getSplitTimelineDataAction(userId: string) {
+  unstable_noStore() // Disable caching for real-time workout status updates
+
   try {
     const timelineData = await SplitTimelineService.getTimelineDataServer(userId)
 

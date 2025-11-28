@@ -43,12 +43,39 @@ Key principles:
 
 Evaluate reordering based on training approach philosophy.
 Provide warnings for suboptimal orders but allow user choice.
-Be practical - gym logistics matter too.`
+Be practical - gym logistics matter too.
+
+CRITICAL: All output text (reasoning, warnings, suggestions, newSequencingRationale, keyChanges)
+MUST be in the language specified in the LANGUAGE INSTRUCTION. Do NOT copy English examples
+verbatim - adapt the content to the target language naturally.`
   }
 
   async validateReorder(input: ReorderValidationInput, targetLanguage?: 'en' | 'it'): Promise<ReorderValidationOutput> {
     const approach = await this.knowledge.loadApproach(input.approachId)
     const context = this.knowledge.formatContextForAI(approach, 'exercise_selection')
+
+    // Language-specific example for warnings
+    const warningExample = targetLanguage === 'it'
+      ? '"Squat pesanti dopo leg extension potrebbero compromettere la forma"'
+      : '"Heavy squats after leg extensions may compromise form"'
+
+    // Language-specific example for keyChanges
+    const keyChangesExample = targetLanguage === 'it'
+      ? '"Isolamento prima del composto", "Catena posteriore prioritizzata"'
+      : '"Isolation before compound", "Posterior chain prioritized"'
+
+    // Language-specific example for rationalePreview
+    const rationalePreviewExample = targetLanguage === 'it'
+      ? `Esempio rationalePreview:
+{
+  "newSequencingRationale": "RDL prima enfatizza la catena posteriore quando sei fresco, poi squat punta ai quad con femorali pre-affaticati per bilanciamento.",
+  "keyChanges": ["Catena posteriore prioritizzata", "Tecnica pre-esaurimento per sviluppo gambe bilanciato"]
+}`
+      : `Example rationalePreview:
+{
+  "newSequencingRationale": "RDL first emphasizes posterior chain when fresh, then squats target quads with pre-fatigued hamstrings for balance.",
+  "keyChanges": ["Posterior chain prioritized", "Pre-exhaustion technique for balanced leg development"]
+}`
 
     const prompt = `Validate this exercise reordering:
 
@@ -70,17 +97,13 @@ Determine:
 - isValid: Can the user proceed?
 - recommendation: "proceed" (good order), "caution" (works but suboptimal), or "not_recommended" (poor choice)
 - reasoning: 2-3 sentences explaining your assessment
-- warnings: Array of specific issues (e.g., "Heavy squats after leg extensions may compromise form")
+- warnings: Array of specific issues (e.g., ${warningExample})
 - suggestions: Array of better orderings if not optimal
 - rationalePreview: Help user understand the NEW workout flow
   - newSequencingRationale: 1-2 sentences (MAX 40 words) explaining WHY the NEW order makes sense or what it emphasizes
-  - keyChanges: Array of 2-3 max changes from original (e.g., "Isolation before compound", "Posterior chain prioritized")
+  - keyChanges: Array of 2-3 max changes from original (e.g., ${keyChangesExample})
 
-Example rationalePreview:
-{
-  "newSequencingRationale": "RDL first emphasizes posterior chain when fresh, then squats target quads with pre-fatigued hamstrings for balance.",
-  "keyChanges": ["Posterior chain prioritized", "Pre-exhaustion technique for balanced leg development"]
-}
+${rationalePreviewExample}
 
 Required JSON structure:
 {

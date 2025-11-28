@@ -46,17 +46,23 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
 
     const initWorkout = async () => {
       try {
-        // If workout is marked as active but has no exercises (page refresh case)
-        if (isActive && exercises.length === 0 && workoutId) {
-          console.log('[WorkoutExecution] Resuming workout (page refresh):', workoutId)
-          await resumeWorkout(workoutId)
+        // ALWAYS use workout.id from props as source of truth
+        // This fixes the stale workoutId bug where navigating to a new workout
+        // would incorrectly try to resume the previous workout from persisted store state
+
+        // Log if we're overriding a stale store state
+        if (workoutId && workoutId !== workout.id) {
+          console.log('[WorkoutExecution] Detected different workout - clearing stale state:', {
+            storedId: workoutId,
+            propsId: workout.id
+          })
         }
-        // If workout is not active, always use resumeWorkout for existing workouts
-        // This ensures we load complete data from DB instead of relying on passed workout object
-        else if (!isActive && workout.id) {
-          console.log('[WorkoutExecution] Loading workout from DB:', workout.id)
-          await resumeWorkout(workout.id)
-        }
+
+        // resumeWorkout handles both:
+        // 1. Fresh loads (no sets in DB)
+        // 2. Page refresh resumption (loads existing sets from DB)
+        console.log('[WorkoutExecution] Initializing workout:', workout.id)
+        await resumeWorkout(workout.id)
 
         hasInitialized.current = true
       } catch (error) {

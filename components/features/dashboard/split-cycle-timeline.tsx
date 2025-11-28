@@ -179,6 +179,16 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [loadTimelineData])
 
+  // Refresh timeline when window gains focus (more reliable for SPA navigation)
+  useEffect(() => {
+    const handleFocus = () => {
+      loadTimelineData()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [loadTimelineData])
+
   // Auto-scroll to current day
   useEffect(() => {
     if (!data || !scrollContainerRef.current) return
@@ -188,8 +198,21 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
       const container = scrollContainerRef.current
       if (!container) return
 
+      // Calculate effective current day (same logic as useMemo below)
+      // If the DB currentCycleDay has a completed workout, scroll to the next workout day
+      const currentDayData = data.days.find(d => d.day === data.currentCycleDay)
+      let scrollToDay = data.currentCycleDay
+      if (currentDayData?.status === 'completed') {
+        const nextWorkoutDay = data.days.find(d =>
+          d.day > data.currentCycleDay &&
+          d.status !== 'completed' &&
+          d.status !== 'rest'
+        )
+        scrollToDay = nextWorkoutDay?.day ?? data.currentCycleDay
+      }
+
       // Find current day card
-      const currentDayIndex = data.currentCycleDay - 1 // 0-indexed
+      const currentDayIndex = scrollToDay - 1 // 0-indexed
 
       // Calculate actual card width based on viewport
       const isMobile = container.clientWidth < 640 // sm breakpoint
@@ -229,6 +252,20 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
   }
 
   const { splitPlan, currentCycleDay, days } = data
+
+  // Calculate the "effective" current day for UI purposes
+  // If current cycle day has a completed workout, find the next workout day
+  // NOTE: Not using useMemo here because this code is after early returns
+  const currentDayData = days.find(d => d.day === currentCycleDay)
+  let effectiveCurrentDay = currentCycleDay
+  if (currentDayData?.status === 'completed') {
+    const nextWorkoutDay = days.find(d =>
+      d.day > currentCycleDay &&
+      d.status !== 'completed' &&
+      d.status !== 'rest'
+    )
+    effectiveCurrentDay = nextWorkoutDay?.day ?? currentCycleDay
+  }
 
   // Calculate progress percentage
   const progressPercentage = (currentCycleDay / splitPlan.cycle_days) * 100
@@ -319,7 +356,7 @@ export function SplitCycleTimeline({ userId, onGenerateWorkout, volumeProgress }
               >
                 <TimelineDayCard
                   dayData={dayData}
-                  isCurrentDay={dayData.day === currentCycleDay}
+                  isCurrentDay={dayData.day === effectiveCurrentDay}
                   userId={userId}
                   onGenerateWorkout={onGenerateWorkout}
                   onRefreshTimeline={loadTimelineData}

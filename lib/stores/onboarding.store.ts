@@ -27,7 +27,7 @@ interface OnboardingState {
     weeklyFrequency?: number // days per week user can train
     specializationMuscle?: string | null // For weak_point_focus split
     // Sport-specific goal for approach recommendation
-    sportGoal?: 'none' | 'running' | 'swimming' | 'cycling' | 'soccer' | 'skiing' | 'hyrox' | 'triathlon' | 'climbing' | 'martial_arts' | 'other'
+    sportGoal?: 'none' | 'running' | 'swimming' | 'cycling' | 'soccer' | 'skiing' | 'hyrox' | 'triathlon' | 'climbing' | 'martial_arts' | 'tennis' | 'basketball' | 'rowing' | 'other'
   }
   setStep: (step: number) => void
   setStepData: <K extends keyof OnboardingState['data']>(

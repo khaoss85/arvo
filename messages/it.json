@@ -1602,6 +1602,9 @@
             "triathlon": "Triathlon",
             "climbing": "Arrampicata",
             "martial_arts": "Arti Marziali",
+            "tennis": "Tennis / Padel",
+            "basketball": "Basket / Pallavolo",
+            "rowing": "Canottaggio / Canoa",
             "other": "Altro Sport"
           }
         },
@@ -1614,7 +1617,7 @@
           "confidence": "Confidenza",
           "alternatives": "Altre Buone Opzioni",
           "chooseManually": "Scegli Manualmente",
-          "useRecommendation": "Usa Questo Approccio",
+          "useRecommendation": "Conferma",
           "getRecommendation": "Ottieni la Mia Raccomandazione"
         }
       },
@@ -1733,7 +1736,7 @@
         "title": "Livello di Forza Base",
         "description": "Aggiungi i tuoi livelli di forza attuali per gli esercizi che conosci. Questo aiuta l'AI a impostare pesi di partenza appropriati.",
         "optional": "Questo è opzionale - l'AI può stimare i pesi di partenza se salti questo passaggio.",
-        "backToEquipment": "Torna all'Attrezzatura",
+        "backToApproach": "Torna all'Approccio",
         "addExercise": {
           "placeholder": "Aggiungi esercizio (es: Panca Piana, Squat, ecc.)",
           "suggestedExercises": "Esercizi Suggeriti",

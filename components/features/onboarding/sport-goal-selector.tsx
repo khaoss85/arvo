@@ -21,6 +21,10 @@ const SPORT_GOALS: Array<{ value: SportGoal; icon: string }> = [
   { value: 'triathlon', icon: '🏆' },
   { value: 'climbing', icon: '🧗' },
   { value: 'martial_arts', icon: '🥋' },
+  { value: 'tennis', icon: '🎾' },
+  { value: 'basketball', icon: '🏀' },
+  { value: 'rowing', icon: '🚣' },
+  { value: 'other', icon: '🏅' },
 ]
 
 export function SportGoalSelector({

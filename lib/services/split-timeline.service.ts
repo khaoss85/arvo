@@ -537,6 +537,12 @@ export class SplitTimelineService {
       return 'in_progress';
     }
 
+    // Check for completed workout BEFORE returning 'current'
+    // This handles the case where a workout was just completed but cycle hasn't advanced yet
+    if (day === currentCycleDay && hasCompletedWorkout) {
+      return 'completed';
+    }
+
     if (day === currentCycleDay) {
       return 'current';
     }

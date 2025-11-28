@@ -1600,6 +1600,9 @@
             "triathlon": "Triathlon",
             "climbing": "Climbing",
             "martial_arts": "Martial Arts",
+            "tennis": "Tennis / Padel",
+            "basketball": "Basketball / Volleyball",
+            "rowing": "Rowing / Canoeing",
             "other": "Other Sport"
           }
         },
@@ -1731,7 +1734,7 @@
         "title": "Strength Baseline",
         "description": "Add your current strength levels for exercises you know. This helps the AI set appropriate starting weights.",
         "optional": "This is optional - the AI can estimate starting weights if you skip this step.",
-        "backToEquipment": "Back to Equipment",
+        "backToApproach": "Back to Approach",
         "addExercise": {
           "placeholder": "Add exercise (e.g., Bench Press, Panca Piana, etc.)",
           "suggestedExercises": "Suggested Exercises",

@@ -73,7 +73,11 @@ Output Structure:
   - Specific to user's weak points or approach
   - Skip isolation/accessory exercises unless specifically relevant
 
-Tone: Direct, knowledgeable, supportive (like a good coach)`
+Tone: Direct, knowledgeable, supportive (like a good coach)
+
+CRITICAL: All output text (overallFocus, exerciseSequencing, connectionRationale, rationale)
+MUST be in the language specified in the LANGUAGE INSTRUCTION. Do NOT copy English examples
+verbatim - adapt the content to the target language naturally.`
   }
 
   async generateRationale(input: WorkoutRationaleInput, targetLanguage?: 'en' | 'it'): Promise<WorkoutRationaleOutput> {
@@ -96,6 +100,45 @@ Tone: Direct, knowledgeable, supportive (like a good coach)`
       ? `Training Experience: ${input.experienceYears} years`
       : ''
 
+    // Language-specific examples for overall focus
+    const overallFocusExample = targetLanguage === 'it'
+      ? 'Esempio: "Questa sessione push punta su petto e tricipiti con volume focalizzato sui composti. Enfatizza la forza nella tua fase di accumulo."'
+      : 'Example: "This push session targets chest and triceps with compound-focused volume. Emphasizes strength in your accumulation phase."'
+
+    // Language-specific examples for exercise sequencing
+    const sequencingExample = targetLanguage === 'it'
+      ? 'Esempio: "Composti pesanti prima quando sei fresco, poi isolamento per volume senza affaticamento del SNC."'
+      : 'Example: "Heavy compound first when fresh, then isolation for volume without CNS fatigue."'
+
+    // Language-specific examples for exercise connections
+    const connectionExamples = targetLanguage === 'it'
+      ? `Esempi:
+     * "Squat affatica i quadricipiti, RDL sposta il focus sulla catena posteriore."
+     * "Panca piana per petto generale, inclinata per debolezza parte alta."
+     * "Stacco hip hinge, rematore aggiunge trazione senza stress lombare."`
+      : `Examples:
+     * "Squat fatigues quads, RDL shifts to posterior chain."
+     * "Flat bench overall chest, incline targets upper weakness."
+     * "Deadlift hip hinge, row adds pulling without lower back stress."`
+
+    // Language-specific examples for exercise rationales
+    const rationaleExamples = targetLanguage === 'it'
+      ? `Esempi di buone motivazioni esercizi:
+- "Squat parziale allungato enfatizza lo stretch dei quad per l'ipertrofia nella tua fase di accumulo."
+- "Panca inclinata bassa punta al petto alto, il tuo punto debole identificato."
+- "Variante ai cavi mantiene tensione riducendo l'affaticamento del SNC durante il deload."
+- "RDL complementa squat con focus catena posteriore, seguendo la priorità composti del tuo approccio."`
+      : `Examples of good exercise rationales:
+- "Lengthened partial squat emphasizes quad stretch for hypertrophy in your accumulation phase."
+- "Low incline press targets upper chest, your identified weak point."
+- "Cable variation maintains tension while reducing CNS fatigue during deload."
+- "RDL complements squats with posterior chain focus, following your approach's compound priority."`
+
+    // Language-specific instruction for avoiding generic statements
+    const avoidGenericInstruction = targetLanguage === 'it'
+      ? 'Evita frasi generiche come "buono per costruire forza" - sii specifico!'
+      : 'Avoid generic statements like "good for building strength" - be specific!'
+
     const prompt = `Generate a concise workout rationale for the following training session:
 
 WORKOUT OVERVIEW:
@@ -117,19 +160,16 @@ REQUIREMENTS:
 1. Overall Focus (1-2 sentences, MAX 40 words):
    - Primary workout goal + key muscle groups
    - Brief connection to mesocycle phase or approach
-   - Example: "This push session targets chest and triceps with compound-focused volume. Emphasizes strength in your accumulation phase."
+   - ${overallFocusExample}
 
 2. Exercise Sequencing (1-2 sentences, MAX 40 words):
    - WHY this order (compound→isolation, fatigue management)
    - Brief connection to weak points or approach
-   - Example: "Heavy compound first when fresh, then isolation for volume without CNS fatigue."
+   - ${sequencingExample}
 
 3. Exercise Connections (1 sentence per transition, MAX 15 words):
    - How exercises connect (fatigue, synergy, contrast)
-   - Examples:
-     * "Squat fatigues quads, RDL shifts to posterior chain."
-     * "Flat bench overall chest, incline targets upper weakness."
-     * "Deadlift hip hinge, row adds pulling without lower back stress."
+   - ${connectionExamples}
 
 4. Exercise Rationales - IMPORTANT: Select only 3-4 KEY exercises:
    - Prioritize compound movements (squats, deadlifts, presses, rows)
@@ -138,13 +178,9 @@ REQUIREMENTS:
    - Be specific to THIS user's context, not generic
    - If workout has 6+ exercises, explain only the 3-4 most important ones
 
-Examples of good exercise rationales:
-- "Lengthened partial squat emphasizes quad stretch for hypertrophy in your accumulation phase."
-- "Low incline press targets upper chest, your identified weak point."
-- "Cable variation maintains tension while reducing CNS fatigue during deload."
-- "RDL complements squats with posterior chain focus, following your approach's compound priority."
+${rationaleExamples}
 
-Avoid generic statements like "good for building strength" - be specific!
+${avoidGenericInstruction}
 
 Return JSON format:
 {

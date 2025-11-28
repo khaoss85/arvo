@@ -132,6 +132,21 @@ For CLIMBING:
 - Focus: Grip strength, pulling power, low bodyweight
 - Avoid: High-volume approaches that add bulk
 
+For RACQUET SPORTS (tennis, padel):
+- Prioritize: Wendler 5/3/1, Kuba Method, RTS/DUP
+- Focus: Rotational core power, shoulder stability/health, lateral agility
+- Avoid: High-volume shoulder work that causes fatigue
+
+For COURT SPORTS (basketball, volleyball):
+- Prioritize: Wendler 5/3/1, RTS/DUP
+- Focus: Vertical jump power, explosive strength, knee/ankle injury prevention
+- Consider: Lower body emphasis, plyometric-compatible programming
+
+For ROWING/CANOEING:
+- Prioritize: Wendler 5/3/1 (minimal fatigue), Heavy Duty (low volume)
+- Focus: Posterior chain strength, pulling power, core endurance
+- Avoid: High-volume approaches that interfere with endurance training
+
 EQUIPMENT REQUIREMENTS:
 ======================
 
@@ -150,8 +165,12 @@ Specialty equipment required:
 - Westside (chains, bands, specialty bars)
 - Sheiko (competition equipment)
 
-OUTPUT FORMAT:
-Return valid JSON with this exact structure. Be concise but informative.`
+<output_rules>
+- Return valid JSON only, no markdown
+- rationale: 2-3 sentences max (≤60 words)
+- alternatives.reason: 1 sentence each (≤20 words)
+- confidence: 0.0-1.0 reflecting match quality
+</output_rules>`
   }
 
   /**
@@ -207,6 +226,9 @@ Equipment Profile:
       triathlon: 'Triathlon - minimal gym time, efficient strength maintenance',
       climbing: 'Rock Climbing - grip strength, pulling power, low bodyweight priority',
       martial_arts: 'Martial Arts - explosive power, functional strength, flexibility',
+      tennis: 'Tennis/Padel/Racquet Sports - rotational power, shoulder stability, lateral agility',
+      basketball: 'Basketball/Volleyball - vertical jump power, explosive speed, lateral movement, knee/ankle injury prevention',
+      rowing: 'Rowing/Canoeing - strong posterior chain, core endurance, pulling power, cardiovascular capacity',
       other: 'Other sport-specific goal'
     }
 
@@ -214,12 +236,10 @@ Equipment Profile:
       ? `\n**SPORT-SPECIFIC CONTEXT:**\nUser is training for: ${sportGoalMap[input.sportGoal] || input.sportGoal}\nThis is a PRIMARY consideration - recommend approaches that support this sport goal.`
       : ''
 
-    const languageInstruction = targetLanguage === 'it'
-      ? '\n**IMPORTANT: ALL text in your response (rationale AND alternatives.reason) MUST be written in Italian.**\n'
-      : ''
+    // Language instruction is handled by BaseAgent.getLanguageInstruction()
+    // No need for duplicate instruction here
 
-    const prompt = `${languageInstruction}
-Recommend the best training approach for this user:
+    const prompt = `Recommend the best training approach for this user:
 
 **USER PROFILE:**
 - Experience Level: ${input.experienceLevel}
@@ -244,9 +264,9 @@ ${availableApproaches.map(a => `- ${a.name} (ID: ${a.id}, Category: ${a.category
 **OUTPUT:**
 Return JSON with:
 - recommendedApproachId: The UUID of the best approach
-- rationale: ${targetLanguage === 'it' ? 'Spiegazione in italiano (2-3 frasi)' : 'Explanation in English (2-3 sentences)'}
-- confidence: 0-1 (how confident you are in this recommendation)
-- alternatives: Array of {approachId, reason} for 1-2 alternatives ${targetLanguage === 'it' ? '(reason in italiano)' : '(if any make sense)'}
+- rationale: 2-3 sentences max (≤60 words). Focus on WHY this approach fits their situation.
+- confidence: 0-1 reflecting match quality between user profile and approach
+- alternatives: Array of {approachId, reason}. Each reason: 1 sentence max (≤20 words).
 
 {
   "recommendedApproachId": "uuid-here",

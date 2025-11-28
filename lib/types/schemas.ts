@@ -16,6 +16,9 @@ export const sportGoalSchema = z.enum([
   'triathlon',      // Triathlon
   'climbing',       // Rock climbing
   'martial_arts',   // Martial arts
+  'tennis',         // Tennis/Padel/Racquet sports
+  'basketball',     // Basketball/Volleyball
+  'rowing',         // Rowing/Canoeing
   'other'           // Other (with notes)
 ]);
 export type SportGoal = z.infer<typeof sportGoalSchema>;

@@ -288,6 +288,8 @@ export class ExerciseDBService {
       'pec fly machine': 'lever seated fly',
       'chest fly machine': 'lever seated fly',
       'pec deck machine': 'lever seated fly',
+      'pec deck machine fly': 'lever seated fly',
+      'pec fly pec deck': 'lever seated fly',
       'seated pec fly': 'lever seated fly',
       'seated chest fly machine': 'lever seated fly',
       'cable fly': 'cable chest fly',

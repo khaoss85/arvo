@@ -115,6 +115,47 @@ export interface ExerciseSelectionOutput {
 }
 
 /**
+ * Exercise Name to Specific Muscle Mapping
+ *
+ * When AI outputs a generic muscle like "shoulders" but the exercise name clearly
+ * indicates a specific head (rear delt, lateral raise, etc.), this mapping
+ * helps infer the correct specific muscle group.
+ *
+ * Format: [regex pattern, inferred muscle]
+ */
+const EXERCISE_NAME_TO_SPECIFIC_MUSCLE: Array<[RegExp, string]> = [
+  // Rear delt / posterior deltoid patterns
+  [/rear.?delt|posterior.?delt|face.?pull|reverse.?fly|reverse.?pec/i, 'shoulders_rear'],
+  // Lateral / side delt patterns
+  [/lateral.?raise|side.?raise|side.?delt|lat.?raise/i, 'shoulders_side'],
+  // Front / anterior delt patterns
+  [/front.?raise|front.?delt|anterior.?delt/i, 'shoulders_front'],
+]
+
+/**
+ * Infer specific shoulder muscle from exercise name when AI outputs generic "shoulders"
+ *
+ * @param exerciseName - The name of the exercise
+ * @param genericMuscle - The muscle output by AI (e.g., "shoulders")
+ * @returns The specific muscle if inferable, otherwise the original muscle
+ */
+function inferSpecificMuscleFromExerciseName(exerciseName: string, genericMuscle: string): string {
+  // Only apply for generic shoulder assignments
+  if (genericMuscle !== 'shoulders') {
+    return genericMuscle
+  }
+
+  for (const [pattern, specificMuscle] of EXERCISE_NAME_TO_SPECIFIC_MUSCLE) {
+    if (pattern.test(exerciseName)) {
+      console.log(`🎯 [MUSCLE_INFERENCE] Inferred "${specificMuscle}" from exercise name "${exerciseName}" (was: "${genericMuscle}")`)
+      return specificMuscle
+    }
+  }
+
+  return genericMuscle
+}
+
+/**
  * Anatomical to Canonical Muscle Mapping
  *
  * Maps anatomically correct muscle names (which AI tends to generate)
@@ -642,6 +683,23 @@ Make user safety and preferences your top priority.`
       || (vars?.sets?.range ? vars.sets.range[1] : null)
     const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
 
+    // Calculate required exercise count per muscle based on targetVolume and setsPerExercise
+    // This ensures AI knows HOW MANY exercises to generate, not just total sets
+    const exerciseCountByMuscle: Record<string, number> = {}
+    if (input.targetVolume && maxSetsPerExercise) {
+      for (const [muscle, targetSets] of Object.entries(input.targetVolume)) {
+        const sets = typeof targetSets === 'number' ? targetSets : 0
+        if (sets > 0) {
+          exerciseCountByMuscle[muscle] = Math.ceil(sets / maxSetsPerExercise)
+        }
+      }
+      console.log('[ExerciseSelector] Calculated exercise count requirements:', {
+        targetVolume: input.targetVolume,
+        setsPerExercise: maxSetsPerExercise,
+        exerciseCountByMuscle
+      })
+    }
+
     // Load user's recently used exercises for naming consistency
     const recentExercises = input.userId
       ? await ExerciseGenerationService.getRecentlyUsedServer(this.supabase, input.userId, 20)
@@ -1094,6 +1152,42 @@ ${Object.entries(input.targetVolume).map(([muscle, sets]) => {
   return `✓ ${muscle}: ${setCount} sets (acceptable range: ${minSets}-${maxSets} sets)`
 }).join('\n')}
 
+${Object.keys(exerciseCountByMuscle).length > 0 ? `
+⚠️⚠️⚠️ CRITICAL VOLUME COMPLIANCE CHECK ⚠️⚠️⚠️
+
+=== 🔢 MANDATORY EXERCISE COUNT REQUIREMENTS ===
+
+The following exercise counts are MANDATORY - not suggestions!
+Your response WILL BE REJECTED if you don't meet these minimums:
+
+${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
+  `🎯 ${muscle}: ${count} exercise${count > 1 ? 's' : ''} MINIMUM (${input.targetVolume?.[muscle] || 0} sets ÷ ${maxSetsPerExercise} sets/ex = ${count})`
+).join('\n')}
+
+⚠️ THIS IS A HARD CONSTRAINT - NO EXCEPTIONS:
+- If a muscle needs 3 exercises, you MUST generate EXACTLY 3 different exercises targeting that muscle as PRIMARY
+- Each exercise MUST have ${maxSetsPerExercise} working sets (from approach methodology)
+- The math MUST work: exercises × sets/exercise = target volume
+
+Example for this workout:
+${Object.entries(exerciseCountByMuscle).slice(0, 2).map(([muscle, count]) => {
+  const targetSets = input.targetVolume?.[muscle] || 0
+  return `- ${muscle}: ${count} exercises × ${maxSetsPerExercise} sets = ${count * (maxSetsPerExercise || 2)} sets (target: ${targetSets})`
+}).join('\n')}
+
+🔒 BEFORE RESPONDING, YOU MUST VERIFY:
+□ Count your exercises for each muscle group listed above
+□ Each muscle meets the MINIMUM exercise count
+□ Total working sets = exercises × ${maxSetsPerExercise}
+
+❌ REJECTION CRITERIA (DO NOT SUBMIT IF ANY APPLY):
+- ANY muscle below minimum exercise count = REJECTED
+- Total volume < target volume = REJECTED
+- Missing a required muscle group entirely = REJECTED
+
+FAILURE TO MEET EXERCISE COUNT = VOLUME UNDER-TARGET = REJECTION
+` : ''}
+
 ${(() => {
   // Generate dynamic advanced technique compatibility rules
   const techniquesRequiringConsecutiveSets = Object.entries(approach.advancedTechniques || {})
@@ -1302,14 +1396,25 @@ IMPORTANT: Only create a new exercise name if the exercise is truly different fr
   </priority_1>
 
   <priority_2 level="MANDATORY" override="priority_3_and_below">
-    <name>🎯 SESSION MUSCLE GROUP COVERAGE</name>
-    <description>Defines WHAT muscles to train</description>
-    <enforcement>You MUST include at least 1 exercise for EACH muscle group in sessionFocus</enforcement>
-    <distribution>Distribute exercises across the approach's structure (phases, techniques, progressions)</distribution>
+    <name>🎯 TARGET VOLUME & EXERCISE COUNT</name>
+    <description>Defines WHAT muscles to train and HOW MANY exercises per muscle</description>
+    <enforcement>
+      You MUST meet target volume for EACH muscle. Given ${maxSetsPerExercise || 'the approach'} sets/exercise:
+      - Calculate required exercises: targetVolume ÷ setsPerExercise = exercise count
+      - Generate AT LEAST that many exercises per muscle as PRIMARY target
+      - Total sets = exercises × setsPerExercise must match targetVolume (±20%)
+    </enforcement>
+    ${Object.keys(exerciseCountByMuscle).length > 0 ? `
+    <exercise_count_requirements>
+${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
+  `      - ${muscle}: ${count} exercises (${input.targetVolume?.[muscle] || 0} sets ÷ ${maxSetsPerExercise} = ${count})`
+).join('\n')}
+    </exercise_count_requirements>
+    ` : ''}
     ${input.sessionFocus ? `
     <required_muscles>${input.sessionFocus.join(', ')}</required_muscles>
     ` : ''}
-    <binding>This defines the workout scope - cannot be ignored</binding>
+    <binding>This is CRITICAL - failure to meet exercise count = volume under-target = REJECTION</binding>
   </priority_2>
 
   <priority_3 level="IMPORTANT" override="priority_4_and_below">
@@ -1339,11 +1444,16 @@ IMPORTANT: Only create a new exercise name if the exercise is truly different fr
 
 <constraint_interaction_rules>
   <complementary_relationship>
-    Approach methodology (Priority 1) and Session muscle coverage (Priority 2) are COMPLEMENTARY, not conflicting:
-    - Priority 1 defines HOW to structure the workout
-    - Priority 2 defines WHAT muscles to include
-    - Apply Priority 1's methodology WHILE ensuring all Priority 2 muscles are covered
-    - If Priority 1 volume constraints make complete Priority 2 coverage impossible, prioritize muscles in the order given
+    Approach methodology (Priority 1) and Target Volume (Priority 2) are COMPLEMENTARY, not conflicting:
+    - Priority 1 defines HOW MANY SETS per exercise (e.g., ${maxSetsPerExercise || 2} sets/exercise)
+    - Priority 2 defines TOTAL VOLUME per muscle (e.g., 8 sets for biceps)
+    - Solution: ADJUST EXERCISE COUNT to satisfy both!
+
+    Example: biceps target = 8 sets, approach = ${maxSetsPerExercise || 2} sets/exercise
+    → Generate ${8 / (maxSetsPerExercise || 2)} biceps exercises × ${maxSetsPerExercise || 2} sets = 8 sets total ✓
+
+    NEVER violate Priority 1 by adding more sets per exercise.
+    INSTEAD, add MORE EXERCISES to reach the volume target.
   </complementary_relationship>
 
   <conflict_resolution_rule>
@@ -2015,41 +2125,57 @@ Required JSON structure:
   private normalizeExerciseMuscles(exercises: SelectedExercise[]): SelectedExercise[] {
     const unknownMuscles = new Set<string>()
     let totalNormalizations = 0
+    let totalInferences = 0
 
     const normalized = exercises.map(ex => {
+      const exerciseName = ex.name || ''
+
       const normalizedPrimaryMuscles = ex.primaryMuscles?.map(muscle => {
         const normalized = muscle.toLowerCase().trim()
+        let result: string
 
         // STEP 1: Try exact match with original format (preserves underscores)
         if (ANATOMICAL_TO_CANONICAL[normalized]) {
           totalNormalizations++
-          return ANATOMICAL_TO_CANONICAL[normalized]
+          result = ANATOMICAL_TO_CANONICAL[normalized]
         }
-
         // STEP 2: Try without plural
-        const withoutPlural = normalized.replace(/s$/, '')
-        if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
-          totalNormalizations++
-          return ANATOMICAL_TO_CANONICAL[withoutPlural]
+        else {
+          const withoutPlural = normalized.replace(/s$/, '')
+          if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
+            totalNormalizations++
+            result = ANATOMICAL_TO_CANONICAL[withoutPlural]
+          }
+          // STEP 3: Try with underscores replaced by spaces (anatomical variations)
+          else {
+            const spacedNormalized = normalized.replace(/_/g, ' ')
+            if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
+              totalNormalizations++
+              result = ANATOMICAL_TO_CANONICAL[spacedNormalized]
+            }
+            // STEP 4: Try spaced version without plural
+            else {
+              const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
+              if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
+                totalNormalizations++
+                result = ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
+              } else {
+                // Unknown muscle - track it
+                unknownMuscles.add(muscle)
+                result = muscle
+              }
+            }
+          }
         }
 
-        // STEP 3: Try with underscores replaced by spaces (anatomical variations)
-        const spacedNormalized = normalized.replace(/_/g, ' ')
-        if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
-          totalNormalizations++
-          return ANATOMICAL_TO_CANONICAL[spacedNormalized]
+        // STEP 5: Infer specific muscle from exercise name if result is generic "shoulders"
+        const inferred = inferSpecificMuscleFromExerciseName(exerciseName, result)
+        if (inferred !== result) {
+          totalInferences++
+          result = inferred
         }
 
-        // STEP 4: Try spaced version without plural
-        const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
-        if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
-          totalNormalizations++
-          return ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
-        }
-
-        // Unknown muscle - track it
-        unknownMuscles.add(muscle)
-        return muscle
+        return result
       })
 
       const normalizedSecondaryMuscles = ex.secondaryMuscles?.map(muscle => {
@@ -2098,6 +2224,7 @@ Required JSON structure:
     console.log('📋 [EXERCISE_SELECTOR] Muscle normalization complete:', {
       totalExercises: exercises.length,
       totalNormalizations: totalNormalizations,
+      totalInferences: totalInferences,
       unknownMusclesCount: unknownMuscles.size,
       unknownMuscles: unknownMuscles.size > 0 ? Array.from(unknownMuscles) : undefined,
       timestamp: new Date().toISOString()

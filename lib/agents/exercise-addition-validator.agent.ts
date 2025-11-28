@@ -110,7 +110,11 @@ Be practical and educational. Users want to understand WHY, not just YES/NO.
 Keep messages gym-friendly: concise, actionable, encouraging.
 Focus on helping users make informed decisions while respecting their autonomy.
 
-IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in isolation.`
+IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in isolation.
+
+CRITICAL: All output text (reasoning, warnings messages, suggestions, workoutBalance descriptions)
+MUST be in the language specified in the LANGUAGE INSTRUCTION. Do NOT copy English examples
+verbatim - adapt the content to the target language naturally.`
   }
 
   async validateExerciseAddition(
@@ -127,6 +131,29 @@ IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in
     if (maxTotalSets && input.currentWorkout.totalSets >= maxTotalSets) {
       // Workout is already at or exceeds max total sets - REJECT immediately
       const exerciseCount = input.currentWorkout.existingExercises.length
+
+      // Localized rejection messages
+      if (targetLanguage === 'it') {
+        return {
+          validation: 'rejected',
+          reasoning: `${approach.name} limita gli allenamenti a massimo ${maxTotalSets} serie totali. L'allenamento attuale ha già ${input.currentWorkout.totalSets} serie.`,
+          warnings: [{
+            type: 'volume_overlap',
+            severity: 'high',
+            message: `Vincolo approccio: ${approach.name} usa max ${maxTotalSets} serie per allenamento`
+          }],
+          suggestions: {
+            alternative: `Considera di sostituire un esercizio esistente invece di aggiungerne uno nuovo`,
+            educationalNote: `${approach.name} enfatizza l'intensità sul volume - mantieni le serie totali entro ${maxTotalSets}`
+          },
+          workoutBalance: {
+            muscleOverlap: `Attuale: ${input.currentWorkout.totalSets} serie su ${exerciseCount} esercizi`,
+            fatigueEstimate: `Già al massimo di serie dell'approccio`,
+            phaseAlignment: `Non puoi aggiungere esercizi senza superare i limiti dell'approccio`
+          }
+        }
+      }
+
       return {
         validation: 'rejected',
         reasoning: `${approach.name} limits workouts to ${maxTotalSets} total sets maximum. Current workout already has ${input.currentWorkout.totalSets} sets.`,
@@ -151,6 +178,19 @@ IMPORTANT: Consider the ENTIRE workout when validating, not just one exercise in
     const approachContext = this.buildApproachContext(approach)
     const workoutContext = this.buildWorkoutContext(input)
     const periodizationContext = this.buildPeriodizationContext(input, approach)
+
+    // Language-specific examples for workoutBalance
+    const workoutBalanceExample = targetLanguage === 'it'
+      ? `"workoutBalance": {
+    "muscleOverlap": "Il petto ha già 4 esercizi, 12 serie totali",
+    "fatigueEstimate": "Fatica totale: da moderata ad alta dopo 5 esercizi",
+    "phaseAlignment": "La fase di accumulo supporta l'aggiunta di esercizi"
+  }`
+      : `"workoutBalance": {
+    "muscleOverlap": "Chest already has 4 exercises, 12 total sets",
+    "fatigueEstimate": "Total fatigue: moderate to high after 5 exercises",
+    "phaseAlignment": "Accumulation phase supports exercise additions"
+  }`
 
     const prompt = `
 === EXERCISE ADDITION REQUEST ===
@@ -205,11 +245,7 @@ Required JSON structure:
     "placement": "string (optional, max 30 words)",
     "educationalNote": "string (optional, max 30 words)"
   },
-  "workoutBalance": {
-    "muscleOverlap": "string (e.g., 'Chest already has 4 exercises, 12 total sets')",
-    "fatigueEstimate": "string (e.g., 'Total fatigue: moderate to high after 5 exercises')",
-    "phaseAlignment": "string (e.g., 'Accumulation phase supports exercise additions')"
-  }
+  ${workoutBalanceExample}
 }
 `
 

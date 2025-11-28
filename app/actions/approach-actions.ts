@@ -8,6 +8,7 @@ import { WorkoutService } from '@/lib/services/workout.service'
 import { SplitPlanner, type SplitPlannerInput } from '@/lib/agents/split-planner.agent'
 import { ApproachRecommender, type ApproachRecommendationInput, type ApproachRecommendationOutput } from '@/lib/agents/approach-recommender.agent'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
+import { getLocale } from 'next-intl/server'
 import { getUser } from '@/lib/utils/auth.server'
 import type { TrainingApproach } from '@/lib/types/schemas'
 import type { Tables } from '@/lib/types/database.types'
@@ -320,8 +321,8 @@ export async function getApproachRecommendationAction(
 }> {
   try {
     const supabase = await getSupabaseServerClient()
-    const user = await getUser()
-    const language = user ? await getUserLanguage(user.id) : 'en'
+    // Use current session locale instead of DB profile - works during onboarding
+    const language = await getLocale() as 'en' | 'it'
 
     // Fetch all available training approaches
     const { data: approaches, error: approachesError } = await supabase

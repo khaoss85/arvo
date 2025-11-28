@@ -160,12 +160,55 @@ export function getMuscleGroupsFromExercise(exerciseName: string): string[] {
 }
 
 /**
+ * Normalizes an English muscle key to Italian display name
+ * Uses MUSCLE_GROUPS constant for consistency
+ */
+function normalizeMuscleName(muscle: string): string | null {
+  const key = muscle.toLowerCase().replace(/[^a-z_]/g, '')
+  // Check if it's already a valid key in MUSCLE_GROUPS
+  if (key in MUSCLE_GROUPS) {
+    return MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS]
+  }
+  // Handle some common variations/synonyms
+  const synonyms: Record<string, keyof typeof MUSCLE_GROUPS> = {
+    'pectorals': 'chest',
+    'pecs': 'chest',
+    'deltoids': 'shoulders',
+    'delts': 'shoulders',
+    'latissimus': 'lats',
+    'trapezius': 'traps',
+    'quadriceps': 'quads',
+    'gluteus': 'glutes',
+    'abdominals': 'abs',
+    'lower_back': 'lowerBack',
+    'lowerback': 'lowerBack',
+  }
+  if (key in synonyms) {
+    return MUSCLE_GROUPS[synonyms[key]]
+  }
+  return null
+}
+
+/**
  * Extracts all target muscle groups from a list of exercises
+ * Prioritizes primaryMuscles array if available, falls back to name parsing
  */
 export function getTargetMuscleGroups(exercises: any[]): string[] {
   const allMuscleGroups = new Set<string>()
 
   for (const exercise of exercises) {
+    // NEW: Prefer primaryMuscles array if available (from AI-generated exercises)
+    if (exercise.primaryMuscles && Array.isArray(exercise.primaryMuscles)) {
+      for (const muscle of exercise.primaryMuscles) {
+        const normalized = normalizeMuscleName(muscle)
+        if (normalized) {
+          allMuscleGroups.add(normalized)
+        }
+      }
+      continue // Skip name parsing if primaryMuscles is available
+    }
+
+    // FALLBACK: Parse exercise name for backward compatibility
     const name = getExerciseName(exercise)
     if (name === 'Unknown Exercise') continue
 
