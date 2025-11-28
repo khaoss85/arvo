@@ -2980,11 +2980,11 @@
       "tagline": "AI personal trainer for gym, optimized for Kuba, Mentzer, FST-7",
       "painPoints": "\"What weight should I use next set?\" · \"Am I overtraining?\" · \"Is this exercise swap equivalent?\"",
       "description": {
-        "main": "15 specialized AI agents. Real-time set-by-set progression. Learns your preferences automatically.",
+        "main": "19 specialized AI agents. Real-time set-by-set progression. Learns your preferences automatically.",
         "methods": "Kuba Method & Mentzer HIT implemented with scientific fidelity."
       },
       "stats": {
-        "agents": "15 AI Agents",
+        "agents": "19 AI Agents",
         "exercises": "1300+ Exercises",
         "methods": "Kuba · Mentzer · FST-7 & More"
       },
@@ -4217,6 +4217,7 @@
       },
       "readFullDisclaimer": "Read full medical disclaimer →",
       "consent": "I have read and understood this medical disclaimer. I acknowledge that Arvo is not medical advice, that AI can make mistakes, and that I am solely responsible for my safety and health. I agree to consult healthcare professionals when appropriate.",
+      "checkboxRequired": "You must confirm to continue",
       "acceptButton": "I Understand and Accept",
       "page": {
         "subtitle": "Important safety information - Please read carefully",
@@ -4980,6 +4981,242 @@
         "confirm": "Delete",
         "deleting": "Deleting...",
         "cancel": "Cancel"
+      }
+    }
+  },
+  "features": {
+    "hero": {
+      "title": {
+        "main": "How Arvo Works",
+        "subtitle": "The Technology Behind Your Training"
+      },
+      "stats": {
+        "agents": "19 AI Agents",
+        "progression": "Set-by-Set Progression",
+        "methodologies": "8+ Methodologies"
+      },
+      "description": "Discover the multi-agent AI architecture that powers your intelligent training. Real-time adaptation, scientific methodology support, and continuous learning.",
+      "cta": {
+        "start": "Start Training",
+        "explore": "Explore Architecture →"
+      }
+    },
+    "agentArchitecture": {
+      "title": "19 AI Agents Working Together",
+      "subtitle": "A multi-agent system where specialized AI agents collaborate to deliver intelligent, adaptive training recommendations.",
+      "layers": {
+        "planning": {
+          "title": "Planning Layer",
+          "description": "Strategic workout architecture and exercise selection"
+        },
+        "execution": {
+          "title": "Execution Layer",
+          "description": "Real-time calculations and coaching delivery"
+        },
+        "validation": {
+          "title": "Validation Layer",
+          "description": "Ensures safe and effective modifications"
+        },
+        "learning": {
+          "title": "Learning Layer",
+          "description": "Pattern detection and preference consolidation"
+        },
+        "specialized": {
+          "title": "Specialized Agents",
+          "description": "Domain-specific intelligence modules"
+        }
+      },
+      "agents": {
+        "splitPlanner": "Plans mesocycle structure based on goals and schedule",
+        "exerciseSelector": "Selects exercises based on equipment, preferences, and muscle targeting",
+        "rationaleGenerator": "Generates human-readable explanations for AI decisions",
+        "progressionCalculator": "Calculates optimal load progression in <500ms",
+        "audioScriptGenerator": "Generates real-time audio coaching scripts",
+        "substitutionValidator": "Validates biomechanical equivalence of exercise swaps",
+        "modificationValidator": "Validates safety of plan modifications",
+        "reorderValidator": "Validates exercise reordering for muscle group sequencing",
+        "insightsGenerator": "Extracts actionable insights from workout notes",
+        "memoryConsolidator": "Consolidates user preferences into long-term memory",
+        "patternDetector": "Detects substitution, timing, volume, and recovery patterns",
+        "equipmentVision": "Recognizes gym equipment via camera",
+        "hydrationAdvisor": "Provides intelligent hydration reminders",
+        "fatigueAnalyzer": "Analyzes real-time fatigue indicators",
+        "injuryPrevention": "Monitors for injury risk factors",
+        "volumeOptimizer": "Optimizes training volume per muscle group",
+        "deloadTrigger": "Triggers automatic deload when needed",
+        "weakPointTargeting": "Identifies and targets weak points",
+        "cycleIntelligence": "Learns from multi-cycle training history"
+      },
+      "totalAgents": "specialized AI agents powering your training"
+    },
+    "setBySet": {
+      "title": "Real-Time Set-by-Set Progression",
+      "subtitle": "After every set, Arvo recalculates your optimal next load considering 6+ factors in under 500ms.",
+      "processing": "AI Processing...",
+      "aiSuggested": "AI Suggested",
+      "responseTime": "Response: <500ms",
+      "factorsTitle": "Factors Considered",
+      "factors": {
+        "rir": {
+          "title": "Reported RIR",
+          "description": "How many reps you had left in reserve on the previous set"
+        },
+        "mentalReadiness": {
+          "title": "Mental Readiness",
+          "description": "Your pre-workout mood and energy assessment"
+        },
+        "performanceTrend": {
+          "title": "Performance Trend",
+          "description": "How your performance compares to previous sessions"
+        },
+        "phase": {
+          "title": "Mesocycle Phase",
+          "description": "Accumulation, intensification, or deload phase"
+        },
+        "restTime": {
+          "title": "Actual Rest Time",
+          "description": "Time elapsed since your last set"
+        },
+        "fatigueAccumulation": {
+          "title": "Fatigue Accumulation",
+          "description": "Cumulative fatigue from earlier exercises"
+        }
+      },
+      "quote": "\"The difference between good and great training is the micro-adjustments. Arvo makes these automatically.\""
+    },
+    "methodologies": {
+      "title": "Training Methods with Scientific Fidelity",
+      "subtitle": "Not generic interpretations. Complete methodology implementations with hundreds of lines of configuration.",
+      "methods": {
+        "kuba": {
+          "description": "Evidence-based parametric training with 2 working sets per exercise at RIR 0-1",
+          "feature1": "MEV/MAV/MRV volume tracking",
+          "feature2": "3-1-1-1 tempo prescription",
+          "feature3": "6-week periodization cycles"
+        },
+        "mentzer": {
+          "description": "High-intensity training to absolute failure with extended recovery periods",
+          "feature1": "1-2 sets to failure per exercise",
+          "feature2": "4-7 day recovery windows",
+          "feature3": "Pre-exhaust supersets"
+        },
+        "fst7": {
+          "description": "Fascia Stretch Training with 7 sets on final exercise for extreme pump",
+          "feature1": "7 consecutive finishing sets",
+          "feature2": "30-45s rest between sets",
+          "feature3": "Posing between sets"
+        },
+        "y3t": {
+          "description": "Undulating periodization across 3-week microcycles with varying rep ranges",
+          "feature1": "Week 1: Heavy (6-8 reps)",
+          "feature2": "Week 2: Hybrid (8-12 reps)",
+          "feature3": "Week 3: Hell (15-30+ reps)"
+        },
+        "mountainDog": {
+          "description": "Multi-faceted hypertrophy with 4-phase workout structure",
+          "feature1": "Pre-activation phase",
+          "feature2": "Explosive & pump phases",
+          "feature3": "Loaded stretching finish"
+        },
+        "dc": {
+          "description": "High-frequency, low-volume training with rest-pause and extreme stretching",
+          "feature1": "Rest-pause sets",
+          "feature2": "Extreme stretching",
+          "feature3": "2-way split rotation"
+        },
+        "phat": {
+          "description": "Power Hypertrophy Adaptive Training combining strength and size work",
+          "feature1": "Power days (3-5 reps)",
+          "feature2": "Hypertrophy days (8-15 reps)",
+          "feature3": "5-day weekly split"
+        },
+        "hst": {
+          "description": "Hypertrophy-Specific Training with strategic deconditioning",
+          "feature1": "Progressive rep reduction",
+          "feature2": "15→10→5→negatives",
+          "feature3": "Strategic deconditioning"
+        }
+      },
+      "fidelityTitle": "Scientific Fidelity",
+      "fidelityDescription": "Each methodology is implemented as a complete knowledge base with hundreds of configuration lines. AI agents query these knowledge engines to make decisions with full methodological fidelity - not simplified approximations."
+    },
+    "volumeTracking": {
+      "title": "Context-Aware Volume Tracking",
+      "subtitle": "Automatic MEV/MAV/MRV calculation per muscle group, adjusted by your methodology and recovery capacity.",
+      "volumeLabel": "Weekly Volume",
+      "landmarksTitle": "Volume Landmarks Explained",
+      "landmarks": {
+        "mev": {
+          "short": "Minimum",
+          "description": "The minimum volume needed to maintain your current muscle mass and strength."
+        },
+        "mav": {
+          "short": "Optimal",
+          "description": "The optimal range for maximum muscle growth - your sweet spot for hypertrophy."
+        },
+        "mrv": {
+          "short": "Maximum",
+          "description": "The maximum volume you can recover from. Exceeding this leads to overtraining."
+        }
+      },
+      "deloadTitle": "3 Automatic Deload Triggers",
+      "deloadTriggers": {
+        "performance": "Performance decline detected across multiple sessions",
+        "fatigue": "Accumulated fatigue markers exceed threshold",
+        "volume": "Approaching MRV limits for multiple muscle groups"
+      },
+      "autoCalculation": "Auto-calculated",
+      "perMuscle": "per muscle group"
+    },
+    "comparison": {
+      "title": "Why Arvo is Different",
+      "subtitle": "Direct comparison with popular fitness apps. See how Arvo's multi-agent AI architecture compares.",
+      "feature": "Feature",
+      "features": {
+        "aiAgents": "AI Agents",
+        "setBySet": "Set-by-Set Progression",
+        "methodologies": "Methodology Support",
+        "rirRpe": "RIR/RPE Tracking",
+        "volumeLandmarks": "MEV/MAV/MRV Tracking",
+        "patternLearning": "Pattern Learning",
+        "substitutions": "AI-Validated Substitutions",
+        "naturalLanguage": "Natural Language Notes",
+        "offline": "Offline Support"
+      },
+      "legend": {
+        "full": "Full support",
+        "partial": "Partial support",
+        "none": "Not supported"
+      },
+      "disclaimer": "Comparison based on publicly available feature information as of 2024. Features may vary by subscription tier."
+    },
+    "technicalSpecs": {
+      "title": "Technical Specifications",
+      "subtitle": "The numbers behind Arvo's intelligent training system. Quotable specs you can verify.",
+      "specs": {
+        "aiAgents": "specialized AI agents",
+        "progressionSpeed": "progression calculation",
+        "contextLevels": "context awareness levels",
+        "kubaConfig": "lines Kuba config",
+        "mentzerConfig": "lines Mentzer config",
+        "volumeTracking": "auto-calculated",
+        "deloadTriggers": "automatic triggers",
+        "patternTypes": "pattern detection types",
+        "confidenceScore": "confidence scoring",
+        "trendAnalysis": "trend analysis"
+      },
+      "quotableTitle": "Quotable Facts",
+      "quotable": {
+        "agents": "19 specialized AI agents working together",
+        "progression": "Set-by-set progression in <500ms",
+        "context": "7-level context awareness hierarchy",
+        "kuba": "362+ lines of Kuba Method configuration",
+        "mentzer": "532+ lines of Mentzer HIT configuration",
+        "volume": "MEV/MAV/MRV auto-calculation per muscle",
+        "deload": "3 automatic deload triggers",
+        "patterns": "4 pattern detection types",
+        "confidence": "Confidence scoring 0.5-1.0",
+        "multicycle": "Multi-cycle trend analysis"
       }
     }
   }

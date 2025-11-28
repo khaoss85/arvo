@@ -3006,11 +3006,11 @@
       "tagline": "AI personal trainer per palestra, ottimizzato per Kuba, Mentzer, FST-7",
       "painPoints": "\"Che peso uso nella prossima serie?\" · \"Mi sto sovrallenando?\" · \"Questo esercizio alternativo è equivalente?\"",
       "description": {
-        "main": "15 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
+        "main": "19 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
         "methods": "Metodo Kuba & Mentzer HIT implementati con fedeltà scientifica."
       },
       "stats": {
-        "agents": "15 Agenti AI",
+        "agents": "19 Agenti AI",
         "exercises": "1300+ Esercizi",
         "methods": "Kuba · Mentzer · FST-7 & Altro"
       },
@@ -4243,6 +4243,7 @@
       },
       "readFullDisclaimer": "Leggi il disclaimer medico completo →",
       "consent": "Ho letto e compreso questo disclaimer medico. Riconosco che Arvo non è un consiglio medico, che l'AI può commettere errori e che sono l'unico responsabile della mia sicurezza e salute. Accetto di consultare professionisti sanitari quando appropriato.",
+      "checkboxRequired": "Devi confermare per continuare",
       "acceptButton": "Ho Capito e Accetto",
       "page": {
         "subtitle": "Importanti informazioni sulla sicurezza - Si prega di leggere attentamente",
@@ -5006,6 +5007,242 @@
         "confirm": "Elimina",
         "deleting": "Eliminazione...",
         "cancel": "Annulla"
+      }
+    }
+  },
+  "features": {
+    "hero": {
+      "title": {
+        "main": "Come Funziona Arvo",
+        "subtitle": "La Tecnologia Dietro il Tuo Allenamento"
+      },
+      "stats": {
+        "agents": "19 Agenti AI",
+        "progression": "Progressione Serie-per-Serie",
+        "methodologies": "8+ Metodologie"
+      },
+      "description": "Scopri l'architettura multi-agente AI che alimenta il tuo allenamento intelligente. Adattamento in tempo reale, supporto metodologico scientifico e apprendimento continuo.",
+      "cta": {
+        "start": "Inizia ad Allenarti",
+        "explore": "Esplora l'Architettura →"
+      }
+    },
+    "agentArchitecture": {
+      "title": "19 Agenti AI che Lavorano Insieme",
+      "subtitle": "Un sistema multi-agente dove agenti AI specializzati collaborano per fornire raccomandazioni di allenamento intelligenti e adattive.",
+      "layers": {
+        "planning": {
+          "title": "Layer di Pianificazione",
+          "description": "Architettura strategica dell'allenamento e selezione esercizi"
+        },
+        "execution": {
+          "title": "Layer di Esecuzione",
+          "description": "Calcoli in tempo reale e coaching vocale"
+        },
+        "validation": {
+          "title": "Layer di Validazione",
+          "description": "Garantisce modifiche sicure ed efficaci"
+        },
+        "learning": {
+          "title": "Layer di Apprendimento",
+          "description": "Rilevamento pattern e consolidamento preferenze"
+        },
+        "specialized": {
+          "title": "Agenti Specializzati",
+          "description": "Moduli di intelligenza domain-specific"
+        }
+      },
+      "agents": {
+        "splitPlanner": "Pianifica la struttura del mesociclo in base a obiettivi e disponibilità",
+        "exerciseSelector": "Seleziona esercizi in base a equipment, preferenze e targeting muscolare",
+        "rationaleGenerator": "Genera spiegazioni leggibili per le decisioni AI",
+        "progressionCalculator": "Calcola la progressione ottimale del carico in <500ms",
+        "audioScriptGenerator": "Genera script di coaching audio in tempo reale",
+        "substitutionValidator": "Valida l'equivalenza biomeccanica delle sostituzioni",
+        "modificationValidator": "Valida la sicurezza delle modifiche al piano",
+        "reorderValidator": "Valida il riordino degli esercizi per sequencing muscolare",
+        "insightsGenerator": "Estrae insight azionabili dalle note allenamento",
+        "memoryConsolidator": "Consolida le preferenze utente nella memoria a lungo termine",
+        "patternDetector": "Rileva pattern di sostituzione, timing, volume e recupero",
+        "equipmentVision": "Riconosce attrezzature palestra via camera",
+        "hydrationAdvisor": "Fornisce promemoria intelligenti per l'idratazione",
+        "fatigueAnalyzer": "Analizza indicatori di fatica in tempo reale",
+        "injuryPrevention": "Monitora fattori di rischio infortunio",
+        "volumeOptimizer": "Ottimizza il volume di allenamento per gruppo muscolare",
+        "deloadTrigger": "Attiva deload automatici quando necessario",
+        "weakPointTargeting": "Identifica e targetizza punti deboli",
+        "cycleIntelligence": "Apprende dalla storia di allenamento multi-ciclo"
+      },
+      "totalAgents": "agenti AI specializzati che alimentano il tuo allenamento"
+    },
+    "setBySet": {
+      "title": "Progressione Serie-per-Serie in Tempo Reale",
+      "subtitle": "Dopo ogni serie, Arvo ricalcola il tuo carico ottimale considerando 6+ fattori in meno di 500ms.",
+      "processing": "Elaborazione AI...",
+      "aiSuggested": "Suggerito da AI",
+      "responseTime": "Risposta: <500ms",
+      "factorsTitle": "Fattori Considerati",
+      "factors": {
+        "rir": {
+          "title": "RIR Riportato",
+          "description": "Quante ripetizioni ti erano rimaste in riserva nella serie precedente"
+        },
+        "mentalReadiness": {
+          "title": "Prontezza Mentale",
+          "description": "La tua valutazione di umore ed energia pre-allenamento"
+        },
+        "performanceTrend": {
+          "title": "Trend Performance",
+          "description": "Come si confronta la tua performance con le sessioni precedenti"
+        },
+        "phase": {
+          "title": "Fase del Mesociclo",
+          "description": "Fase di accumulo, intensificazione o deload"
+        },
+        "restTime": {
+          "title": "Tempo di Recupero Effettivo",
+          "description": "Tempo trascorso dalla tua ultima serie"
+        },
+        "fatigueAccumulation": {
+          "title": "Accumulo Fatica",
+          "description": "Fatica cumulativa dagli esercizi precedenti"
+        }
+      },
+      "quote": "\"La differenza tra un buon allenamento e uno eccellente sono i micro-aggiustamenti. Arvo li fa automaticamente.\""
+    },
+    "methodologies": {
+      "title": "Metodi di Allenamento con Fedeltà Scientifica",
+      "subtitle": "Non interpretazioni generiche. Implementazioni complete delle metodologie con centinaia di linee di configurazione.",
+      "methods": {
+        "kuba": {
+          "description": "Allenamento parametrico evidence-based con 2 serie di lavoro per esercizio a RIR 0-1",
+          "feature1": "Tracking volume MEV/MAV/MRV",
+          "feature2": "Prescrizione tempo 3-1-1-1",
+          "feature3": "Cicli di periodizzazione 6 settimane"
+        },
+        "mentzer": {
+          "description": "Allenamento ad alta intensità fino al cedimento assoluto con periodi di recupero estesi",
+          "feature1": "1-2 serie a cedimento per esercizio",
+          "feature2": "Finestre di recupero 4-7 giorni",
+          "feature3": "Superserie pre-exhaust"
+        },
+        "fst7": {
+          "description": "Fascia Stretch Training con 7 serie sull'esercizio finale per pump estremo",
+          "feature1": "7 serie consecutive finali",
+          "feature2": "30-45s recupero tra serie",
+          "feature3": "Posing tra le serie"
+        },
+        "y3t": {
+          "description": "Periodizzazione ondulante su microcicli di 3 settimane con range rep variabili",
+          "feature1": "Settimana 1: Pesante (6-8 rep)",
+          "feature2": "Settimana 2: Ibrido (8-12 rep)",
+          "feature3": "Settimana 3: Inferno (15-30+ rep)"
+        },
+        "mountainDog": {
+          "description": "Ipertrofia multi-sfaccettata con struttura allenamento a 4 fasi",
+          "feature1": "Fase di pre-attivazione",
+          "feature2": "Fasi esplosive e pump",
+          "feature3": "Stretching caricato finale"
+        },
+        "dc": {
+          "description": "Allenamento ad alta frequenza, basso volume con rest-pause e stretching estremo",
+          "feature1": "Serie rest-pause",
+          "feature2": "Stretching estremo",
+          "feature3": "Rotazione split a 2 vie"
+        },
+        "phat": {
+          "description": "Power Hypertrophy Adaptive Training che combina lavoro di forza e massa",
+          "feature1": "Giorni power (3-5 rep)",
+          "feature2": "Giorni ipertrofia (8-15 rep)",
+          "feature3": "Split settimanale 5 giorni"
+        },
+        "hst": {
+          "description": "Hypertrophy-Specific Training con decondizionamento strategico",
+          "feature1": "Riduzione progressiva rep",
+          "feature2": "15→10→5→negative",
+          "feature3": "Decondizionamento strategico"
+        }
+      },
+      "fidelityTitle": "Fedeltà Scientifica",
+      "fidelityDescription": "Ogni metodologia è implementata come knowledge base completa con centinaia di linee di configurazione. Gli agenti AI interrogano questi motori di conoscenza per prendere decisioni con piena fedeltà metodologica - non approssimazioni semplificate."
+    },
+    "volumeTracking": {
+      "title": "Tracking Volume Context-Aware",
+      "subtitle": "Calcolo automatico MEV/MAV/MRV per gruppo muscolare, aggiustato in base alla tua metodologia e capacità di recupero.",
+      "volumeLabel": "Volume Settimanale",
+      "landmarksTitle": "Volume Landmarks Spiegati",
+      "landmarks": {
+        "mev": {
+          "short": "Minimo",
+          "description": "Il volume minimo necessario per mantenere la tua massa muscolare e forza attuali."
+        },
+        "mav": {
+          "short": "Ottimale",
+          "description": "Il range ottimale per la massima crescita muscolare - il tuo sweet spot per l'ipertrofia."
+        },
+        "mrv": {
+          "short": "Massimo",
+          "description": "Il volume massimo da cui puoi recuperare. Superarlo porta al sovrallenamento."
+        }
+      },
+      "deloadTitle": "3 Trigger Automatici per Deload",
+      "deloadTriggers": {
+        "performance": "Calo performance rilevato su più sessioni",
+        "fatigue": "Marker di fatica accumulata oltre soglia",
+        "volume": "Avvicinamento ai limiti MRV per più gruppi muscolari"
+      },
+      "autoCalculation": "Calcolato automaticamente",
+      "perMuscle": "per gruppo muscolare"
+    },
+    "comparison": {
+      "title": "Perché Arvo è Diverso",
+      "subtitle": "Confronto diretto con le app fitness più popolari. Scopri come si confronta l'architettura AI multi-agente di Arvo.",
+      "feature": "Funzionalità",
+      "features": {
+        "aiAgents": "Agenti AI",
+        "setBySet": "Progressione Serie-per-Serie",
+        "methodologies": "Supporto Metodologie",
+        "rirRpe": "Tracking RIR/RPE",
+        "volumeLandmarks": "Tracking MEV/MAV/MRV",
+        "patternLearning": "Apprendimento Pattern",
+        "substitutions": "Sostituzioni Validate da AI",
+        "naturalLanguage": "Note in Linguaggio Naturale",
+        "offline": "Supporto Offline"
+      },
+      "legend": {
+        "full": "Supporto completo",
+        "partial": "Supporto parziale",
+        "none": "Non supportato"
+      },
+      "disclaimer": "Confronto basato su informazioni pubbliche disponibili al 2024. Le funzionalità possono variare per livello di abbonamento."
+    },
+    "technicalSpecs": {
+      "title": "Specifiche Tecniche",
+      "subtitle": "I numeri dietro il sistema di allenamento intelligente di Arvo. Specifiche citabili e verificabili.",
+      "specs": {
+        "aiAgents": "agenti AI specializzati",
+        "progressionSpeed": "calcolo progressione",
+        "contextLevels": "livelli context awareness",
+        "kubaConfig": "linee config Kuba",
+        "mentzerConfig": "linee config Mentzer",
+        "volumeTracking": "calcolato automaticamente",
+        "deloadTriggers": "trigger automatici",
+        "patternTypes": "tipi rilevamento pattern",
+        "confidenceScore": "scoring confidenza",
+        "trendAnalysis": "analisi trend"
+      },
+      "quotableTitle": "Fatti Citabili",
+      "quotable": {
+        "agents": "19 agenti AI specializzati che lavorano insieme",
+        "progression": "Progressione serie-per-serie in <500ms",
+        "context": "Gerarchia context awareness a 7 livelli",
+        "kuba": "362+ linee di configurazione Kuba Method",
+        "mentzer": "532+ linee di configurazione Mentzer HIT",
+        "volume": "Calcolo automatico MEV/MAV/MRV per muscolo",
+        "deload": "3 trigger automatici per deload",
+        "patterns": "4 tipi di rilevamento pattern",
+        "confidence": "Scoring confidenza 0.5-1.0",
+        "multicycle": "Analisi trend multi-ciclo"
       }
     }
   }

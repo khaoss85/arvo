@@ -146,19 +146,28 @@ export function MedicalDisclaimerModal({
             </Link>
           </div>
 
-          {/* Consent Checkbox */}
-          <div className="flex items-start gap-3 pt-4 border-t">
-            <Checkbox
-              id="medical-disclaimer-consent"
-              checked={agreed}
-              onCheckedChange={(checked) => setAgreed(checked === true)}
-            />
-            <label
-              htmlFor="medical-disclaimer-consent"
-              className="text-sm leading-relaxed cursor-pointer select-none"
-            >
-              {t("consent")}
-            </label>
+          {/* Consent Checkbox - Highlighted for visibility */}
+          <div className="p-4 mt-2 bg-orange-50 dark:bg-orange-950/30 border-2 border-orange-300 dark:border-orange-700 rounded-lg">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="medical-disclaimer-consent"
+                checked={agreed}
+                onCheckedChange={(checked) => setAgreed(checked === true)}
+                className="mt-0.5 h-5 w-5 border-2 border-orange-400 dark:border-orange-500 data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600"
+              />
+              <label
+                htmlFor="medical-disclaimer-consent"
+                className="text-sm leading-relaxed cursor-pointer select-none font-medium text-orange-900 dark:text-orange-100"
+              >
+                {t("consent")}
+              </label>
+            </div>
+            {!agreed && (
+              <p className="mt-2 text-xs text-orange-700 dark:text-orange-300 flex items-center gap-1">
+                <AlertTriangle className="w-3 h-3" />
+                {t("checkboxRequired") || "Devi confermare per continuare"}
+              </p>
+            )}
           </div>
         </div>
 
