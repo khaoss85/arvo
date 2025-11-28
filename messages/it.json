@@ -847,7 +847,17 @@
           "validating": "Validazione...",
           "validate": "Valida",
           "textMode": "Testo",
-          "photoMode": "Foto"
+          "photoMode": "Foto",
+          "libraryMode": "Libreria",
+          "recognizing": "Riconoscimento attrezzatura...",
+          "detected": "Rilevato",
+          "photoError": "Impossibile identificare l'attrezzatura. Riprova o usa l'input testuale."
+        },
+        "library": {
+          "searchPlaceholder": "Cerca esercizi...",
+          "noResults": "Nessun esercizio trovato",
+          "hint": "Digita almeno 2 caratteri per cercare",
+          "selectedFrom": "Selezionato dalla libreria esercizi"
         },
         "validation": {
           "caution": "⚠️ Attenzione: {rationale}",
@@ -2993,6 +3003,7 @@
         "aiCoach": "AI Coach",
         "subtitle": "Che Ragiona Come un Esperto"
       },
+      "tagline": "AI personal trainer per palestra, ottimizzato per Kuba, Mentzer, FST-7",
       "painPoints": "\"Che peso uso nella prossima serie?\" · \"Mi sto sovrallenando?\" · \"Questo esercizio alternativo è equivalente?\"",
       "description": {
         "main": "15 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
@@ -3012,6 +3023,38 @@
         "powered": "Basato su modelli di ragionamento GPT-5. Rilevamento di pattern. Aggiustamenti biomeccanici del peso.",
         "promise": "Zero supposizioni. Solo progressione."
       }
+    },
+    "whoIsArvoFor": {
+      "title": "Per chi è Arvo?",
+      "subtitle": "AI personal trainer ottimizzato per diversi livelli e obiettivi di allenamento",
+      "cards": {
+        "intermediate": {
+          "title": "Lifter Intermedi e Avanzati",
+          "subtitle": "Che seguono metodologie strutturate",
+          "feature1": "Praticanti del Metodo Kuba, Mentzer HIT, FST-7, Y3T",
+          "feature2": "Tracking del volume MEV/MAV/MRV",
+          "feature3": "Progressione intelligente serie dopo serie"
+        },
+        "competitive": {
+          "title": "Bodybuilder Agonisti",
+          "subtitle": "IFBB, NPC e aspiranti competitor",
+          "feature1": "Periodizzazione precisa dei mesocicli",
+          "feature2": "AI workout coach disponibile 24/7",
+          "feature3": "Apprendimento da stagione a stagione"
+        },
+        "beginners": {
+          "title": "Chi Vuole Risultati Senza Complicazioni",
+          "subtitle": "Non serve una laurea in scienze motorie",
+          "feature1": "L'AI decide tutto per te",
+          "feature2": "Presentati in palestra e segui l'app",
+          "feature3": "Risultati senza complessità"
+        }
+      },
+      "badges": {
+        "popular": "Più Popolare",
+        "forYou": "Per Te"
+      },
+      "seoText": "Arvo è l'app AI personal trainer per palestra che si adatta al tuo livello. Che tu sia un lifter intermedio che segue il Metodo Kuba, un bodybuilder agonista che traccia MEV/MAV/MRV, o un principiante che vuole risultati senza complicazioni - l'AI workout coach di Arvo ti copre con indicazioni serie dopo serie."
     },
     "aiShowcase": {
       "title": {
@@ -4507,6 +4550,7 @@
         "championshipLevel": "Coaching da Campionato",
         "subtitle": "Sempre Disponibile"
       },
+      "tagline": "AI workout coach per bodybuilding, costruito per lifter intermedi e avanzati",
       "painPoints": "\"Che progressione devo usare?\" · \"Sto spingendo troppo?\" · \"Come strutturare il mesociclo?\"",
       "description": {
         "main": "Sistemi di coaching intelligenti che comprendono sovraccarico progressivo, periodizzazione e recupero. Costruito per atleti seri.",
@@ -4671,6 +4715,7 @@
         "appThinks": "L'app che pensa per te",
         "subtitle": "Sempre nella tua tasca"
       },
+      "tagline": "AI personal trainer per principianti - nessuna esperienza richiesta",
       "painPoints": "\"Non so cosa fare in palestra\" · \"Le app sono troppo complicate\" · \"Non vedo risultati\"",
       "description": {
         "main": "Niente da studiare. Niente da decidere. Solo risultati.",

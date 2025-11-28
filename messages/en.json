@@ -847,7 +847,17 @@
           "validating": "Validating...",
           "validate": "Validate",
           "textMode": "Text",
-          "photoMode": "Photo"
+          "photoMode": "Photo",
+          "libraryMode": "Library",
+          "recognizing": "Recognizing equipment...",
+          "detected": "Detected",
+          "photoError": "Failed to identify equipment. Please try again or use text input."
+        },
+        "library": {
+          "searchPlaceholder": "Search exercises...",
+          "noResults": "No exercises found",
+          "hint": "Type at least 2 characters to search",
+          "selectedFrom": "Selected from exercise library"
         },
         "validation": {
           "caution": "⚠️ Caution: {rationale}",
@@ -2967,6 +2977,7 @@
         "aiCoach": "AI Coach",
         "subtitle": "That Reasons Like an Expert"
       },
+      "tagline": "AI personal trainer for gym, optimized for Kuba, Mentzer, FST-7",
       "painPoints": "\"What weight should I use next set?\" · \"Am I overtraining?\" · \"Is this exercise swap equivalent?\"",
       "description": {
         "main": "15 specialized AI agents. Real-time set-by-set progression. Learns your preferences automatically.",
@@ -2986,6 +2997,38 @@
         "powered": "Powered by GPT-5 reasoning models. Pattern detection. Biomechanical weight adjustments.",
         "promise": "Zero guesswork. Only progression."
       }
+    },
+    "whoIsArvoFor": {
+      "title": "Who is Arvo for?",
+      "subtitle": "AI personal trainer optimized for different training levels and goals",
+      "cards": {
+        "intermediate": {
+          "title": "Intermediate & Advanced Lifters",
+          "subtitle": "Following structured methodologies",
+          "feature1": "Kuba Method, Mentzer HIT, FST-7, Y3T practitioners",
+          "feature2": "MEV/MAV/MRV volume tracking",
+          "feature3": "Set-by-set intelligent progression"
+        },
+        "competitive": {
+          "title": "Competitive Bodybuilders",
+          "subtitle": "IFBB, NPC & aspiring competitors",
+          "feature1": "Precise mesocycle periodization",
+          "feature2": "24/7 AI workout coach availability",
+          "feature3": "Season-to-season learning"
+        },
+        "beginners": {
+          "title": "Gym-Goers Who Want Results",
+          "subtitle": "No science degree required",
+          "feature1": "AI decides everything for you",
+          "feature2": "Just show up and follow the app",
+          "feature3": "Results without the complexity"
+        }
+      },
+      "badges": {
+        "popular": "Most Popular",
+        "forYou": "For You"
+      },
+      "seoText": "Arvo is the AI personal trainer app for gym that adapts to your level. Whether you're an intermediate lifter following Kuba Method, a competitive bodybuilder tracking MEV/MAV/MRV, or a beginner who just wants results without complexity - Arvo's AI workout coach has you covered with set-by-set guidance."
     },
     "aiShowcase": {
       "title": {
@@ -4481,6 +4524,7 @@
         "championshipLevel": "Championship-Level Coaching",
         "subtitle": "Always Available"
       },
+      "tagline": "AI workout coach for bodybuilding, built for intermediate and advanced lifters",
       "painPoints": "\"What progression should I use?\" · \"Am I pushing too hard?\" · \"How do I structure my mesocycle?\"",
       "description": {
         "main": "Intelligent coaching systems that understand progressive overload, periodization, and recovery. Built for serious athletes.",
@@ -4645,6 +4689,7 @@
         "appThinks": "The app that thinks for you",
         "subtitle": "Always in your pocket"
       },
+      "tagline": "AI personal trainer for beginners - no experience needed",
       "painPoints": "\"I don't know what to do at the gym\" · \"Apps are too complicated\" · \"I don't see results\"",
       "description": {
         "main": "Nothing to study. Nothing to decide. Just results.",
