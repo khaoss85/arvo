@@ -74,6 +74,11 @@ export default async function SettingsPage() {
     redirect("/onboarding/approach")
   }
 
+  // Redirect to simple settings if user is in simple mode
+  if (profile.app_mode === 'simple') {
+    redirect('/simple/settings')
+  }
+
   // Get current training approach
   const currentApproach = profile.approach_id
     ? await TrainingApproachService.getAllServer().then(
