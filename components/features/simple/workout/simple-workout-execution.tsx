@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check, ChevronRight } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import type { Workout } from "@/lib/types/schemas";
 import {
   useWorkoutExecutionStore,
@@ -31,7 +31,6 @@ export function SimpleWorkoutExecution({
     currentExerciseIndex,
     startWorkout,
     resumeWorkout,
-    nextExercise,
     goToExercise,
   } = useWorkoutExecutionStore();
 
@@ -199,19 +198,6 @@ export function SimpleWorkoutExecution({
           )}
         </AnimatePresence>
 
-        {/* Next Exercise Button */}
-        {currentExercise && currentExerciseIndex < exercises.length - 1 && (
-          <div className="mt-6">
-            <Button
-              onClick={nextExercise}
-              variant="outline"
-              className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
-            >
-              Prossimo esercizio
-              <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        )}
       </main>
     </div>
   );

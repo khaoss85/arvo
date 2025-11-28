@@ -58,7 +58,7 @@ export default function GoalsPage() {
       return
     }
 
-    setStep(4) // Goals is step 4 for intermediate/advanced
+    setStep(3) // Goals is step 3 for intermediate/advanced
   }, [setStep, experienceLevel, router])
 
   // AI suggestion
@@ -79,7 +79,7 @@ export default function GoalsPage() {
 
     setStepData('trainingObjective', selectedObjective)
     setStepData('injuries', injuries || null)
-    completeStep(4)
+    completeStep(3)
     router.push('/onboarding/split')
   }
 

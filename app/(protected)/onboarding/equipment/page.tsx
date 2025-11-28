@@ -14,8 +14,8 @@ export default function EquipmentPreferencesPage() {
   const { data, setStepData, completeStep, setStep } = useOnboardingStore()
 
   const experienceLevel = data.experienceLevel
-  // Calculate step number dynamically: 4 for beginner, 7 for intermediate/advanced
-  const currentStepNumber = experienceLevel === 'beginner' ? 4 : 7
+  // Calculate step number dynamically: 4 for beginner, 6 for intermediate/advanced
+  const currentStepNumber = experienceLevel === 'beginner' ? 4 : 6
 
   useEffect(() => {
     setStep(currentStepNumber)
@@ -32,7 +32,8 @@ export default function EquipmentPreferencesPage() {
     if (experienceLevel === 'beginner') {
       router.push('/onboarding/review')
     } else {
-      router.push('/onboarding/strength')
+      // Approach selection moved here so AI has full context (equipment, goals, etc.)
+      router.push('/onboarding/approach')
     }
   }
 

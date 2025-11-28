@@ -35,7 +35,7 @@ export default function SplitSelectionPage() {
   const experienceLevel = data.experienceLevel
 
   // Calculate correct step number based on experience level
-  const currentStepNumber = experienceLevel === 'beginner' ? 3 : 5
+  const currentStepNumber = experienceLevel === 'beginner' ? 3 : 4
 
   useEffect(() => {
     setStep(currentStepNumber)

@@ -54,13 +54,9 @@ export default function ExperienceLevelPage() {
     completeStep(1)
 
     // Route based on experience level
-    // Beginners skip approach selection (we'll auto-assign a default one)
-    // Intermediate/Advanced continue to approach or profile
-    if (selectedLevel === 'beginner') {
-      router.push('/onboarding/profile')
-    } else {
-      router.push('/onboarding/approach')
-    }
+    // All levels now go to profile first
+    // Approach selection moved later in the flow (after equipment) for better AI recommendations
+    router.push('/onboarding/profile')
   }
 
   return (

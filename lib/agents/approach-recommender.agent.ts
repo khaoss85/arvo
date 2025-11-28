@@ -214,7 +214,11 @@ Equipment Profile:
       ? `\n**SPORT-SPECIFIC CONTEXT:**\nUser is training for: ${sportGoalMap[input.sportGoal] || input.sportGoal}\nThis is a PRIMARY consideration - recommend approaches that support this sport goal.`
       : ''
 
-    const prompt = `
+    const languageInstruction = targetLanguage === 'it'
+      ? '\n**IMPORTANT: ALL text in your response (rationale AND alternatives.reason) MUST be written in Italian.**\n'
+      : ''
+
+    const prompt = `${languageInstruction}
 Recommend the best training approach for this user:
 
 **USER PROFILE:**
@@ -242,7 +246,7 @@ Return JSON with:
 - recommendedApproachId: The UUID of the best approach
 - rationale: ${targetLanguage === 'it' ? 'Spiegazione in italiano (2-3 frasi)' : 'Explanation in English (2-3 sentences)'}
 - confidence: 0-1 (how confident you are in this recommendation)
-- alternatives: Array of {approachId, reason} for 1-2 alternatives (if any make sense)
+- alternatives: Array of {approachId, reason} for 1-2 alternatives ${targetLanguage === 'it' ? '(reason in italiano)' : '(if any make sense)'}
 
 {
   "recommendedApproachId": "uuid-here",

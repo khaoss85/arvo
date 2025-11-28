@@ -32,14 +32,15 @@ export default function OnboardingLayout({
     }
 
     // Full flow for intermediate/advanced (9 steps)
+    // Approach moved after Equipment so AI has full context for recommendation
     return [
       { id: 1, name: t('level') },
-      { id: 2, name: t('approach') },
-      { id: 3, name: t('profile') },
-      { id: 4, name: t('goals') },
-      { id: 5, name: t('split') },
-      { id: 6, name: t('weakPoints') },
-      { id: 7, name: t('equipment') },
+      { id: 2, name: t('profile') },
+      { id: 3, name: t('goals') },
+      { id: 4, name: t('split') },
+      { id: 5, name: t('weakPoints') },
+      { id: 6, name: t('equipment') },
+      { id: 7, name: t('approach') },
       { id: 8, name: t('strength') },
       { id: 9, name: t('review') }
     ]

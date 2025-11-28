@@ -16,7 +16,7 @@ export default function WeakPointsPage() {
   const [selectedParts, setSelectedParts] = useState<string[]>(data.weakPoints || [])
 
   const experienceLevel = data.experienceLevel
-  const currentStepNumber = 6 // Step 6 for intermediate/advanced
+  const currentStepNumber = 5 // Step 5 for intermediate/advanced
 
   useEffect(() => {
     // Redirect beginners - they should skip this step

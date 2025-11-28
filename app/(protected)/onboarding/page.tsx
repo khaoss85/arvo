@@ -31,10 +31,9 @@ export default function OnboardingEntryPage() {
         router.push('/onboarding/review')
       }
     } else {
-      // Intermediate/Advanced flow: level → approach → profile → goals → split → weak-points → equipment → strength → review
-      if (!data.approachId) {
-        router.push('/onboarding/approach')
-      } else if (!data.firstName && !data.age && !data.gender) {
+      // Intermediate/Advanced flow: level → profile → goals → split → weak-points → equipment → approach → strength → review
+      // (approach moved after equipment so AI has full context for recommendations)
+      if (!data.firstName && !data.age && !data.gender) {
         router.push('/onboarding/profile')
       } else if (!data.trainingObjective) {
         router.push('/onboarding/goals')
@@ -44,6 +43,8 @@ export default function OnboardingEntryPage() {
         router.push('/onboarding/weak-points')
       } else if (!data.availableEquipment || data.availableEquipment.length === 0) {
         router.push('/onboarding/equipment')
+      } else if (!data.approachId) {
+        router.push('/onboarding/approach')
       } else if (!data.strengthBaseline || Object.keys(data.strengthBaseline).length === 0) {
         router.push('/onboarding/strength')
       } else {

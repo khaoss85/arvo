@@ -57,12 +57,12 @@ export default function ApproachSelectionPage() {
   }
 
   const experienceLevel = data.experienceLevel
-  const currentStepNumber = 2 // Step 2 for intermediate/advanced
+  const currentStepNumber = 7 // Step 7 for intermediate/advanced (after equipment)
 
   useEffect(() => {
     // Redirect beginners - they should skip this step
     if (experienceLevel === 'beginner') {
-      router.push('/onboarding/profile')
+      router.push('/onboarding/strength')
       return
     }
 
@@ -84,11 +84,11 @@ export default function ApproachSelectionPage() {
   const selectApproach = (approachId: string) => {
     setStepData('approachId', approachId)
     completeStep(currentStepNumber)
-    router.push('/onboarding/profile')
+    router.push('/onboarding/strength')
   }
 
   const handleBack = () => {
-    router.push('/onboarding/level')
+    router.push('/onboarding/equipment')
   }
 
   return (

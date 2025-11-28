@@ -35,7 +35,7 @@ export default function ProfilePage() {
   const experienceLevel = data.experienceLevel
 
   // Calculate correct step number based on experience level
-  const currentStepNumber = experienceLevel === 'beginner' ? 2 : 3
+  const currentStepNumber = 2 // Step 2 for all levels (approach moved after equipment)
 
   useEffect(() => {
     setStep(currentStepNumber)
@@ -202,12 +202,8 @@ export default function ProfilePage() {
   }
 
   const handleBack = () => {
-    // Navigate back based on experience level
-    if (experienceLevel === 'beginner') {
-      router.push('/onboarding/level')
-    } else {
-      router.push('/onboarding/approach')
-    }
+    // All levels go back to level selection (approach moved after equipment)
+    router.push('/onboarding/level')
   }
 
   return (
