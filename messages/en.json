@@ -1302,9 +1302,18 @@
           "error": "Failed to validate custom exercise",
           "textMode": "Text",
           "photoMode": "Photo",
+          "libraryMode": "Library",
           "recognizing": "Recognizing equipment...",
           "detected": "Detected",
           "photoError": "Could not identify equipment. Try again or use text input."
+        },
+        "library": {
+          "searchPlaceholder": "Search exercises...",
+          "noResults": "No exercises found",
+          "hint": "Type at least 2 characters to search",
+          "selectedFrom": "Selected from exercise library",
+          "directSelection": "Direct selection - no AI validation needed",
+          "muscleWarning": "⚠️ Different muscle group: targets {target} ({bodyPart})"
         },
         "validation": {
           "approved": "✓ Good",

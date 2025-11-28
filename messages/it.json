@@ -1305,9 +1305,18 @@
           "error": "Impossibile validare l'esercizio personalizzato",
           "textMode": "Testo",
           "photoMode": "Foto",
+          "libraryMode": "Libreria",
           "recognizing": "Riconoscimento attrezzatura...",
           "detected": "Rilevato",
           "photoError": "Impossibile identificare l'attrezzatura. Riprova o usa l'input testuale."
+        },
+        "library": {
+          "searchPlaceholder": "Cerca esercizi...",
+          "noResults": "Nessun esercizio trovato",
+          "hint": "Digita almeno 2 caratteri per cercare",
+          "selectedFrom": "Selezionato dalla libreria esercizi",
+          "directSelection": "Selezione diretta - nessuna validazione AI necessaria",
+          "muscleWarning": "⚠️ Gruppo muscolare diverso: lavora {target} ({bodyPart})"
         },
         "validation": {
           "approved": "✓ Buono",

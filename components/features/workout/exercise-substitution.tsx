@@ -8,10 +8,11 @@ import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, ex
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
 import { PhotoUploader } from '@/components/ui/photo-uploader'
-import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type, Camera } from 'lucide-react'
+import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type, Camera, BookOpen, Search } from 'lucide-react'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { memoryService } from '@/lib/services/memory.service'
 import { AnimationService } from '@/lib/services/animation.service'
+import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
 
 /**
  * Extract equipment variant from exercise name
@@ -194,10 +195,15 @@ export function ExerciseSubstitution({
   const [customResult, setCustomResult] = useState<SubstitutionSuggestion | null>(null)
   const [customError, setCustomError] = useState<string | null>(null)
 
-  // Photo mode state
-  const [photoMode, setPhotoMode] = useState(false)
+  // Input mode state: 'text' | 'photo' | 'library'
+  const [inputMode, setInputMode] = useState<'text' | 'photo' | 'library'>('text')
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [isExtractingName, setIsExtractingName] = useState(false)
+
+  // Library search state
+  const [librarySearchQuery, setLibrarySearchQuery] = useState('')
+  const [libraryResults, setLibraryResults] = useState<ExerciseDBExercise[]>([])
+  const [isSearchingLibrary, setIsSearchingLibrary] = useState(false)
 
   // Animation modal state
   const [animationModalExercise, setAnimationModalExercise] = useState<{ name: string; url: string | null } | null>(null)
@@ -450,11 +456,72 @@ export function ExerciseSubstitution({
     setCustomError(null)
   }
 
-  const handleModeSwitch = (newPhotoMode: boolean) => {
-    setPhotoMode(newPhotoMode)
+  const handleModeSwitch = (newMode: 'text' | 'photo' | 'library') => {
+    setInputMode(newMode)
     setCustomInput('')
     setCustomError(null)
     setUploadedImage(null)
+    setLibrarySearchQuery('')
+    setLibraryResults([])
+  }
+
+  // Library search with debounce
+  useEffect(() => {
+    if (inputMode !== 'library' || librarySearchQuery.length < 2) {
+      setLibraryResults([])
+      return
+    }
+
+    setIsSearchingLibrary(true)
+    const debounceTimer = setTimeout(async () => {
+      try {
+        const results = await ExerciseDBService.searchExercises(librarySearchQuery, 15)
+        setLibraryResults(results)
+      } catch (err) {
+        console.error('Library search failed:', err)
+        setLibraryResults([])
+      } finally {
+        setIsSearchingLibrary(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
+  }, [librarySearchQuery, inputMode])
+
+  // Handle library exercise selection (skip AI validation)
+  const handleLibrarySelect = async (exercise: ExerciseDBExercise) => {
+    // Extract muscle groups from current exercise
+    const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
+    const selectedExerciseMuscles = [exercise.bodyPart, exercise.target]
+
+    // Check for muscle group mismatch
+    const hasMismatch = currentExerciseMuscles.length > 0 &&
+      !currentExerciseMuscles.some(m =>
+        exercise.bodyPart.toLowerCase().includes(m.toLowerCase()) ||
+        exercise.target.toLowerCase().includes(m.toLowerCase()) ||
+        m.toLowerCase().includes(exercise.bodyPart.toLowerCase()) ||
+        m.toLowerCase().includes(exercise.target.toLowerCase())
+      )
+
+    // Create a suggestion object for confirmation
+    const librarySuggestion: SubstitutionSuggestion = {
+      exercise: {
+        name: exercise.name,
+        equipmentVariant: exercise.equipment,
+        sets: currentExercise.targetSets,
+        repRange: currentExercise.targetReps,
+        targetWeight: currentExercise.targetWeight,
+      },
+      validation: hasMismatch ? 'caution' : 'approved',
+      rationale: hasMismatch
+        ? t('library.muscleWarning', { target: exercise.target, bodyPart: exercise.bodyPart })
+        : t('library.selectedFrom'),
+      swapImpact: t('library.directSelection'),
+      similarityScore: hasMismatch ? 50 : 80, // Lower score if muscle mismatch
+    }
+
+    setSelectedSuggestion(librarySuggestion)
+    setShowConfirmation(true)
   }
 
   const handleEditCustom = () => {
@@ -552,9 +619,9 @@ export function ExerciseSubstitution({
               {!customResult && (
                 <div className="flex gap-2 mb-3">
                   <Button
-                    variant={!photoMode ? 'default' : 'outline'}
+                    variant={inputMode === 'text' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => handleModeSwitch(false)}
+                    onClick={() => handleModeSwitch('text')}
                     disabled={customValidating || isExtractingName}
                     className="flex-1"
                   >
@@ -562,14 +629,24 @@ export function ExerciseSubstitution({
                     {t('customInput.textMode')}
                   </Button>
                   <Button
-                    variant={photoMode ? 'default' : 'outline'}
+                    variant={inputMode === 'photo' ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => handleModeSwitch(true)}
+                    onClick={() => handleModeSwitch('photo')}
                     disabled={customValidating || isExtractingName}
                     className="flex-1"
                   >
                     <Camera className="w-4 h-4 mr-2" />
                     {t('customInput.photoMode')}
+                  </Button>
+                  <Button
+                    variant={inputMode === 'library' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handleModeSwitch('library')}
+                    disabled={customValidating || isExtractingName}
+                    className="flex-1"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    {t('customInput.libraryMode')}
                   </Button>
                 </div>
               )}
@@ -578,23 +655,41 @@ export function ExerciseSubstitution({
               {!customResult ? (
                 <>
                   {/* Text Input Mode */}
-                  {!photoMode ? (
-                    <input
-                      type="text"
-                      value={customInput}
-                      onChange={(e) => setCustomInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !customValidating && customInput.trim().length >= 3) {
-                          handleValidateCustom()
-                        }
-                      }}
-                      placeholder={t('customInput.placeholder')}
-                      className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
-                      disabled={customValidating}
-                      autoComplete="off"
-                    />
-                  ) : (
-                    /* Photo Upload Mode */
+                  {inputMode === 'text' && (
+                    <>
+                      <input
+                        type="text"
+                        value={customInput}
+                        onChange={(e) => setCustomInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !customValidating && customInput.trim().length >= 3) {
+                            handleValidateCustom()
+                          }
+                        }}
+                        placeholder={t('customInput.placeholder')}
+                        className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 mb-3"
+                        disabled={customValidating}
+                        autoComplete="off"
+                      />
+                      <Button
+                        onClick={() => handleValidateCustom()}
+                        disabled={customValidating || customInput.trim().length < 3}
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                      >
+                        {customValidating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            {t('customInput.validating')}
+                          </>
+                        ) : (
+                          t('customInput.validateButton')
+                        )}
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Photo Upload Mode */}
+                  {inputMode === 'photo' && (
                     <div className="mb-3">
                       <PhotoUploader
                         onUpload={handlePhotoUpload}
@@ -619,25 +714,73 @@ export function ExerciseSubstitution({
                     </div>
                   )}
 
-                  {customError && (
-                    <div className="text-sm text-red-400 mb-3">{customError}</div>
+                  {/* Library Search Mode */}
+                  {inputMode === 'library' && (
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                        <input
+                          type="text"
+                          value={librarySearchQuery}
+                          onChange={(e) => setLibrarySearchQuery(e.target.value)}
+                          placeholder={t('library.searchPlaceholder')}
+                          className="w-full bg-gray-900 border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                          autoComplete="off"
+                        />
+                        {isSearchingLibrary && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400 animate-spin" />
+                        )}
+                      </div>
+
+                      {/* Search Results */}
+                      {libraryResults.length > 0 && (
+                        <div className="max-h-[300px] overflow-y-auto space-y-2 border border-gray-700 rounded-lg p-2 bg-gray-900/50">
+                          {libraryResults.map((exercise) => (
+                            <button
+                              key={exercise.id}
+                              onClick={() => handleLibrarySelect(exercise)}
+                              className="w-full flex items-start gap-3 p-3 rounded-lg bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 transition-all text-left"
+                            >
+                              {/* Thumbnail */}
+                              {exercise.gifUrl && (
+                                <img
+                                  src={exercise.gifUrl}
+                                  alt={exercise.name}
+                                  className="w-12 h-12 rounded object-cover flex-shrink-0 bg-gray-700"
+                                  loading="lazy"
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-white text-sm truncate capitalize">
+                                  {exercise.name}
+                                </p>
+                                <p className="text-xs text-gray-400 mt-0.5 capitalize">
+                                  {exercise.target} • {exercise.equipment}
+                                </p>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* No results */}
+                      {librarySearchQuery.length >= 2 && !isSearchingLibrary && libraryResults.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          {t('library.noResults')}
+                        </p>
+                      )}
+
+                      {/* Hint */}
+                      {librarySearchQuery.length < 2 && (
+                        <p className="text-xs text-gray-500 text-center">
+                          {t('library.hint')}
+                        </p>
+                      )}
+                    </div>
                   )}
 
-                  {!photoMode && (
-                    <Button
-                      onClick={() => handleValidateCustom()}
-                      disabled={customValidating || customInput.trim().length < 3}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
-                    >
-                      {customValidating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                          {t('customInput.validating')}
-                        </>
-                      ) : (
-                        t('customInput.validateButton')
-                      )}
-                    </Button>
+                  {customError && (
+                    <div className="text-sm text-red-400 mb-3">{customError}</div>
                   )}
                 </>
               ) : (

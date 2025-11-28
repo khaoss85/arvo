@@ -9,7 +9,7 @@ import { EmbeddingService } from './embedding.service'
 import { EmbeddingStorage } from '../utils/embedding-storage'
 import { generateQueryEmbedding } from '@/app/actions/embedding-actions'
 
-interface ExerciseDBExercise {
+export interface ExerciseDBExercise {
   id: string
   name: string
   gifUrl: string
@@ -627,6 +627,37 @@ export class ExerciseDBService {
   static async debugSearch(searchTerm: string): Promise<string[]> {
     await this.initializeCache()
     return this.debugSearchSync(searchTerm)
+  }
+
+  /**
+   * Search exercises for autocomplete/library mode
+   * Returns full exercise objects matching the query
+   */
+  static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
+    if (!query || query.length < 2) return []
+
+    await this.initializeCache()
+
+    const normalizedQuery = query.toLowerCase().trim()
+    const results: ExerciseDBExercise[] = []
+
+    for (const exercise of Array.from(this.cache.exercises.values())) {
+      if (exercise.name.toLowerCase().includes(normalizedQuery)) {
+        results.push(exercise)
+        if (results.length >= limit) break
+      }
+    }
+
+    // Sort by relevance: exercises starting with the query come first
+    results.sort((a, b) => {
+      const aStartsWith = a.name.toLowerCase().startsWith(normalizedQuery)
+      const bStartsWith = b.name.toLowerCase().startsWith(normalizedQuery)
+      if (aStartsWith && !bStartsWith) return -1
+      if (!aStartsWith && bStartsWith) return 1
+      return a.name.localeCompare(b.name)
+    })
+
+    return results
   }
 
   /**
