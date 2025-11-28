@@ -632,7 +632,7 @@ export class ExerciseDBService {
   /**
    * Search exercises for autocomplete/library mode
    * Returns full exercise objects matching the query
-   * Searches both exercise name AND equipment (e.g., "lat machine", "cable", "barbell")
+   * Searches: name, equipment, target muscle, body part, and secondary muscles
    */
   static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
     if (!query || query.length < 2) return []
@@ -640,35 +640,39 @@ export class ExerciseDBService {
     await this.initializeCache()
 
     const normalizedQuery = query.toLowerCase().trim()
-    const results: ExerciseDBExercise[] = []
+    const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
 
     for (const exercise of Array.from(this.cache.exercises.values())) {
-      // Search in both name and equipment
-      if (
-        exercise.name.toLowerCase().includes(normalizedQuery) ||
-        exercise.equipment.toLowerCase().includes(normalizedQuery)
-      ) {
-        results.push(exercise)
-        if (results.length >= limit) break
+      // Check all searchable fields
+      const nameMatch = exercise.name.toLowerCase().includes(normalizedQuery)
+      const equipmentMatch = exercise.equipment.toLowerCase().includes(normalizedQuery)
+      const targetMatch = exercise.target.toLowerCase().includes(normalizedQuery)
+      const bodyPartMatch = exercise.bodyPart.toLowerCase().includes(normalizedQuery)
+      const secondaryMatch = exercise.secondaryMuscles.some(m =>
+        m.toLowerCase().includes(normalizedQuery)
+      )
+
+      if (nameMatch || equipmentMatch || targetMatch || bodyPartMatch || secondaryMatch) {
+        // Assign priority: name > target > equipment/bodyPart/secondary
+        let priority = 3
+        if (nameMatch) {
+          priority = exercise.name.toLowerCase().startsWith(normalizedQuery) ? 0 : 1
+        } else if (targetMatch) {
+          priority = 2
+        }
+
+        results.push({ exercise, priority })
+        if (results.length >= limit * 2) break // Get extra for sorting
       }
     }
 
-    // Sort by relevance: name matches first, then equipment matches
+    // Sort by priority, then alphabetically
     results.sort((a, b) => {
-      const aNameMatch = a.name.toLowerCase().includes(normalizedQuery)
-      const bNameMatch = b.name.toLowerCase().includes(normalizedQuery)
-      if (aNameMatch && !bNameMatch) return -1
-      if (!aNameMatch && bNameMatch) return 1
-
-      const aStartsWith = a.name.toLowerCase().startsWith(normalizedQuery)
-      const bStartsWith = b.name.toLowerCase().startsWith(normalizedQuery)
-      if (aStartsWith && !bStartsWith) return -1
-      if (!aStartsWith && bStartsWith) return 1
-
-      return a.name.localeCompare(b.name)
+      if (a.priority !== b.priority) return a.priority - b.priority
+      return a.exercise.name.localeCompare(b.exercise.name)
     })
 
-    return results
+    return results.slice(0, limit).map(r => r.exercise)
   }
 
   /**
