@@ -4,19 +4,14 @@ import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Heart } from "lucide-react";
+import { ArrowRight, Bot, Zap, FlaskConical } from "lucide-react";
 import { useTranslations } from 'next-intl';
 
-interface HeroSectionSimpleProps {
-  isAuthenticated: boolean;
-  showWaitlist?: boolean;
-}
-
-export function HeroSectionSimple({ isAuthenticated, showWaitlist = false }: HeroSectionSimpleProps) {
-  const t = useTranslations('landingSimple.hero');
+export function HeroFeatures() {
+  const t = useTranslations('features.hero');
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-geometric-pattern px-4 py-20">
+    <section className="relative min-h-[80vh] flex items-center justify-center bg-geometric-pattern px-4 py-20">
       <div className="container max-w-6xl mx-auto">
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Logo */}
@@ -37,94 +32,66 @@ export function HeroSectionSimple({ isAuthenticated, showWaitlist = false }: Her
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="bg-gradient-to-r from-primary-600 to-primary-400 dark:from-primary-400 dark:to-primary-600 bg-clip-text text-transparent">
-                {t('title.appThinks')}
+                {t('title.main')}
               </span>
               <br />
               {t('title.subtitle')}
             </h1>
-            <p className="text-base md:text-lg text-primary-600 dark:text-primary-400 font-medium">
-              {t('tagline')}
-            </p>
           </motion.div>
-
-          {/* Pain Point */}
-          <motion.p
-            className="text-base md:text-lg text-muted-foreground/80 max-w-2xl italic"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            {t('painPoints')}
-          </motion.p>
-
-          {/* Subheadline */}
-          <motion.p
-            className="text-lg md:text-xl text-muted-foreground max-w-3xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {t('description.main')}
-            <br />
-            <span className="text-sm md:text-base mt-2 inline-block">
-              {t('description.sub')}
-            </span>
-          </motion.p>
 
           {/* Stats Pills */}
           <motion.div
             className="flex flex-wrap items-center justify-center gap-3 text-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              <Heart className="inline-block w-4 h-4 mr-1" />
-              {t('stats.users')}
+              <Bot className="inline-block w-4 h-4 mr-2" />
+              {t('stats.agents')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              {t('stats.simple')}
+              <Zap className="inline-block w-4 h-4 mr-2" />
+              {t('stats.progression')}
             </div>
             <div className="px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/50 text-primary-700 dark:text-primary-200 border border-primary-200 dark:border-primary-800">
-              {t('stats.results')}
+              <FlaskConical className="inline-block w-4 h-4 mr-2" />
+              {t('stats.methodologies')}
             </div>
           </motion.div>
 
-          {/* CTA Buttons */}
+          {/* Subheadline */}
+          <motion.p
+            className="text-lg md:text-xl text-muted-foreground max-w-3xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            {t('description')}
+          </motion.p>
+
+          {/* CTA */}
           <motion.div
             className="flex flex-col sm:flex-row items-center gap-4 pt-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <Link href={isAuthenticated ? "/dashboard" : (showWaitlist ? "/waitlist" : "/login")}>
+            <Link href="/login">
               <Button size="lg" className="text-base px-8 h-12 group">
-                {isAuthenticated ? t('cta.dashboard') : (showWaitlist ? "Join the Waitlist" : t('cta.start'))}
+                {t('cta.start')}
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-
             <button
               onClick={() => {
-                document.getElementById('simple-showcase')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('agent-architecture')?.scrollIntoView({ behavior: 'smooth' });
               }}
               className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium transition-colors"
             >
-              {t('cta.seeHow')}
+              {t('cta.explore')}
             </button>
           </motion.div>
-
-          {/* Technical Note */}
-          <motion.p
-            className="text-xs text-muted-foreground/70 max-w-2xl pt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            {t('technical.noScience')}
-            <br />
-            {t('technical.promise')}
-          </motion.p>
         </div>
       </div>
 

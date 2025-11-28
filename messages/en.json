@@ -2781,7 +2781,8 @@
       "product": {
         "title": "Product",
         "login": "Login",
-        "features": "Features"
+        "features": "Features",
+        "pricing": "Pricing"
       },
       "legal": {
         "title": "Legal",
@@ -5217,6 +5218,158 @@
         "patterns": "4 pattern detection types",
         "confidence": "Confidence scoring 0.5-1.0",
         "multicycle": "Multi-cycle trend analysis"
+      }
+    }
+  },
+  "pricing": {
+    "hero": {
+      "badge": "Simple Pricing",
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Beta free. Then €6/month for AI that actually thinks.",
+      "perMonth": "/month",
+      "annualNote": "€60/year with annual billing (save €12)"
+    },
+    "tiers": {
+      "title": "Choose Your Plan",
+      "subtitle": "Start free during beta. Upgrade when you're ready for advanced features.",
+      "annualSavings": "Save 17% with annual billing",
+      "free": {
+        "name": "Free",
+        "description": "Everything you need to get started with AI-powered training.",
+        "badge": "Current",
+        "cta": "Get Started",
+        "ctaActive": "Current Plan"
+      },
+      "pro": {
+        "name": "Pro",
+        "period": "/month",
+        "description": "Advanced features for serious athletes who want maximum results.",
+        "badge": "Most Popular",
+        "cta": "Upgrade to Pro"
+      },
+      "team": {
+        "name": "Team / Gym",
+        "price": "Custom",
+        "description": "For gyms, coaches, and teams who need multi-user management.",
+        "badge": "Coming Soon",
+        "cta": "Contact Us"
+      },
+      "features": {
+        "aiAgents": "19 specialized AI agents",
+        "setBySet": "Set-by-set progression",
+        "simpleMode": "Simple Mode (zero decisions)",
+        "basicMethodologies": "Basic training methodologies",
+        "advancedMethodologies": "Advanced methodologies (Kuba, Mentzer, FST-7...)",
+        "volumeTracking": "MEV/MAV/MRV volume tracking",
+        "patternLearning": "AI pattern learning",
+        "audioCoaching": "Audio coaching",
+        "prioritySupport": "Priority support",
+        "exportData": "Export your data",
+        "everythingFree": "Everything in Free",
+        "everythingPro": "Everything in Pro",
+        "multiUser": "Multi-user management",
+        "customBranding": "Custom branding",
+        "apiAccess": "API access",
+        "dedicatedSupport": "Dedicated support",
+        "analytics": "Advanced analytics",
+        "onboarding": "Personalized onboarding"
+      }
+    },
+    "modes": {
+      "title": "Two Ways to Train",
+      "subtitle": "Choose the experience that fits your style. Switch anytime.",
+      "switchNote": "You can switch between modes at any time in your settings.",
+      "simple": {
+        "title": "Simple Mode",
+        "subtitle": "Zero decisions required",
+        "description": "Just show up and lift. AI handles everything from exercise selection to weight progression.",
+        "features": {
+          "zeroDecisions": "Zero decisions required",
+          "aiHandles": "AI handles exercise selection",
+          "showUp": "Just show up and lift",
+          "autoProgress": "Automatic weight progression"
+        },
+        "forWho": "Beginners, busy professionals, anyone who wants to focus on lifting"
+      },
+      "pro": {
+        "title": "Pro Mode",
+        "subtitle": "Full control for advanced lifters",
+        "description": "Fine-tune every aspect of your training with RIR/RPE tracking, methodology selection, and volume control.",
+        "features": {
+          "rirRpe": "RIR/RPE tracking and adjustment",
+          "methodology": "Choose your methodology",
+          "customization": "Detailed workout customization",
+          "volumeControl": "Volume landmark monitoring"
+        },
+        "forWho": "Intermediate to advanced lifters who want maximum control"
+      }
+    },
+    "methodologies": {
+      "title": "Supported Methodologies",
+      "subtitle": "Advanced training systems implemented with scientific fidelity.",
+      "proNote": "Advanced methodologies (Kuba, Mentzer, FST-7, Y3T, Mountain Dog, DC, PHAT, HST) are available with Pro.",
+      "kuba": {
+        "description": "Evidence-based hypertrophy with periodized volume.",
+        "lines": "362+ config lines"
+      },
+      "mentzer": {
+        "description": "High-intensity training with extended rest periods.",
+        "lines": "532+ config lines"
+      },
+      "fst7": {
+        "description": "Fascia Stretch Training with 7 pump sets.",
+        "lines": "200+ config lines"
+      },
+      "y3t": {
+        "description": "3-week rotating intensity system.",
+        "lines": "180+ config lines"
+      },
+      "mountainDog": {
+        "description": "John Meadows' activation-pump-stretch sequence.",
+        "lines": "220+ config lines"
+      },
+      "dc": {
+        "description": "Rest-pause and extreme stretching protocol.",
+        "lines": "190+ config lines"
+      },
+      "phat": {
+        "description": "Power Hypertrophy Adaptive Training.",
+        "lines": "210+ config lines"
+      },
+      "hst": {
+        "description": "Hypertrophy-Specific Training with strategic deconditioning.",
+        "lines": "175+ config lines"
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about Arvo pricing.",
+      "contactNote": "Still have questions? Reach out to",
+      "items": {
+        "betaFree": {
+          "question": "Is the beta really free?",
+          "answer": "Yes! During the beta period, you get full access to all features at no cost. This helps us gather feedback and improve the app before the official launch."
+        },
+        "afterBeta": {
+          "question": "What happens after beta?",
+          "answer": "After beta, you can continue with the free tier or upgrade to Pro for €6/month (or €60/year with annual billing). Beta users who upgrade will get early-adopter benefits."
+        },
+        "cancel": {
+          "question": "Can I cancel anytime?",
+          "answer": "Absolutely. You can cancel your subscription at any time. You'll continue to have access until the end of your billing period, with no hidden fees or penalties."
+        },
+        "freeTrial": {
+          "question": "Is there a free trial for Pro?",
+          "answer": "The beta IS your free trial! You're currently experiencing all Pro features. When we launch, you'll know exactly what you're getting."
+        },
+        "payment": {
+          "question": "What payment methods do you accept?",
+          "answer": "We accept all major credit cards (Visa, Mastercard, American Express), PayPal, and Apple Pay. Payments are processed securely through Stripe."
+        },
+        "refund": {
+          "question": "What's your refund policy?",
+          "answer": "We offer a 30-day money-back guarantee. If you're not satisfied with Pro, contact us within 30 days for a full refund, no questions asked."
+        }
       }
     }
   }

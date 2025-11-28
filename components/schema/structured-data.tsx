@@ -13,10 +13,10 @@ export function StructuredData() {
         '@type': 'WebSite',
         '@id': 'https://arvo.guru/#website',
         name: 'Arvo',
-        alternateName: 'Arvo - Smart Workout Tracker',
+        alternateName: 'Arvo - AI Personal Trainer App for Gym',
         url: 'https://arvo.guru',
         description:
-          'Parametric training program builder and workout tracker. Build custom workout splits, track progress, and achieve your fitness goals with AI-powered recommendations.',
+          'AI personal trainer app for gym. AI workout coach with set-by-set progression, optimized for advanced methods (Kuba, Mentzer, FST-7). Real-time AI coaching for bodybuilding.',
         inLanguage: locales,
         potentialAction: {
           '@type': 'SearchAction',
@@ -26,6 +26,14 @@ export function StructuredData() {
           },
           'query-input': 'required name=search_term_string',
         },
+        keywords: [
+          'AI personal trainer app for gym',
+          'AI workout coach for bodybuilding',
+          'AI coach with set-by-set progression',
+          'Kuba method app',
+          'Mentzer HIT training app',
+          'FST-7 workout app',
+        ],
       },
       // SoftwareApplication Schema
       {
@@ -34,17 +42,22 @@ export function StructuredData() {
         name: 'Arvo',
         url: 'https://arvo.guru',
         applicationCategory: 'HealthAndFitnessApplication',
+        applicationSubCategory: 'AI Personal Trainer',
         operatingSystem: 'Web',
         browserRequirements: 'Requires JavaScript. Requires HTML5.',
         description:
-          'AI-powered smart workout tracker with parametric program builder. Features include workout logging, RPE calculator, progressive overload tracking, and AI coaching recommendations.',
+          'AI personal trainer app for gym. AI workout coach with set-by-set progression for intermediate and advanced lifters. Features Kuba Method, Mentzer HIT, FST-7 methodology implementations.',
         featureList: [
-          'AI Coaching',
-          'Workout Logger',
-          'RPE Calculator',
+          'AI Personal Trainer',
+          'AI Workout Coach',
+          'Set-by-Set Progression',
+          'Kuba Method Training',
+          'Mentzer HIT Training',
+          'FST-7 Training',
+          'MEV/MAV/MRV Volume Tracking',
           'Progressive Overload Tracking',
+          'AI Coaching Recommendations',
           'Custom Workout Splits',
-          'Training Program Builder',
           'Performance Analytics',
         ],
         offers: {

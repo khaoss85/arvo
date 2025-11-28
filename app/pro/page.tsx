@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/utils/auth.server";
 import type { Metadata } from "next";
 import { HeroSectionPro } from "@/components/features/landing-pro/hero-section-pro";
+import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { CoachingShowcase } from "@/components/features/landing-pro/coaching-showcase";
 import { ProblemSolution } from "@/components/features/landing-pro/problem-solution";
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
@@ -19,25 +20,29 @@ import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
 
 export const metadata: Metadata = {
-  title: "Arvo Pro - Advanced AI Coaching for IFBB PRO Athletes",
-  description: "Methodology-aware AI coaching for elite bodybuilders. Train with Kuba Cielen's system, Mike Mentzer's HIT, FST-7, and more. Context-aware volume tracking (MEV/MAV/MRV), set-by-set guidance, and cycle-to-cycle learning for serious athletes.",
+  title: "Arvo Pro - AI Workout Coach for Bodybuilding",
+  description: "AI workout coach for bodybuilding. AI personal trainer for intermediate and advanced lifters. Train with Kuba Method, Mentzer HIT, FST-7. MEV/MAV/MRV volume tracking, set-by-set AI coaching for serious athletes.",
   keywords: [
+    'AI workout coach for bodybuilding',
+    'AI personal trainer for advanced lifters',
+    'AI bodybuilding program',
+    'AI coach for intermediate lifters',
     'IFBB PRO bodybuilding',
     'advanced workout tracker',
     'Kuba Cielen training',
+    'Kuba method app',
     'Mike Mentzer HIT',
+    'Mentzer HIT training app',
     'FST-7 training',
+    'FST-7 workout app',
     'volume tracking MEV MAV MRV',
     'RIR RPE tracking',
     'AI bodybuilding coach',
     'methodology-aware training',
     'elite bodybuilding app',
     'professional bodybuilding tracker',
-    'context-aware volume',
     'set-by-set coaching',
-    'biomechanics training',
-    'exercise substitution AI',
-    'equipment vision AI',
+    'AI gym trainer',
   ],
 
   // OpenGraph for social sharing
@@ -45,16 +50,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://arvo.guru/pro',
-    title: 'Arvo Pro - Advanced AI Coaching for IFBB PRO Athletes',
-    description: 'Methodology-aware AI coaching for elite bodybuilders. Train with Kuba, Mentzer, FST-7 methodologies. Context-aware volume tracking and set-by-set guidance.',
+    title: 'Arvo Pro - AI Workout Coach for Bodybuilding',
+    description: 'AI workout coach for bodybuilding. AI personal trainer for intermediate and advanced lifters. Kuba Method, Mentzer HIT, FST-7 with set-by-set AI coaching.',
     siteName: 'Arvo',
   },
 
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'Arvo Pro - Advanced AI Coaching for IFBB PRO Athletes',
-    description: 'Methodology-aware AI coaching for elite bodybuilders. Train with Kuba, Mentzer, FST-7 methodologies.',
+    title: 'Arvo Pro - AI Workout Coach for Bodybuilding',
+    description: 'AI workout coach for bodybuilding. AI personal trainer for intermediate and advanced lifters. Kuba, Mentzer, FST-7 methodologies.',
   },
 
   // Canonical URL
@@ -73,6 +78,7 @@ export default async function ProPage() {
   return (
     <main className="min-h-screen">
       <HeroSectionPro isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
+      <WhoIsArvoFor variant="pro" />
       <ProblemSolution />
       <CoachingShowcase />
       <SmartRestTimer />

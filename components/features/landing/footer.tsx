@@ -36,19 +36,14 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#ai-showcase" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/features" className="text-muted-foreground hover:text-foreground transition-colors">
                   {t('product.features')}
                 </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/anthropics/arvo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  GitHub
-                </a>
+                <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+                  {t('product.pricing')}
+                </Link>
               </li>
             </ul>
           </div>

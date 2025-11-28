@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/utils/auth.server";
 import { HeroSection } from "@/components/features/landing/hero-section";
+import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { AIShowcase } from "@/components/features/landing/ai-showcase";
 import { SmartRestTimer } from "@/components/features/landing/smart-rest-timer";
 import { NotesIntelligence } from "@/components/features/landing/notes-intelligence";
@@ -26,6 +27,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen">
       <HeroSection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
+      <WhoIsArvoFor variant="default" />
       <AIShowcase />
       <SmartRestTimer />
       <NotesIntelligence />

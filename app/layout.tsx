@@ -20,11 +20,27 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL('https://arvo.guru'),
   title: {
-    default: 'Arvo - Smart Workout Tracker',
+    default: 'Arvo - AI Personal Trainer App for Gym',
     template: '%s | Arvo',
   },
-  description: 'Parametric training program builder and workout tracker. Build custom workout splits, track progress, and achieve your fitness goals with AI-powered recommendations.',
-  keywords: ['workout tracker', 'training program', 'fitness app', 'strength training', 'workout builder', 'gym tracker', 'progressive overload', 'workout planner'],
+  description: 'AI personal trainer app for gym. AI workout coach with set-by-set progression, optimized for advanced methods (Kuba, Mentzer, FST-7). Real-time AI coaching for bodybuilding and strength training.',
+  keywords: [
+    'AI personal trainer app for gym',
+    'AI workout coach for bodybuilding',
+    'AI coach with set-by-set progression',
+    'AI gym trainer',
+    'AI fitness coach',
+    'AI bodybuilding coach',
+    'Kuba method app',
+    'Mentzer HIT training app',
+    'FST-7 workout app',
+    'workout tracker',
+    'training program',
+    'fitness app',
+    'strength training',
+    'progressive overload',
+    'workout planner'
+  ],
   authors: [{ name: 'Arvo' }],
   creator: 'Arvo',
   publisher: 'Arvo',
@@ -34,16 +50,16 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://arvo.guru',
-    title: 'Arvo - Smart Workout Tracker',
-    description: 'Parametric training program builder and workout tracker. Build custom workout splits, track progress, and achieve your fitness goals.',
+    title: 'Arvo - AI Personal Trainer App for Gym',
+    description: 'AI personal trainer app for gym. AI workout coach with set-by-set progression, optimized for Kuba, Mentzer, FST-7 methods.',
     siteName: 'Arvo',
   },
 
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'Arvo - Smart Workout Tracker',
-    description: 'Parametric training program builder and workout tracker. Build custom workout splits, track progress, and achieve your fitness goals.',
+    title: 'Arvo - AI Personal Trainer App for Gym',
+    description: 'AI personal trainer app for gym. AI workout coach with set-by-set progression, optimized for Kuba, Mentzer, FST-7 methods.',
   },
 
   // PWA & Mobile

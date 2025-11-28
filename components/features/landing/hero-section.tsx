@@ -41,6 +41,9 @@ export function HeroSection({ isAuthenticated, showWaitlist = false }: HeroSecti
               <br />
               {t('title.subtitle')}
             </h1>
+            <p className="text-base md:text-lg text-primary-600 dark:text-primary-400 font-medium">
+              {t('tagline')}
+            </p>
           </motion.div>
 
           {/* Pain Point */}

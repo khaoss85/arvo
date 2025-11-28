@@ -1,6 +1,7 @@
 import { getUser } from "@/lib/utils/auth.server";
 import type { Metadata } from "next";
 import { HeroSectionSimple } from "@/components/features/landing-simple/hero-section-simple";
+import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { SimpleShowcase } from "@/components/features/landing-simple/simple-showcase";
 import { SimpleResults } from "@/components/features/landing-simple/simple-results";
 import { AutoProgression } from "@/components/features/landing-simple/auto-progression";
@@ -9,9 +10,16 @@ import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
 
 export const metadata: Metadata = {
-  title: "Arvo Lite - Simple Workout Tracking Without the Complexity",
-  description: "Track your workouts without overthinking. No periodization, no complicated metrics. Just you, your exercises, and steady progress. Perfect for beginners and those who want simplicity.",
+  title: "Arvo Lite - AI Personal Trainer for Beginners",
+  description: "AI personal trainer for beginners. Simple AI gym coach that does everything for you. No experience needed - just show up and follow the app. AI workout app without complexity.",
   keywords: [
+    'AI personal trainer for beginners',
+    'AI gym coach simple',
+    'AI workout app no experience needed',
+    'beginner AI fitness coach',
+    'simple AI workout app',
+    'easy AI gym app',
+    'AI trainer for beginners',
     'simple workout tracker',
     'easy gym app',
     'beginner workout app',
@@ -19,24 +27,22 @@ export const metadata: Metadata = {
     'exercise tracker',
     'fitness app for beginners',
     'simple fitness tracker',
-    'no-nonsense workout app',
     'minimalist gym tracker',
-    'workout diary',
   ],
 
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://arvo.guru/lite',
-    title: 'Arvo Lite - Simple Workout Tracking Without the Complexity',
-    description: 'Track your workouts without overthinking. No periodization, no complicated metrics. Just you, your exercises, and steady progress.',
+    title: 'Arvo Lite - AI Personal Trainer for Beginners',
+    description: 'AI personal trainer for beginners. Simple AI gym coach that does everything for you. No experience needed - just show up and follow the app.',
     siteName: 'Arvo',
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Arvo Lite - Simple Workout Tracking Without the Complexity',
-    description: 'Track your workouts without overthinking. No periodization, no complicated metrics. Just you, your exercises, and steady progress.',
+    title: 'Arvo Lite - AI Personal Trainer for Beginners',
+    description: 'AI personal trainer for beginners. Simple AI gym coach that does everything for you. No experience needed.',
   },
 
   alternates: {
@@ -53,6 +59,7 @@ export default async function LitePage() {
   return (
     <main className="min-h-screen">
       <HeroSectionSimple isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
+      <WhoIsArvoFor variant="simple" />
       <SimpleShowcase />
       <SimpleResults />
       <AutoProgression />
