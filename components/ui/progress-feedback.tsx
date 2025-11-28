@@ -209,6 +209,12 @@ export function ProgressFeedback({
                   if (data.message) setMessage(data.message)
                   if (data.eta !== undefined) setEta(data.eta)
                   if (data.detail) setDetail(data.detail)
+
+                  // Handle server resuming existing generation with different request_id
+                  if (data.resumedRequestId && data.resumedRequestId !== generationRequestId) {
+                    console.log(`[ProgressFeedback] Server resumed existing generation: ${data.resumedRequestId}`)
+                    setGenerationRequestId(data.resumedRequestId)
+                  }
                 }
               } catch (parseError) {
                 console.error('Failed to parse SSE data:', parseError)

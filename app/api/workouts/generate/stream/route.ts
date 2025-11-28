@@ -183,12 +183,14 @@ export async function POST(request: NextRequest) {
                   queueEntry = existingGeneration
                   generationRequestId = existingGeneration.request_id
 
-                  // Send current progress and close (will poll for updates)
-                  await sendProgress(
-                    'profile',
-                    existingGeneration.progress_percent,
-                    existingGeneration.current_phase || tProgress('resuming')
-                  )
+                  // Send current progress with resumedRequestId so client updates its polling ID
+                  const resumeProgressData = JSON.stringify({
+                    phase: 'profile',
+                    progress: existingGeneration.progress_percent,
+                    message: existingGeneration.current_phase || tProgress('resuming'),
+                    resumedRequestId: existingGeneration.request_id
+                  })
+                  safeEnqueue(controller, encoder.encode(`data: ${resumeProgressData}\n\n`))
                   safeClose(controller)
                   return
                 }

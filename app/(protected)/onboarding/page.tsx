@@ -6,7 +6,7 @@ import { useOnboardingStore } from '@/lib/stores/onboarding.store'
 
 export default function OnboardingEntryPage() {
   const router = useRouter()
-  const { data } = useOnboardingStore()
+  const { data, completedSteps } = useOnboardingStore()
 
   useEffect(() => {
     // Always start from level selection for new users
@@ -39,13 +39,13 @@ export default function OnboardingEntryPage() {
         router.push('/onboarding/goals')
       } else if (!data.splitType) {
         router.push('/onboarding/split')
-      } else if (!data.weakPoints || data.weakPoints.length === 0) {
+      } else if (!completedSteps.includes(5)) {
         router.push('/onboarding/weak-points')
       } else if (!data.availableEquipment || data.availableEquipment.length === 0) {
         router.push('/onboarding/equipment')
       } else if (!data.approachId) {
         router.push('/onboarding/approach')
-      } else if (!data.strengthBaseline || Object.keys(data.strengthBaseline).length === 0) {
+      } else if (!completedSteps.includes(8)) {
         router.push('/onboarding/strength')
       } else {
         router.push('/onboarding/review')
