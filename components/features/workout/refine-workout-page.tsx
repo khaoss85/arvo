@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2 } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2, BookOpen, Search } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
@@ -27,6 +27,7 @@ import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 import { SplitReferenceCard } from './split-reference-card'
 import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
+import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
 
 interface Exercise {
   name: string
@@ -109,10 +110,15 @@ export function RefineWorkoutPage({
   const [customValidationResults, setCustomValidationResults] = useState<Map<number, SubstitutionSuggestion>>(new Map())
   const [customValidating, setCustomValidating] = useState<Map<number, boolean>>(new Map())
 
-  // Photo mode state
-  const [photoMode, setPhotoMode] = useState<Map<number, boolean>>(new Map())
+  // Input mode state: 'text' | 'photo' | 'library'
+  const [inputMode, setInputMode] = useState<Map<number, 'text' | 'photo' | 'library'>>(new Map())
   const [uploadedImages, setUploadedImages] = useState<Map<number, string | null>>(new Map())
   const [extractingNames, setExtractingNames] = useState<Map<number, boolean>>(new Map())
+
+  // Library search state
+  const [librarySearchQuery, setLibrarySearchQuery] = useState<Map<number, string>>(new Map())
+  const [libraryResults, setLibraryResults] = useState<Map<number, ExerciseDBExercise[]>>(new Map())
+  const [isSearchingLibrary, setIsSearchingLibrary] = useState<Map<number, boolean>>(new Map())
 
   // Calculate actual muscle group volumes from current exercises
   const actualVolumes = useMemo(() => {
@@ -253,16 +259,82 @@ export function RefineWorkoutPage({
     }
   }
 
-  const handleModeSwitch = (index: number, isPhotoMode: boolean) => {
-    setPhotoMode(new Map(photoMode).set(index, isPhotoMode))
-    if (!isPhotoMode) {
-      // Clear photo data when switching to text mode
+  const handleModeSwitch = (index: number, mode: 'text' | 'photo' | 'library') => {
+    setInputMode(new Map(inputMode).set(index, mode))
+    if (mode !== 'photo') {
+      // Clear photo data when switching away from photo mode
       setUploadedImages(new Map(uploadedImages).set(index, null))
       setExtractingNames(new Map(extractingNames).set(index, false))
+    }
+    if (mode !== 'library') {
+      // Clear library data when switching away from library mode
+      setLibrarySearchQuery(new Map(librarySearchQuery).set(index, ''))
+      setLibraryResults(new Map(libraryResults).set(index, []))
     }
     // Clear validation result and custom input when switching modes
     setCustomValidationResults(new Map(customValidationResults).set(index, undefined as any))
     setCustomInputs(new Map(customInputs).set(index, ''))
+  }
+
+  // Library search handler with debounce
+  const handleLibrarySearch = async (index: number, query: string) => {
+    setLibrarySearchQuery(new Map(librarySearchQuery).set(index, query))
+
+    if (query.length < 2) {
+      setLibraryResults(new Map(libraryResults).set(index, []))
+      return
+    }
+
+    setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, true))
+
+    try {
+      const results = await ExerciseDBService.searchExercises(query, 15)
+      setLibraryResults(new Map(libraryResults).set(index, results))
+    } catch (err) {
+      console.error('Library search failed:', err)
+      setLibraryResults(new Map(libraryResults).set(index, []))
+    } finally {
+      setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, false))
+    }
+  }
+
+  // Handle library exercise selection (direct swap without AI validation)
+  const handleLibrarySelect = async (index: number, libraryExercise: ExerciseDBExercise) => {
+    if (!workout) return
+
+    const currentExercise = exercises[index]
+    const newExercises = [...exercises]
+
+    newExercises[index] = {
+      ...currentExercise,
+      name: libraryExercise.name,
+      equipmentVariant: libraryExercise.equipment,
+      animationUrl: libraryExercise.gifUrl || undefined,
+      hasAnimation: !!libraryExercise.gifUrl,
+      rationale: t('library.selectedFrom'),
+    }
+
+    setExercises(newExercises)
+
+    // Clear library search state
+    setLibrarySearchQuery(new Map(librarySearchQuery).set(index, ''))
+    setLibraryResults(new Map(libraryResults).set(index, []))
+    setAlternatives(new Map(alternatives).set(index, []))
+
+    // Invalidate workout rationale since exercises changed
+    rationaleRef.current?.invalidate()
+
+    // Save changes to workout
+    try {
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to save library swap:', result.error)
+        alert(t('errors.failedToSave'))
+      }
+    } catch (error) {
+      console.error('Error saving library swap:', error)
+      alert(t('errors.failedToSave'))
+    }
   }
 
   const handlePhotoUpload = async (index: number, base64: string) => {
@@ -1014,39 +1086,48 @@ export function RefineWorkoutPage({
 
                     {!customValidationResults.get(index) ? (
                       <div className="bg-gray-50 dark:bg-gray-900/30 rounded-xl p-3 border border-gray-100 dark:border-gray-800">
-                        {/* Segmented Control */}
-                        <div className="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-lg mb-3 relative">
-                          <div
-                            className="absolute inset-y-1 bg-white dark:bg-gray-700 rounded-md shadow-sm transition-all duration-200 ease-in-out"
-                            style={{
-                              left: photoMode.get(index) ? '50%' : '4px',
-                              width: 'calc(50% - 4px)'
-                            }}
-                          />
+                        {/* 3-Tab Segmented Control: Text / Photo / Library */}
+                        <div className="flex gap-1 p-1 bg-gray-200 dark:bg-gray-800 rounded-lg mb-3">
                           <button
-                            onClick={() => handleModeSwitch(index, false)}
+                            onClick={() => handleModeSwitch(index, 'text')}
                             className={cn(
-                              "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md z-10 transition-colors",
-                              !photoMode.get(index) ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                              "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-all",
+                              (inputMode.get(index) || 'text') === 'text'
+                                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                             )}
                           >
                             <Type className="w-3.5 h-3.5" />
                             {t('customInput.textMode')}
                           </button>
                           <button
-                            onClick={() => handleModeSwitch(index, true)}
+                            onClick={() => handleModeSwitch(index, 'photo')}
                             className={cn(
-                              "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md z-10 transition-colors",
-                              photoMode.get(index) ? "text-gray-900 dark:text-gray-100" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                              "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-all",
+                              inputMode.get(index) === 'photo'
+                                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                             )}
                           >
                             <Camera className="w-3.5 h-3.5" />
                             {t('customInput.photoMode')}
                           </button>
+                          <button
+                            onClick={() => handleModeSwitch(index, 'library')}
+                            className={cn(
+                              "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-all",
+                              inputMode.get(index) === 'library'
+                                ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+                                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                            )}
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                            {t('customInput.libraryMode')}
+                          </button>
                         </div>
 
-                        {/* Conditional Input */}
-                        {!photoMode.get(index) ? (
+                        {/* Text Mode */}
+                        {(inputMode.get(index) || 'text') === 'text' && (
                           <div className="space-y-2">
                             <div className="flex gap-2">
                               <input
@@ -1084,7 +1165,10 @@ export function RefineWorkoutPage({
                               {t('customInput.hint')}
                             </p>
                           </div>
-                        ) : (
+                        )}
+
+                        {/* Photo Mode */}
+                        {inputMode.get(index) === 'photo' && (
                           <div>
                             <PhotoUploader
                               onUpload={(base64) => handlePhotoUpload(index, base64)}
@@ -1105,6 +1189,70 @@ export function RefineWorkoutPage({
                                   <strong>{t('customInput.detected')}:</strong> {customInputs.get(index)}
                                 </p>
                               </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Library Mode */}
+                        {inputMode.get(index) === 'library' && (
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <input
+                                type="text"
+                                placeholder={t('library.searchPlaceholder')}
+                                value={librarySearchQuery.get(index) || ''}
+                                onChange={(e) => handleLibrarySearch(index, e.target.value)}
+                                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-shadow"
+                                autoComplete="off"
+                              />
+                              {isSearchingLibrary.get(index) && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-500 animate-spin" />
+                              )}
+                            </div>
+
+                            {/* Search Results */}
+                            {(libraryResults.get(index)?.length || 0) > 0 && (
+                              <div className="max-h-[200px] overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1.5 bg-white dark:bg-gray-800">
+                                {libraryResults.get(index)!.map((exercise) => (
+                                  <button
+                                    key={exercise.id}
+                                    onClick={() => handleLibrarySelect(index, exercise)}
+                                    className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                                  >
+                                    {exercise.gifUrl && (
+                                      <img
+                                        src={exercise.gifUrl}
+                                        alt={exercise.name}
+                                        className="w-10 h-10 rounded object-cover flex-shrink-0 bg-gray-200 dark:bg-gray-600"
+                                        loading="lazy"
+                                      />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate capitalize">
+                                        {exercise.name}
+                                      </p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                                        {exercise.target} • {exercise.equipment}
+                                      </p>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* No results */}
+                            {(librarySearchQuery.get(index)?.length || 0) >= 2 && !isSearchingLibrary.get(index) && (libraryResults.get(index)?.length || 0) === 0 && (
+                              <p className="text-xs text-gray-500 text-center py-3">
+                                {t('library.noResults')}
+                              </p>
+                            )}
+
+                            {/* Hint */}
+                            {(librarySearchQuery.get(index)?.length || 0) < 2 && (
+                              <p className="text-[10px] text-gray-400 text-center">
+                                {t('library.hint')}
+                              </p>
                             )}
                           </div>
                         )}
