@@ -298,9 +298,14 @@ export class ExerciseDBService {
       'incline dumbbell curl': 'dumbbell incline curl',
       'dumbbell curl': 'dumbbell biceps curl',
 
-      // Face pull variations
-      'cable face pull': 'cable rear delt fly',
-      'face pull': 'cable rear delt fly',
+      // Face pull / rear delt fly variations
+      // ExerciseDB has "cable standing rear delt row (with rope)" as the canonical name
+      'cable face pull': 'cable standing rear delt row (with rope)',
+      'face pull': 'cable standing rear delt row (with rope)',
+      'cable rear delt fly': 'cable standing rear delt row (with rope)',
+      'rear delt fly': 'cable standing rear delt row (with rope)',
+      'cable rear delt fly cross-over style': 'cable standing rear delt row (with rope)',
+      'cable rear delt fly cross over style': 'cable standing rear delt row (with rope)',
 
       // Triceps pushdown variations
       'rope triceps pushdown': 'cable triceps pushdown',
