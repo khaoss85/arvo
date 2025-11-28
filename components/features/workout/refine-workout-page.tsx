@@ -1214,9 +1214,9 @@ export function RefineWorkoutPage({
                             {/* Search Results */}
                             {(libraryResults.get(index)?.length || 0) > 0 && (
                               <div className="max-h-[200px] overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1.5 bg-white dark:bg-gray-800">
-                                {libraryResults.get(index)!.map((exercise) => (
+                                {libraryResults.get(index)!.map((exercise, resultIndex) => (
                                   <button
-                                    key={exercise.id}
+                                    key={exercise.id || `exercise-${resultIndex}`}
                                     onClick={() => handleLibrarySelect(index, exercise)}
                                     className="w-full flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
                                   >
