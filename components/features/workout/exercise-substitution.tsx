@@ -735,9 +735,9 @@ export function ExerciseSubstitution({
                       {/* Search Results */}
                       {libraryResults.length > 0 && (
                         <div className="max-h-[300px] overflow-y-auto space-y-2 border border-gray-700 rounded-lg p-2 bg-gray-900/50">
-                          {libraryResults.map((exercise) => (
+                          {libraryResults.map((exercise, resultIndex) => (
                             <button
-                              key={exercise.id}
+                              key={exercise.id || `lib-exercise-${resultIndex}`}
                               onClick={() => handleLibrarySelect(exercise)}
                               className="w-full flex items-start gap-3 p-3 rounded-lg bg-gray-800 hover:bg-gray-750 border border-gray-700 hover:border-gray-600 transition-all text-left"
                             >
