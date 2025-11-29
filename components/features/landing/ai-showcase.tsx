@@ -74,6 +74,7 @@ export function AIShowcase() {
                   <div className="text-xs font-mono text-muted-foreground mb-2">{t('exerciseArchitect.inputContextLabel')}</div>
                   <div className="bg-muted rounded-md p-3 text-sm font-mono space-y-1">
                     <div><span className="text-primary-600 dark:text-primary-400">weakPoints:</span> ["upper_chest"]</div>
+                    <div><span className="text-primary-600 dark:text-primary-400">bodyType:</span> "ectomorph"</div>
                     <div><span className="text-primary-600 dark:text-primary-400">mesocyclePhase:</span> "accumulation"</div>
                     <div><span className="text-primary-600 dark:text-primary-400">caloricPhase:</span> "bulk"</div>
                     <div><span className="text-primary-600 dark:text-primary-400">activeInsights:</span> [{"{"}"severity": "warning", "exercise": "Dips"{"}"}]</div>

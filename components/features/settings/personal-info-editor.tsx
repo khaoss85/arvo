@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { User, Scale, Ruler } from 'lucide-react'
 import { updatePersonalInfo } from '@/app/actions/user-actions'
+import { getBodyTypesForGender, BODY_TYPE_CONFIGS, type BodyType } from '@/lib/constants/body-type-config'
 
 interface PersonalInfoEditorProps {
   userId: string
   initialData: {
     first_name: string | null
     gender: 'male' | 'female' | 'other' | null
+    body_type: BodyType | null
     age: number | null
     weight: number | null // kg
     height: number | null // cm
@@ -21,6 +23,7 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
 
   const [firstName, setFirstName] = useState(initialData.first_name || '')
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(initialData.gender)
+  const [bodyType, setBodyType] = useState<BodyType | null>(initialData.body_type)
   const [age, setAge] = useState(initialData.age?.toString() || '')
   const [weight, setWeight] = useState(initialData.weight?.toString() || '')
   const [height, setHeight] = useState(initialData.height?.toString() || '')
@@ -67,6 +70,7 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
     const result = await updatePersonalInfo(userId, {
       first_name: firstName.trim() || null,
       gender,
+      body_type: bodyType,
       training_focus: null,
       age: ageNum,
       weight: weightNum,
@@ -86,6 +90,20 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
         type: 'error',
         text: result.error || t('messages.updateFailed'),
       })
+    }
+  }
+
+  const handleGenderChange = (newGender: 'male' | 'female' | 'other') => {
+    setGender(newGender)
+    // Reset body type when gender changes (different options per gender)
+    if (newGender === 'other') {
+      setBodyType(null)
+    } else if (bodyType) {
+      // Check if current body type is valid for new gender
+      const validBodyTypes = getBodyTypesForGender(newGender)
+      if (!validBodyTypes.includes(bodyType)) {
+        setBodyType(null)
+      }
     }
   }
 
@@ -146,7 +164,7 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
             {genderOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setGender(option.value)}
+                onClick={() => handleGenderChange(option.value)}
                 disabled={isSaving}
                 className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
                   gender === option.value
@@ -162,6 +180,38 @@ export function PersonalInfoEditor({ userId, initialData }: PersonalInfoEditorPr
             ))}
           </div>
         </div>
+
+        {/* Body Type - Only shown when gender is male or female */}
+        {gender && gender !== 'other' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('fields.bodyType')}
+              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({t('optional')})</span>
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {getBodyTypesForGender(gender).map((type) => {
+                const config = BODY_TYPE_CONFIGS[type]
+                return (
+                  <button
+                    key={type}
+                    onClick={() => setBodyType(bodyType === type ? null : type)}
+                    disabled={isSaving}
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                      bodyType === type
+                        ? 'border-blue-500 bg-blue-500/10'
+                        : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-600'
+                    } ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <span className="text-2xl">{config.emoji}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t(`bodyType.${type}`)}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Age, Weight, Height in a grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

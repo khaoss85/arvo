@@ -1881,6 +1881,18 @@
               "balanced": "Balanced"
             }
           },
+          "bodyType": {
+            "label": "Body Type",
+            "tooltip": "Your body type helps us customize volume distribution to optimize results based on your natural physical structure.",
+            "options": {
+              "gynoid": "Pear Shape",
+              "android": "Apple Shape",
+              "mixed": "Mixed",
+              "ectomorph": "Ectomorph",
+              "mesomorph": "Mesomorph",
+              "endomorph": "Endomorph"
+            }
+          },
           "age": {
             "label": "Age",
             "placeholder": "e.g., 28",
@@ -2063,14 +2075,24 @@
       "fields": {
         "firstName": "First Name",
         "gender": "Gender",
+        "bodyType": "Body Type",
         "age": "Age",
         "weight": "Weight",
         "height": "Height"
       },
+      "optional": "optional",
       "gender": {
         "male": "Male",
         "female": "Female",
         "other": "Other"
+      },
+      "bodyType": {
+        "gynoid": "Pear Shape",
+        "android": "Apple Shape",
+        "mixed": "Mixed",
+        "ectomorph": "Ectomorph",
+        "mesomorph": "Mesomorph",
+        "endomorph": "Endomorph"
       },
       "units": {
         "years": "years",
@@ -2837,7 +2859,18 @@
       "pricing": "Pricing",
       "login": "Login",
       "getStarted": "Get Started",
-      "dashboard": "Dashboard"
+      "dashboard": "Dashboard",
+      "idealFor": {
+        "title": "Ideal For",
+        "athletes": "Competitive Athletes",
+        "athletesDesc": "Periodization, volume tracking, peak performance",
+        "techSavvy": "Tech-Savvy Lifters",
+        "techSavvyDesc": "Full control with AI-powered customization",
+        "casual": "Casual Fitness",
+        "casualDesc": "Simple workouts, quick and effective",
+        "trainers": "Personal Trainers",
+        "trainersDesc": "Manage clients with AI-generated programs"
+      }
     },
     "footer": {
       "brand": {
@@ -2872,6 +2905,10 @@
         "casual": {
           "title": "For Casual Users & Beginners",
           "description": "No complicated decisions. Just show up, follow the app, and grow stronger effortlessly."
+        },
+        "trainers": {
+          "title": "For Personal Trainers",
+          "description": "AI generates workout plans, you approve. Manage clients, track progress, reclaim your weekends."
         }
       }
     },
@@ -3088,11 +3125,19 @@
           "feature1": "AI decides everything for you",
           "feature2": "Just show up and follow the app",
           "feature3": "Results without the complexity"
+        },
+        "coaches": {
+          "title": "Personal Trainers",
+          "subtitle": "Scale your coaching business",
+          "feature1": "AI generates workout plans",
+          "feature2": "You review and approve",
+          "feature3": "Clients train, you track"
         }
       },
       "badges": {
         "popular": "Most Popular",
-        "forYou": "For You"
+        "forYou": "For You",
+        "learnMore": "Learn More"
       },
       "seoText": "Arvo is the AI personal trainer app for gym that adapts to your level. Whether you're an intermediate lifter following Kuba Method, a competitive bodybuilder tracking MEV/MAV/MRV, or a beginner who just wants results without complexity - Arvo's AI workout coach has you covered with set-by-set guidance."
     },
@@ -3790,6 +3835,267 @@
       "footer": {
         "bold": "Your rest timer has never been this intelligent.",
         "text": "This isn't a countdown clock. It's a methodology-aware validation system that helps you train with scientific fidelity."
+      }
+    },
+    "forTrainers": {
+      "hero": {
+        "title": "Stop Working Weekends",
+        "subtitle": "Start Coaching Smarter",
+        "description": "AI generates personalized workout plans. You approve. Clients train. Everything tracked automatically.",
+        "cta": {
+          "primary": "Start Free Trial",
+          "secondary": "See How It Works"
+        },
+        "stats": {
+          "timeSaved": "Hours Saved Weekly",
+          "timeSavedValue": "8+",
+          "clientCapacity": "More Client Capacity",
+          "clientCapacityValue": "3x",
+          "satisfaction": "Client Satisfaction",
+          "satisfactionValue": "98%"
+        }
+      },
+      "painPoint": {
+        "title": "The Monday Deadline Problem",
+        "subtitle": "Sound familiar? Every week, same story.",
+        "oldWay": {
+          "title": "The Old Way",
+          "friday": "Friday: Finish client sessions",
+          "saturday": "Saturday: Start writing programs",
+          "sunday": "Sunday: Rush to finish all plans",
+          "monday": "Monday: Deliver at last minute",
+          "result": "Result: No weekends, constant stress"
+        },
+        "newWay": {
+          "title": "With Arvo",
+          "step1": "AI generates in seconds",
+          "step2": "You review & approve",
+          "step3": "Clients get it instantly",
+          "result": "Result: Free weekends, happy clients"
+        },
+        "comparison": {
+          "time": {
+            "old": "4-6 hours per client/week",
+            "new": "15 minutes per client/week"
+          },
+          "delivery": {
+            "old": "Manual, error-prone",
+            "new": "Instant, professional"
+          },
+          "tracking": {
+            "old": "Excel, notes, chaos",
+            "new": "All-in-one dashboard"
+          }
+        }
+      },
+      "aiGeneration": {
+        "title": "AI Workout Generation",
+        "subtitle": "Science-backed programming in seconds. Human approval always.",
+        "description": "Our AI understands periodization, volume landmarks, and individual recovery. You stay in control.",
+        "features": {
+          "methodologies": {
+            "title": "Multiple Methodologies",
+            "description": "Kuba Method, Mentzer HIT, FST-7, and more. Apply the right system for each client."
+          },
+          "bodyType": {
+            "title": "Body Type Optimization",
+            "description": "Ectomorph, mesomorph, endomorph or gynoid, android, mixed - AI adjusts volume distribution per somatotype."
+          },
+          "volume": {
+            "title": "Volume Landmarks",
+            "description": "MEV/MAV/MRV tracking per muscle. Never over or under-train your clients."
+          },
+          "humanLoop": {
+            "title": "Human-in-the-Loop",
+            "description": "AI suggests, you decide. Review every workout before it reaches your client."
+          },
+          "personalization": {
+            "title": "Deep Personalization",
+            "description": "Equipment, injuries, preferences, experience - all factored in automatically."
+          }
+        },
+        "process": {
+          "step1": {
+            "title": "Input Client Profile",
+            "description": "Goals, equipment, schedule, limitations"
+          },
+          "step2": {
+            "title": "AI Generates Program",
+            "description": "Complete mesocycle in seconds"
+          },
+          "step3": {
+            "title": "You Review & Adjust",
+            "description": "Fine-tune anything before approval"
+          },
+          "step4": {
+            "title": "Client Receives Workout",
+            "description": "Ready to train immediately"
+          }
+        }
+      },
+      "clientDashboard": {
+        "title": "Client Dashboard",
+        "subtitle": "All your clients. One powerful dashboard.",
+        "description": "Invite clients with a simple link. See all their workouts, feedback, and progress in one place.",
+        "features": {
+          "invite": {
+            "title": "Easy Client Onboarding",
+            "description": "Share a link or code. Clients join in seconds."
+          },
+          "overview": {
+            "title": "Bird's Eye View",
+            "description": "See all clients, their status, and upcoming workouts."
+          },
+          "feedback": {
+            "title": "Real-time Feedback",
+            "description": "Know immediately when workouts are completed."
+          },
+          "control": {
+            "title": "Full Control",
+            "description": "Enable/disable access, pause programs, adjust anytime."
+          }
+        },
+        "metrics": {
+          "activeClients": "Active Clients",
+          "workoutsThisWeek": "Workouts This Week",
+          "completionRate": "Completion Rate",
+          "avgSatisfaction": "Avg. Satisfaction"
+        }
+      },
+      "progressMonitoring": {
+        "title": "Progress Monitoring",
+        "subtitle": "See everything. Miss nothing.",
+        "description": "Check Room photos, volume graphs, progressive overload tracking. Your clients' full journey, visualized.",
+        "features": {
+          "checkRoom": {
+            "title": "Check Room",
+            "description": "Weekly progress photos with comparison tools. Track physique changes over time."
+          },
+          "volumeGraphs": {
+            "title": "Volume Analytics",
+            "description": "Per-muscle volume tracking. See if clients are progressing or need adjustments."
+          },
+          "overloadTracking": {
+            "title": "Progressive Overload",
+            "description": "Track weight/rep increases. Know exactly when to push harder."
+          },
+          "history": {
+            "title": "Complete History",
+            "description": "Every workout, every note, every metric. Nothing lost."
+          }
+        }
+      },
+      "interfaceModes": {
+        "title": "Three Interface Modes",
+        "subtitle": "Right experience for every user.",
+        "description": "Your clients get a simplified view. You get full control. Advanced clients can access more details.",
+        "modes": {
+          "simple": {
+            "title": "Simple Mode",
+            "subtitle": "For most clients",
+            "description": "Clean workout recap, exercise animations, easy logging. Zero confusion.",
+            "features": {
+              "feature1": "Workout summary cards",
+              "feature2": "Exercise animations",
+              "feature3": "One-tap logging",
+              "feature4": "Progress celebration"
+            }
+          },
+          "coach": {
+            "title": "Coach Mode",
+            "subtitle": "For you",
+            "description": "Full control over all clients. Edit workouts, view analytics, manage programs.",
+            "features": {
+              "feature1": "Multi-client dashboard",
+              "feature2": "Program editor",
+              "feature3": "Analytics suite",
+              "feature4": "Communication tools"
+            }
+          },
+          "advanced": {
+            "title": "Advanced Mode",
+            "subtitle": "For experienced clients",
+            "description": "Detailed metrics, RIR/RPE tracking, volume data. For clients who want more.",
+            "features": {
+              "feature1": "Full metric visibility",
+              "feature2": "RIR/RPE tracking",
+              "feature3": "Volume landmarks",
+              "feature4": "Custom adjustments"
+            }
+          }
+        }
+      },
+      "comparison": {
+        "title": "Old Way vs Arvo",
+        "subtitle": "Transform how you coach.",
+        "items": {
+          "programming": {
+            "category": "Programming",
+            "old": "Manual spreadsheets, copy-paste",
+            "new": "AI-generated, personalized plans"
+          },
+          "delivery": {
+            "category": "Delivery",
+            "old": "Email PDFs, WhatsApp messages",
+            "new": "Instant in-app delivery"
+          },
+          "tracking": {
+            "category": "Tracking",
+            "old": "Client self-reports, lost data",
+            "new": "Automatic, comprehensive logging"
+          },
+          "progress": {
+            "category": "Progress Photos",
+            "old": "Scattered across chat apps",
+            "new": "Organized Check Room"
+          },
+          "time": {
+            "category": "Time per Client",
+            "old": "4-6 hours/week",
+            "new": "15 minutes/week"
+          },
+          "weekends": {
+            "category": "Weekends",
+            "old": "Working on programs",
+            "new": "Free time"
+          }
+        }
+      },
+      "faq": {
+        "title": "FAQ for Coaches",
+        "subtitle": "Common questions about coaching with Arvo.",
+        "items": {
+          "invite": {
+            "question": "How do I invite clients?",
+            "answer": "Share your unique coach link or code. Clients create an account and are automatically linked to you. You can also send direct invitations via email from the dashboard."
+          },
+          "clientPay": {
+            "question": "Do clients pay separately?",
+            "answer": "Clients get free access when linked to your coach account. Your subscription covers their app access. You bill clients separately for your coaching services."
+          },
+          "customize": {
+            "question": "Can I customize AI-generated workouts?",
+            "answer": "Absolutely. Every workout goes through you first. Add exercises, adjust volumes, change split - you have full control before the client sees anything."
+          },
+          "seeProgress": {
+            "question": "How do I see client progress?",
+            "answer": "The Coach Dashboard shows all clients at a glance. Click any client to see their Check Room photos, workout history, volume graphs, and all logged data."
+          },
+          "clientSwitch": {
+            "question": "Can clients switch to another coach?",
+            "answer": "Yes, clients can unlink anytime. Their workout history stays with them. You can also release clients from your dashboard."
+          },
+          "maxClients": {
+            "question": "Is there a client limit?",
+            "answer": "The Coach plan supports up to 50 active clients. Need more? Contact us for enterprise solutions."
+          }
+        }
+      },
+      "cta": {
+        "title": "Ready to Reclaim Your Weekends?",
+        "subtitle": "Join hundreds of coaches already using Arvo to scale their business.",
+        "button": "Start Free Trial",
+        "note": "No credit card required. Full access for 14 days."
       }
     }
   },
@@ -5043,8 +5349,29 @@
       "totalSets": "Total sets"
     },
     "calendar": {
-      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-      "daysShort": ["M", "T", "W", "T", "F", "S", "S"],
+      "months": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
+      "daysShort": [
+        "M",
+        "T",
+        "W",
+        "T",
+        "F",
+        "S",
+        "S"
+      ],
       "workout": "workout",
       "workouts": "workouts",
       "workoutCompleted": "Workout completed",

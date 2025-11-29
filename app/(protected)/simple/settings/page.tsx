@@ -95,6 +95,7 @@ export default async function SimpleSettingsPage() {
               initialData={{
                 first_name: profile.first_name,
                 gender: profile.gender,
+                body_type: profile.body_type ?? null,
                 age: profile.age,
                 weight: profile.weight,
                 height: profile.height,

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
+import { getProgressiveTargetAction, type ProgressiveTarget } from '@/app/actions/exercise-history-actions'
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
 import { PhotoUploader } from '@/components/ui/photo-uploader'
@@ -503,20 +504,38 @@ export function ExerciseSubstitution({
         m.toLowerCase().includes(exercise.target.toLowerCase())
       )
 
+    // Check if user has history for this exercise
+    let targetWeight = currentExercise.targetWeight
+    let targetReps = currentExercise.targetReps
+    let hasHistory = false
+
+    try {
+      const historyResult = await getProgressiveTargetAction(exercise.name, currentExercise.targetReps)
+      if (historyResult.success && historyResult.data?.hasHistory) {
+        targetWeight = historyResult.data.weight
+        targetReps = [historyResult.data.reps, historyResult.data.reps] // Use exact rep target from history
+        hasHistory = true
+      }
+    } catch (err) {
+      console.error('[handleLibrarySelect] Failed to get progressive target:', err)
+    }
+
     // Create a suggestion object for confirmation
     const librarySuggestion: SubstitutionSuggestion = {
       exercise: {
         name: exercise.name,
         equipmentVariant: exercise.equipment,
         sets: currentExercise.targetSets,
-        repRange: currentExercise.targetReps,
-        targetWeight: currentExercise.targetWeight,
+        repRange: targetReps,
+        targetWeight: targetWeight,
       },
       validation: hasMismatch ? 'caution' : 'approved',
       rationale: hasMismatch
         ? t('library.muscleWarning', { target: exercise.target, bodyPart: exercise.bodyPart })
-        : t('library.selectedFrom'),
-      swapImpact: t('library.directSelection'),
+        : hasHistory
+          ? t('library.basedOnHistory')
+          : t('library.selectedFrom'),
+      swapImpact: hasHistory ? t('library.progressiveOverload') : t('library.directSelection'),
       similarityScore: hasMismatch ? 50 : 80, // Lower score if muscle mismatch
     }
 

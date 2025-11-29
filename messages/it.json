@@ -1883,6 +1883,18 @@
               "balanced": "Bilanciato"
             }
           },
+          "bodyType": {
+            "label": "Morfotipo",
+            "tooltip": "Il tuo morfotipo ci aiuta a personalizzare la distribuzione del volume per ottimizzare i risultati in base alla tua struttura fisica naturale.",
+            "options": {
+              "gynoid": "Ginoide",
+              "android": "Androide",
+              "mixed": "Misto",
+              "ectomorph": "Ectomorfo",
+              "mesomorph": "Mesomorfo",
+              "endomorph": "Endomorfo"
+            }
+          },
           "age": {
             "label": "Età",
             "placeholder": "es., 28",
@@ -2065,14 +2077,24 @@
       "fields": {
         "firstName": "Nome",
         "gender": "Genere",
+        "bodyType": "Morfotipo",
         "age": "Età",
         "weight": "Peso",
         "height": "Altezza"
       },
+      "optional": "opzionale",
       "gender": {
         "male": "Maschio",
         "female": "Femmina",
         "other": "Altro"
+      },
+      "bodyType": {
+        "gynoid": "Ginoide",
+        "android": "Androide",
+        "mixed": "Misto",
+        "ectomorph": "Ectomorfo",
+        "mesomorph": "Mesomorfo",
+        "endomorph": "Endomorfo"
       },
       "units": {
         "years": "anni",
@@ -2863,7 +2885,18 @@
       "pricing": "Prezzi",
       "login": "Accedi",
       "getStarted": "Inizia Ora",
-      "dashboard": "Dashboard"
+      "dashboard": "Dashboard",
+      "idealFor": {
+        "title": "Ideale Per",
+        "athletes": "Atleti Agonisti",
+        "athletesDesc": "Periodizzazione, tracking volume, performance",
+        "techSavvy": "Utenti Esperti",
+        "techSavvyDesc": "Controllo totale con personalizzazione AI",
+        "casual": "Fitness Casual",
+        "casualDesc": "Allenamenti semplici, veloci ed efficaci",
+        "trainers": "Personal Trainer",
+        "trainersDesc": "Gestisci clienti con programmi generati dall'AI"
+      }
     },
     "footer": {
       "brand": {
@@ -2898,6 +2931,10 @@
         "casual": {
           "title": "Per Utenti Casual e Principianti",
           "description": "Nessuna decisione complicata. Presentati, segui l'app e diventa più forte senza sforzo."
+        },
+        "trainers": {
+          "title": "Per Personal Trainer",
+          "description": "L'AI genera le schede, tu approvi. Gestisci clienti, traccia progressi, riprenditi i weekend."
         }
       }
     },
@@ -3114,11 +3151,19 @@
           "feature1": "L'AI decide tutto per te",
           "feature2": "Presentati in palestra e segui l'app",
           "feature3": "Risultati senza complessità"
+        },
+        "coaches": {
+          "title": "Personal Trainer",
+          "subtitle": "Scala il tuo business di coaching",
+          "feature1": "L'AI genera le schede",
+          "feature2": "Tu rivedi e approvi",
+          "feature3": "I clienti si allenano, tu monitori"
         }
       },
       "badges": {
         "popular": "Più Popolare",
-        "forYou": "Per Te"
+        "forYou": "Per Te",
+        "learnMore": "Scopri di Più"
       },
       "seoText": "Arvo è l'app AI personal trainer per palestra che si adatta al tuo livello. Che tu sia un lifter intermedio che segue il Metodo Kuba, un bodybuilder agonista che traccia MEV/MAV/MRV, o un principiante che vuole risultati senza complicazioni - l'AI workout coach di Arvo ti copre con indicazioni serie dopo serie."
     },
@@ -3816,6 +3861,267 @@
       "footer": {
         "bold": "Il tuo timer di recupero non è mai stato così intelligente.",
         "text": "Questo non è un conto alla rovescia. È un sistema di validazione consapevole della metodologia che ti aiuta ad allenarti con fedeltà scientifica."
+      }
+    },
+    "forTrainers": {
+      "hero": {
+        "title": "Basta Weekend di Lavoro",
+        "subtitle": "Inizia a Fare Coaching in Modo Smart",
+        "description": "L'AI genera schede personalizzate. Tu approvi. I clienti si allenano. Tutto tracciato automaticamente.",
+        "cta": {
+          "primary": "Inizia Prova Gratuita",
+          "secondary": "Scopri Come Funziona"
+        },
+        "stats": {
+          "timeSaved": "Ore Risparmiate/Settimana",
+          "timeSavedValue": "8+",
+          "clientCapacity": "Capacità Clienti",
+          "clientCapacityValue": "3x",
+          "satisfaction": "Soddisfazione Clienti",
+          "satisfactionValue": "98%"
+        }
+      },
+      "painPoint": {
+        "title": "Il Problema della Scadenza del Lunedì",
+        "subtitle": "Ti suona familiare? Ogni settimana, stessa storia.",
+        "oldWay": {
+          "title": "Il Vecchio Modo",
+          "friday": "Venerdì: Finisci le sessioni",
+          "saturday": "Sabato: Inizi a scrivere le schede",
+          "sunday": "Domenica: Corri per finire tutto",
+          "monday": "Lunedì: Consegni all'ultimo momento",
+          "result": "Risultato: Niente weekend, stress costante"
+        },
+        "newWay": {
+          "title": "Con Arvo",
+          "step1": "L'AI genera in secondi",
+          "step2": "Tu rivedi e approvi",
+          "step3": "I clienti ricevono subito",
+          "result": "Risultato: Weekend liberi, clienti felici"
+        },
+        "comparison": {
+          "time": {
+            "old": "4-6 ore per cliente/settimana",
+            "new": "15 minuti per cliente/settimana"
+          },
+          "delivery": {
+            "old": "Manuale, soggetto a errori",
+            "new": "Istantaneo, professionale"
+          },
+          "tracking": {
+            "old": "Excel, appunti, caos",
+            "new": "Dashboard unica"
+          }
+        }
+      },
+      "aiGeneration": {
+        "title": "Generazione Workout con AI",
+        "subtitle": "Programmazione scientifica in secondi. Approvazione umana sempre.",
+        "description": "La nostra AI capisce periodizzazione, landmark di volume e recupero individuale. Tu mantieni il controllo.",
+        "features": {
+          "methodologies": {
+            "title": "Metodologie Multiple",
+            "description": "Metodo Kuba, Mentzer HIT, FST-7 e altri. Applica il sistema giusto per ogni cliente."
+          },
+          "bodyType": {
+            "title": "Ottimizzazione Morfotipo",
+            "description": "Ectomorfo, mesomorfo, endomorfo o ginoide, androide, misto - l'AI regola la distribuzione del volume per somatotipo."
+          },
+          "volume": {
+            "title": "Landmark di Volume",
+            "description": "Tracking MEV/MAV/MRV per muscolo. Mai sovra o sotto-allenare i tuoi clienti."
+          },
+          "humanLoop": {
+            "title": "Human-in-the-Loop",
+            "description": "L'AI suggerisce, tu decidi. Rivedi ogni workout prima che arrivi al cliente."
+          },
+          "personalization": {
+            "title": "Personalizzazione Profonda",
+            "description": "Attrezzatura, infortuni, preferenze, esperienza - tutto considerato automaticamente."
+          }
+        },
+        "process": {
+          "step1": {
+            "title": "Inserisci Profilo Cliente",
+            "description": "Obiettivi, attrezzatura, programma, limitazioni"
+          },
+          "step2": {
+            "title": "L'AI Genera il Programma",
+            "description": "Mesociclo completo in secondi"
+          },
+          "step3": {
+            "title": "Tu Rivedi e Modifichi",
+            "description": "Personalizza tutto prima dell'approvazione"
+          },
+          "step4": {
+            "title": "Il Cliente Riceve il Workout",
+            "description": "Pronto ad allenarsi subito"
+          }
+        }
+      },
+      "clientDashboard": {
+        "title": "Dashboard Clienti",
+        "subtitle": "Tutti i tuoi clienti. Una dashboard potente.",
+        "description": "Invita i clienti con un semplice link. Vedi tutti i loro workout, feedback e progressi in un unico posto.",
+        "features": {
+          "invite": {
+            "title": "Onboarding Clienti Facile",
+            "description": "Condividi un link o codice. I clienti entrano in secondi."
+          },
+          "overview": {
+            "title": "Vista d'Insieme",
+            "description": "Vedi tutti i clienti, il loro stato e i workout in programma."
+          },
+          "feedback": {
+            "title": "Feedback in Tempo Reale",
+            "description": "Sappi subito quando i workout sono completati."
+          },
+          "control": {
+            "title": "Controllo Totale",
+            "description": "Abilita/disabilita accesso, metti in pausa programmi, modifica quando vuoi."
+          }
+        },
+        "metrics": {
+          "activeClients": "Clienti Attivi",
+          "workoutsThisWeek": "Workout Questa Settimana",
+          "completionRate": "Tasso Completamento",
+          "avgSatisfaction": "Soddisfazione Media"
+        }
+      },
+      "progressMonitoring": {
+        "title": "Monitoraggio Progressi",
+        "subtitle": "Vedi tutto. Non perderti nulla.",
+        "description": "Foto Check Room, grafici volume, tracking progressive overload. Il percorso completo dei tuoi clienti, visualizzato.",
+        "features": {
+          "checkRoom": {
+            "title": "Check Room",
+            "description": "Foto progressi settimanali con strumenti di confronto. Traccia i cambiamenti fisici nel tempo."
+          },
+          "volumeGraphs": {
+            "title": "Analisi Volume",
+            "description": "Tracking volume per muscolo. Vedi se i clienti stanno progredendo o necessitano aggiustamenti."
+          },
+          "overloadTracking": {
+            "title": "Progressive Overload",
+            "description": "Traccia aumenti peso/rep. Sappi esattamente quando spingere di più."
+          },
+          "history": {
+            "title": "Storico Completo",
+            "description": "Ogni workout, ogni nota, ogni metrica. Niente perso."
+          }
+        }
+      },
+      "interfaceModes": {
+        "title": "Tre Modalità di Interfaccia",
+        "subtitle": "L'esperienza giusta per ogni utente.",
+        "description": "I tuoi clienti hanno una vista semplificata. Tu hai il controllo totale. I clienti avanzati possono accedere a più dettagli.",
+        "modes": {
+          "simple": {
+            "title": "Modalità Simple",
+            "subtitle": "Per la maggior parte dei clienti",
+            "description": "Recap workout pulito, animazioni esercizi, log facile. Zero confusione.",
+            "features": {
+              "feature1": "Card riassunto workout",
+              "feature2": "Animazioni esercizi",
+              "feature3": "Log con un tap",
+              "feature4": "Celebrazione progressi"
+            }
+          },
+          "coach": {
+            "title": "Modalità Coach",
+            "subtitle": "Per te",
+            "description": "Controllo totale su tutti i clienti. Modifica workout, vedi analytics, gestisci programmi.",
+            "features": {
+              "feature1": "Dashboard multi-cliente",
+              "feature2": "Editor programmi",
+              "feature3": "Suite analytics",
+              "feature4": "Strumenti comunicazione"
+            }
+          },
+          "advanced": {
+            "title": "Modalità Pro",
+            "subtitle": "Per clienti esperti",
+            "description": "Metriche dettagliate, tracking RIR/RPE, dati volume. Per clienti che vogliono di più.",
+            "features": {
+              "feature1": "Visibilità metriche completa",
+              "feature2": "Tracking RIR/RPE",
+              "feature3": "Landmark di volume",
+              "feature4": "Aggiustamenti personalizzati"
+            }
+          }
+        }
+      },
+      "comparison": {
+        "title": "Vecchio Modo vs Arvo",
+        "subtitle": "Trasforma il tuo modo di fare coaching.",
+        "items": {
+          "programming": {
+            "category": "Programmazione",
+            "old": "Fogli Excel manuali, copia-incolla",
+            "new": "Schede AI-generated, personalizzate"
+          },
+          "delivery": {
+            "category": "Consegna",
+            "old": "PDF via email, messaggi WhatsApp",
+            "new": "Consegna istantanea in-app"
+          },
+          "tracking": {
+            "category": "Tracking",
+            "old": "Auto-report dei clienti, dati persi",
+            "new": "Log automatico, completo"
+          },
+          "progress": {
+            "category": "Foto Progressi",
+            "old": "Sparse tra app di messaggistica",
+            "new": "Check Room organizzata"
+          },
+          "time": {
+            "category": "Tempo per Cliente",
+            "old": "4-6 ore/settimana",
+            "new": "15 minuti/settimana"
+          },
+          "weekends": {
+            "category": "Weekend",
+            "old": "A lavorare sulle schede",
+            "new": "Tempo libero"
+          }
+        }
+      },
+      "faq": {
+        "title": "FAQ per Coach",
+        "subtitle": "Domande comuni sul coaching con Arvo.",
+        "items": {
+          "invite": {
+            "question": "Come invito i clienti?",
+            "answer": "Condividi il tuo link o codice coach unico. I clienti creano un account e vengono automaticamente collegati a te. Puoi anche inviare inviti diretti via email dalla dashboard."
+          },
+          "clientPay": {
+            "question": "I clienti pagano separatamente?",
+            "answer": "I clienti hanno accesso gratuito quando collegati al tuo account coach. Il tuo abbonamento copre il loro accesso all'app. Tu fatturi i clienti separatamente per i tuoi servizi di coaching."
+          },
+          "customize": {
+            "question": "Posso personalizzare i workout generati dall'AI?",
+            "answer": "Assolutamente. Ogni workout passa prima da te. Aggiungi esercizi, modifica volumi, cambia split - hai il controllo totale prima che il cliente veda qualsiasi cosa."
+          },
+          "seeProgress": {
+            "question": "Come vedo i progressi dei clienti?",
+            "answer": "La Coach Dashboard mostra tutti i clienti a colpo d'occhio. Clicca su qualsiasi cliente per vedere le foto Check Room, storico workout, grafici volume e tutti i dati registrati."
+          },
+          "clientSwitch": {
+            "question": "I clienti possono cambiare coach?",
+            "answer": "Sì, i clienti possono scollegarsi in qualsiasi momento. Lo storico workout rimane con loro. Puoi anche rilasciare i clienti dalla tua dashboard."
+          },
+          "maxClients": {
+            "question": "C'è un limite di clienti?",
+            "answer": "Il piano Coach supporta fino a 50 clienti attivi. Ne servono di più? Contattaci per soluzioni enterprise."
+          }
+        }
+      },
+      "cta": {
+        "title": "Pronto a Riprenderti i Weekend?",
+        "subtitle": "Unisciti a centinaia di coach che già usano Arvo per scalare il loro business.",
+        "button": "Inizia Prova Gratuita",
+        "note": "Nessuna carta di credito richiesta. Accesso completo per 14 giorni."
       }
     }
   },
@@ -5069,8 +5375,29 @@
       "totalSets": "Set totali"
     },
     "calendar": {
-      "months": ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
-      "daysShort": ["L", "M", "M", "G", "V", "S", "D"],
+      "months": [
+        "Gennaio",
+        "Febbraio",
+        "Marzo",
+        "Aprile",
+        "Maggio",
+        "Giugno",
+        "Luglio",
+        "Agosto",
+        "Settembre",
+        "Ottobre",
+        "Novembre",
+        "Dicembre"
+      ],
+      "daysShort": [
+        "L",
+        "M",
+        "M",
+        "G",
+        "V",
+        "S",
+        "D"
+      ],
       "workout": "workout",
       "workouts": "workouts",
       "workoutCompleted": "Workout completato",

@@ -268,19 +268,32 @@ export class WorkoutGeneratorService {
 
     // Select exercises using AI with error handling
     let selection
+
+    // Get recent exercise names for stagnation analysis
+    const recentExerciseNames = this.extractRecentExercises(recentWorkouts)
+
+    // Calculate exercise stagnation/plateau data for AI rotation recommendations
+    const exerciseHistoryContext = await this.getExerciseStagnationData(
+      userId,
+      recentExerciseNames,
+      supabase
+    )
+
     try {
       selection = await exerciseSelector.selectExercises({
         workoutType: workoutType as Exclude<WorkoutType, 'rest'>, // Safe: rest days are filtered at line 120
         weakPoints: profile.weak_points || [],
         availableEquipment: allAvailableEquipment,
         customEquipment: customEquipment, // Pass custom equipment metadata
-        recentExercises: this.extractRecentExercises(recentWorkouts),
+        recentExercises: recentExerciseNames,
+        exerciseHistoryContext, // NEW: Stagnation/plateau data for rotation recommendations
         approachId: profile.approach_id,
         userId,
         experienceYears: profile.experience_years,
         userAge: profile.age,
         userGender: profile.gender,
         trainingFocus: profile.training_focus as 'upper_body' | 'lower_body' | 'balanced' | null,
+        bodyType: profile.body_type as 'gynoid' | 'android' | 'mixed' | 'ectomorph' | 'mesomorph' | 'endomorph' | null,
         // Periodization context
         mesocycleWeek: profile.current_mesocycle_week,
         mesocyclePhase: profile.mesocycle_phase as 'accumulation' | 'intensification' | 'deload' | 'transition' | null,
@@ -990,6 +1003,149 @@ export class WorkoutGeneratorService {
         error: error instanceof Error ? error.message : String(error)
       })
       return null
+    }
+  }
+
+  /**
+   * Get exercise stagnation/plateau data for AI rotation recommendations
+   * Calculates weeks used and performance change for each exercise
+   *
+   * @param userId - User ID
+   * @param exerciseNames - Exercise names to analyze
+   * @param supabase - Supabase client
+   * @returns Array of exercise history context for AI prompt
+   */
+  private static async getExerciseStagnationData(
+    userId: string,
+    exerciseNames: string[],
+    supabase: any
+  ): Promise<Array<{
+    name: string
+    weeksUsed: number
+    isPlateaued: boolean
+    avgWeightChange: number
+  }>> {
+    if (!exerciseNames || exerciseNames.length === 0) {
+      return []
+    }
+
+    try {
+      // Query sets_log for the last 8 weeks, grouped by exercise and week
+      const eightWeeksAgo = new Date()
+      eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56) // 8 weeks
+
+      const { data: setLogs, error } = await supabase
+        .from('sets_log')
+        .select(`
+          exercise_name,
+          weight_actual,
+          created_at,
+          workouts!inner (
+            user_id,
+            status
+          )
+        `)
+        .eq('workouts.user_id', userId)
+        .eq('workouts.status', 'completed')
+        .eq('set_type', 'working')
+        .eq('skipped', false)
+        .gte('created_at', eightWeeksAgo.toISOString())
+        .order('created_at', { ascending: true })
+
+      if (error || !setLogs || setLogs.length === 0) {
+        console.log('[getExerciseStagnationData] No data found or error:', error?.message)
+        return []
+      }
+
+      // Group by exercise name (case-insensitive)
+      const exerciseData = new Map<string, {
+        weeks: Set<string>
+        weightsByWeek: Map<string, number[]>
+      }>()
+
+      for (const log of setLogs) {
+        const exerciseName = log.exercise_name?.toLowerCase()
+        if (!exerciseName || log.weight_actual === null) continue
+
+        // Check if this exercise is in our target list (case-insensitive)
+        const matchingExercise = exerciseNames.find(
+          name => name.toLowerCase() === exerciseName
+        )
+        if (!matchingExercise) continue
+
+        // Get week key (YYYY-WW format)
+        const date = new Date(log.created_at)
+        const weekStart = new Date(date)
+        weekStart.setDate(date.getDate() - date.getDay()) // Start of week
+        const weekKey = weekStart.toISOString().slice(0, 10)
+
+        if (!exerciseData.has(matchingExercise)) {
+          exerciseData.set(matchingExercise, {
+            weeks: new Set(),
+            weightsByWeek: new Map()
+          })
+        }
+
+        const data = exerciseData.get(matchingExercise)!
+        data.weeks.add(weekKey)
+
+        if (!data.weightsByWeek.has(weekKey)) {
+          data.weightsByWeek.set(weekKey, [])
+        }
+        data.weightsByWeek.get(weekKey)!.push(log.weight_actual)
+      }
+
+      // Calculate plateau status for each exercise
+      const results: Array<{
+        name: string
+        weeksUsed: number
+        isPlateaued: boolean
+        avgWeightChange: number
+      }> = []
+
+      exerciseData.forEach((data, exerciseName) => {
+        const weeksUsed = data.weeks.size
+
+        // Calculate average weight change
+        const sortedWeeks = Array.from(data.weightsByWeek.entries())
+          .sort((a: [string, number[]], b: [string, number[]]) => a[0].localeCompare(b[0]))
+
+        let avgWeightChange = 0
+
+        if (sortedWeeks.length >= 2) {
+          // Compare first and last week averages
+          const firstWeekWeights = sortedWeeks[0][1]
+          const lastWeekWeights = sortedWeeks[sortedWeeks.length - 1][1]
+
+          const firstAvg = firstWeekWeights.reduce((a: number, b: number) => a + b, 0) / firstWeekWeights.length
+          const lastAvg = lastWeekWeights.reduce((a: number, b: number) => a + b, 0) / lastWeekWeights.length
+
+          if (firstAvg > 0) {
+            avgWeightChange = ((lastAvg - firstAvg) / firstAvg) * 100
+          }
+        }
+
+        // Plateau: 4+ weeks used AND weight change < 2.5%
+        const isPlateaued = weeksUsed >= 4 && Math.abs(avgWeightChange) < 2.5
+
+        results.push({
+          name: exerciseName,
+          weeksUsed,
+          isPlateaued,
+          avgWeightChange: Math.round(avgWeightChange * 10) / 10 // Round to 1 decimal
+        })
+      })
+
+      console.log('[getExerciseStagnationData] Calculated stagnation data:', {
+        exercisesAnalyzed: results.length,
+        plateauedCount: results.filter(r => r.isPlateaued).length
+      })
+
+      return results
+
+    } catch (error) {
+      console.error('[getExerciseStagnationData] Unexpected error:', error)
+      return []
     }
   }
 }

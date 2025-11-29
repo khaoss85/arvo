@@ -5,6 +5,8 @@ import { findEquipmentById } from '@/lib/constants/equipment-taxonomy'
 import { AnimationService } from '@/lib/services/animation.service'
 import type { WorkoutType } from '@/lib/services/muscle-groups.service'
 import type { Locale } from '@/i18n'
+import type { TechniqueType, TechniqueConfig, AppliedTechnique } from '@/lib/types/advanced-techniques'
+import { getBodyTypeAIContext, type BodyType } from '@/lib/constants/body-type-config'
 
 export interface ExerciseSelectionInput {
   workoutType: Exclude<WorkoutType, 'rest'>
@@ -20,6 +22,8 @@ export interface ExerciseSelectionInput {
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
   trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null
+  // Body type (morphotype) for volume distribution adjustments
+  bodyType?: BodyType | null
   // Split context (optional)
   sessionFocus?: string[] // Muscle groups for this session
   targetVolume?: Record<string, number> // Target sets per muscle
@@ -54,6 +58,13 @@ export interface ExerciseSelectionInput {
     workoutsCompleted: number
     avgMentalReadiness: number | null
   }
+  // Exercise stagnation/plateau data for rotation recommendations
+  exerciseHistoryContext?: Array<{
+    name: string
+    weeksUsed: number
+    isPlateaued: boolean
+    avgWeightChange: number
+  }>
 }
 
 export interface WarmupSet {
@@ -94,6 +105,8 @@ export interface SelectedExercise {
   // Visual guidance (populated automatically by AnimationService)
   animationUrl?: string | null
   hasAnimation?: boolean
+  // Advanced training technique (optional, AI-generated)
+  advancedTechnique?: AppliedTechnique
 }
 
 export interface InsightInfluencedChange {
@@ -715,6 +728,11 @@ ${input.trainingFocus ? `- Training Focus: ${input.trainingFocus === 'upper_body
 `
       : ''
 
+    // Body type context for morphotype-based volume adjustments
+    const bodyTypeContext = input.bodyType && input.userGender
+      ? getBodyTypeAIContext(input.bodyType, input.userGender)
+      : ''
+
     // Training focus context for BRO splits
     const trainingFocusContext = input.trainingFocus && input.trainingFocus !== 'balanced' && input.workoutType !== 'full_body'
       ? `
@@ -1334,6 +1352,7 @@ You MUST generate a COMPLETE workout that satisfies ALL constraints in a SINGLE 
 Approach context:
 ${context}
 ${demographicContext}
+${bodyTypeContext}
 ${trainingFocusContext}
 ${exercisePrinciplesContext}
 ${romEmphasisContext}
@@ -1379,6 +1398,52 @@ ${recentExercises.map(ex => `- ${ex.name}${ex.metadata?.equipment_variant ? ` ($
 
 IMPORTANT: Only create a new exercise name if the exercise is truly different from the ones listed above. Naming consistency is crucial for tracking progress over time.
 ` : ''}
+
+${input.exerciseHistoryContext && input.exerciseHistoryContext.length > 0 ? `
+=== EXERCISE ROTATION CONTEXT ===
+The following exercises have been used recently. Consider rotation if plateau is detected:
+
+${input.exerciseHistoryContext.map(ex => `- ${ex.name}: ${ex.weeksUsed} week${ex.weeksUsed !== 1 ? 's' : ''} in rotation
+  ${ex.isPlateaued
+    ? `⚠️ PLATEAU DETECTED (${ex.avgWeightChange >= 0 ? '+' : ''}${ex.avgWeightChange}% weight change) - Consider substituting with similar movement pattern`
+    : `✓ Progressing (${ex.avgWeightChange >= 0 ? '+' : ''}${ex.avgWeightChange}% weight change)`}`).join('\n')}
+
+ROTATION RULES:
+1. If an exercise shows PLATEAU (4+ weeks, <2.5% progress): prefer a fresh alternative with similar movement pattern
+2. Maintain the same muscle targeting when substituting (e.g., Bench Press → Incline Dumbbell Press)
+3. Do NOT remove compound exercises entirely - substitute with variants instead
+4. Exercises marked as "Progressing" should be kept in rotation unless other constraints apply
+5. User prefers CONSERVATIVE rotation - only change when plateau is clearly evident
+` : ''}
+
+=== ADVANCED TRAINING TECHNIQUES ===
+You can optionally apply ONE advanced technique per exercise when appropriate to maximize training effectiveness.
+
+Available techniques (use sparingly, max 2-3 per workout):
+- drop_set: Reduce weight and continue without rest. Best for isolation exercises at end of workout.
+  Config: { "type": "drop_set", "drops": 2-4, "dropPercentage": 20-25 }
+- rest_pause: Brief pauses (10-15s) within a set to extend volume. Works for compound and isolation.
+  Config: { "type": "rest_pause", "miniSets": 2-3, "restSeconds": 10-15 }
+- superset: Two exercises back-to-back without rest. Pair agonist-antagonist or same muscle group.
+  Config: { "type": "superset", "pairedExerciseIndex": <index of paired exercise>, "restAfterBoth": 90-120 }
+- top_set_backoff: One heavy top set followed by lighter backoff sets. Best for main compound lifts.
+  Config: { "type": "top_set_backoff", "topSetReps": 3-5, "backoffSets": 2-3, "backoffPercentage": 10-15, "backoffReps": 8-12 }
+- myo_reps: Activation set + multiple mini-sets with 3-5s rest. For isolation, advanced users only.
+  Config: { "type": "myo_reps", "activationReps": 12-20, "miniSetReps": 3-5, "miniSets": 3-5, "restSeconds": 3-5 }
+- cluster_set: Intra-set rest (15-30s) between small rep clusters. For heavy compounds, strength focus.
+  Config: { "type": "cluster_set", "repsPerCluster": 2-3, "clusters": 4-6, "intraRestSeconds": 15-30 }
+- pyramid: Progressive weight changes across sets. Good for beginners/intermediate.
+  Config: { "type": "pyramid", "direction": "ascending"|"descending"|"full", "steps": 3-5 }
+
+TECHNIQUE APPLICATION RULES:
+1. Only apply techniques when the approach philosophy supports them (check advancedTechniques in approach)
+2. Match technique to user experience level:
+   - Beginner: superset, pyramid only
+   - Intermediate: + drop_set, rest_pause, top_set_backoff
+   - Advanced: + myo_reps, cluster_set
+3. Consider fatigue accumulation - apply intensification techniques later in workout
+4. Provide clear rationale for why the technique benefits this specific exercise
+5. If applying superset, both paired exercises must have matching "pairedExerciseIndex" pointing to each other
 
 <constraint_hierarchy>
   <priority_1 level="ABSOLUTE" override="none">
@@ -1878,7 +1943,12 @@ Required JSON structure:
           "technicalFocus": "Maintain form to failure",
           "mentalFocus": "One more quality rep"
         }
-      ]
+      ],
+      "advancedTechnique": {  // OPTIONAL - only include when applying a technique
+        "technique": "drop_set" | "rest_pause" | "superset" | "top_set_backoff" | "myo_reps" | "cluster_set" | "pyramid",
+        "config": { /* technique-specific config as described above */ },
+        "rationale": "Why this technique benefits this exercise"
+      }
     }
   ],
   "workoutRationale": "string",
@@ -1974,6 +2044,22 @@ Required JSON structure:
                     required: ['setNumber', 'technicalFocus', 'mentalFocus'],
                     additionalProperties: false
                   }
+                },
+                advancedTechnique: {
+                  type: 'object',
+                  properties: {
+                    technique: {
+                      type: 'string',
+                      enum: ['drop_set', 'rest_pause', 'superset', 'top_set_backoff', 'myo_reps', 'giant_set', 'cluster_set', 'pyramid']
+                    },
+                    config: {
+                      type: 'object',
+                      additionalProperties: true // Allow flexible config based on technique type
+                    },
+                    rationale: { type: 'string' }
+                  },
+                  required: ['technique', 'config', 'rationale'],
+                  additionalProperties: false
                 }
               },
               required: ['name', 'equipmentVariant', 'sets', 'repRange', 'restSeconds', 'tempo', 'rationaleForSelection', 'alternatives', 'primaryMuscles', 'secondaryMuscles', 'movementPattern', 'romEmphasis', 'unilateral', 'technicalCues', 'warmupSets', 'setGuidance'],

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2, BookOpen, Search } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2, BookOpen, Search, History } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
@@ -28,6 +28,8 @@ import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 import { SplitReferenceCard } from './split-reference-card'
 import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
 import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
+import { ExerciseHistoryModal } from './exercise-history-modal'
+import { getProgressiveTargetAction } from '@/app/actions/exercise-history-actions'
 
 interface Exercise {
   name: string
@@ -119,6 +121,9 @@ export function RefineWorkoutPage({
   const [librarySearchQuery, setLibrarySearchQuery] = useState<Map<number, string>>(new Map())
   const [libraryResults, setLibraryResults] = useState<Map<number, ExerciseDBExercise[]>>(new Map())
   const [isSearchingLibrary, setIsSearchingLibrary] = useState<Map<number, boolean>>(new Map())
+
+  // Exercise history modal state
+  const [historyModalExercise, setHistoryModalExercise] = useState<string | null>(null)
 
   // Calculate actual muscle group volumes from current exercises
   const actualVolumes = useMemo(() => {
@@ -303,6 +308,23 @@ export function RefineWorkoutPage({
     if (!workout) return
 
     const currentExercise = exercises[index]
+
+    // Check if user has history for this exercise
+    let targetWeight = currentExercise.targetWeight
+    let targetReps = currentExercise.targetReps
+    let rationale = t('library.selectedFrom')
+
+    try {
+      const historyResult = await getProgressiveTargetAction(libraryExercise.name, currentExercise.repRange)
+      if (historyResult.success && historyResult.data?.hasHistory) {
+        targetWeight = historyResult.data.weight
+        targetReps = historyResult.data.reps
+        rationale = t('library.basedOnHistory')
+      }
+    } catch (err) {
+      console.error('[handleLibrarySelect] Failed to get progressive target:', err)
+    }
+
     const newExercises = [...exercises]
 
     newExercises[index] = {
@@ -311,7 +333,9 @@ export function RefineWorkoutPage({
       equipmentVariant: libraryExercise.equipment,
       animationUrl: libraryExercise.gifUrl || undefined,
       hasAnimation: !!libraryExercise.gifUrl,
-      rationale: t('library.selectedFrom'),
+      targetWeight,
+      targetReps,
+      rationale,
     }
 
     setExercises(newExercises)
@@ -893,6 +917,17 @@ export function RefineWorkoutPage({
                           <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
                         </button>
                       )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setHistoryModalExercise(exercise.name)
+                        }}
+                        className="p-0.5 hover:bg-green-600/20 rounded transition-colors group"
+                        aria-label={t('exercise.viewHistoryAria', { name: exercise.name })}
+                        title={t('exercise.viewHistory')}
+                      >
+                        <History className="w-4 h-4 text-gray-500 group-hover:text-green-400 transition-colors" />
+                      </button>
                       <h3 className="font-semibold text-lg">{exercise.name}</h3>
                       {exercise.userAddedSets && exercise.userAddedSets > 0 && (
                         <UserModificationBadge
@@ -1462,6 +1497,15 @@ export function RefineWorkoutPage({
         type={confirmDialog.type}
         confirmText={confirmDialog.confirmText}
       />
+
+      {/* Exercise History Modal */}
+      {historyModalExercise && (
+        <ExerciseHistoryModal
+          isOpen={true}
+          onClose={() => setHistoryModalExercise(null)}
+          exerciseName={historyModalExercise}
+        />
+      )}
     </div>
   )
 }

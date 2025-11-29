@@ -1,5 +1,6 @@
 import { BaseAgent } from './base.agent'
 import { getSupabaseBrowserClient } from '@/lib/supabase/client'
+import { getBodyTypeAIContext, type BodyType } from '@/lib/constants/body-type-config'
 
 export interface CycleCompletionSummary {
   cycleNumber: number
@@ -32,6 +33,8 @@ export interface SplitPlannerInput {
   userAge?: number | null
   userGender?: 'male' | 'female' | 'other' | null
   trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null // User training emphasis preference
+  // Body type (morphotype) for volume distribution adjustments
+  bodyType?: BodyType | null
   userHeight?: number | null // cm (for work capacity estimation)
   userWeight?: number | null // kg (for recovery capacity estimation)
   // Schedule constraints
@@ -655,6 +658,14 @@ Output a valid JSON split plan.`
                          input.trainingFocus === 'lower_body' ? 'Lower Body (glutes/hamstrings/quads)' :
                          'Balanced Development'
       parts.push(`Training Focus Preference: ${focusLabel}`)
+    }
+
+    // Add body type context if specified
+    if (input.bodyType && input.userGender) {
+      const bodyTypeContext = getBodyTypeAIContext(input.bodyType, input.userGender)
+      if (bodyTypeContext) {
+        parts.push(bodyTypeContext)
+      }
     }
 
     if (input.userHeight) {

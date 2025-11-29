@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus, Check, Info } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus, Check, Info, History } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
@@ -20,6 +20,9 @@ import { AddExerciseButton } from './add-exercise-button'
 import { AddExerciseModal } from './add-exercise-modal'
 import { UserModificationBadge } from './user-modification-badge'
 import { EditSetModal } from './edit-set-modal'
+import { ExerciseHistoryModal } from './exercise-history-modal'
+import { TechniqueIndicator } from './technique-indicator'
+import { TechniqueInstructionsModal } from './technique-instructions-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
 import { SetStructureDisplay } from './set-structure-display'
@@ -91,6 +94,8 @@ export function ExerciseCard({
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false)
   const [editSetIndex, setEditSetIndex] = useState<number | null>(null)
   const [warmupSkipPromptDismissed, setWarmupSkipPromptDismissed] = useState(false)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [showTechniqueModal, setShowTechniqueModal] = useState(false)
 
   // Hydration reminder state
   const [hydrationDismissedAt, setHydrationDismissedAt] = useState<Date | null>(null)
@@ -727,9 +732,27 @@ export function ExerciseCard({
             <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
               {exercise.exerciseName}
             </h2>
+            {/* Advanced Training Technique indicator */}
+            {exercise.advancedTechnique && (
+              <div className="mt-2">
+                <TechniqueIndicator
+                  technique={exercise.advancedTechnique}
+                  onClick={() => setShowTechniqueModal(true)}
+                  size="md"
+                  showRationale
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowHistoryModal(true)}
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+              title={t('exercise.viewHistory')}
+            >
+              <History className="w-5 h-5 text-gray-400 hover:text-green-400" />
+            </button>
             <button
               onClick={loadExerciseExplanation}
               disabled={loadingExerciseExplanation}
@@ -1014,6 +1037,23 @@ export function ExerciseCard({
           onRationaleInvalidate={() => {
             // Optional: invalidate rationale if needed
           }}
+        />
+      )}
+
+      {/* Exercise History Modal */}
+      <ExerciseHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        exerciseName={exercise.exerciseName}
+      />
+
+      {/* Technique Instructions Modal */}
+      {exercise.advancedTechnique && (
+        <TechniqueInstructionsModal
+          technique={exercise.advancedTechnique}
+          exerciseName={exercise.exerciseName}
+          open={showTechniqueModal}
+          onOpenChange={setShowTechniqueModal}
         />
       )}
     </div>

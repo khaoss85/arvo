@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Target, Trophy, Sparkles } from "lucide-react";
+import { Target, Trophy, Sparkles, Users } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from 'next-intl';
 
 interface WhoIsArvoForProps {
@@ -48,6 +49,20 @@ export function WhoIsArvoFor({ variant = 'default' }: WhoIsArvoForProps) {
       ],
       highlight: variant === 'simple',
     },
+    {
+      id: 'coaches',
+      icon: Users,
+      titleKey: 'cards.coaches.title',
+      subtitleKey: 'cards.coaches.subtitle',
+      features: [
+        'cards.coaches.feature1',
+        'cards.coaches.feature2',
+        'cards.coaches.feature3',
+      ],
+      highlight: false,
+      isLink: true,
+      href: '/for-trainers',
+    },
   ];
 
   return (
@@ -70,24 +85,20 @@ export function WhoIsArvoFor({ variant = 'default' }: WhoIsArvoForProps) {
         </motion.div>
 
         {/* Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {cards.map((card, index) => {
             const Icon = card.icon;
-            return (
-              <motion.div
-                key={card.id}
-                className={`
-                  relative p-6 lg:p-8 rounded-2xl border
-                  ${card.highlight
-                    ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
-                    : 'bg-background border-border'
-                  }
-                `}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
+            const cardClassName = `
+              block h-full relative p-6 lg:p-8 rounded-2xl border transition-colors
+              ${card.highlight
+                ? 'bg-primary-50 dark:bg-primary-900/20 border-primary-200 dark:border-primary-800'
+                : 'bg-background border-border'
+              }
+              ${card.isLink ? 'hover:border-primary-400 dark:hover:border-primary-600 cursor-pointer' : ''}
+            `;
+
+            const cardContent = (
+              <>
                 {/* Icon */}
                 <div className={`
                   w-12 h-12 rounded-xl flex items-center justify-center mb-4
@@ -132,6 +143,35 @@ export function WhoIsArvoFor({ variant = 'default' }: WhoIsArvoForProps) {
                     <span className="px-3 py-1 text-xs font-medium bg-primary-500 text-white rounded-full">
                       {variant === 'simple' ? t('badges.forYou') : t('badges.popular')}
                     </span>
+                  </div>
+                )}
+
+                {/* Learn More for link cards */}
+                {card.isLink && (
+                  <div className="absolute -top-3 right-6">
+                    <span className="px-3 py-1 text-xs font-medium bg-green-500 text-white rounded-full">
+                      {t('badges.learnMore')}
+                    </span>
+                  </div>
+                )}
+              </>
+            );
+
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                {card.isLink && card.href ? (
+                  <Link href={card.href} className={cardClassName}>
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <div className={cardClassName}>
+                    {cardContent}
                   </div>
                 )}
               </motion.div>

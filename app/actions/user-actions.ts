@@ -133,6 +133,7 @@ export async function updatePersonalInfo(
   data: {
     first_name: string | null
     gender: 'male' | 'female' | 'other' | null
+    body_type: 'gynoid' | 'android' | 'mixed' | 'ectomorph' | 'mesomorph' | 'endomorph' | null
     training_focus: 'upper_body' | 'lower_body' | 'balanced' | null
     age: number | null
     weight: number | null
@@ -169,6 +170,7 @@ export async function updatePersonalInfo(
       .update({
         first_name: data.first_name,
         gender: data.gender ?? undefined,
+        body_type: data.body_type,
         training_focus: data.training_focus,
         age: data.age,
         weight: data.weight,

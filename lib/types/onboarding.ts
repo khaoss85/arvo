@@ -45,6 +45,8 @@ export type OnboardingData = {
   firstName?: string | null
   gender: 'male' | 'female' | 'other' // Required field
   trainingFocus?: TrainingFocus | null // Training emphasis preference
+  // Body type (morphotype) for personalized volume distribution
+  bodyType?: 'gynoid' | 'android' | 'mixed' | 'ectomorph' | 'mesomorph' | 'endomorph' | null
   age?: number | null
   weight?: number | null
   height?: number | null

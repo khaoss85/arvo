@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { AISuggestionCard } from '@/components/onboarding/AISuggestionCard'
 import { useAIOnboardingSuggestion } from '@/lib/hooks/useAIOnboardingSuggestion'
 import type { TrainingFocus } from '@/lib/types/onboarding'
+import { getBodyTypesForGender, BODY_TYPE_CONFIGS, type BodyType } from '@/lib/constants/body-type-config'
 
 export default function ProfilePage() {
   const t = useTranslations('onboarding.steps.profile')
@@ -19,6 +20,7 @@ export default function ProfilePage() {
 
   const [firstName, setFirstName] = useState<string>(data.firstName || '')
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(data.gender || null)
+  const [bodyType, setBodyType] = useState<BodyType | null>(data.bodyType || null)
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus | null>(data.trainingFocus || null)
   const [age, setAge] = useState<number | null>(data.age || null)
   const [weight, setWeight] = useState<number | null>(data.weight || null)
@@ -59,12 +61,30 @@ export default function ProfilePage() {
     setStepData('gender', value)
     setGenderError(null)
 
+    // Reset body type when gender changes (different options per gender)
+    if (value === 'other') {
+      setBodyType(null)
+      setStepData('bodyType', null)
+    } else if (bodyType) {
+      // Check if current body type is valid for new gender
+      const validBodyTypes = getBodyTypesForGender(value)
+      if (!validBodyTypes.includes(bodyType)) {
+        setBodyType(null)
+        setStepData('bodyType', null)
+      }
+    }
+
     // Set intelligent default for training_focus if not already set
     if (!trainingFocus) {
       const defaultFocus: TrainingFocus = value === 'male' ? 'upper_body' : value === 'female' ? 'lower_body' : 'balanced'
       setTrainingFocus(defaultFocus)
       setStepData('trainingFocus', defaultFocus)
     }
+  }
+
+  const handleBodyTypeChange = (value: BodyType | null) => {
+    setBodyType(value)
+    setStepData('bodyType', value)
   }
 
   const handleTrainingFocusChange = (value: TrainingFocus) => {
@@ -168,6 +188,7 @@ export default function ProfilePage() {
 
     setStepData('firstName', null)
     setStepData('gender', gender)
+    setStepData('bodyType', bodyType || null)
     setStepData('trainingFocus', trainingFocus || 'balanced')
     setStepData('age', null)
     setStepData('weight', null)
@@ -190,6 +211,7 @@ export default function ProfilePage() {
     }
 
     setStepData('gender', gender)
+    setStepData('bodyType', bodyType || null)
     setStepData('trainingFocus', trainingFocus || 'balanced')
     completeStep(currentStepNumber)
 
@@ -310,6 +332,50 @@ export default function ProfilePage() {
             </p>
           )}
         </div>
+
+        {/* Body Type - Only shown when gender is male or female */}
+        {gender && gender !== 'other' && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <User className="w-5 h-5 text-gray-500" />
+              <label className="font-medium text-gray-900 dark:text-white">
+                {t('fields.bodyType.label')}
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">({tCommon('labels.optional')})</span>
+              </label>
+              <button
+                className="ml-auto p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                onMouseEnter={() => setShowTooltip('bodyType')}
+                onMouseLeave={() => setShowTooltip(null)}
+              >
+                <HelpCircle className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+            {showTooltip === 'bodyType' && (
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-900 dark:text-blue-300">
+                {t('fields.bodyType.tooltip')}
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-3">
+              {getBodyTypesForGender(gender).map((type) => {
+                const config = BODY_TYPE_CONFIGS[type]
+                return (
+                  <button
+                    key={type}
+                    onClick={() => handleBodyTypeChange(bodyType === type ? null : type)}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      bodyType === type
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{config.emoji}</div>
+                    <div className="text-sm font-medium">{t(`fields.bodyType.options.${type}`)}</div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Training Focus */}
         <div>

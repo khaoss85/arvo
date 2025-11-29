@@ -23,6 +23,17 @@ export const sportGoalSchema = z.enum([
 ]);
 export type SportGoal = z.infer<typeof sportGoalSchema>;
 
+// Body Type (Morphotype) for training personalization
+export const bodyTypeSchema = z.enum([
+  'gynoid',      // Female: pear-shaped, fat storage in hips/thighs
+  'android',    // Female: apple-shaped, fat storage in abdomen
+  'mixed',      // Female: balanced distribution
+  'ectomorph',  // Male: lean, difficulty gaining mass
+  'mesomorph',  // Male: naturally muscular, gains easily
+  'endomorph'   // Male: stores fat easily, wider build
+]);
+export type BodyType = z.infer<typeof bodyTypeSchema>;
+
 // Training Approaches Schema
 export const trainingApproachSchema = z.object({
   id: z.string().uuid(),
@@ -86,6 +97,8 @@ export const userProfileSchema = z.object({
   first_name: z.string().max(50).nullable(),
   gender: z.enum(['male', 'female', 'other']).nullable(),
   training_focus: z.enum(['upper_body', 'lower_body', 'balanced']).nullable(),
+  // Body type (morphotype) for personalized training
+  body_type: bodyTypeSchema.nullable().optional(),
   age: z.number().int().min(13).max(120).nullable(),
   weight: z.number().min(0).max(500).nullable(), // kg
   height: z.number().min(0).max(300).nullable(), // cm

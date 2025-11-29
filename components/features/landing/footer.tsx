@@ -4,7 +4,8 @@ import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { Dumbbell, Code2, Sparkles } from "lucide-react";
+import { Dumbbell, Code2, Sparkles, Users } from "lucide-react";
+import { PublicLanguageSwitch } from "./public-language-switch";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,7 +13,9 @@ export function Footer() {
   const pathname = usePathname();
   const isMainPage = pathname === '/';
   const isProPage = pathname === '/pro';
-  const isSimplePage = pathname === '/simple';
+  const isSimplePage = pathname === '/lite';
+  const isFeaturesPage = pathname === '/features';
+  const isTrainersPage = pathname === '/for-trainers';
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
@@ -70,8 +73,8 @@ export function Footer() {
         <div className="py-8 border-t border-border">
           <h3 className="font-semibold mb-4 text-center">{t('idealFor.title')}</h3>
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {/* Show Athletes card on main and simple pages */}
-            {(isMainPage || isSimplePage) && (
+            {/* Show Athletes card on main, simple and features pages */}
+            {(isMainPage || isSimplePage || isFeaturesPage) && (
               <Link
                 href="/pro"
                 className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
@@ -90,8 +93,8 @@ export function Footer() {
               </Link>
             )}
 
-            {/* Show Tech-Savvy card on pro and simple pages */}
-            {(isProPage || isSimplePage) && (
+            {/* Show Tech-Savvy card on pro, simple and features pages */}
+            {(isProPage || isSimplePage || isFeaturesPage) && (
               <Link
                 href="/"
                 className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
@@ -110,8 +113,8 @@ export function Footer() {
               </Link>
             )}
 
-            {/* Show Casual Users card on main and pro pages */}
-            {(isMainPage || isProPage) && (
+            {/* Show Casual Users card on main, pro and features pages */}
+            {(isMainPage || isProPage || isFeaturesPage) && (
               <Link
                 href="/lite"
                 className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
@@ -124,6 +127,26 @@ export function Footer() {
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {t('idealFor.casual.description')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* Show Personal Trainers card on main, pro, simple and features pages */}
+            {(isMainPage || isProPage || isSimplePage || isFeaturesPage) && !isTrainersPage && (
+              <Link
+                href="/for-trainers"
+                className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
+              >
+                <div className="flex items-start gap-3">
+                  <Users className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {t('idealFor.trainers.title')}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('idealFor.trainers.description')}
                     </p>
                   </div>
                 </div>
@@ -150,9 +173,15 @@ export function Footer() {
               </a>
             </p>
           </div>
-          <p className="text-xs">
-            {t('powered')}
-          </p>
+          <div className="flex items-center gap-3 text-xs">
+            <PublicLanguageSwitch />
+            <span>·</span>
+            <Link href="/sitemap.xml" className="hover:text-foreground transition-colors">
+              Sitemap
+            </Link>
+            <span>·</span>
+            <span>{t('powered')}</span>
+          </div>
         </div>
       </div>
     </footer>

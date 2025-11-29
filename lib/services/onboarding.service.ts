@@ -43,6 +43,7 @@ export class OnboardingService {
         first_name: data.firstName || null,
         gender: data.gender || null,
         training_focus: data.trainingFocus || null,
+        body_type: data.bodyType || null,
         age: data.age || null,
         weight: data.weight || null,
         height: data.height || null,

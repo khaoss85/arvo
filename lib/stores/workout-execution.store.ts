@@ -7,6 +7,7 @@ import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { AnimationService } from '@/lib/services/animation.service'
 import { getExerciseName } from '@/lib/utils/exercise-helpers'
+import type { AppliedTechnique, TechniqueExecutionState, TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
 
 export interface WarmupSet {
   setNumber: number
@@ -65,6 +66,11 @@ export interface ExerciseExecution {
   // Exercise substitution tracking
   originalExerciseName?: string // If this exercise was substituted, stores the original exercise name
   substitutionReason?: string // Reason for substitution (e.g., "equipment_unavailable", "injury", "user_preference")
+
+  // Advanced training technique (AI-generated)
+  advancedTechnique?: AppliedTechnique // The technique applied to this exercise (drop_set, rest_pause, etc.)
+  techniqueState?: TechniqueExecutionState // Current state during technique execution
+  techniqueResult?: TechniqueExecutionResult // Final result after technique completion
 }
 
 interface WorkoutExecutionState {
@@ -169,7 +175,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
                 equipmentVariant: ex.equipment,
               }))
 
-            const mapped = {
+            const mapped: ExerciseExecution = {
               exerciseId: ex.id || crypto.randomUUID(), // Generate UUID if not present for caching
               exerciseName: ex.exerciseName || ex.name,
               equipmentVariant: ex.equipmentVariant || ex.equipment,
@@ -185,6 +191,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               restSeconds: ex.restSeconds || 90, // Default to 90s if not specified by approach
               animationUrl,
               hasAnimation: !!animationUrl,
+              // Advanced training technique from AI
+              advancedTechnique: ex.advancedTechnique || undefined,
+              techniqueState: undefined,
+              techniqueResult: undefined,
             }
 
             if (idx === 0) {
@@ -350,6 +360,10 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               restSeconds: ex.restSeconds || 90, // Default to 90s if not specified by approach
               animationUrl,
               hasAnimation: !!animationUrl,
+              // Advanced training technique from AI (preserve on resume)
+              advancedTechnique: ex.advancedTechnique || undefined,
+              techniqueState: undefined, // Reset state on resume
+              techniqueResult: undefined, // Reset results on resume
             }
           })
         )

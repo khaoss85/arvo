@@ -18,6 +18,8 @@ interface OnboardingState {
     firstName?: string | null // User's first name for personalization
     gender?: 'male' | 'female' | 'other' | null
     trainingFocus?: 'upper_body' | 'lower_body' | 'balanced' | null // Training emphasis preference
+    // Body type (morphotype) for personalized volume distribution
+    bodyType?: 'gynoid' | 'android' | 'mixed' | 'ectomorph' | 'mesomorph' | 'endomorph' | null
     age?: number | null
     weight?: number | null // kg
     height?: number | null // cm

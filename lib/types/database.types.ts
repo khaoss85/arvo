@@ -319,6 +319,7 @@ export type Database = {
           skip_reason: string | null
           skipped: boolean
           substitution_reason: string | null
+          technique: Json | null
           weight_actual: number | null
           weight_target: number | null
           workout_id: string | null
@@ -339,6 +340,7 @@ export type Database = {
           skip_reason?: string | null
           skipped?: boolean
           substitution_reason?: string | null
+          technique?: Json | null
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null
@@ -359,6 +361,7 @@ export type Database = {
           skip_reason?: string | null
           skipped?: boolean
           substitution_reason?: string | null
+          technique?: Json | null
           weight_actual?: number | null
           weight_target?: number | null
           workout_id?: string | null
@@ -520,6 +523,57 @@ export type Database = {
             columns: ["approach_id"]
             isOneToOne: false
             referencedRelation: "training_approaches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technique_analytics: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          execution_result: Json | null
+          exercise_name: string
+          id: string
+          technique_config: Json
+          technique_type: string
+          user_id: string
+          workout_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          execution_result?: Json | null
+          exercise_name: string
+          id?: string
+          technique_config: Json
+          technique_type: string
+          user_id: string
+          workout_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          execution_result?: Json | null
+          exercise_name?: string
+          id?: string
+          technique_config?: Json
+          technique_type?: string
+          user_id?: string
+          workout_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "technique_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "technique_analytics_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
             referencedColumns: ["id"]
           },
         ]
@@ -756,6 +810,7 @@ export type Database = {
           audio_coaching_enabled: boolean
           audio_coaching_speed: number
           available_equipment: string[] | null
+          body_type: string | null
           caloric_intake_kcal: number | null
           caloric_phase: string | null
           caloric_phase_start_date: string | null
@@ -798,6 +853,7 @@ export type Database = {
           audio_coaching_enabled?: boolean
           audio_coaching_speed?: number
           available_equipment?: string[] | null
+          body_type?: string | null
           caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
@@ -842,6 +898,7 @@ export type Database = {
           audio_coaching_enabled?: boolean
           audio_coaching_speed?: number
           available_equipment?: string[] | null
+          body_type?: string | null
           caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
