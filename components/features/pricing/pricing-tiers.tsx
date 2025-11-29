@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Check, X, Sparkles, Building2, Zap } from "lucide-react";
+import { Check, X, Sparkles, Users, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useTranslations } from 'next-intl';
@@ -19,6 +19,8 @@ interface PricingTierProps {
   name: string;
   price: string;
   period?: string;
+  priceSubtext?: string;
+  extraPricing?: string;
   description: string;
   features: TierFeature[];
   badge?: string;
@@ -35,6 +37,8 @@ function PricingTier({
   name,
   price,
   period,
+  priceSubtext,
+  extraPricing,
   description,
   features,
   badge,
@@ -83,6 +87,12 @@ function PricingTier({
             <span className="text-muted-foreground">{period}</span>
           )}
         </div>
+        {priceSubtext && (
+          <p className="text-xs text-muted-foreground mt-1">{priceSubtext}</p>
+        )}
+        {extraPricing && (
+          <p className="text-sm font-medium text-primary-600 dark:text-primary-400 mt-1">{extraPricing}</p>
+        )}
         <p className="text-sm text-muted-foreground mt-2">{description}</p>
       </div>
 
@@ -165,24 +175,26 @@ export function PricingTiers({ isAuthenticated }: PricingTiersProps) {
       delay: 0.1,
     },
     {
-      name: t('team.name'),
-      price: t('team.price'),
-      description: t('team.description'),
+      name: t('coach.name'),
+      price: '€30',
+      period: t('coach.period'),
+      priceSubtext: t('coach.clientsIncluded'),
+      extraPricing: t('coach.extraClients'),
+      description: t('coach.description'),
       features: [
         { text: t('features.everythingPro'), included: true },
-        { text: t('features.multiUser'), included: true },
-        { text: t('features.customBranding'), included: true },
-        { text: t('features.apiAccess'), included: true },
-        { text: t('features.dedicatedSupport'), included: true },
-        { text: t('features.analytics'), included: true },
-        { text: t('features.onboarding'), included: true },
+        { text: t('features.clientDashboard'), included: true },
+        { text: t('features.createWorkouts'), included: true },
+        { text: t('features.assignMethodologies'), included: true },
+        { text: t('features.clientAnalytics'), included: true },
+        { text: t('features.volumeMonitoring'), included: true },
+        { text: t('features.prioritySupport'), included: true },
       ],
-      badge: t('team.badge'),
-      badgeColor: 'bg-muted text-muted-foreground',
-      cta: t('team.cta'),
-      ctaLink: 'mailto:team@arvo.guru',
-      ctaDisabled: true,
-      icon: <Building2 className="w-6 h-6" />,
+      badge: t('coach.badge'),
+      badgeColor: 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-400',
+      cta: t('coach.cta'),
+      ctaLink: 'mailto:coach@arvo.guru',
+      icon: <Users className="w-6 h-6" />,
       delay: 0.2,
     },
   ];

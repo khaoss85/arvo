@@ -818,6 +818,8 @@
           },
           "viewAnimation": "View exercise",
           "viewAnimationAria": "View {name} animation",
+          "viewHistory": "View history",
+          "viewHistoryAria": "View {name} history",
           "removeExercise": "Remove exercise"
         },
         "substitution": {
@@ -1069,7 +1071,8 @@
         "previous": "← Previous",
         "gettingAiSuggestion": "Getting AI suggestion...",
         "exerciseLimitReached": "You have reached the limit of 3 extra exercises. Remove an exercise to add a new one.",
-        "editSet": "Edit set"
+        "editSet": "Edit set",
+        "viewHistory": "View exercise history"
       },
       "editSet": {
         "title": "Edit Set {setNumber}",
@@ -1095,6 +1098,19 @@
         "keyboardHints": "ESC to cancel • ENTER to proceed",
         "esc": "ESC",
         "enter": "ENTER"
+      },
+      "exerciseHistory": {
+        "title": "Exercise History",
+        "loading": "Loading history...",
+        "retry": "Retry",
+        "noHistory": "No history found",
+        "noHistoryHint": "Complete workouts with this exercise to track your progress",
+        "maxWeight": "Max Weight",
+        "maxVolume": "Max Volume",
+        "lastSessions": "Recent Sessions",
+        "totalSessions": "total",
+        "mostRecent": "Latest",
+        "lastPerformed": "Last performed"
       }
     },
     "substitution": {
@@ -5247,12 +5263,14 @@
         "badge": "Most Popular",
         "cta": "Upgrade to Pro"
       },
-      "team": {
-        "name": "Team / Gym",
-        "price": "Custom",
-        "description": "For gyms, coaches, and teams who need multi-user management.",
-        "badge": "Coming Soon",
-        "cta": "Contact Us"
+      "coach": {
+        "name": "Coach",
+        "period": "/month",
+        "clientsIncluded": "up to 10 clients",
+        "extraClients": "+€3/client/month after 10",
+        "description": "Full client management for personal trainers and coaches.",
+        "badge": "For Trainers",
+        "cta": "Become a Coach"
       },
       "features": {
         "aiAgents": "19 specialized AI agents",
@@ -5267,12 +5285,11 @@
         "exportData": "Export your data",
         "everythingFree": "Everything in Free",
         "everythingPro": "Everything in Pro",
-        "multiUser": "Multi-user management",
-        "customBranding": "Custom branding",
-        "apiAccess": "API access",
-        "dedicatedSupport": "Dedicated support",
-        "analytics": "Advanced analytics",
-        "onboarding": "Personalized onboarding"
+        "clientDashboard": "Dedicated client dashboard",
+        "createWorkouts": "Create/edit client workouts",
+        "assignMethodologies": "Assign methodologies to clients",
+        "clientAnalytics": "Client analytics & progress",
+        "volumeMonitoring": "Volume & performance monitoring"
       }
     },
     "modes": {

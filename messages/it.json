@@ -818,6 +818,8 @@
           },
           "viewAnimation": "Visualizza esercizio",
           "viewAnimationAria": "Visualizza animazione {name}",
+          "viewHistory": "Vedi storico",
+          "viewHistoryAria": "Vedi storico {name}",
           "removeExercise": "Rimuovi esercizio"
         },
         "substitution": {
@@ -1072,7 +1074,8 @@
         "previous": "← Precedente",
         "gettingAiSuggestion": "Ottenimento suggerimento AI...",
         "exerciseLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.",
-        "editSet": "Modifica serie"
+        "editSet": "Modifica serie",
+        "viewHistory": "Vedi storico esercizio"
       },
       "editSet": {
         "title": "Modifica Serie {setNumber}",
@@ -1098,6 +1101,19 @@
         "keyboardHints": "ESC per annullare • ENTER per procedere",
         "esc": "ESC",
         "enter": "ENTER"
+      },
+      "exerciseHistory": {
+        "title": "Storico Esercizio",
+        "loading": "Caricamento storico...",
+        "retry": "Riprova",
+        "noHistory": "Nessuno storico trovato",
+        "noHistoryHint": "Completa allenamenti con questo esercizio per tracciare i tuoi progressi",
+        "maxWeight": "Peso Max",
+        "maxVolume": "Volume Max",
+        "lastSessions": "Sessioni Recenti",
+        "totalSessions": "totali",
+        "mostRecent": "Più recente",
+        "lastPerformed": "Ultima esecuzione"
       }
     },
     "substitution": {
@@ -5273,12 +5289,14 @@
         "badge": "Più Popolare",
         "cta": "Passa a Pro"
       },
-      "team": {
-        "name": "Team / Palestra",
-        "price": "Personalizzato",
-        "description": "Per palestre, coach e team che necessitano di gestione multi-utente.",
-        "badge": "In Arrivo",
-        "cta": "Contattaci"
+      "coach": {
+        "name": "Coach",
+        "period": "/mese",
+        "clientsIncluded": "fino a 10 clienti",
+        "extraClients": "+€3/cliente/mese oltre i 10",
+        "description": "Gestione completa clienti per personal trainer e coach.",
+        "badge": "Per Trainer",
+        "cta": "Diventa Coach"
       },
       "features": {
         "aiAgents": "19 agenti AI specializzati",
@@ -5293,12 +5311,11 @@
         "exportData": "Esporta i tuoi dati",
         "everythingFree": "Tutto in Gratuito",
         "everythingPro": "Tutto in Pro",
-        "multiUser": "Gestione multi-utente",
-        "customBranding": "Branding personalizzato",
-        "apiAccess": "Accesso API",
-        "dedicatedSupport": "Supporto dedicato",
-        "analytics": "Analytics avanzati",
-        "onboarding": "Onboarding personalizzato"
+        "clientDashboard": "Dashboard clienti dedicata",
+        "createWorkouts": "Crea/modifica workout clienti",
+        "assignMethodologies": "Assegna metodologie ai clienti",
+        "clientAnalytics": "Analytics e progressi clienti",
+        "volumeMonitoring": "Monitoraggio volume e performance"
       }
     },
     "modes": {
