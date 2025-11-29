@@ -3028,13 +3028,13 @@
     },
     "hero": {
       "title": {
-        "aiCoach": "AI Coach",
-        "subtitle": "Che Ragiona Come un Esperto"
+        "aiCoach": "AI Workout Coach",
+        "subtitle": "per Chi Si Allena in Palestra"
       },
-      "tagline": "AI personal trainer per palestra, ottimizzato per Kuba, Mentzer, FST-7",
+      "tagline": "Progressione reale serie dopo serie. RIR/RPE-aware. Progettato per allenamenti Kuba, Mentzer, FST-7.",
       "painPoints": "\"Che peso uso nella prossima serie?\" · \"Mi sto sovrallenando?\" · \"Questo esercizio alternativo è equivalente?\"",
       "description": {
-        "main": "19 agenti AI specializzati. Progressione in tempo reale, serie dopo serie. Impara le tue preferenze automaticamente.",
+        "main": "App AI personal trainer per bodybuilding & powerbuilding. 19 agenti specializzati adattano ogni serie in tempo reale.",
         "methods": "Metodo Kuba & Mentzer HIT implementati con fedeltà scientifica."
       },
       "stats": {
@@ -3058,7 +3058,7 @@
       "cards": {
         "intermediate": {
           "title": "Lifter Intermedi e Avanzati",
-          "subtitle": "Che seguono metodologie strutturate",
+          "subtitle": "Bodybuilding & powerbuilding in palestra",
           "feature1": "Praticanti del Metodo Kuba, Mentzer HIT, FST-7, Y3T",
           "feature2": "Tracking del volume MEV/MAV/MRV",
           "feature3": "Progressione intelligente serie dopo serie"

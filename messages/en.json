@@ -3002,13 +3002,13 @@
     },
     "hero": {
       "title": {
-        "aiCoach": "AI Coach",
-        "subtitle": "That Reasons Like an Expert"
+        "aiCoach": "AI Workout Coach",
+        "subtitle": "for Gym Lifters"
       },
-      "tagline": "AI personal trainer for gym, optimized for Kuba, Mentzer, FST-7",
+      "tagline": "Real set-by-set progression. RIR/RPE-aware. Built for Kuba, Mentzer, FST-7 training.",
       "painPoints": "\"What weight should I use next set?\" · \"Am I overtraining?\" · \"Is this exercise swap equivalent?\"",
       "description": {
-        "main": "19 specialized AI agents. Real-time set-by-set progression. Learns your preferences automatically.",
+        "main": "AI personal trainer app for bodybuilding & powerbuilding. 19 specialized agents adapt every set in real-time.",
         "methods": "Kuba Method & Mentzer HIT implemented with scientific fidelity."
       },
       "stats": {
@@ -3032,7 +3032,7 @@
       "cards": {
         "intermediate": {
           "title": "Intermediate & Advanced Lifters",
-          "subtitle": "Following structured methodologies",
+          "subtitle": "Bodybuilding & powerbuilding in gym",
           "feature1": "Kuba Method, Mentzer HIT, FST-7, Y3T practitioners",
           "feature2": "MEV/MAV/MRV volume tracking",
           "feature3": "Set-by-set intelligent progression"
