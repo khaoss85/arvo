@@ -162,7 +162,7 @@ export interface ExerciseSession {
 export interface PersonalBest {
   maxWeight: number | null
   maxWeightDate: string | null
-  maxVolume: number | null  // weight × reps for single set
+  maxVolume: number | null  // Total volume of best session (sum of all sets)
   maxVolumeDate: string | null
 }
 
@@ -296,21 +296,26 @@ export async function getExerciseHistoryAction(
         rir: log.rir_actual,
       })
 
-      // Track personal bests
+      // Track max weight personal best
       const weight = log.weight_actual ?? 0
-      const reps = log.reps_actual ?? 0
-      const volume = weight * reps
 
       if (weight > maxWeight) {
         maxWeight = weight
         maxWeightDate = completedAt
       }
-
-      if (volume > maxVolume) {
-        maxVolume = volume
-        maxVolumeDate = completedAt
-      }
     }
+
+    // Calculate max session volume (sum of all sets in a session)
+    Array.from(workoutMap.values()).forEach(session => {
+      const sessionVolume = session.sets.reduce((sum, set) => {
+        return sum + ((set.weight ?? 0) * (set.reps ?? 0))
+      }, 0)
+
+      if (sessionVolume > maxVolume) {
+        maxVolume = sessionVolume
+        maxVolumeDate = session.completedAt
+      }
+    })
 
     // Convert map to sorted array and limit to requested sessions
     const sessions = Array.from(workoutMap.values())
