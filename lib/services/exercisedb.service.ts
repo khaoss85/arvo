@@ -22,7 +22,8 @@ export interface ExerciseDBExercise {
 }
 
 interface ExerciseDBCache {
-  exercises: Map<string, ExerciseDBExercise>
+  exercises: Map<string, ExerciseDBExercise> // Indexed by normalized name for lookup
+  allExercises: ExerciseDBExercise[] // Full array for search (no collisions)
   lastFetch: number
   embeddingsGenerated: boolean // Track if embeddings are available
 }
@@ -30,6 +31,7 @@ interface ExerciseDBCache {
 export class ExerciseDBService {
   private static cache: ExerciseDBCache = {
     exercises: new Map(),
+    allExercises: [],
     lastFetch: 0,
     embeddingsGenerated: false,
   }
@@ -99,17 +101,22 @@ export class ExerciseDBService {
         allExercises = await response.json()
       }
 
-      // Build cache map
+      // Build cache map and array
       this.cache.exercises.clear()
+      this.cache.allExercises = [] // Reset array
+
       allExercises.forEach((exercise) => {
-        // Store by normalized name for easy lookup
+        // Store in array for search (preserves ALL exercises)
+        this.cache.allExercises.push(exercise)
+
+        // Store by normalized name for lookup (may have collisions, but that's ok for lookup)
         const normalizedName = this.normalizeName(exercise.name)
         this.cache.exercises.set(normalizedName, exercise)
       })
 
       this.cache.lastFetch = now
 
-      console.log(`[ExerciseDB] Cached ${allExercises.length} exercises`)
+      console.log(`[ExerciseDB] Cached ${allExercises.length} exercises (${this.cache.exercises.size} unique normalized names)`)
 
       // Debug: Log sample exercises to verify content
       const sampleExercises = Array.from(this.cache.exercises.keys()).slice(0, 10)
@@ -672,6 +679,9 @@ export class ExerciseDBService {
 
     const normalizedQuery = query.toLowerCase().trim()
 
+    // Tokenize query for multi-word searches (e.g., "leg curl" → ["leg", "curl"])
+    const queryTokens = normalizedQuery.split(/\s+/).filter(t => t.length >= 2)
+
     // Expand query with aliases if applicable
     const searchTerms = [normalizedQuery]
     for (const [alias, expansions] of Object.entries(this.SEARCH_ALIASES)) {
@@ -683,19 +693,26 @@ export class ExerciseDBService {
     const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
     const seenIds = new Set<string>()
 
-    for (const exercise of Array.from(this.cache.exercises.values())) {
+    // Use allExercises array to search ALL exercises (no collisions from normalized name keys)
+    for (const exercise of this.cache.allExercises) {
       // Skip duplicates
       if (exercise.id && seenIds.has(exercise.id)) continue
+
+      const exerciseNameLower = exercise.name?.toLowerCase() ?? ''
+      const equipmentLower = exercise.equipment?.toLowerCase() ?? ''
+      const targetLower = exercise.target?.toLowerCase() ?? ''
+      const bodyPartLower = exercise.bodyPart?.toLowerCase() ?? ''
 
       // Check if any search term matches any field
       let matched = false
       let bestPriority = 999
 
+      // First, check full query match (higher priority)
       for (const term of searchTerms) {
-        const nameMatch = exercise.name?.toLowerCase().includes(term) ?? false
-        const equipmentMatch = exercise.equipment?.toLowerCase().includes(term) ?? false
-        const targetMatch = exercise.target?.toLowerCase().includes(term) ?? false
-        const bodyPartMatch = exercise.bodyPart?.toLowerCase().includes(term) ?? false
+        const nameMatch = exerciseNameLower.includes(term)
+        const equipmentMatch = equipmentLower.includes(term)
+        const targetMatch = targetLower.includes(term)
+        const bodyPartMatch = bodyPartLower.includes(term)
         const secondaryMatch = exercise.secondaryMuscles?.some(m =>
           m?.toLowerCase().includes(term)
         ) ?? false
@@ -705,11 +722,21 @@ export class ExerciseDBService {
           // Calculate priority for this match
           let priority = 3
           if (nameMatch) {
-            priority = exercise.name?.toLowerCase().startsWith(term) ? 0 : 1
+            priority = exerciseNameLower.startsWith(term) ? 0 : 1
           } else if (targetMatch) {
             priority = 2
           }
           bestPriority = Math.min(bestPriority, priority)
+        }
+      }
+
+      // If no full match, check if ALL tokens are present in name (tokenized search)
+      // This catches cases like "lying leg curl" when searching "leg curl"
+      if (!matched && queryTokens.length > 1) {
+        const allTokensMatch = queryTokens.every(token => exerciseNameLower.includes(token))
+        if (allTokensMatch) {
+          matched = true
+          bestPriority = 1 // Contains all tokens in name
         }
       }
 
@@ -734,6 +761,7 @@ export class ExerciseDBService {
    */
   static clearCache(): void {
     this.cache.exercises.clear()
+    this.cache.allExercises = []
     this.cache.lastFetch = 0
     console.log('[ExerciseDB] Cache cleared')
   }
