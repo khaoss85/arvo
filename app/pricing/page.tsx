@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PublicNavbar } from "@/components/features/landing/public-navbar";
 import { PricingHero } from "@/components/features/pricing/pricing-hero";
 import { PricingTiers } from "@/components/features/pricing/pricing-tiers";
 import { TrainingModes } from "@/components/features/pricing/training-modes";
@@ -49,6 +50,7 @@ export default async function PricingPage() {
 
   return (
     <main className="min-h-screen">
+      <PublicNavbar isAuthenticated={isAuthenticated} />
       <PricingHero />
       <PricingTiers isAuthenticated={isAuthenticated} />
       <TrainingModes />

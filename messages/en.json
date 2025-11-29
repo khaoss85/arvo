@@ -859,7 +859,11 @@
           "searchPlaceholder": "Search exercises...",
           "noResults": "No exercises found",
           "hint": "Type at least 2 characters to search",
-          "selectedFrom": "Selected from exercise library"
+          "selectedFrom": "Selected from exercise library",
+          "basedOnHistory": "📊 Based on your training history",
+          "progressiveOverload": "Progressive overload applied",
+          "directSelection": "Direct selection from library",
+          "muscleWarning": "This targets {target} ({bodyPart}) - different from current exercise"
         },
         "validation": {
           "caution": "⚠️ Caution: {rationale}",
@@ -2789,6 +2793,13 @@
         "magicLink": "Passwordless magic link authentication.",
         "privacyFirst": "Your data is yours. Privacy-first design."
       }
+    },
+    "navbar": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "login": "Login",
+      "getStarted": "Get Started",
+      "dashboard": "Dashboard"
     },
     "footer": {
       "brand": {

@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/utils/auth.server";
 import type { Metadata } from "next";
+import { PublicNavbar } from "@/components/features/landing/public-navbar";
 import { HeroSectionSimple } from "@/components/features/landing-simple/hero-section-simple";
 import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { SimpleShowcase } from "@/components/features/landing-simple/simple-showcase";
@@ -58,6 +59,7 @@ export default async function LitePage() {
 
   return (
     <main className="min-h-screen">
+      <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroSectionSimple isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <WhoIsArvoFor variant="simple" />
       <SimpleShowcase />

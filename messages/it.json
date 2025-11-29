@@ -859,7 +859,11 @@
           "searchPlaceholder": "Cerca esercizi...",
           "noResults": "Nessun esercizio trovato",
           "hint": "Digita almeno 2 caratteri per cercare",
-          "selectedFrom": "Selezionato dalla libreria esercizi"
+          "selectedFrom": "Selezionato dalla libreria esercizi",
+          "basedOnHistory": "📊 Basato sul tuo storico",
+          "progressiveOverload": "Progressive overload applicato",
+          "directSelection": "Selezione diretta dalla libreria",
+          "muscleWarning": "Questo allena {target} ({bodyPart}) - diverso dall'esercizio attuale"
         },
         "validation": {
           "caution": "⚠️ Attenzione: {rationale}",
@@ -2815,6 +2819,13 @@
         "magicLink": "Autenticazione passwordless con magic link.",
         "privacyFirst": "I tuoi dati sono tuoi. Design privacy-first."
       }
+    },
+    "navbar": {
+      "features": "Funzionalità",
+      "pricing": "Prezzi",
+      "login": "Accedi",
+      "getStarted": "Inizia Ora",
+      "dashboard": "Dashboard"
     },
     "footer": {
       "brand": {

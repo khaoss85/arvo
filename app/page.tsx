@@ -1,4 +1,5 @@
 import { getUser } from "@/lib/utils/auth.server";
+import { PublicNavbar } from "@/components/features/landing/public-navbar";
 import { HeroSection } from "@/components/features/landing/hero-section";
 import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { AIShowcase } from "@/components/features/landing/ai-showcase";
@@ -26,6 +27,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
+      <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroSection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <WhoIsArvoFor variant="default" />
       <AIShowcase />

@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/utils/auth.server";
 import type { Metadata } from "next";
+import { PublicNavbar } from "@/components/features/landing/public-navbar";
 import { HeroSectionPro } from "@/components/features/landing-pro/hero-section-pro";
 import { WhoIsArvoFor } from "@/components/features/landing/who-is-arvo-for";
 import { CoachingShowcase } from "@/components/features/landing-pro/coaching-showcase";
@@ -77,6 +78,7 @@ export default async function ProPage() {
 
   return (
     <main className="min-h-screen">
+      <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroSectionPro isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <WhoIsArvoFor variant="pro" />
       <ProblemSolution />

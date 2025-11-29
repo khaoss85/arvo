@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PublicNavbar } from "@/components/features/landing/public-navbar";
 import { HeroFeatures } from "@/components/features/features-page/hero-features";
 import { AgentArchitecture } from "@/components/features/features-page/agent-architecture";
 import { SetBySetSection } from "@/components/features/features-page/set-by-set-section";
@@ -57,6 +58,7 @@ export default async function FeaturesPage() {
 
   return (
     <main className="min-h-screen">
+      <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroFeatures />
       <AgentArchitecture />
       <SetBySetSection />
