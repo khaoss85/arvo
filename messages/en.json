@@ -5112,6 +5112,38 @@
       },
       "quote": "\"The difference between good and great training is the micro-adjustments. Arvo makes these automatically.\""
     },
+    "plateauDetection": {
+      "title": "Exercise History & Plateau Detection",
+      "subtitle": "Know when to change exercises. AI tracks your history and detects stalled progress automatically.",
+      "featuresTitle": "How It Works",
+      "features": {
+        "history": {
+          "title": "Exercise History Tracking",
+          "description": "AI knows how many consecutive weeks you've been using each exercise. No manual tracking needed."
+        },
+        "detection": {
+          "title": "Automatic Plateau Detection",
+          "description": "Detects when an exercise hasn't progressed for 4+ weeks. Get alerted before you waste time on stale movements."
+        },
+        "rotation": {
+          "title": "Smart Exercise Rotation",
+          "description": "Conservative exercise suggestions when plateau is detected. Maintains training stimulus while breaking stagnation."
+        }
+      },
+      "timeline": {
+        "exerciseHistory": "Exercise history",
+        "week1": "Week 1 • Started",
+        "week4": "Week 4 • Progressing",
+        "week8": "Week 8 • Stalled",
+        "plateauAlert": "Plateau",
+        "suggestion": "AI suggests: Try Incline DB Press",
+        "suggestionReason": "Similar movement pattern, fresh stimulus for chest development"
+      },
+      "stats": {
+        "weeksThreshold": "weeks without progress",
+        "detection": "detection"
+      }
+    },
     "methodologies": {
       "title": "Training Methods with Scientific Fidelity",
       "subtitle": "Not generic interpretations. Complete methodology implementations with hundreds of lines of configuration.",

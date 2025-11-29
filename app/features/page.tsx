@@ -5,6 +5,7 @@ import { AgentArchitecture } from "@/components/features/features-page/agent-arc
 import { SetBySetSection } from "@/components/features/features-page/set-by-set-section";
 import { MethodologiesDetailed } from "@/components/features/features-page/methodologies-detailed";
 import { VolumeTrackingSection } from "@/components/features/features-page/volume-tracking-section";
+import { PlateauDetectionSection } from "@/components/features/features-page/plateau-detection-section";
 import { CompetitorComparison } from "@/components/features/features-page/competitor-comparison";
 import { TechnicalSpecs } from "@/components/features/features-page/technical-specs";
 import { CTASection } from "@/components/features/landing/cta-section";
@@ -64,6 +65,7 @@ export default async function FeaturesPage() {
       <SetBySetSection />
       <MethodologiesDetailed />
       <VolumeTrackingSection />
+      <PlateauDetectionSection />
       <CompetitorComparison />
       <TechnicalSpecs />
       <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />

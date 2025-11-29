@@ -5138,6 +5138,38 @@
       },
       "quote": "\"La differenza tra un buon allenamento e uno eccellente sono i micro-aggiustamenti. Arvo li fa automaticamente.\""
     },
+    "plateauDetection": {
+      "title": "Storico Esercizi & Rilevamento Plateau",
+      "subtitle": "Sai quando cambiare esercizio. L'AI traccia la tua storia e rileva automaticamente i progressi fermi.",
+      "featuresTitle": "Come Funziona",
+      "features": {
+        "history": {
+          "title": "Tracciamento Storico Esercizi",
+          "description": "L'AI sa da quante settimane consecutive stai usando ogni esercizio. Nessun tracciamento manuale necessario."
+        },
+        "detection": {
+          "title": "Rilevamento Plateau Automatico",
+          "description": "Rileva quando un esercizio non progredisce da 4+ settimane. Ricevi un avviso prima di sprecare tempo su movimenti stantii."
+        },
+        "rotation": {
+          "title": "Rotazione Esercizi Intelligente",
+          "description": "Suggerimenti conservativi di esercizi quando viene rilevato un plateau. Mantiene lo stimolo allenante rompendo la stagnazione."
+        }
+      },
+      "timeline": {
+        "exerciseHistory": "Storico esercizio",
+        "week1": "Settimana 1 • Iniziato",
+        "week4": "Settimana 4 • In progresso",
+        "week8": "Settimana 8 • Fermo",
+        "plateauAlert": "Plateau",
+        "suggestion": "L'AI suggerisce: Prova Panca Inclinata Manubri",
+        "suggestionReason": "Pattern di movimento simile, stimolo fresco per lo sviluppo del petto"
+      },
+      "stats": {
+        "weeksThreshold": "settimane senza progresso",
+        "detection": "rilevamento"
+      }
+    },
     "methodologies": {
       "title": "Metodi di Allenamento con Fedeltà Scientifica",
       "subtitle": "Non interpretazioni generiche. Implementazioni complete delle metodologie con centinaia di linee di configurazione.",
