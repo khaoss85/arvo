@@ -68,6 +68,13 @@ export function ComparisonTable() {
       personalTrainer: "partial",
     },
     {
+      name: t('features.advancedTechniques.name'),
+      arvo: t('features.advancedTechniques.values.arvo'),
+      excel: false,
+      genericApps: false,
+      personalTrainer: "partial",
+    },
+    {
       name: t('features.injuryPrevention'),
       arvo: true,
       excel: false,

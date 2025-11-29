@@ -969,6 +969,44 @@
         "failedToNavigate": "Failed to return to dashboard. Please refresh the page."
       }
     },
+    "techniques": {
+      "dropSet": {
+        "name": "Drop Set",
+        "description": "Reduce weight and continue without rest"
+      },
+      "restPause": {
+        "name": "Rest-Pause",
+        "description": "Brief pauses within a set to extend volume"
+      },
+      "superset": {
+        "name": "Superset",
+        "description": "Two exercises back-to-back without rest"
+      },
+      "topSetBackoff": {
+        "name": "Top Set + Backoff",
+        "description": "One heavy set followed by lighter volume sets"
+      },
+      "myoReps": {
+        "name": "Myo-Reps",
+        "description": "Activation set plus mini-sets with brief rest"
+      },
+      "giantSet": {
+        "name": "Giant Set",
+        "description": "Three or more exercises in sequence"
+      },
+      "clusterSet": {
+        "name": "Cluster Set",
+        "description": "Intra-set rest periods between rep clusters"
+      },
+      "pyramid": {
+        "name": "Pyramid",
+        "description": "Progressive weight changes across sets"
+      },
+      "techniqueIndicator": {
+        "applied": "Advanced technique applied",
+        "viewInstructions": "Tap for instructions"
+      }
+    },
     "execution": {
       "loadingWorkout": "Loading workout...",
       "setLogger": {
@@ -3333,6 +3371,86 @@
         "text": "Not generic timers or static scripts. Real-time adaptation using GPT-5 reasoning, sports science, and biomechanical intelligence."
       }
     },
+    "advancedTechniques": {
+      "title": {
+        "part1": "Advanced Training",
+        "part2": "Techniques"
+      },
+      "subtitle": "AI-guided intensity methods for maximum muscle stimulus. Applied intelligently based on your fatigue, exercise type, and training approach.",
+      "badge": "AI-Guided",
+      "learnMore": "Learn More",
+      "techniques": {
+        "dropSet": {
+          "name": "Drop Set",
+          "shortDescription": "Reduce weight, continue without rest",
+          "description": "Perform reps to near failure, immediately reduce weight by 20-25%, and continue for 2-4 additional drops without rest.",
+          "whenApplied": "Applied to isolation exercises to maximize muscle fatigue at the end of a workout.",
+          "example": "3 drops, -20% weight each",
+          "level": "intermediate"
+        },
+        "restPause": {
+          "name": "Rest-Pause",
+          "shortDescription": "Brief 10-15s pauses within a set",
+          "description": "Complete reps to near failure, rest 10-15 seconds, then continue for 2-4 additional mini-sets.",
+          "whenApplied": "Used when seeking extra volume without additional exercises.",
+          "example": "3 mini-sets, 12s rest",
+          "level": "intermediate"
+        },
+        "superset": {
+          "name": "Superset",
+          "shortDescription": "Two exercises back-to-back",
+          "description": "Perform two exercises consecutively with no rest between them, then rest after both are completed.",
+          "whenApplied": "Pairs agonist-antagonist muscles (e.g., biceps/triceps) or same muscle group for time efficiency.",
+          "example": "Bicep curl + Tricep pushdown",
+          "level": "beginner"
+        },
+        "topSetBackoff": {
+          "name": "Top Set + Backoff",
+          "shortDescription": "Heavy set + lighter volume sets",
+          "description": "Perform one heavy top set at 3-5 reps, then reduce weight by 10-15% for 2-3 higher-rep backoff sets.",
+          "whenApplied": "Applied to main compound lifts for strength and hypertrophy balance.",
+          "example": "1×4 heavy, then 3×8 at -15%",
+          "level": "intermediate"
+        },
+        "myoReps": {
+          "name": "Myo-Reps",
+          "shortDescription": "Activation set + mini-sets",
+          "description": "Perform an activation set of 12-20 reps, then 3-5 mini-sets of 3-5 reps with only 3-5 seconds rest.",
+          "whenApplied": "Maximizes effective reps on isolation exercises for advanced lifters.",
+          "example": "15 reps + 4×4 with 5s rest",
+          "level": "advanced"
+        },
+        "giantSet": {
+          "name": "Giant Set",
+          "shortDescription": "3+ exercises consecutively",
+          "description": "Perform 3 or more exercises for the same muscle group back-to-back with no rest between exercises.",
+          "whenApplied": "Used for extreme metabolic stress and time-efficient workouts.",
+          "example": "Chest fly → Push-up → Cable crossover",
+          "level": "intermediate"
+        },
+        "clusterSet": {
+          "name": "Cluster Set",
+          "shortDescription": "Micro-pauses between rep clusters",
+          "description": "Break a set into clusters of 2-3 reps with 15-30 second intra-set rest periods.",
+          "whenApplied": "Applied to heavy compound lifts for strength focus while managing fatigue.",
+          "example": "6×2 with 20s intra-rest",
+          "level": "advanced"
+        },
+        "pyramid": {
+          "name": "Pyramid",
+          "shortDescription": "Progressive weight changes",
+          "description": "Progressively increase (ascending), decrease (descending), or both (full pyramid) the weight across sets.",
+          "whenApplied": "Used for warm-up progression or exploring different rep ranges in one exercise.",
+          "example": "12→10→8→6 reps, +weight each set",
+          "level": "beginner"
+        }
+      },
+      "levels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
+    },
     "comparison": {
       "title": {
         "part1": "Why ",
@@ -3364,6 +3482,12 @@
         "naturalLanguageNotes": "Natural language notes → AI insights",
         "biomechanicalAdjustments": "Biomechanical adjustments",
         "volumeTracking": "Volume tracking (MEV/MAV/MRV)",
+        "advancedTechniques": {
+          "name": "Advanced techniques",
+          "values": {
+            "arvo": "8 AI-guided"
+          }
+        },
         "injuryPrevention": "Injury prevention",
         "offlineSupport": "Offline support",
         "alwaysAvailable": "Always available",

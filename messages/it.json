@@ -971,6 +971,44 @@
         "failedToNavigate": "Impossibile tornare alla dashboard. Ricarica la pagina."
       }
     },
+    "techniques": {
+      "dropSet": {
+        "name": "Drop Set",
+        "description": "Riduci il peso e continua senza riposo per massimizzare l'affaticamento muscolare"
+      },
+      "restPause": {
+        "name": "Rest-Pause",
+        "description": "Brevi pause all'interno di una serie per estendere il volume"
+      },
+      "superset": {
+        "name": "Superset",
+        "description": "Due esercizi eseguiti consecutivamente senza riposo"
+      },
+      "topSetBackoff": {
+        "name": "Top Set + Backoff",
+        "description": "Una serie pesante seguita da serie più leggere per il volume"
+      },
+      "myoReps": {
+        "name": "Myo-Reps",
+        "description": "Serie di attivazione seguita da mini-serie con brevi pause"
+      },
+      "giantSet": {
+        "name": "Giant Set",
+        "description": "3+ esercizi eseguiti consecutivamente senza riposo"
+      },
+      "clusterSet": {
+        "name": "Cluster Set",
+        "description": "Serie suddivisa in mini-cluster con brevi pause intra-serie"
+      },
+      "pyramid": {
+        "name": "Piramide",
+        "description": "Peso e ripetizioni progressivamente modificati attraverso le serie"
+      },
+      "techniqueIndicator": {
+        "applied": "Tecnica avanzata applicata",
+        "viewInstructions": "Tocca per le istruzioni"
+      }
+    },
     "execution": {
       "loadingWorkout": "Caricamento allenamento...",
       "setLogger": {
@@ -3359,6 +3397,86 @@
         "text": "Non timer generici o script statici. Adattamento in tempo reale usando ragionamento GPT-5, scienza sportiva e intelligenza biomeccanica."
       }
     },
+    "advancedTechniques": {
+      "title": {
+        "part1": "Tecniche di Allenamento",
+        "part2": "Avanzate"
+      },
+      "subtitle": "Metodi di intensità guidati dall'AI per il massimo stimolo muscolare. Applicati intelligentemente in base alla tua fatica, tipo di esercizio e approccio di allenamento.",
+      "badge": "Guidato dall'AI",
+      "learnMore": "Scopri di Più",
+      "techniques": {
+        "dropSet": {
+          "name": "Drop Set",
+          "shortDescription": "Riduci il peso, continua senza pausa",
+          "description": "Esegui ripetizioni fino quasi al cedimento, riduci immediatamente il peso del 20-25% e continua per 2-4 drop aggiuntivi senza riposo.",
+          "whenApplied": "Applicato agli esercizi di isolamento per massimizzare l'affaticamento muscolare a fine allenamento.",
+          "example": "3 drop, -20% peso ciascuno",
+          "level": "intermediate"
+        },
+        "restPause": {
+          "name": "Rest-Pause",
+          "shortDescription": "Brevi pause di 10-15s all'interno di una serie",
+          "description": "Completa le ripetizioni fino quasi al cedimento, riposa 10-15 secondi, poi continua per 2-4 mini-set aggiuntivi.",
+          "whenApplied": "Usato quando si cerca volume extra senza esercizi aggiuntivi.",
+          "example": "3 mini-set, 12s riposo",
+          "level": "intermediate"
+        },
+        "superset": {
+          "name": "Superset",
+          "shortDescription": "Due esercizi consecutivi",
+          "description": "Esegui due esercizi consecutivamente senza pausa tra di essi, poi riposa dopo averli completati entrambi.",
+          "whenApplied": "Abbina muscoli agonisti-antagonisti (es. bicipiti/tricipiti) o stesso gruppo muscolare per efficienza.",
+          "example": "Curl bicipiti + Pushdown tricipiti",
+          "level": "beginner"
+        },
+        "topSetBackoff": {
+          "name": "Top Set + Backoff",
+          "shortDescription": "Serie pesante + serie di volume più leggere",
+          "description": "Esegui una serie pesante da 3-5 ripetizioni, poi riduci il peso del 10-15% per 2-3 serie backoff a ripetizioni più alte.",
+          "whenApplied": "Applicato ai principali esercizi composti per bilanciare forza e ipertrofia.",
+          "example": "1×4 pesante, poi 3×8 al -15%",
+          "level": "intermediate"
+        },
+        "myoReps": {
+          "name": "Myo-Reps",
+          "shortDescription": "Serie di attivazione + mini-set",
+          "description": "Esegui una serie di attivazione da 12-20 ripetizioni, poi 3-5 mini-set da 3-5 ripetizioni con solo 3-5 secondi di riposo.",
+          "whenApplied": "Massimizza le ripetizioni efficaci sugli esercizi di isolamento per atleti avanzati.",
+          "example": "15 reps + 4×4 con 5s riposo",
+          "level": "advanced"
+        },
+        "giantSet": {
+          "name": "Giant Set",
+          "shortDescription": "3+ esercizi consecutivi",
+          "description": "Esegui 3 o più esercizi per lo stesso gruppo muscolare consecutivamente senza pausa tra gli esercizi.",
+          "whenApplied": "Usato per stress metabolico estremo e allenamenti efficienti nel tempo.",
+          "example": "Chest fly → Push-up → Cable crossover",
+          "level": "intermediate"
+        },
+        "clusterSet": {
+          "name": "Cluster Set",
+          "shortDescription": "Micro-pause tra cluster di ripetizioni",
+          "description": "Dividi una serie in cluster da 2-3 ripetizioni con periodi di riposo intra-set di 15-30 secondi.",
+          "whenApplied": "Applicato agli esercizi composti pesanti per focus sulla forza gestendo la fatica.",
+          "example": "6×2 con 20s intra-riposo",
+          "level": "advanced"
+        },
+        "pyramid": {
+          "name": "Pyramid",
+          "shortDescription": "Cambi progressivi del peso",
+          "description": "Aumenta progressivamente (ascendente), diminuisci (discendente) o entrambi (piramide completa) il peso tra le serie.",
+          "whenApplied": "Usato per progressione nel riscaldamento o esplorare diversi range di ripetizioni in un esercizio.",
+          "example": "12→10→8→6 reps, +peso ogni serie",
+          "level": "beginner"
+        }
+      },
+      "levels": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzato"
+      }
+    },
     "comparison": {
       "title": {
         "part1": "Perché ",
@@ -3390,6 +3508,12 @@
         "naturalLanguageNotes": "Note in linguaggio naturale → insight AI",
         "biomechanicalAdjustments": "Aggiustamenti biomeccanici",
         "volumeTracking": "Tracciamento volume (MEV/MAV/MRV)",
+        "advancedTechniques": {
+          "name": "Tecniche avanzate",
+          "values": {
+            "arvo": "8 guidate da AI"
+          }
+        },
         "injuryPrevention": "Prevenzione infortuni",
         "offlineSupport": "Supporto offline",
         "alwaysAvailable": "Sempre disponibile",

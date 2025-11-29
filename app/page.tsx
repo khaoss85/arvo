@@ -63,6 +63,7 @@ import { GymReadyFeatures } from "@/components/features/landing/gym-ready-featur
 import { AICoachingFeatures } from "@/components/features/landing/ai-coaching-features";
 import { EquipmentVision } from "@/components/features/landing/equipment-vision";
 import { MethodologiesSection } from "@/components/features/landing/methodologies-section";
+import { AdvancedTechniquesSection } from "@/components/features/landing/advanced-techniques-section";
 import { ComparisonTable } from "@/components/features/landing/comparison-table";
 import { FAQSection } from "@/components/features/landing/faq-section";
 import { CTASection } from "@/components/features/landing/cta-section";
@@ -127,6 +128,7 @@ export default async function Home() {
       <AICoachingFeatures />
       <EquipmentVision />
       <MethodologiesSection />
+      <AdvancedTechniquesSection />
       <ComparisonTable />
       <FAQSection />
       <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
