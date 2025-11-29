@@ -19,6 +19,34 @@ import { ComparisonTable } from "@/components/features/landing/comparison-table"
 import { FAQSection } from "@/components/features/landing/faq-section";
 import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
+import { FAQSchema } from "@/components/seo/faq-schema";
+
+const proFAQs = [
+  {
+    question: "Can I use Arvo for contest prep?",
+    answer: "Absolutely. Track volume vs MRV week by week, monitor mental readiness trends across your prep, get automatic deload suggestions when fatigue accumulates. Everything you need for structured contest preparation with intelligent volume management.",
+  },
+  {
+    question: "Does Arvo understand periodization?",
+    answer: "Yes. Kuba Method has accumulation/intensification/deload phases built in. Mentzer HIT has 4-7 day recovery protocols. The system tracks where you are in your training cycle and adjusts volume, intensity, and frequency accordingly.",
+  },
+  {
+    question: "What if I want to run my own program?",
+    answer: "You're not locked into Kuba or Mentzer. Track any program you want. The AI still provides set-by-set progression guidance, injury pattern detection, volume tracking, and biomechanical adjustments with your own programming.",
+  },
+  {
+    question: "Does Arvo work offline in the gym?",
+    answer: "Yes, completely. All AI decisions run locally with cached models. No internet required during workouts. Data syncs automatically when you're back online.",
+  },
+  {
+    question: "How does the AI learn my preferences?",
+    answer: "Pattern detection (substitute exercises 3+ times), notes extraction (write feedback naturally), and behavioral signals (mental readiness patterns). All automatic, zero manual tagging.",
+  },
+  {
+    question: "Is my training data mine?",
+    answer: "100% yours. Export anytime to JSON/CSV. Privacy-first design: no data selling, no third-party analytics. Your training history belongs to you completely.",
+  },
+];
 
 export const metadata: Metadata = {
   title: "Arvo Pro - AI Workout Coach for Bodybuilding",
@@ -77,8 +105,10 @@ export default async function ProPage() {
   const showWaitlist = process.env.NEXT_PUBLIC_WAITLIST_ENABLED === 'true';
 
   return (
-    <main className="min-h-screen">
-      <PublicNavbar isAuthenticated={isAuthenticated} />
+    <>
+      <FAQSchema faqs={proFAQs} />
+      <main className="min-h-screen">
+        <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroSectionPro isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <WhoIsArvoFor variant="pro" />
       <ProblemSolution />
@@ -97,6 +127,7 @@ export default async function ProPage() {
       <FAQSection variant="pro" />
       <CTASection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
       <Footer />
-    </main>
+      </main>
+    </>
   );
 }
