@@ -68,6 +68,7 @@ import { FAQSection } from "@/components/features/landing/faq-section";
 import { CTASection } from "@/components/features/landing/cta-section";
 import { Footer } from "@/components/features/landing/footer";
 import { FAQSchema } from "@/components/seo/faq-schema";
+import { SoftwareApplicationSchema } from "@/components/seo/software-application-schema";
 
 const homepageFAQs = [
   {
@@ -110,6 +111,7 @@ export default async function Home() {
   return (
     <>
       <FAQSchema faqs={homepageFAQs} />
+      <SoftwareApplicationSchema />
       <main className="min-h-screen">
         <PublicNavbar isAuthenticated={isAuthenticated} />
       <HeroSection isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
