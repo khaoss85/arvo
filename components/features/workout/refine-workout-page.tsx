@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
@@ -37,6 +37,8 @@ import { TechniqueRecommendationsConfirmModal } from './technique-recommendation
 import type { AppliedTechnique } from '@/lib/types/advanced-techniques'
 import type { TechniqueRecommendationInput, TechniqueRecommendationOutput } from '@/lib/agents/technique-recommender.agent'
 import { getBatchTechniqueRecommendationsAction } from '@/app/actions/technique-recommendation-actions'
+import { useTourStore } from '@/lib/stores/tour.store'
+import { OnboardingTour, REVIEW_TOUR_STEPS } from '@/components/features/dashboard/onboarding-tour'
 
 interface Exercise {
   name: string
@@ -97,6 +99,23 @@ export function RefineWorkoutPage({
   const [animationModalOpen, setAnimationModalOpen] = useState<number | null>(null)
   const rationaleRef = useRef<WorkoutRationaleHandle>(null)
 
+  // Tour state
+  const { hasSeenReviewTour, markReviewTourAsSeen } = useTourStore()
+  const [showTour, setShowTour] = useState(false)
+
+  // Show tour only on first visit
+  useEffect(() => {
+    if (!hasSeenReviewTour) {
+      const timer = setTimeout(() => setShowTour(true), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [hasSeenReviewTour])
+
+  const handleTourComplete = () => {
+    markReviewTourAsSeen()
+    setShowTour(false)
+  }
+
   // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean
@@ -134,6 +153,12 @@ export function RefineWorkoutPage({
   const [librarySearchQuery, setLibrarySearchQuery] = useState<Map<number, string>>(new Map())
   const [libraryResults, setLibraryResults] = useState<Map<number, ExerciseDBExercise[]>>(new Map())
   const [isSearchingLibrary, setIsSearchingLibrary] = useState<Map<number, boolean>>(new Map())
+
+  // Library filter state
+  const [filterOptions, setFilterOptions] = useState<{ bodyParts: string[]; equipments: string[] }>({ bodyParts: [], equipments: [] })
+  const [selectedBodyParts, setSelectedBodyParts] = useState<Map<number, string[]>>(new Map())
+  const [selectedEquipments, setSelectedEquipments] = useState<Map<number, string[]>>(new Map())
+  const [filtersLoaded, setFiltersLoaded] = useState(false)
 
   // Exercise history modal state
   const [historyModalExercise, setHistoryModalExercise] = useState<string | null>(null)
@@ -269,6 +294,18 @@ export function RefineWorkoutPage({
     loadExercisesWithAnimations()
   }, [workout])
 
+  // Load filter options for library search
+  React.useEffect(() => {
+    if (!filtersLoaded) {
+      ExerciseDBService.getFilterOptions().then(options => {
+        setFilterOptions(options)
+        setFiltersLoaded(true)
+      }).catch(err => {
+        console.error('Failed to load filter options:', err)
+      })
+    }
+  }, [filtersLoaded])
+
   const toggleExerciseExpanded = (index: number) => {
     const newExpanded = new Set(expandedExercises)
     if (newExpanded.has(index)) {
@@ -375,7 +412,12 @@ export function RefineWorkoutPage({
   const handleLibrarySearch = async (index: number, query: string) => {
     setLibrarySearchQuery(new Map(librarySearchQuery).set(index, query))
 
-    if (query.length < 2) {
+    // Get current filters for this exercise
+    const bodyParts = selectedBodyParts.get(index) || []
+    const equipments = selectedEquipments.get(index) || []
+
+    // Allow search with just filters (no query required if filters are selected)
+    if (query.length < 2 && bodyParts.length === 0 && equipments.length === 0) {
       setLibraryResults(new Map(libraryResults).set(index, []))
       return
     }
@@ -383,7 +425,69 @@ export function RefineWorkoutPage({
     setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, true))
 
     try {
-      const results = await ExerciseDBService.searchExercises(query, 15)
+      const results = await ExerciseDBService.searchExercises(
+        query,
+        20,
+        {
+          bodyParts: bodyParts.length > 0 ? bodyParts : undefined,
+          equipments: equipments.length > 0 ? equipments : undefined
+        }
+      )
+      setLibraryResults(new Map(libraryResults).set(index, results))
+    } catch (err) {
+      console.error('Library search failed:', err)
+      setLibraryResults(new Map(libraryResults).set(index, []))
+    } finally {
+      setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, false))
+    }
+  }
+
+  // Trigger search when filters change
+  const handleFilterChange = (index: number, type: 'bodyPart' | 'equipment', value: string) => {
+    if (type === 'bodyPart') {
+      const current = selectedBodyParts.get(index) || []
+      const updated = current.includes(value)
+        ? current.filter(bp => bp !== value)
+        : [...current, value]
+      setSelectedBodyParts(new Map(selectedBodyParts).set(index, updated))
+      // Re-trigger search with updated filters
+      const query = librarySearchQuery.get(index) || ''
+      handleLibrarySearchWithFilters(index, query, updated, selectedEquipments.get(index) || [])
+    } else {
+      const current = selectedEquipments.get(index) || []
+      const updated = current.includes(value)
+        ? current.filter(eq => eq !== value)
+        : [...current, value]
+      setSelectedEquipments(new Map(selectedEquipments).set(index, updated))
+      // Re-trigger search with updated filters
+      const query = librarySearchQuery.get(index) || ''
+      handleLibrarySearchWithFilters(index, query, selectedBodyParts.get(index) || [], updated)
+    }
+  }
+
+  // Search with explicit filters (for filter changes)
+  const handleLibrarySearchWithFilters = async (
+    index: number,
+    query: string,
+    bodyParts: string[],
+    equipments: string[]
+  ) => {
+    if (query.length < 2 && bodyParts.length === 0 && equipments.length === 0) {
+      setLibraryResults(new Map(libraryResults).set(index, []))
+      return
+    }
+
+    setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, true))
+
+    try {
+      const results = await ExerciseDBService.searchExercises(
+        query,
+        20,
+        {
+          bodyParts: bodyParts.length > 0 ? bodyParts : undefined,
+          equipments: equipments.length > 0 ? equipments : undefined
+        }
+      )
       setLibraryResults(new Map(libraryResults).set(index, results))
     } catch (err) {
       console.error('Library search failed:', err)
@@ -1080,12 +1184,14 @@ export function RefineWorkoutPage({
 
       {/* Split Reference - Target vs Actual Volume Comparison */}
       {sessionDefinition && splitPlan && workout.cycle_day && (
-        <SplitReferenceCard
-          sessionDefinition={sessionDefinition}
-          splitPlan={splitPlan}
-          cycleDay={workout.cycle_day}
-          actualVolumes={actualVolumes}
-        />
+        <div data-tour="review-volume">
+          <SplitReferenceCard
+            sessionDefinition={sessionDefinition}
+            splitPlan={splitPlan}
+            cycleDay={workout.cycle_day}
+            actualVolumes={actualVolumes}
+          />
+        </div>
       )}
 
       {/* Workout Rationale - Overall plan understanding */}
@@ -1215,6 +1321,7 @@ export function RefineWorkoutPage({
                     setHistoryModalExercise(exercise.name)
                   }}
                   className="text-xs gap-1.5 h-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
+                  data-tour={index === 0 ? "review-history" : undefined}
                 >
                   <History className="w-3.5 h-3.5" />
                   {t('actions.history')}
@@ -1234,21 +1341,24 @@ export function RefineWorkoutPage({
                     }
                   }}
                   className="text-xs gap-1.5 h-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/20"
+                  data-tour={index === 0 ? "review-swap" : undefined}
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   {t('actions.swap')}
                 </Button>
 
                 {/* Add Set */}
-                <AddSetButton
-                  currentSets={exercise.sets}
-                  onAddSet={() => handleAddSet(index)}
-                  variant="inline"
-                  userAddedSets={exercise.userAddedSets}
-                  enableAIValidation={true}
-                  onRequestValidation={() => handleValidateAddSet(index)}
-                  exerciseName={exercise.name}
-                />
+                <span data-tour={index === 0 ? "review-addset" : undefined}>
+                  <AddSetButton
+                    currentSets={exercise.sets}
+                    onAddSet={() => handleAddSet(index)}
+                    variant="inline"
+                    userAddedSets={exercise.userAddedSets}
+                    enableAIValidation={true}
+                    onRequestValidation={() => handleValidateAddSet(index)}
+                    exerciseName={exercise.name}
+                  />
+                </span>
 
                 {/* Technique */}
                 <Button
@@ -1269,6 +1379,7 @@ export function RefineWorkoutPage({
                       ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20"
                       : "text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   )}
+                  data-tour={index === 0 ? "review-technique" : undefined}
                 >
                   <Zap className="w-3.5 h-3.5" />
                   {t('actions.technique')}
@@ -1491,9 +1602,54 @@ export function RefineWorkoutPage({
                               )}
                             </div>
 
+                            {/* Filters */}
+                            {filtersLoaded && (
+                              <div className="space-y-2">
+                                {/* Body Part Filters */}
+                                <div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">{t('library.filters.muscleGroup')}</p>
+                                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                                    {filterOptions.bodyParts.map((bodyPart) => (
+                                      <button
+                                        key={bodyPart}
+                                        onClick={() => handleFilterChange(index, 'bodyPart', bodyPart)}
+                                        className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full border transition-all capitalize ${
+                                          (selectedBodyParts.get(index) || []).includes(bodyPart)
+                                            ? 'bg-purple-600 border-purple-500 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
+                                        }`}
+                                      >
+                                        {bodyPart}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Equipment Filters */}
+                                <div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1.5">{t('library.filters.equipment')}</p>
+                                  <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                                    {filterOptions.equipments.map((equipment) => (
+                                      <button
+                                        key={equipment}
+                                        onClick={() => handleFilterChange(index, 'equipment', equipment)}
+                                        className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full border transition-all capitalize ${
+                                          (selectedEquipments.get(index) || []).includes(equipment)
+                                            ? 'bg-purple-600 border-purple-500 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500'
+                                        }`}
+                                      >
+                                        {equipment}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Search Results */}
                             {(libraryResults.get(index)?.length || 0) > 0 && (
-                              <div className="max-h-[200px] overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1.5 bg-white dark:bg-gray-800">
+                              <div className="max-h-[300px] overflow-y-auto space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-1.5 bg-white dark:bg-gray-800">
                                 {libraryResults.get(index)!.map((exercise, resultIndex) => (
                                   <button
                                     key={exercise.id || `exercise-${resultIndex}`}
@@ -1812,6 +1968,15 @@ export function RefineWorkoutPage({
         onConfirm={handleRecommendationsConfirm}
         onSkip={handleRecommendationsSkip}
       />
+
+      {/* Onboarding Tour */}
+      {showTour && (
+        <OnboardingTour
+          onComplete={handleTourComplete}
+          steps={REVIEW_TOUR_STEPS}
+          translationNamespace="workout.tour"
+        />
+      )}
     </div>
   )
 }

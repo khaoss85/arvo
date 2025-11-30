@@ -765,6 +765,33 @@
     "errorGenerating": "Impossibile generare il link di condivisione"
   },
   "workout": {
+    "tour": {
+      "steps": {
+        "volumeComparison": {
+          "title": "Confronto Volumi",
+          "description": "Vedi come il tuo workout corrisponde al volume target per ogni gruppo muscolare."
+        },
+        "history": {
+          "title": "Storico Esercizio",
+          "description": "Visualizza le tue performance passate e i pesi usati."
+        },
+        "swap": {
+          "title": "Sostituisci Esercizio",
+          "description": "Ottieni alternative AI per sostituire questo esercizio."
+        },
+        "addSet": {
+          "title": "Aggiungi Serie",
+          "description": "Serve più volume? Aggiungi serie extra a qualsiasi esercizio."
+        },
+        "technique": {
+          "title": "Tecniche di Allenamento",
+          "description": "Applica tecniche avanzate come drop set o rest-pause."
+        }
+      },
+      "skip": "Salta",
+      "next": "Avanti",
+      "finish": "Capito!"
+    },
     "pages": {
       "layout": {
         "exitWorkout": "Esci dall'Allenamento",

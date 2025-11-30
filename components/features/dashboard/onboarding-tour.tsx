@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
-import { Sparkles, RefreshCw, Camera, Dumbbell, Zap, LucideIcon } from 'lucide-react'
+import { Sparkles, RefreshCw, Camera, Dumbbell, Zap, BarChart2, History, Plus, LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 export interface TourStep {
@@ -55,6 +55,40 @@ export const SIMPLE_TOUR_STEPS: TourStep[] = [
     targetSelector: '[data-tour="simple-actions"]',
     icon: Zap,
     translationKey: 'simpleMode.tour',
+  },
+]
+
+// Steps for Review/Refine Workout Page
+export const REVIEW_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'volumeComparison',
+    targetSelector: '[data-tour="review-volume"]',
+    icon: BarChart2,
+    translationKey: 'workout.tour',
+  },
+  {
+    id: 'history',
+    targetSelector: '[data-tour="review-history"]',
+    icon: History,
+    translationKey: 'workout.tour',
+  },
+  {
+    id: 'swap',
+    targetSelector: '[data-tour="review-swap"]',
+    icon: RefreshCw,
+    translationKey: 'workout.tour',
+  },
+  {
+    id: 'addSet',
+    targetSelector: '[data-tour="review-addset"]',
+    icon: Plus,
+    translationKey: 'workout.tour',
+  },
+  {
+    id: 'technique',
+    targetSelector: '[data-tour="review-technique"]',
+    icon: Sparkles,
+    translationKey: 'workout.tour',
   },
 ]
 

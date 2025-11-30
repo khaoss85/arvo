@@ -765,6 +765,33 @@
     "errorGenerating": "Failed to generate share link"
   },
   "workout": {
+    "tour": {
+      "steps": {
+        "volumeComparison": {
+          "title": "Volume Comparison",
+          "description": "See how your workout matches the target volume for each muscle group."
+        },
+        "history": {
+          "title": "Exercise History",
+          "description": "View your past performance and weights for this exercise."
+        },
+        "swap": {
+          "title": "Replace Exercise",
+          "description": "Get AI-powered alternatives to swap this exercise."
+        },
+        "addSet": {
+          "title": "Add Extra Sets",
+          "description": "Need more volume? Add extra sets to any exercise."
+        },
+        "technique": {
+          "title": "Training Techniques",
+          "description": "Apply advanced techniques like drop sets or rest-pause."
+        }
+      },
+      "skip": "Skip",
+      "next": "Next",
+      "finish": "Got it!"
+    },
     "pages": {
       "layout": {
         "exitWorkout": "Exit Workout",
