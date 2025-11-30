@@ -338,7 +338,7 @@ export function WorkoutDetailsDrawer({
             </div>
 
             {/* Safe area for iOS */}
-            <div className="h-safe-area-inset-bottom" />
+            <div className="h-safe" />
           </motion.div>
         </>
       )}

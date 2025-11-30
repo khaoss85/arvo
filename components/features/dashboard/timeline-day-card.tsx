@@ -397,120 +397,123 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
         </div>
       </div>
 
-      {/* Generate Workout Button (only for current day without workout) */}
-      {isCurrentDay && status === 'current' && !preGeneratedWorkout && (
-        <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
-          <Button
-            onClick={handleCurrentDayGenerate}
-            disabled={isGenerating || showProgress}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {isGenerating ? t('generating') : t('generateTodaysWorkout')}
-          </Button>
-        </div>
-      )}
+      {/* ============================================
+          CTA LOGIC - Based on isCurrentDay first
+          ============================================ */}
 
-      {/* Current Day with Generated Workout */}
-      {isCurrentDay && status === 'current' && preGeneratedWorkout && (
-        <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800 space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
-              {t('exercisesReady', { count: preGeneratedWorkout.exercises.length })}
-            </span>
-            <span className={cn(
-              'px-2 py-0.5 rounded text-xs font-bold',
-              preGeneratedWorkout.status === 'ready'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
-            )}>
-              {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('readyStatus')}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleViewWorkout}
-              variant="outline"
-              className="flex-1 border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              {t('review')}
-            </Button>
-            <Button
-              onClick={handleStartWorkout}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
-            >
-              <Play className="w-4 h-4 mr-2" />
-              {t('startWorkout')}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Continue Workout Button (for in-progress workout) */}
-      {status === 'in_progress' && preGeneratedWorkout && (
-        <div className="mb-3 pt-3 border-t border-orange-200 dark:border-orange-800">
-          <Button
-            onClick={handleStartWorkout}
-            className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
-          >
-            <Play className="w-4 h-4 mr-2" />
-            {t('continueWorkout')}
-          </Button>
-        </div>
-      )}
-
-      {/* Pre-Generate Button (for upcoming days without workout) */}
-      {status === 'upcoming' && !isCurrentDay && session && session.name !== 'Rest' && (
-        <div className="mb-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            onClick={handlePreGenerate}
-            disabled={isGenerating || showProgress}
-            variant="outline"
-            className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            {isGenerating ? t('generating') : t('preGenerateWorkout')}
-          </Button>
-        </div>
-      )}
-
-      {/* Pre-Generated Workout Actions */}
-      {status === 'pre_generated' && preGeneratedWorkout && (
-        <div className="mb-3 pt-3 border-t border-blue-200 dark:border-blue-700 space-y-2">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
-              {t('exercisesPreGenerated', { count: preGeneratedWorkout.exercises.length })}
-            </span>
-            <span className={cn(
-              'px-2 py-0.5 rounded text-xs font-bold',
-              preGeneratedWorkout.status === 'ready'
-                ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-            )}>
-              {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('draftStatus')}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleViewWorkout}
-              variant="outline"
-              className="flex-1 border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              {t('review')}
-            </Button>
-            {isCurrentDay && (
+      {/* CURRENT DAY ACTIONS */}
+      {isCurrentDay && status !== 'completed' && (
+        <>
+          {/* In Progress - Continue Workout */}
+          {status === 'in_progress' && preGeneratedWorkout && (
+            <div className="mb-3 pt-3 border-t border-orange-200 dark:border-orange-800">
               <Button
                 onClick={handleStartWorkout}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
               >
                 <Play className="w-4 h-4 mr-2" />
-                {t('start')}
+                {t('continueWorkout')}
               </Button>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+
+          {/* Has Workout (not in progress) - Review + Start */}
+          {preGeneratedWorkout && status !== 'in_progress' && (
+            <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800 space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide">
+                  {t('exercisesReady', { count: preGeneratedWorkout.exercises.length })}
+                </span>
+                <span className={cn(
+                  'px-2 py-0.5 rounded text-xs font-bold',
+                  preGeneratedWorkout.status === 'ready'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                    : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                )}>
+                  {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('readyStatus')}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleViewWorkout}
+                  variant="outline"
+                  className="flex-1 border-purple-300 hover:bg-purple-50 dark:border-purple-700 dark:hover:bg-purple-950/50"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  {t('review')}
+                </Button>
+                <Button
+                  onClick={handleStartWorkout}
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  {t('startWorkout')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* No Workout Yet - Generate Today */}
+          {!preGeneratedWorkout && status !== 'in_progress' && (
+            <div className="mb-3 pt-3 border-t border-purple-200 dark:border-purple-800">
+              <Button
+                onClick={handleCurrentDayGenerate}
+                disabled={isGenerating || showProgress}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-md hover:shadow-lg transition-all"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isGenerating ? t('generating') : t('generateTodaysWorkout')}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* OTHER DAYS ACTIONS (not current day) */}
+      {!isCurrentDay && status !== 'completed' && status !== 'rest' && (
+        <>
+          {/* Has Pre-Generated Workout - Review Only */}
+          {preGeneratedWorkout && (
+            <div className="mb-3 pt-3 border-t border-blue-200 dark:border-blue-700 space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                  {t('exercisesPreGenerated', { count: preGeneratedWorkout.exercises.length })}
+                </span>
+                <span className={cn(
+                  'px-2 py-0.5 rounded text-xs font-bold',
+                  preGeneratedWorkout.status === 'ready'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
+                )}>
+                  {preGeneratedWorkout.status === 'ready' ? t('reviewed') : t('draftStatus')}
+                </span>
+              </div>
+              <Button
+                onClick={handleViewWorkout}
+                variant="outline"
+                className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                {t('review')}
+              </Button>
+            </div>
+          )}
+
+          {/* No Workout - Pre-Generate */}
+          {!preGeneratedWorkout && session && session.name !== 'Rest' && (
+            <div className="mb-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={handlePreGenerate}
+                disabled={isGenerating || showProgress}
+                variant="outline"
+                className="w-full border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50 font-semibold"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isGenerating ? t('generating') : t('preGenerateWorkout')}
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Actual Performance (only for completed workouts) */}

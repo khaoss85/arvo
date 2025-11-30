@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2, BookOpen, Search, History } from 'lucide-react'
+import { Sparkles, RefreshCw, Check, Play, ChevronDown, ChevronUp, List, PlayCircle, AlertCircle, CheckCircle, XCircle, Trash2, Camera, Type, Loader2, BookOpen, Search, History, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { updateWorkoutStatusAction, updateWorkoutExercisesAction, suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, validateWorkoutModificationAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import type { SubstitutionSuggestion, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
@@ -30,6 +30,11 @@ import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
 import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
 import { ExerciseHistoryModal } from './exercise-history-modal'
 import { getProgressiveTargetAction } from '@/app/actions/exercise-history-actions'
+import { TechniqueIndicator } from './technique-indicator'
+import { TechniqueInstructionsModal } from './technique-instructions-modal'
+import { TechniqueSelectionModal } from './technique-selection-modal'
+import type { AppliedTechnique } from '@/lib/types/advanced-techniques'
+import type { TechniqueRecommendationInput } from '@/lib/agents/technique-recommender.agent'
 
 interface Exercise {
   name: string
@@ -47,6 +52,12 @@ interface Exercise {
   }>
   animationUrl?: string
   hasAnimation?: boolean
+
+  // Advanced technique (Myo-Reps, Drop Set, etc.)
+  advancedTechnique?: AppliedTechnique
+
+  // Track if exercise was added by user (not AI-generated)
+  isUserAdded?: boolean
 
   // User modification tracking (matches ExerciseExecution)
   aiRecommendedSets?: number
@@ -125,17 +136,77 @@ export function RefineWorkoutPage({
   // Exercise history modal state
   const [historyModalExercise, setHistoryModalExercise] = useState<string | null>(null)
 
+  // Technique instructions modal state
+  const [techniqueModalExercise, setTechniqueModalExercise] = useState<{
+    name: string
+    technique: AppliedTechnique
+  } | null>(null)
+
+  // Technique selection modal state
+  const [techniqueSelectionModal, setTechniqueSelectionModal] = useState<{
+    exerciseIndex: number
+    exerciseName: string
+    currentTechnique?: AppliedTechnique
+    aiContext?: TechniqueRecommendationInput
+  } | null>(null)
+
+  // Build AI context for technique recommendations
+  const buildTechniqueAiContext = (exerciseIndex: number): TechniqueRecommendationInput | undefined => {
+    const exercise = exercises[exerciseIndex]
+    if (!exercise) return undefined
+
+    // Extract muscle groups from exercise
+    const muscleGroups = extractMuscleGroupsFromExercise(exercise.name, exercise.equipmentVariant)
+
+    // Count exercises with techniques
+    const exercisesWithTechniques = exercises.filter(ex => ex.advancedTechnique).length
+
+    // Calculate total volume (sets)
+    const totalVolume = exercises.reduce((sum, ex) => sum + (ex.sets || 3), 0)
+
+    // Determine if compound based on muscle groups
+    const isCompound = muscleGroups.primary.length > 1 || muscleGroups.secondary.length > 0
+
+    return {
+      exerciseInfo: {
+        name: exercise.name,
+        muscleGroups: {
+          primary: muscleGroups.primary,
+          secondary: muscleGroups.secondary,
+        },
+        equipmentType: exercise.equipmentVariant,
+        isCompound,
+        positionInWorkout: exerciseIndex + 1,
+        totalExercises: exercises.length,
+      },
+      workoutContext: {
+        workoutType: (workout.workout_type as any) || 'full_body',
+        totalVolume,
+        exercisesWithTechniques,
+      },
+      userContext: {
+        experienceYears: 2, // Default to intermediate; could be enhanced with profile data
+        currentPhase: undefined,
+        approachName: undefined,
+        mentalReadiness: workout.mental_readiness_overall ?? undefined,
+      },
+    }
+  }
+
   // Calculate actual muscle group volumes from current exercises
   const actualVolumes = useMemo(() => {
     if (!sessionDefinition) return {}
 
     return calculateMuscleGroupVolumes(
-      exercises.filter(ex => ex.name).map(ex => ({
-        name: ex.name,
-        sets: ex.sets,
-        primaryMuscles: (ex as any).primaryMuscles,
-        secondaryMuscles: (ex as any).secondaryMuscles
-      }))
+      exercises.filter(ex => ex.name).map(ex => {
+        const muscleGroups = extractMuscleGroupsFromExercise(ex.name, ex.equipmentVariant)
+        return {
+          name: ex.name,
+          sets: ex.sets,
+          primaryMuscles: muscleGroups.primary,
+          secondaryMuscles: muscleGroups.secondary
+        }
+      })
     )
   }, [exercises, sessionDefinition])
 
@@ -168,7 +239,8 @@ export function RefineWorkoutPage({
             return {
               ...ex,
               animationUrl: animationUrl || undefined,
-              hasAnimation: !!animationUrl
+              hasAnimation: !!animationUrl,
+              isUserAdded: false  // AI-generated exercises
             }
           })
         )
@@ -701,9 +773,8 @@ export function RefineWorkoutPage({
   }
 
   const handleOpenAddExercise = async () => {
-    // Count user-added exercises (those without AI recommendation)
-    // User-added exercises have aiRecommendedSets === undefined
-    const userAddedCount = exercises.filter(ex => ex.aiRecommendedSets === undefined).length
+    // Count user-added exercises (those explicitly added by user, not AI-generated)
+    const userAddedCount = exercises.filter(ex => ex.isUserAdded === true).length
 
     // Hard limit: max 3 extra exercises
     if (userAddedCount >= 3) {
@@ -728,6 +799,7 @@ export function RefineWorkoutPage({
     secondaryMuscles?: string[]
     animationUrl?: string | null
     hasAnimation?: boolean
+    advancedTechnique?: AppliedTechnique
   }) => {
     if (!workout) return
 
@@ -748,8 +820,11 @@ export function RefineWorkoutPage({
         animationUrl: selectedExercise.animationUrl || undefined,
         hasAnimation: selectedExercise.hasAnimation || false,
         // Mark as user-added (not AI-recommended)
+        isUserAdded: true,
         aiRecommendedSets: undefined,
         userAddedSets: undefined,
+        // Include advanced technique if provided
+        advancedTechnique: selectedExercise.advancedTechnique,
       }
 
       // Add to end of exercises array
@@ -793,7 +868,7 @@ export function RefineWorkoutPage({
     const exerciseToRemove = exercises[indexToRemove]
 
     // Only allow removing user-added exercises
-    if (exerciseToRemove.aiRecommendedSets !== undefined) {
+    if (!exerciseToRemove.isUserAdded) {
       setConfirmDialog({
         isOpen: true,
         type: 'alert',
@@ -846,6 +921,35 @@ export function RefineWorkoutPage({
         }
       },
     })
+  }
+
+  const handleTechniqueChange = async (exerciseIndex: number, technique: AppliedTechnique | null) => {
+    if (!workout) return
+
+    const newExercises = [...exercises]
+    newExercises[exerciseIndex] = {
+      ...newExercises[exerciseIndex],
+      advancedTechnique: technique || undefined
+    }
+    setExercises(newExercises)
+
+    // Invalidate workout rationale since exercises changed
+    rationaleRef.current?.invalidate()
+
+    // Save to backend
+    try {
+      const result = await updateWorkoutExercisesAction(workout.id, newExercises)
+      if (!result.success) {
+        console.error('Failed to save technique change:', result.error)
+        // Revert on failure
+        setExercises([...exercises])
+      }
+    } catch (error) {
+      console.error('Error saving technique change:', error)
+      setExercises([...exercises])
+    }
+
+    setTechniqueSelectionModal(null)
   }
 
   if (!workout) return null
@@ -904,30 +1008,6 @@ export function RefineWorkoutPage({
                 <div className="flex items-start gap-2 flex-1">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      {exercise.hasAnimation && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAnimationModalOpen(index)
-                          }}
-                          className="p-0.5 hover:bg-blue-600/20 rounded transition-colors group"
-                          aria-label={t('exercise.viewAnimationAria', { name: exercise.name })}
-                          title={t('exercise.viewAnimation')}
-                        >
-                          <PlayCircle className="w-4 h-4 text-gray-500 group-hover:text-blue-400 transition-colors" />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setHistoryModalExercise(exercise.name)
-                        }}
-                        className="p-0.5 hover:bg-green-600/20 rounded transition-colors group"
-                        aria-label={t('exercise.viewHistoryAria', { name: exercise.name })}
-                        title={t('exercise.viewHistory')}
-                      >
-                        <History className="w-4 h-4 text-gray-500 group-hover:text-green-400 transition-colors" />
-                      </button>
                       <h3 className="font-semibold text-lg">{exercise.name}</h3>
                       {exercise.userAddedSets && exercise.userAddedSets > 0 && (
                         <UserModificationBadge
@@ -940,37 +1020,24 @@ export function RefineWorkoutPage({
                     {exercise.equipmentVariant && (
                       <p className="text-sm text-muted-foreground">{exercise.equipmentVariant}</p>
                     )}
+                    {/* Advanced Technique Badge */}
+                    {exercise.advancedTechnique && (
+                      <div className="mt-1">
+                        <TechniqueIndicator
+                          technique={exercise.advancedTechnique}
+                          onClick={() => setTechniqueModalExercise({
+                            name: exercise.name,
+                            technique: exercise.advancedTechnique!
+                          })}
+                          size="sm"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  {/* Replace Button (formerly Regenerate) */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (!expandedExercises.has(index)) {
-                        toggleExerciseExpanded(index)
-                      }
-                      // If alternatives not loaded, load them. If loaded, maybe just focus? 
-                      // For now, let's just ensure it opens the section.
-                      // If we want to force re-fetch, we'd call handleRegenerateExercise(index)
-                      // But usually "Replace" implies "Show me alternatives".
-                      // If the user wants to explicitly re-generate via AI, we might keep that logic inside the expanded view.
-                      // Let's make this button toggle the expanded view AND trigger generation if empty.
-                      if (!alternatives.get(index)) {
-                        handleRegenerateExercise(index)
-                      }
-                    }}
-                    className="text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                    title={t('buttons.replace')}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    <span className="sr-only">{t('buttons.replace')}</span>
-                  </Button>
-
                   {/* Show remove button only for user-added exercises */}
-                  {exercise.aiRecommendedSets === undefined && (
+                  {exercise.isUserAdded && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -1017,8 +1084,57 @@ export function RefineWorkoutPage({
                 </div>
               </div>
 
-              {/* Add Set Button */}
-              <div className="flex justify-end pt-1">
+              {/* Action Buttons Bar */}
+              <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
+                {/* How To */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setAnimationModalOpen(index)
+                  }}
+                  disabled={!exercise.hasAnimation}
+                  className="text-xs gap-1.5 h-8"
+                >
+                  <PlayCircle className="w-3.5 h-3.5" />
+                  {t('actions.howTo')}
+                </Button>
+
+                {/* History */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setHistoryModalExercise(exercise.name)
+                  }}
+                  className="text-xs gap-1.5 h-8 text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  {t('actions.history')}
+                </Button>
+
+                {/* Swap */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (!expandedExercises.has(index)) {
+                      toggleExerciseExpanded(index)
+                    }
+                    if (!alternatives.get(index)) {
+                      handleRegenerateExercise(index)
+                    }
+                  }}
+                  className="text-xs gap-1.5 h-8 text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:text-purple-300 dark:hover:bg-purple-900/20"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  {t('actions.swap')}
+                </Button>
+
+                {/* Add Set */}
                 <AddSetButton
                   currentSets={exercise.sets}
                   onAddSet={() => handleAddSet(index)}
@@ -1028,6 +1144,30 @@ export function RefineWorkoutPage({
                   onRequestValidation={() => handleValidateAddSet(index)}
                   exerciseName={exercise.name}
                 />
+
+                {/* Technique */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setTechniqueSelectionModal({
+                      exerciseIndex: index,
+                      exerciseName: exercise.name,
+                      currentTechnique: exercise.advancedTechnique,
+                      aiContext: buildTechniqueAiContext(index)
+                    })
+                  }}
+                  className={cn(
+                    "text-xs gap-1.5 h-8",
+                    exercise.advancedTechnique
+                      ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20"
+                      : "text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  )}
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  {t('actions.technique')}
+                </Button>
               </div>
 
               {/* User Modification Details */}
@@ -1384,7 +1524,7 @@ export function RefineWorkoutPage({
       <div className="mb-6">
         <div className="text-center mb-2">
           <p className="text-xs text-gray-500">
-            {t('addExercise.extraExercises', { current: exercises.filter(ex => ex.aiRecommendedSets === undefined).length, max: 3 })}
+            {t('addExercise.extraExercises', { current: exercises.filter(ex => ex.isUserAdded === true).length, max: 3 })}
           </p>
         </div>
         <AddExerciseButton
@@ -1504,6 +1644,32 @@ export function RefineWorkoutPage({
           isOpen={true}
           onClose={() => setHistoryModalExercise(null)}
           exerciseName={historyModalExercise}
+        />
+      )}
+
+      {/* Technique Instructions Modal */}
+      {techniqueModalExercise && (
+        <TechniqueInstructionsModal
+          open={true}
+          onOpenChange={(open) => !open && setTechniqueModalExercise(null)}
+          technique={techniqueModalExercise.technique}
+          exerciseName={techniqueModalExercise.name}
+        />
+      )}
+
+      {/* Technique Selection Modal */}
+      {techniqueSelectionModal && (
+        <TechniqueSelectionModal
+          open={true}
+          onOpenChange={(open) => !open && setTechniqueSelectionModal(null)}
+          currentTechnique={techniqueSelectionModal.currentTechnique}
+          exerciseName={techniqueSelectionModal.exerciseName}
+          onSelectTechnique={(technique) =>
+            handleTechniqueChange(techniqueSelectionModal.exerciseIndex, technique)
+          }
+          otherExercises={exercises.filter(ex => ex.name).map((ex, idx) => ({ index: idx, name: ex.name }))}
+          currentExerciseIndex={techniqueSelectionModal.exerciseIndex}
+          aiContext={techniqueSelectionModal.aiContext}
         />
       )}
     </div>

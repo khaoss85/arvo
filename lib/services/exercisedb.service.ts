@@ -643,100 +643,127 @@ export class ExerciseDBService {
 
   /**
    * Common search aliases for gym equipment/machine names
-   * Maps user-friendly terms to ExerciseDB terminology
+   * Maps user-friendly terms to muscles and equipment separately
+   * Muscles are prioritized in search, equipment is used as tiebreaker
    */
-  private static readonly SEARCH_ALIASES: Record<string, string[]> = {
-    'lat machine': ['lats', 'leverage machine', 'lat pulldown'],
-    'lat pulldown': ['lats', 'cable', 'pulldown'],
-    'chest press': ['pectorals', 'leverage machine'],
-    'leg press': ['quads', 'leverage machine', 'sled'],
-    'shoulder press': ['delts', 'leverage machine'],
-    'row machine': ['back', 'leverage machine', 'row'],
-    'curl machine': ['biceps', 'leverage machine'],
-    'tricep machine': ['triceps', 'leverage machine'],
-    'fly machine': ['pectorals', 'leverage machine', 'pec deck', 'fly'],
-    'pec deck': ['pectorals', 'leverage machine', 'fly'],
-    'leg curl': ['hamstrings', 'leverage machine'],
-    'leg extension': ['quads', 'leverage machine'],
-    'calf machine': ['calves', 'leverage machine'],
-    'ab machine': ['abs', 'leverage machine'],
-    'smith machine': ['smith'],
-    'cable machine': ['cable'],
-    'pull up': ['pullup', 'pull-up'],
-    'push up': ['pushup', 'push-up'],
+  private static readonly SEARCH_ALIASES: Record<string, { muscles: string[], keywords: string[] }> = {
+    'lat machine': { muscles: ['lats'], keywords: ['lat pulldown', 'pulldown'] },
+    'lat pulldown': { muscles: ['lats'], keywords: ['pulldown'] },
+    'chest press': { muscles: ['pectorals', 'chest'], keywords: [] },
+    'leg press': { muscles: ['quads'], keywords: ['sled'] },
+    'shoulder press': { muscles: ['delts', 'shoulders'], keywords: [] },
+    'row machine': { muscles: ['back', 'lats'], keywords: ['row'] },
+    'curl machine': { muscles: ['biceps'], keywords: [] },
+    'tricep machine': { muscles: ['triceps'], keywords: [] },
+    'fly machine': { muscles: ['pectorals', 'chest'], keywords: ['pec deck', 'fly'] },
+    'pec deck': { muscles: ['pectorals', 'chest'], keywords: ['fly'] },
+    'leg curl': { muscles: ['hamstrings'], keywords: ['lever lying leg curl', 'lever seated leg curl', 'lever kneeling leg curl', 'inverse leg curl', 'lying leg curl', 'seated leg curl'] },
+    'leg extension': { muscles: ['quads'], keywords: [] },
+    'calf machine': { muscles: ['calves'], keywords: [] },
+    'ab machine': { muscles: ['abs'], keywords: [] },
+    'smith machine': { muscles: [], keywords: ['smith'] },
+    'cable machine': { muscles: [], keywords: ['cable'] },
+    'pull up': { muscles: ['lats', 'back'], keywords: ['pullup', 'pull-up'] },
+    'push up': { muscles: ['pectorals', 'chest'], keywords: ['pushup', 'push-up'] },
   }
 
   /**
    * Search exercises for autocomplete/library mode
    * Returns full exercise objects matching the query
-   * Searches: name, equipment, target muscle, body part, and secondary muscles
-   * Supports common aliases (e.g., "lat machine" → finds lat exercises)
+   * Priority: exact name match > all tokens in name > target muscle > keywords
+   * Does NOT match by equipment alone (too generic)
    */
   static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
     if (!query || query.length < 2) return []
 
     await this.initializeCache()
 
+    // Verify cache is populated
+    if (this.cache.allExercises.length === 0) {
+      console.warn('[ExerciseDB] Cache is empty, cannot search')
+      return []
+    }
+
+    console.log(`[ExerciseDB] Searching "${query}" in ${this.cache.allExercises.length} exercises`)
+
     const normalizedQuery = query.toLowerCase().trim()
 
     // Tokenize query for multi-word searches (e.g., "leg curl" → ["leg", "curl"])
     const queryTokens = normalizedQuery.split(/\s+/).filter(t => t.length >= 2)
 
-    // Expand query with aliases if applicable
-    const searchTerms = [normalizedQuery]
-    for (const [alias, expansions] of Object.entries(this.SEARCH_ALIASES)) {
+    // Find matching alias to get muscles and keywords
+    let aliasMuscles: string[] = []
+    let aliasKeywords: string[] = []
+    for (const [alias, config] of Object.entries(this.SEARCH_ALIASES)) {
       if (normalizedQuery.includes(alias) || alias.includes(normalizedQuery)) {
-        searchTerms.push(...expansions)
+        aliasMuscles = [...aliasMuscles, ...config.muscles]
+        aliasKeywords = [...aliasKeywords, ...config.keywords]
+        console.log(`[ExerciseDB] Matched alias "${alias}": muscles=${config.muscles.join(',')}, keywords=${config.keywords.length}`)
       }
     }
 
     const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
     const seenIds = new Set<string>()
 
-    // Use allExercises array to search ALL exercises (no collisions from normalized name keys)
+    // Use allExercises array to search ALL exercises
     for (const exercise of this.cache.allExercises) {
       // Skip duplicates
       if (exercise.id && seenIds.has(exercise.id)) continue
 
       const exerciseNameLower = exercise.name?.toLowerCase() ?? ''
-      const equipmentLower = exercise.equipment?.toLowerCase() ?? ''
       const targetLower = exercise.target?.toLowerCase() ?? ''
       const bodyPartLower = exercise.bodyPart?.toLowerCase() ?? ''
 
-      // Check if any search term matches any field
       let matched = false
       let bestPriority = 999
 
-      // First, check full query match (higher priority)
-      for (const term of searchTerms) {
-        const nameMatch = exerciseNameLower.includes(term)
-        const equipmentMatch = equipmentLower.includes(term)
-        const targetMatch = targetLower.includes(term)
-        const bodyPartMatch = bodyPartLower.includes(term)
-        const secondaryMatch = exercise.secondaryMuscles?.some(m =>
-          m?.toLowerCase().includes(term)
-        ) ?? false
-
-        if (nameMatch || equipmentMatch || targetMatch || bodyPartMatch || secondaryMatch) {
-          matched = true
-          // Calculate priority for this match
-          let priority = 3
-          if (nameMatch) {
-            priority = exerciseNameLower.startsWith(term) ? 0 : 1
-          } else if (targetMatch) {
-            priority = 2
-          }
-          bestPriority = Math.min(bestPriority, priority)
-        }
+      // Priority 0: Name starts with the exact query
+      if (exerciseNameLower.startsWith(normalizedQuery)) {
+        matched = true
+        bestPriority = 0
       }
-
-      // If no full match, check if ALL tokens are present in name (tokenized search)
-      // This catches cases like "lying leg curl" when searching "leg curl"
-      if (!matched && queryTokens.length > 1) {
+      // Priority 1: Name contains the exact query
+      else if (exerciseNameLower.includes(normalizedQuery)) {
+        matched = true
+        bestPriority = 1
+      }
+      // Priority 2: All tokens present in name (e.g., "lying leg curl" matches "leg curl")
+      else if (queryTokens.length > 1) {
         const allTokensMatch = queryTokens.every(token => exerciseNameLower.includes(token))
         if (allTokensMatch) {
           matched = true
-          bestPriority = 1 // Contains all tokens in name
+          bestPriority = 2
+        }
+      }
+
+      // Priority 3: Target muscle matches alias muscles (e.g., "hamstrings" for "leg curl")
+      if (!matched && aliasMuscles.length > 0) {
+        const muscleMatch = aliasMuscles.some(muscle =>
+          targetLower.includes(muscle) || bodyPartLower.includes(muscle)
+        )
+        if (muscleMatch) {
+          matched = true
+          bestPriority = 3
+        }
+      }
+
+      // Priority 4: Name contains alias keywords (e.g., "pulldown" for "lat pulldown")
+      if (!matched && aliasKeywords.length > 0) {
+        const keywordMatch = aliasKeywords.some(keyword => exerciseNameLower.includes(keyword))
+        if (keywordMatch) {
+          matched = true
+          bestPriority = 4
+        }
+      }
+
+      // Priority 5: Secondary muscles match alias muscles
+      if (!matched && aliasMuscles.length > 0) {
+        const secondaryMatch = exercise.secondaryMuscles?.some(m =>
+          aliasMuscles.some(muscle => m?.toLowerCase().includes(muscle))
+        ) ?? false
+        if (secondaryMatch) {
+          matched = true
+          bestPriority = 5
         }
       }
 

@@ -97,6 +97,8 @@ export const viewport = {
     { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
     { media: '(prefers-color-scheme: dark)', color: '#1e40af' },
   ],
+  // Enable safe-area-inset for iOS notch/home indicator
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

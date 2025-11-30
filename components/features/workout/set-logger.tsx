@@ -164,6 +164,27 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
   const [isGeneratingScript, setIsGeneratingScript] = useState(false)
   const [cachedScripts, setCachedScripts] = useState<Map<string, PreSetCoachingScript>>(new Map())
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false)
+  const [mentalReadiness, setMentalReadiness] = useState<number | undefined>(undefined)
+  const [showMentalSelector, setShowMentalSelector] = useState(false)
+
+  // Mental readiness emoji mapping with translations
+  const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
+    const emojis: Record<number, string> = {
+      1: '😫',
+      2: '😕',
+      3: '😐',
+      4: '🙂',
+      5: '🔥',
+    }
+    const labels: Record<number, string> = {
+      1: t('mentalReadiness.drained'),
+      2: t('mentalReadiness.struggling'),
+      3: t('mentalReadiness.neutral'),
+      4: t('mentalReadiness.engaged'),
+      5: t('mentalReadiness.lockedIn'),
+    }
+    return { emoji: emojis[value], label: labels[value] }
+  }
 
   // Update values when warmup/suggestion changes or exercise data loads
   useEffect(() => {
@@ -175,7 +196,10 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
   const handleLogSet = async () => {
     setIsLogging(true)
     try {
-      await logSet({ weight, reps, rir })
+      await logSet({ weight, reps, rir, mentalReadiness })
+      // Reset mental readiness after logging
+      setMentalReadiness(undefined)
+      setShowMentalSelector(false)
     } catch (error) {
       console.error('Failed to log set:', error)
       alert(tCommon('errors.failedToLogSet'))
@@ -505,6 +529,62 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Optional Mental State Selector */}
+      <div className="mb-4">
+        <button
+          onClick={() => setShowMentalSelector(!showMentalSelector)}
+          className="w-full flex items-center justify-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400 transition-colors py-2"
+        >
+          <Brain className="w-3.5 h-3.5" />
+          {showMentalSelector ? t('setLogger.hideMentalState') : t('setLogger.mentalDrainedOptional')}
+        </button>
+
+        {showMentalSelector && (
+          <div className="mt-2 bg-gray-100 dark:bg-gray-800/50 rounded-2xl p-2 border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
+            <div className="grid grid-cols-5 gap-1">
+              {[1, 2, 3, 4, 5].map((value) => {
+                const readiness = getMentalReadinessEmoji(value)
+                const isSelected = mentalReadiness === value
+
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setMentalReadiness(isSelected ? undefined : value)}
+                    className={cn(
+                      "relative h-12 rounded-xl transition-all duration-300 flex flex-col items-center justify-center group",
+                      isSelected
+                        ? "bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/30 scale-105 z-10"
+                        : "hover:bg-gray-200 dark:hover:bg-gray-700 hover:shadow-sm"
+                    )}
+                    title={readiness.label}
+                  >
+                    <span className={cn(
+                      "text-xl transition-transform duration-300",
+                      isSelected ? "scale-110" : "grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110"
+                    )}>
+                      {readiness.emoji}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Label Display */}
+            <div className="h-5 mt-1 flex items-center justify-center">
+              {mentalReadiness ? (
+                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 animate-in fade-in">
+                  {getMentalReadinessEmoji(mentalReadiness).label}
+                </span>
+              ) : (
+                <span className="text-[10px] text-gray-400 italic">
+                  {t('setLogger.selectMentalState')}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">

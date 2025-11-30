@@ -23,6 +23,37 @@ export async function resetUserData() {
     // Delete user-specific data
     // Note: CASCADE rules will automatically delete child records (sets_log, etc.)
 
+    // 1. Delete progress photos from storage (must be done before deleting DB records)
+    const { data: userFolders } = await supabase.storage
+      .from('progress-photos')
+      .list(user.id)
+
+    if (userFolders && userFolders.length > 0) {
+      // List all files in user's folder recursively
+      const filesToDelete: string[] = []
+      for (const folder of userFolders) {
+        if (folder.name) {
+          const { data: checkPhotos } = await supabase.storage
+            .from('progress-photos')
+            .list(`${user.id}/${folder.name}`)
+
+          if (checkPhotos) {
+            filesToDelete.push(...checkPhotos.map(f => `${user.id}/${folder.name}/${f.name}`))
+          }
+        }
+      }
+
+      if (filesToDelete.length > 0) {
+        await supabase.storage.from('progress-photos').remove(filesToDelete)
+      }
+    }
+
+    // 2. Delete progress_checks (CASCADE will delete progress_photos and body_measurements records)
+    const { error: checksError } = await supabase
+      .from('progress_checks')
+      .delete()
+      .eq('user_id', user.id)
+
     const { error: profileError } = await supabase
       .from('user_profiles')
       .delete()
@@ -44,7 +75,7 @@ export async function resetUserData() {
       .eq('user_id', user.id)
 
     // Check for errors (ignore "no rows" errors)
-    const errors = [profileError, splitsError, workoutsError, exercisesError].filter(e => e !== null)
+    const errors = [checksError, profileError, splitsError, workoutsError, exercisesError].filter(e => e !== null)
 
     if (errors.length > 0) {
       console.error('Errors during data reset:', errors)

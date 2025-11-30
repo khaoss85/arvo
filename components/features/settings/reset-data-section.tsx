@@ -19,7 +19,7 @@ export function ResetDataSection() {
     try {
       await resetUserData()
       // After successful reset, redirect to onboarding
-      router.push('/onboarding/approach')
+      router.push('/onboarding/level')
     } catch (error) {
       console.error('Reset error:', error)
       alert(`${t('errorResetting')}: ${error instanceof Error ? error.message : t('unknownError')}`)

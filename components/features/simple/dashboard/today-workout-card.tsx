@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Play,
@@ -11,6 +12,7 @@ import {
   Dumbbell,
   CheckCircle2,
   Loader2,
+  Eye,
 } from "lucide-react";
 import type { TimelineDayData } from "@/lib/services/split-timeline.types";
 import { getWorkoutTypeIcon } from "@/lib/services/muscle-groups.service";
@@ -31,6 +33,7 @@ export function TodayWorkoutCard({
   isToday,
 }: TodayWorkoutCardProps) {
   const router = useRouter();
+  const t = useTranslations('simpleMode.dashboard');
   const [isGenerating, setIsGenerating] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
 
@@ -45,13 +48,13 @@ export function TodayWorkoutCard({
             <Moon className="h-12 w-12 text-blue-500" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Giorno di Riposo
+            {t('restDay')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mb-2">
-            Day {day}
+            {t('day', { day })}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Il recupero è essenziale per la crescita muscolare
+            {t('recoveryEssential')}
           </p>
         </div>
       </Card>
@@ -66,32 +69,33 @@ export function TodayWorkoutCard({
 
   // Status-based styling
   const getStatusBadge = () => {
-    switch (status) {
-      case "current":
-        return (
-          <span className="px-3 py-1 rounded-full bg-purple-500 text-white text-sm font-semibold">
-            Oggi
-          </span>
-        );
-      case "in_progress":
-        return (
-          <span className="px-3 py-1 rounded-full bg-orange-500 text-white text-sm font-semibold animate-pulse">
-            In corso
-          </span>
-        );
-      case "pre_generated":
-        return (
-          <span className="px-3 py-1 rounded-full bg-green-500 text-white text-sm font-semibold">
-            Pronto
-          </span>
-        );
-      default:
-        return (
-          <span className="px-3 py-1 rounded-full bg-gray-400 text-white text-sm font-semibold">
-            Day {day}
-          </span>
-        );
+    // Priority: in_progress > isToday > has workout > default
+    if (status === "in_progress") {
+      return (
+        <span className="px-3 py-1 rounded-full bg-orange-500 text-white text-sm font-semibold animate-pulse">
+          {t('inProgress')}
+        </span>
+      );
     }
+    if (isToday) {
+      return (
+        <span className="px-3 py-1 rounded-full bg-purple-500 text-white text-sm font-semibold">
+          {t('today')}
+        </span>
+      );
+    }
+    if (preGeneratedWorkout) {
+      return (
+        <span className="px-3 py-1 rounded-full bg-green-500 text-white text-sm font-semibold">
+          {t('ready')}
+        </span>
+      );
+    }
+    return (
+      <span className="px-3 py-1 rounded-full bg-gray-400 text-white text-sm font-semibold">
+        {t('day', { day })}
+      </span>
+    );
   };
 
   const handleGenerate = () => {
@@ -156,7 +160,7 @@ export function TodayWorkoutCard({
         <div className="flex items-center justify-center gap-6 mb-6">
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Dumbbell className="h-5 w-5" />
-            <span className="font-medium">{exerciseCount} esercizi</span>
+            <span className="font-medium">{t('exercises', { count: exerciseCount })}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
             <Clock className="h-5 w-5" />
@@ -176,7 +180,7 @@ export function TodayWorkoutCard({
             />
           </div>
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Workout in corso
+            {t('workoutInProgress')}
           </p>
         </div>
       )}
@@ -195,47 +199,82 @@ export function TodayWorkoutCard({
         </div>
       )}
 
-      {/* Actions */}
+      {/* ============================================
+          CTA LOGIC - Based on isToday first
+          ============================================ */}
       <div className="space-y-3">
-        {/* Generate workout */}
-        {(status === "current" || status === "upcoming") &&
-          !preGeneratedWorkout &&
-          !showProgress && (
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              {isGenerating ? (
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-              ) : (
-                <Sparkles className="h-5 w-5 mr-2" />
-              )}
-              {isGenerating ? "Generando..." : "Genera Workout"}
-            </Button>
-          )}
+        {/* TODAY'S ACTIONS */}
+        {isToday && (
+          <>
+            {/* In Progress - Continue */}
+            {status === "in_progress" && preGeneratedWorkout && (
+              <Button
+                onClick={handleContinueWorkout}
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700"
+              >
+                <Play className="h-5 w-5 mr-2" />
+                {t('continueWorkout')}
+              </Button>
+            )}
 
-        {/* Start workout */}
-        {(status === "current" || status === "pre_generated") &&
-          preGeneratedWorkout && (
-            <Button
-              onClick={handleStartWorkout}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-            >
-              <Play className="h-5 w-5 mr-2" />
-              Inizia Workout
-            </Button>
-          )}
+            {/* Has Workout (not in progress) - Start */}
+            {preGeneratedWorkout && status !== "in_progress" && (
+              <Button
+                onClick={handleStartWorkout}
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+              >
+                <Play className="h-5 w-5 mr-2" />
+                {t('startWorkout')}
+              </Button>
+            )}
 
-        {/* Continue workout */}
-        {status === "in_progress" && preGeneratedWorkout && (
-          <Button
-            onClick={handleContinueWorkout}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            Continua Workout
-          </Button>
+            {/* No Workout - Generate Today */}
+            {!preGeneratedWorkout && !showProgress && status !== "in_progress" && (
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-5 w-5 mr-2" />
+                )}
+                {isGenerating ? t('generating') : t('generateWorkout')}
+              </Button>
+            )}
+          </>
+        )}
+
+        {/* OTHER DAYS ACTIONS (not today) */}
+        {!isToday && (
+          <>
+            {/* Has Pre-Generated Workout - Just info, no start button */}
+            {preGeneratedWorkout && (
+              <div className="text-center py-2">
+                <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  ✓ {t('workoutReady')}
+                </span>
+              </div>
+            )}
+
+            {/* No Workout - Pre-Generate */}
+            {!preGeneratedWorkout && !showProgress && (
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                variant="outline"
+                className="w-full h-14 text-lg font-semibold border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-5 w-5 mr-2" />
+                )}
+                {isGenerating ? t('generating') : t('preGenerateWorkout')}
+              </Button>
+            )}
+          </>
         )}
       </div>
 
@@ -243,7 +282,7 @@ export function TodayWorkoutCard({
       {session.targetVolume && Object.keys(session.targetVolume).length > 0 && (
         <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Target muscoli
+            {t('targetMuscles')}
           </p>
           <div className="flex flex-wrap gap-2">
             {Object.keys(session.targetVolume)

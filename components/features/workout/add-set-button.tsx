@@ -172,23 +172,23 @@ export function AddSetButton({
       <Button
         onClick={handleClick}
         disabled={isLoading}
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className={`h-7 px-3 rounded-full text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 border border-blue-100 dark:border-blue-800 transition-all ${className}`}
+        className={`h-8 text-xs gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20 ${className}`}
       >
         {isValidating ? (
           <>
-            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
+            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
             {t('validating')}
           </>
         ) : isAdding ? (
           <>
-            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current mr-2"></div>
+            <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
             {t('adding')}
           </>
         ) : (
           <>
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            <Plus className="w-3.5 h-3.5" />
             {t('addButtonInline')}
           </>
         )}

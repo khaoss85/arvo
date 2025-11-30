@@ -44,6 +44,13 @@ export const MUSCLE_GROUPS = {
   abs: 'Addominali',
   obliques: 'Obliqui',
   lowerBack: 'Lombare',
+
+  // Alias for split plan targetVolume compatibility
+  // (split plans use shoulders_front/side/rear, not front_delts/side_delts/rear_delts)
+  shoulders_front: 'Deltoidi Anteriori',
+  shoulders_side: 'Deltoidi Laterali',
+  shoulders_rear: 'Deltoidi Posteriori',
+  lower_back: 'Lombare',
 } as const
 
 // Exercise keyword patterns mapped to muscle groups
