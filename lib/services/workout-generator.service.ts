@@ -528,6 +528,7 @@ export class WorkoutGeneratorService {
 
       // Initialize audio script generator
       const audioGenerator = new AudioScriptGeneratorAgent(supabase)
+      audioGenerator.setUserId(scriptInput.userId)
 
       // Fetch user profile for periodization context
       const userProfile = await UserProfileService.getByUserIdServer(scriptInput.userId)

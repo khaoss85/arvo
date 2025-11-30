@@ -17,6 +17,7 @@ import { WorkoutService } from '@/lib/services/workout.service'
 import type { SplitType } from '@/lib/types/split.types'
 import { generateSplitPlanAction } from './split-actions'
 import type { SplitPlannerInput } from '@/lib/agents/split-planner.agent'
+import { GenerationQueueService } from '@/lib/services/generation-queue.service'
 
 /**
  * Validate a split modification using AI
@@ -78,6 +79,20 @@ export async function swapCycleDaysAction(
       return {
         success: false,
         error: 'No active split plan found',
+      }
+    }
+
+    // Check for active generation on either day being swapped
+    const activeGeneration = await GenerationQueueService.getActiveGenerationForDaysServer(
+      userId,
+      [day1, day2]
+    )
+
+    if (activeGeneration) {
+      return {
+        success: false,
+        error: 'Cannot swap days while workout generation is in progress. Please wait for generation to complete.',
+        errorCode: 'GENERATION_IN_PROGRESS',
       }
     }
 

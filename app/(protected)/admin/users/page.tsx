@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/utils/auth.server';
 import { UsersTable } from '@/components/features/admin/users-table';
 import { UsersStatsCards } from '@/components/features/admin/users-stats';
+import { CreditStatsSection } from '@/components/features/admin/credit-stats';
 
 export default async function AdminUsersPage() {
   await requireAdmin();
@@ -20,6 +21,10 @@ export default async function AdminUsersPage() {
 
       <div className="mt-8">
         <UsersTable />
+      </div>
+
+      <div className="mt-12">
+        <CreditStatsSection />
       </div>
     </div>
   );

@@ -256,6 +256,9 @@
           "notEnoughDays": "⚠️ There are not enough days available to swap.",
           "allDaysCompleted": "All days have already been completed.",
           "needOneMoreDay": "At least one more uncompleted day is needed."
+        },
+        "errors": {
+          "generationInProgress": "Cannot swap days while a workout is being generated. Please wait for generation to complete."
         }
       },
       "toggle": {

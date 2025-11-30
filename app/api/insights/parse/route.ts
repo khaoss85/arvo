@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
 
     // Parse notes into structured insights using AI
     const parser = new InsightParserAgent(supabase)
+    parser.setUserId(userId)
     const parseResult = await parser.parseInsight({
       userNote: notes,
       workoutContext: {

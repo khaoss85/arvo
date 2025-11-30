@@ -263,6 +263,7 @@ Format your response as JSON with these keys:
 
         if (recentWorkouts && recentWorkouts.length > 0) {
           const consolidator = new MemoryConsolidatorAgent(this.supabase)
+          consolidator.setUserId(userId)
 
           // Transform data to match MemoryConsolidatorInput interface
           const timeWindow: '30d' | '90d' | 'all' = days <= 30 ? '30d' : days <= 90 ? '90d' : 'all'

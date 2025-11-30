@@ -110,7 +110,12 @@ export function SwapDaysForm({ userId, splitPlanData, completedDays = [], onSucc
         addToast(result.data?.message || t('success'), 'success')
         onSuccess()
       } else {
-        addToast(result.error || 'Failed to swap days', 'error')
+        // Check for specific error codes
+        if ((result as any).errorCode === 'GENERATION_IN_PROGRESS') {
+          addToast(t('errors.generationInProgress'), 'warning')
+        } else {
+          addToast(result.error || 'Failed to swap days', 'error')
+        }
       }
     } catch (error) {
       console.error('Swap error:', error)

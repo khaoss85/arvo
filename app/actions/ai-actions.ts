@@ -637,6 +637,7 @@ export async function generateWorkoutSummaryAction(userId: string, input: Workou
     const targetLanguage = await getUserLanguage(userId)
 
     const summaryAgent = new WorkoutSummaryAgent(supabase)
+    summaryAgent.setUserId(userId)
 
     const result = await summaryAgent.summarizeWorkout({
       ...input,
@@ -1080,6 +1081,7 @@ export async function suggestExerciseSubstitutionAction(
     // Create agent instance with server Supabase client
     // Using 'none' reasoning for ultra-fast responses (~1s vs ~5s)
     const agent = new ExerciseSubstitutionAgent(supabase, 'none')
+    agent.setUserId(userId)
 
     // Generate substitution suggestions
     const result = await agent.suggestSubstitutions(enrichedInput, targetLanguage)
@@ -1135,6 +1137,7 @@ export async function generateWorkoutRationaleAction(
 
     // Create agent instance with server Supabase client
     const agent = new WorkoutRationaleAgent(supabase)
+    agent.setUserId(userId)
 
     // Generate rationale
     const result = await agent.generateRationale(enrichedInput, targetLanguage)
@@ -1217,6 +1220,7 @@ export async function validateCustomSubstitutionAction(
     // Create agent instance with server Supabase client
     // Using 'none' reasoning for fast validation (~1s vs ~5s)
     const agent = new ExerciseSubstitutionAgent(supabase, 'none')
+    agent.setUserId(userId)
 
     // Validate user's custom exercise
     const result = await agent.validateCustomSubstitution(enrichedInput, targetLanguage)

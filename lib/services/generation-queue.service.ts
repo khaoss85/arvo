@@ -213,6 +213,35 @@ export class GenerationQueueService {
   }
 
   /**
+   * Check if there's an active generation for any of the specified cycle days
+   * Used to prevent day swapping while generation is in progress
+   */
+  static async getActiveGenerationForDaysServer(
+    userId: string,
+    cycleDays: number[]
+  ): Promise<GenerationQueueEntry | null> {
+    const { getSupabaseServerClient } = await import('@/lib/supabase/server')
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('workout_generation_queue')
+      .select('*')
+      .eq('user_id', userId)
+      .in('target_cycle_day', cycleDays)
+      .in('status', ['pending', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[GenerationQueueService] Failed to check generation for days:', error)
+      return null
+    }
+
+    return data as GenerationQueueEntry | null
+  }
+
+  /**
    * Mark generation as started (server-side)
    * Uses server client with user authentication (for SSE stream endpoint)
    */

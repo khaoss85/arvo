@@ -29,6 +29,7 @@ export async function getTechniqueRecommendationsAction(
 
     const supabase = await getSupabaseServerClient()
     const agent = new TechniqueRecommenderAgent(supabase)
+    agent.setUserId(user.id)
 
     const recommendations = await agent.recommend(input)
 
@@ -61,6 +62,7 @@ export async function validateTechniqueChoiceAction(
 
     const supabase = await getSupabaseServerClient()
     const agent = new TechniqueRecommenderAgent(supabase)
+    agent.setUserId(user.id)
 
     const validationInput: TechniqueValidationInput = {
       ...input,

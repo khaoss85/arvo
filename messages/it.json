@@ -256,6 +256,9 @@
           "notEnoughDays": "⚠️ Non ci sono abbastanza giorni disponibili per scambiare.",
           "allDaysCompleted": "Tutti i giorni sono già stati completati.",
           "needOneMoreDay": "Serve almeno un altro giorno non completato."
+        },
+        "errors": {
+          "generationInProgress": "Non puoi scambiare i giorni mentre un allenamento è in generazione. Attendi il completamento della generazione."
         }
       },
       "toggle": {
