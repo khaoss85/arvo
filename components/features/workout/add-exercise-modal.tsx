@@ -553,6 +553,13 @@ export function AddExerciseModal({
     giant_set: { bg: 'bg-pink-500/10', border: 'border-pink-500/30', text: 'text-pink-400' },
     cluster_set: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400' },
     pyramid: { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400' },
+    // Proprietary techniques
+    fst7_protocol: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400' },
+    loaded_stretching: { bg: 'bg-teal-500/10', border: 'border-teal-500/30', text: 'text-teal-400' },
+    mechanical_drop_set: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400' },
+    lengthened_partials: { bg: 'bg-lime-500/10', border: 'border-lime-500/30', text: 'text-lime-400' },
+    forced_reps: { bg: 'bg-rose-500/10', border: 'border-rose-500/30', text: 'text-rose-400' },
+    pre_exhaust: { bg: 'bg-sky-500/10', border: 'border-sky-500/30', text: 'text-sky-400' },
   }
 
   if (!isOpen) return null

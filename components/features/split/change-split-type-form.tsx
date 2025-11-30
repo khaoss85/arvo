@@ -176,17 +176,25 @@ export function ChangeSplitTypeForm({
                     </p>
 
                     {/* Expandable Info Section */}
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={(e) => {
                         e.stopPropagation()
                         setExpandedCard(expandedCard === option.type ? null : option.type)
                       }}
-                      className="mt-2 flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          setExpandedCard(expandedCard === option.type ? null : option.type)
+                        }
+                      }}
+                      className="mt-2 flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors cursor-pointer"
                     >
                       <span>{expandedCard === option.type ? '▼' : '▶'}</span>
                       <span>{expandedCard === option.type ? t('hideDetails') : t('showDetails')}</span>
-                    </button>
+                    </div>
 
                     {expandedCard === option.type && (
                       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-3 text-sm">

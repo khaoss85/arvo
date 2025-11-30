@@ -687,25 +687,35 @@ export class ExerciseDBService {
     'push up': { muscles: ['pectorals', 'chest'], keywords: ['pushup', 'push-up'] },
   }
 
+  // Simplified muscle group mapping (UI category → ExerciseDB bodyPart values)
+  private static readonly MUSCLE_GROUP_MAPPING: Record<string, string[]> = {
+    'Legs': ['upper legs', 'lower legs'],
+    'Chest': ['chest'],
+    'Back': ['back'],
+    'Shoulders': ['shoulders'],
+    'Arms': ['upper arms', 'lower arms'],
+    'Core': ['waist']
+  }
+
+  // Simplified equipment mapping (UI category → ExerciseDB equipment values)
+  private static readonly EQUIPMENT_MAPPING: Record<string, string[]> = {
+    'Barbell': ['barbell', 'ez barbell', 'olympic barbell', 'trap bar'],
+    'Dumbbell': ['dumbbell', 'kettlebell'],
+    'Cable': ['cable'],
+    'Machine': ['leverage machine', 'smith machine', 'assisted', 'sled machine', 'hammer'],
+    'Body Weight': ['body weight', 'weighted'],
+    'Band': ['band', 'resistance band', 'rope']
+  }
+
   /**
-   * Get unique filter options from cached exercises
-   * Returns sorted arrays of bodyParts and equipments
+   * Get simplified filter options for UI
+   * Returns simplified category names that map to multiple ExerciseDB values
    */
   static async getFilterOptions(): Promise<{ bodyParts: string[]; equipments: string[] }> {
-    await this.initializeCache()
-
-    const bodyPartsSet = new Set<string>()
-    const equipmentsSet = new Set<string>()
-
-    this.cache.allExercises.forEach(e => {
-      if (e.bodyPart) bodyPartsSet.add(e.bodyPart)
-      if (e.equipment) equipmentsSet.add(e.equipment)
-    })
-
-    const bodyParts = Array.from(bodyPartsSet).sort()
-    const equipments = Array.from(equipmentsSet).sort()
-
-    return { bodyParts, equipments }
+    return {
+      bodyParts: Object.keys(this.MUSCLE_GROUP_MAPPING),
+      equipments: Object.keys(this.EQUIPMENT_MAPPING)
+    }
   }
 
   /**
@@ -754,16 +764,33 @@ export class ExerciseDBService {
     const results: Array<{ exercise: ExerciseDBExercise; priority: number }> = []
     const seenIds = new Set<string>()
 
+    // Expand simplified filter categories to ExerciseDB values
+    const expandedBodyParts: string[] = []
+    if (filters?.bodyParts?.length) {
+      filters.bodyParts.forEach(bp => {
+        const mapped = this.MUSCLE_GROUP_MAPPING[bp]
+        if (mapped) expandedBodyParts.push(...mapped)
+      })
+    }
+
+    const expandedEquipments: string[] = []
+    if (filters?.equipments?.length) {
+      filters.equipments.forEach(eq => {
+        const mapped = this.EQUIPMENT_MAPPING[eq]
+        if (mapped) expandedEquipments.push(...mapped)
+      })
+    }
+
     // Use allExercises array to search ALL exercises
     for (const exercise of this.cache.allExercises) {
       // Skip duplicates
       if (exercise.id && seenIds.has(exercise.id)) continue
 
-      // Apply filters first (if provided)
-      if (filters?.bodyParts?.length && !filters.bodyParts.includes(exercise.bodyPart)) {
+      // Apply expanded filters (if provided)
+      if (expandedBodyParts.length && !expandedBodyParts.includes(exercise.bodyPart)) {
         continue
       }
-      if (filters?.equipments?.length && !filters.equipments.includes(exercise.equipment)) {
+      if (expandedEquipments.length && !expandedEquipments.includes(exercise.equipment)) {
         continue
       }
 

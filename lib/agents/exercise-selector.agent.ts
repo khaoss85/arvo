@@ -1436,6 +1436,26 @@ Available techniques:
 - pyramid: Progressive weight changes across sets. Good for beginners/intermediate.
   Config: { "type": "pyramid", "direction": "ascending", "steps": 4 }
 
+=== PROPRIETARY TECHNIQUES (for specific training approaches) ===
+- fst7_protocol: FST-7 signature technique - 7 sets with 30-45s rest for maximum pump. ISOLATION exercises only.
+  Config: { "type": "fst7_protocol", "sets": 7, "restSeconds": 30, "targetReps": 12, "interSetPosing": false }
+  Use when: Approach is FST-7 or final exercise of session for maximum pump
+- loaded_stretching: 30-60s isometric hold in stretched position (Mountain Dog). ISOLATION exercises.
+  Config: { "type": "loaded_stretching", "holdSeconds": 45, "targetRpe": 7 }
+  Use when: Approach is Mountain Dog or targeting stretch-mediated hypertrophy
+- mechanical_drop_set: Change exercise variation without reducing weight. Great for chest, shoulders, back.
+  Config: { "type": "mechanical_drop_set", "variations": ["incline", "flat", "decline"], "repsPerVariation": 10, "restBetween": 0 }
+  Use when: Approach supports mechanical advantage techniques or for compound finishers
+- lengthened_partials: Partial ROM in stretched position for stretch-mediated hypertrophy. ISOLATION exercises.
+  Config: { "type": "lengthened_partials", "partialReps": 8, "rangePercentage": 40 }
+  Use when: Approach is Kuba Method or targeting lengthened position training
+- forced_reps: Partner-assisted reps beyond failure. ADVANCED users only, requires training partner.
+  Config: { "type": "forced_reps", "assistedReps": 2, "requiresPartner": true }
+  Use when: Approach is Y3T or Heavy Duty, user is advanced
+- pre_exhaust: Isolation to compound pairing with minimal rest. Pre-fatigue target muscle before compound.
+  Config: { "type": "pre_exhaust", "isolationExerciseIndex": 0, "compoundExerciseIndex": 1, "restBetween": 0 }
+  Use when: Approach is Heavy Duty or FST-7, or when targeting specific muscle activation
+
 TECHNIQUE APPLICATION REQUIREMENTS:
 1. Check approach.advancedTechniques - if the approach supports techniques, you MUST use them
 2. Apply AT LEAST this many techniques based on user experience:
@@ -1452,9 +1472,12 @@ TECHNIQUE APPLICATION REQUIREMENTS:
 === TECHNIQUE ENFORCEMENT CHECKLIST ===
 Before returning your response, VERIFY these conditions:
 □ If approach.advancedTechniques has entries → at least 2 exercises MUST have advancedTechnique
-□ At least ONE compound exercise has a technique (top_set_backoff, cluster_set, or pyramid)
-□ At least ONE isolation exercise has a technique (drop_set, rest_pause, or myo_reps)
-□ The LAST isolation exercise should have drop_set or myo_reps for maximum pump
+□ At least ONE compound exercise has a technique (top_set_backoff, cluster_set, pyramid, or mechanical_drop_set)
+□ At least ONE isolation exercise has a technique (drop_set, rest_pause, myo_reps, fst7_protocol, loaded_stretching, or lengthened_partials)
+□ The LAST isolation exercise should have drop_set, myo_reps, or fst7_protocol for maximum pump
+□ If approach is FST-7 → use fst7_protocol on at least one isolation exercise
+□ If approach is Mountain Dog → use loaded_stretching on at least one exercise
+□ If approach is Heavy Duty or Y3T → consider pre_exhaust or forced_reps for advanced users
 
 EXAMPLE - Intermediate Push Day (4 exercises):
 1. Bench Press - advancedTechnique: { technique: "top_set_backoff", config: { type: "top_set_backoff", topSetReps: 5, backoffSets: 2, backoffPercentage: 15, backoffReps: 8 }, rationale: "Build strength with heavy top set, then accumulate volume" }

@@ -526,56 +526,75 @@ export function ExerciseSubstitution({
 
   // Handle library exercise selection (skip AI validation)
   const handleLibrarySelect = async (exercise: ExerciseDBExercise) => {
-    // Extract muscle groups from current exercise
-    const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
-    const selectedExerciseMuscles = [exercise.bodyPart, exercise.target]
-
-    // Check for muscle group mismatch
-    const hasMismatch = currentExerciseMuscles.length > 0 &&
-      !currentExerciseMuscles.some(m =>
-        exercise.bodyPart.toLowerCase().includes(m.toLowerCase()) ||
-        exercise.target.toLowerCase().includes(m.toLowerCase()) ||
-        m.toLowerCase().includes(exercise.bodyPart.toLowerCase()) ||
-        m.toLowerCase().includes(exercise.target.toLowerCase())
-      )
-
-    // Check if user has history for this exercise
-    let targetWeight = currentExercise.targetWeight
-    let targetReps = currentExercise.targetReps
-    let hasHistory = false
-
     try {
-      const historyResult = await getProgressiveTargetAction(exercise.name, currentExercise.targetReps)
-      if (historyResult.success && historyResult.data?.hasHistory) {
-        targetWeight = historyResult.data.weight
-        targetReps = [historyResult.data.reps, historyResult.data.reps] // Use exact rep target from history
-        hasHistory = true
+      // Extract muscle groups from current exercise
+      const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)
+
+      // Check for muscle group mismatch
+      const hasMismatch = currentExerciseMuscles.length > 0 &&
+        !currentExerciseMuscles.some(m =>
+          exercise.bodyPart.toLowerCase().includes(m.toLowerCase()) ||
+          exercise.target.toLowerCase().includes(m.toLowerCase()) ||
+          m.toLowerCase().includes(exercise.bodyPart.toLowerCase()) ||
+          m.toLowerCase().includes(exercise.target.toLowerCase())
+        )
+
+      // Check if user has history for this exercise
+      let targetWeight = currentExercise.targetWeight
+      let targetReps = currentExercise.targetReps
+      let hasHistory = false
+
+      try {
+        const historyResult = await getProgressiveTargetAction(exercise.name, currentExercise.targetReps)
+        if (historyResult.success && historyResult.data?.hasHistory) {
+          targetWeight = historyResult.data.weight
+          targetReps = [historyResult.data.reps, historyResult.data.reps] // Use exact rep target from history
+          hasHistory = true
+        }
+      } catch (err) {
+        console.error('[handleLibrarySelect] Failed to get progressive target:', err)
       }
+
+      // Create a suggestion object for confirmation
+      const librarySuggestion: SubstitutionSuggestion = {
+        exercise: {
+          name: exercise.name,
+          equipmentVariant: exercise.equipment,
+          sets: currentExercise.targetSets,
+          repRange: targetReps,
+          targetWeight: targetWeight,
+        },
+        validation: hasMismatch ? 'caution' : 'approved',
+        rationale: hasMismatch
+          ? t('library.muscleWarning', { target: exercise.target, bodyPart: exercise.bodyPart })
+          : hasHistory
+            ? t('library.basedOnHistory')
+            : t('library.selectedFrom'),
+        swapImpact: hasHistory ? t('library.progressiveOverload') : t('library.directSelection'),
+        similarityScore: hasMismatch ? 50 : 80, // Lower score if muscle mismatch
+      }
+
+      setSelectedSuggestion(librarySuggestion)
+      setShowConfirmation(true)
     } catch (err) {
-      console.error('[handleLibrarySelect] Failed to get progressive target:', err)
+      console.error('[handleLibrarySelect] Error:', err)
+      // Fallback: show confirmation with default values
+      const fallbackSuggestion: SubstitutionSuggestion = {
+        exercise: {
+          name: exercise.name,
+          equipmentVariant: exercise.equipment,
+          sets: currentExercise.targetSets,
+          repRange: currentExercise.targetReps,
+          targetWeight: currentExercise.targetWeight,
+        },
+        validation: 'approved',
+        rationale: t('library.selectedFrom'),
+        swapImpact: t('library.directSelection'),
+        similarityScore: 80,
+      }
+      setSelectedSuggestion(fallbackSuggestion)
+      setShowConfirmation(true)
     }
-
-    // Create a suggestion object for confirmation
-    const librarySuggestion: SubstitutionSuggestion = {
-      exercise: {
-        name: exercise.name,
-        equipmentVariant: exercise.equipment,
-        sets: currentExercise.targetSets,
-        repRange: targetReps,
-        targetWeight: targetWeight,
-      },
-      validation: hasMismatch ? 'caution' : 'approved',
-      rationale: hasMismatch
-        ? t('library.muscleWarning', { target: exercise.target, bodyPart: exercise.bodyPart })
-        : hasHistory
-          ? t('library.basedOnHistory')
-          : t('library.selectedFrom'),
-      swapImpact: hasHistory ? t('library.progressiveOverload') : t('library.directSelection'),
-      similarityScore: hasMismatch ? 50 : 80, // Lower score if muscle mismatch
-    }
-
-    setSelectedSuggestion(librarySuggestion)
-    setShowConfirmation(true)
   }
 
   const handleEditCustom = () => {

@@ -971,6 +971,30 @@
           "giant_set": {
             "name": "Giant Set",
             "brief": "3+ esercizi senza pausa"
+          },
+          "fst7_protocol": {
+            "name": "FST-7 Protocol",
+            "brief": "7 serie con 30-45s riposo per massimo pump"
+          },
+          "loaded_stretching": {
+            "name": "Loaded Stretching",
+            "brief": "30-60s di tenuta isometrica in posizione allungata"
+          },
+          "mechanical_drop_set": {
+            "name": "Mechanical Drop Set",
+            "brief": "Cambia variante senza ridurre il peso"
+          },
+          "lengthened_partials": {
+            "name": "Lengthened Partials",
+            "brief": "Ripetizioni parziali in posizione allungata"
+          },
+          "forced_reps": {
+            "name": "Ripetizioni Forzate",
+            "brief": "Ripetizioni assistite oltre il cedimento"
+          },
+          "pre_exhaust": {
+            "name": "Pre-Exhaust",
+            "brief": "Isolation prima di compound senza pausa"
           }
         },
         "levels": {
@@ -1088,6 +1112,30 @@
       "pyramid": {
         "name": "Piramide",
         "description": "Peso e ripetizioni progressivamente modificati attraverso le serie"
+      },
+      "fst7Protocol": {
+        "name": "FST-7 Protocol",
+        "description": "7 serie con 30-45s riposo per massimo pump"
+      },
+      "loadedStretching": {
+        "name": "Loaded Stretching",
+        "description": "30-60s di tenuta isometrica in posizione allungata"
+      },
+      "mechanicalDropSet": {
+        "name": "Mechanical Drop Set",
+        "description": "Cambia variante dell'esercizio senza ridurre il peso"
+      },
+      "lengthenedPartials": {
+        "name": "Lengthened Partials",
+        "description": "Ripetizioni parziali in posizione allungata per ipertrofia"
+      },
+      "forcedReps": {
+        "name": "Ripetizioni Forzate",
+        "description": "Ripetizioni assistite dal partner oltre il cedimento"
+      },
+      "preExhaust": {
+        "name": "Pre-Exhaust",
+        "description": "Abbinamento isolation e compound senza riposo"
       },
       "techniqueIndicator": {
         "applied": "Tecnica avanzata applicata",
@@ -1507,10 +1555,14 @@
         "library": {
           "searchPlaceholder": "Cerca esercizi...",
           "noResults": "Nessun esercizio trovato",
-          "hint": "Digita almeno 2 caratteri per cercare",
+          "hint": "Digita almeno 2 caratteri o usa i filtri",
           "selectedFrom": "Selezionato dalla libreria esercizi",
           "directSelection": "Selezione diretta - nessuna validazione AI necessaria",
-          "muscleWarning": "⚠️ Gruppo muscolare diverso: lavora {target} ({bodyPart})"
+          "muscleWarning": "⚠️ Gruppo muscolare diverso: lavora {target} ({bodyPart})",
+          "filters": {
+            "muscleGroup": "Gruppo muscolare",
+            "equipment": "Tipologia"
+          }
         },
         "validation": {
           "approved": "✓ Buono",

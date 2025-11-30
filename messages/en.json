@@ -971,6 +971,30 @@
           "giant_set": {
             "name": "Giant Set",
             "brief": "3+ exercises, no rest"
+          },
+          "fst7_protocol": {
+            "name": "FST-7 Protocol",
+            "brief": "7 sets with 30-45s rest for maximum pump"
+          },
+          "loaded_stretching": {
+            "name": "Loaded Stretching",
+            "brief": "30-60s isometric hold in stretched position"
+          },
+          "mechanical_drop_set": {
+            "name": "Mechanical Drop Set",
+            "brief": "Change variation without reducing weight"
+          },
+          "lengthened_partials": {
+            "name": "Lengthened Partials",
+            "brief": "Partial reps in stretched position"
+          },
+          "forced_reps": {
+            "name": "Forced Reps",
+            "brief": "Partner-assisted reps beyond failure"
+          },
+          "pre_exhaust": {
+            "name": "Pre-Exhaust",
+            "brief": "Isolation to compound pairing"
           }
         },
         "levels": {
@@ -1087,6 +1111,30 @@
       "pyramid": {
         "name": "Pyramid",
         "description": "Progressive weight changes across sets"
+      },
+      "fst7Protocol": {
+        "name": "FST-7 Protocol",
+        "description": "7 sets with 30-45s rest for maximum pump"
+      },
+      "loadedStretching": {
+        "name": "Loaded Stretching",
+        "description": "30-60s isometric hold in stretched position"
+      },
+      "mechanicalDropSet": {
+        "name": "Mechanical Drop Set",
+        "description": "Change exercise variation without reducing weight"
+      },
+      "lengthenedPartials": {
+        "name": "Lengthened Partials",
+        "description": "Partial reps in stretched position for hypertrophy"
+      },
+      "forcedReps": {
+        "name": "Forced Reps",
+        "description": "Partner-assisted reps beyond failure"
+      },
+      "preExhaust": {
+        "name": "Pre-Exhaust",
+        "description": "Isolation to compound pairing without rest"
       },
       "techniqueIndicator": {
         "applied": "Advanced technique applied",
@@ -1505,10 +1553,14 @@
         "library": {
           "searchPlaceholder": "Search exercises...",
           "noResults": "No exercises found",
-          "hint": "Type at least 2 characters to search",
+          "hint": "Type at least 2 characters or use filters",
           "selectedFrom": "Selected from exercise library",
           "directSelection": "Direct selection - no AI validation needed",
-          "muscleWarning": "⚠️ Different muscle group: targets {target} ({bodyPart})"
+          "muscleWarning": "⚠️ Different muscle group: targets {target} ({bodyPart})",
+          "filters": {
+            "muscleGroup": "Muscle group",
+            "equipment": "Equipment"
+          }
         },
         "validation": {
           "approved": "✓ Good",
