@@ -1510,6 +1510,51 @@ export type Database = {
           week_number: number
         }[]
       }
+      get_users_reaching_time_milestone: {
+        Args: never
+        Returns: {
+          email: string
+          first_name: string
+          months_active: number
+          preferred_language: string
+          total_workouts: number
+          user_id: string
+        }[]
+      }
+      get_users_reaching_workout_milestone: {
+        Args: never
+        Returns: {
+          email: string
+          favorite_exercise: string
+          first_name: string
+          milestone_count: number
+          preferred_language: string
+          total_volume: number
+          user_id: string
+        }[]
+      }
+      get_users_with_plateau: {
+        Args: never
+        Returns: {
+          current_e1rm: number
+          email: string
+          exercise_name: string
+          first_name: string
+          preferred_language: string
+          user_id: string
+          weeks_stuck: number
+        }[]
+      }
+      get_users_with_prs_today: {
+        Args: never
+        Returns: {
+          email: string
+          first_name: string
+          preferred_language: string
+          prs: Json
+          user_id: string
+        }[]
+      }
       increment_share_view_count: {
         Args: { token: string }
         Returns: undefined

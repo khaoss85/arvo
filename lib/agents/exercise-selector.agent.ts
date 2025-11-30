@@ -1323,9 +1323,27 @@ ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
       * Middle sets (3-4): Intensity cues - "Visualize the muscle contracting hard"
       * Final sets: Power/explosive cues - "Imagine explosive power through the movement"`
 
+    // Pre-compute volume requirements summary for primacy effect
+    const volumeRequirementsSummary = Object.keys(exerciseCountByMuscle).length > 0
+      ? `
+🚨🚨🚨 CRITICAL EXERCISE COUNT REQUIREMENTS - READ FIRST 🚨🚨🚨
+
+YOU MUST GENERATE EXACTLY THESE EXERCISE COUNTS:
+${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
+  `• ${muscle}: ${count} exercise${count > 1 ? 's' : ''} (${input.targetVolume?.[muscle]} sets ÷ ${maxSetsPerExercise} sets/ex)`
+).join('\n')}
+
+TOTAL EXERCISES NEEDED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
+
+Each exercise = ${maxSetsPerExercise} sets. This is NON-NEGOTIABLE.
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
+`
+      : ''
+
     const prompt = `
 Create a ${input.workoutType} workout using AI-generated exercises.
-
+${volumeRequirementsSummary}
 === 🎯 SOLUTION COMPLETENESS REQUIREMENT ===
 
 **THIS IS A ONE-SHOT GENERATION TASK**
@@ -2010,6 +2028,19 @@ Required JSON structure:
 }
 
 **REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
+
+${Object.keys(exerciseCountByMuscle).length > 0 ? `
+═══════════════════════════════════════════════════════════════
+⚠️ FINAL CHECK BEFORE SUBMITTING - COUNT YOUR EXERCISES:
+${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
+  `□ ${muscle}: ___/${count} exercises (need ${count})`
+).join('\n')}
+
+TOTAL EXERCISES REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
+
+❌ If ANY muscle has fewer exercises than required → ADD MORE EXERCISES NOW
+═══════════════════════════════════════════════════════════════
+` : ''}
     `
 
     // 🔒 JSON SCHEMA for Structured Outputs (guarantees valid JSON)

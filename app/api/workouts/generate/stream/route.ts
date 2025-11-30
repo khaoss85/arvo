@@ -167,16 +167,42 @@ export async function POST(request: NextRequest) {
             if (!queueEntry) {
               // ⚠️ SERVER-SIDE CONCURRENCY CHECK: Prevent duplicate generations
               // Check if user already has an active generation (pending or in_progress)
-              const existingGeneration = await GenerationQueueService.getActiveGenerationServer(userId)
+              let existingGeneration = await GenerationQueueService.getActiveGenerationServer(userId)
 
               if (existingGeneration) {
+                const existingType = existingGeneration.context?.type || 'unknown'
+                const createdAt = new Date(existingGeneration.created_at)
+                const now = new Date()
+                const ageMinutes = (now.getTime() - createdAt.getTime()) / 1000 / 60
+
                 console.log(`[WorkoutGenerate] User already has active generation:`, {
                   existingRequestId: existingGeneration.request_id,
                   existingDay: existingGeneration.target_cycle_day,
+                  existingType,
                   requestedDay: targetCycleDay,
-                  status: existingGeneration.status
+                  status: existingGeneration.status,
+                  ageMinutes: Math.round(ageMinutes)
                 })
 
+                // Auto-fail stale pending records (> 30 minutes old)
+                // This handles orphaned requests where worker was not available
+                if (existingGeneration.status === 'pending' && ageMinutes > 30) {
+                  console.warn(`[WorkoutGenerate] Auto-failing stale pending generation: ${existingGeneration.request_id} (${Math.round(ageMinutes)} minutes old)`)
+                  await GenerationQueueService.markAsFailed({
+                    requestId: existingGeneration.request_id,
+                    errorMessage: `Auto-failed: Stale pending request (${Math.round(ageMinutes)} minutes old)`
+                  })
+                  existingGeneration = null // Clear so we can create a new one
+                }
+                // Don't block workout generation if existing is an onboarding/split generation
+                else if (existingType !== 'workout') {
+                  console.log(`[WorkoutGenerate] Existing generation is type '${existingType}', not blocking workout generation`)
+                  existingGeneration = null // Clear so we can create a new one
+                }
+              }
+
+              // Re-check after potential auto-fail or type filtering
+              if (existingGeneration) {
                 // If it's for the same day, resume it instead of creating a new one
                 if (existingGeneration.target_cycle_day === targetCycleDay) {
                   console.log(`[WorkoutGenerate] Same day - resuming existing generation`)

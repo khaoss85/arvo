@@ -260,6 +260,27 @@ export function calculateMuscleGroupVolumes(exercises: WorkoutExercise[]): Recor
     }
   }
 
+  // Mapping from specific keys to generic parent keys
+  // This ensures compatibility with split plans using either generic or specific keys
+  const MUSCLE_GROUP_AGGREGATION: Record<string, string> = {
+    'chest_upper': 'chest',
+    'chest_lower': 'chest',
+    'shoulders_front': 'shoulders',
+    'shoulders_side': 'shoulders',
+    'shoulders_rear': 'shoulders',
+  }
+
+  // Aggregate specific keys into generic parent keys
+  for (const [specificKey, genericKey] of Object.entries(MUSCLE_GROUP_AGGREGATION)) {
+    if (volumes[specificKey]) {
+      if (!volumes[genericKey]) {
+        volumes[genericKey] = { direct: 0, indirect: 0 }
+      }
+      volumes[genericKey].direct += volumes[specificKey].direct
+      volumes[genericKey].indirect += volumes[specificKey].indirect
+    }
+  }
+
   // Convert to MuscleVolumeBreakdown format with rounded values
   const result: Record<string, MuscleVolumeBreakdown> = {}
 

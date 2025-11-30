@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     let emailsSent = 0;
     const errors: string[] = [];
 
-    for (const user of usersWithPRs as UserWithPRs[]) {
+    for (const user of usersWithPRs as unknown as UserWithPRs[]) {
       try {
         const sent = await EmailService.sendPRDigestEmail(
           user.user_id,
