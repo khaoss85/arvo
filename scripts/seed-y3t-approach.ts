@@ -674,7 +674,7 @@ const y3tApproach = {
   advancedTechniques: {
     note: 'Advanced techniques are MANDATORY in Week 3 Hell Week. They are the distinguishing feature of Hell Week. Without them, Week 3 is just high-rep training.',
 
-    tripleDropSets: {
+    drop_set: {
       name: 'Triple Drop Sets',
       when: 'Week 3 Hell - primary intensity technique',
       how: 'Take a working set to failure. Immediately reduce weight by 25-30% and continue to failure. Reduce weight again by 25-30% and continue to failure. That\'s one extended set.',
@@ -717,7 +717,7 @@ const y3tApproach = {
       priority: 'THE signature Week 3 Hell Week technique. Non-negotiable.'
     },
 
-    restPauseSets: {
+    rest_pause: {
       name: 'Rest-Pause Sets',
       when: 'Week 3 Hell - alternative or addition to drop sets',
       how: 'Take a set to failure. Rest 15-20 seconds while maintaining position or holding the weight. Continue for more reps to failure. Repeat 2-3 times.',
@@ -759,7 +759,7 @@ const y3tApproach = {
       priority: 'Core Week 3 technique, interchangeable with drop sets'
     },
 
-    supersets: {
+    superset: {
       name: 'Supersets (Antagonist or Same Muscle)',
       when: 'Week 3 Hell - for time efficiency and increased density',
       how: 'Perform one exercise to failure, immediately (0-10s rest) perform a second exercise to failure. Rest 60-90s, repeat.',
@@ -792,7 +792,7 @@ const y3tApproach = {
       priority: 'Optional Week 3 technique - use when time is limited or for variety'
     },
 
-    giantSets: {
+    giant_set: {
       name: 'Giant Sets (3-4 Exercises Back-to-Back)',
       when: 'Week 3 Hell - advanced, for experienced trainees or specialization',
       how: 'Perform 3-4 exercises for the same muscle group back-to-back with minimal rest (0-15s), then rest 90-120s before repeating.',
@@ -868,7 +868,7 @@ const y3tApproach = {
       priority: 'Optional Week 3 technique, excellent for biceps specialization'
     },
 
-    forcedReps: {
+    forced_reps: {
       name: 'Forced Reps (Partner-Assisted)',
       when: 'Week 3 Hell - optional if training partner available',
       how: 'Perform a set to failure. Training partner provides minimal assistance (just enough to keep bar moving) for 2-4 additional reps beyond failure.',
@@ -903,7 +903,7 @@ const y3tApproach = {
       priority: 'Optional Week 3 technique if partner available, not essential'
     },
 
-    partialRepsExtended: {
+    lengthened_partials: {
       name: 'Partial Reps (Beyond Failure)',
       when: 'Week 3 Hell - for extending sets without partner or equipment change',
       how: 'Take set to failure with full ROM. Continue with partial reps (usually bottom half or mid-range) for 8-12 additional reps.',

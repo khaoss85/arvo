@@ -261,22 +261,22 @@ const kubaApproach = {
   },
 
   advanced_techniques: {
-    myoreps: {
+    myo_reps: {
       when: 'During intensification phase or when plateau occurs in isolation exercises',
       how: 'Perform activation set to near failure, rest 5 deep breaths (15 sec), perform mini-sets of 3-5 reps until cannot reach target, accumulate total reps',
       suitableExercises: ['leg extensions', 'leg curls', 'cable flyes', 'lateral raises', 'bicep curls', 'tricep extensions']
     },
-    dropSets: {
+    drop_set: {
       frequency: 'End of mesocycle (weeks 5-6) on 1-2 exercises per workout',
       application: 'Best for isolation exercises with quick weight changes (machines, cables, dumbbells)',
       protocol: 'Take final set to failure, reduce weight 20-30%, continue to failure again, optionally repeat once more'
     },
-    restPause: {
+    rest_pause: {
       when: 'Final 1-2 weeks of intensification block to break plateaus',
       protocol: 'Take set to failure, rest 10-15 seconds, continue for more reps, repeat 2-3 times total',
       cautions: ['Systemically fatiguing', 'Not sustainable long-term', 'Use sparingly', 'Monitor recovery carefully']
     },
-    lengthenedPartials: {
+    lengthened_partials: {
       priority: 'Hamstrings, triceps, biceps, chest - muscles that benefit from stretch-mediated hypertrophy',
       exercises: ['RDL (deficit)', 'overhead tricep extensions', 'incline curls', 'dumbbell flyes', 'overhead press (bottom half)'],
       integration: 'Use as finisher after full ROM sets, or as dedicated stretch-focused variation in B workouts'

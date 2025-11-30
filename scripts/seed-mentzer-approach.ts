@@ -317,7 +317,7 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
 
     // Advanced Techniques - Mentzer's intensity techniques
     advancedTechniques: {
-      forcedReps: {
+      forced_reps: {
         when: 'After reaching concentric failure on the working set',
         how: 'Training partner assists just enough to complete 1-2 additional reps beyond failure',
         protocol: 'Use on final set of compound movements only. Partner provides minimal assistance - just enough to keep bar moving.',
@@ -341,7 +341,7 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         suitableExercises: ['machine exercises', 'leg press', 'smith machine movements', 'cable exercises'],
         cautions: 'Only use on machines or with safety equipment. Do not attempt on free weight exercises where dropping weight is dangerous.'
       },
-      restPause: {
+      rest_pause: {
         when: 'For very advanced trainees only - alternative to forced reps when training alone',
         how: 'Reach failure, rest 15-20 seconds while staying in position, perform 2-3 more reps to failure again',
         protocol: 'Can repeat 2-3 times maximum. Total rest-pause set should not exceed 90 seconds total time.',
@@ -349,7 +349,7 @@ More is NOT better - adequate recovery between workouts is crucial for growth.`,
         suitableExercises: ['machine exercises', 'cable movements', 'exercises where you can safely rack/set down weight'],
         cautions: 'Extremely demanding on CNS and recovery. May require extra rest day before next workout. Not for beginners.'
       },
-      preExhaust: {
+      pre_exhaust: {
         when: 'When systemic fatigue limits muscle failure on compounds (e.g., lower back gives out before lats on rows)',
         how: 'Isolation exercise immediately before compound with NO REST between exercises',
         protocol: 'Isolation to failure (6-10 reps), immediately perform compound to failure (6-10 reps). Counts as ONE working set for that muscle.',

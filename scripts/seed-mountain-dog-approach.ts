@@ -1009,7 +1009,7 @@ DELOAD PHILOSOPHY:
       ]
     },
 
-    dropSets: {
+    drop_set: {
       description: 'Reduce weight after reaching failure, continue to failure again (2-3 drops)',
       when: 'Phase 3 (Supramax Pump)',
       protocol: 'Initial set to failure, reduce weight 30-40%, continue to failure, repeat',
@@ -1031,7 +1031,7 @@ DELOAD PHILOSOPHY:
       }
     },
 
-    restPause: {
+    rest_pause: {
       description: 'Set to failure, rest 15 seconds, continue to failure, repeat 2-3 times',
       when: 'Phase 3 (Supramax Pump)',
       protocol: 'Initial set to failure (8-12 reps), rest 15s, max reps (3-5), rest 15s, max reps (1-3)',
@@ -1048,7 +1048,7 @@ DELOAD PHILOSOPHY:
       ]
     },
 
-    giantSets: {
+    giant_set: {
       description: '3-4 exercises for same muscle group performed back-to-back with no rest',
       when: 'Phase 3 (Supramax Pump)',
       protocol: 'Exercise 1 to failure → immediately Exercise 2 to failure → Exercise 3 → Exercise 4, then rest',
@@ -1069,7 +1069,7 @@ DELOAD PHILOSOPHY:
       }
     },
 
-    mechanicalDropSets: {
+    mechanical_drop_set: {
       description: 'Change to an easier exercise variation when reaching failure (same weight)',
       when: 'Phase 3 (Supramax Pump)',
       protocol: 'Start with hardest variation to failure, immediately switch to easier variation, continue to failure',
@@ -1085,7 +1085,7 @@ DELOAD PHILOSOPHY:
       }
     },
 
-    loadedStretching: {
+    loaded_stretching: {
       description: 'Hold stretched position under moderate load for 30-60 seconds',
       when: 'Phase 4 (Loaded Stretching) - MANDATORY in every workout',
       protocol: '20-30% of working weight, hold deepest stretched position for 30-60 seconds',

@@ -589,7 +589,7 @@ const fst7Approach = {
 
   // Advanced techniques
   advancedTechniques: {
-    fst7CoreProtocol: {
+    fst7_protocol: {
       name: 'FST-7 Protocol (Core Technique)',
       protocol: 'Exactly 7 sets of 8-12 repetitions with precisely 30-45 seconds rest between sets',
       when: 'Applied to the final exercise for each muscle group in every workout for that muscle',
@@ -671,7 +671,7 @@ const fst7Approach = {
       ]
     },
 
-    dropSetsOnFinalFst7: {
+    drop_set: {
       name: 'Drop Set on Final FST-7 Set',
       when: 'Occasionally, on the 7th (final) FST-7 set to push beyond normal failure',
       how: 'Complete the 7th set to failure, immediately reduce weight by 20-30%, continue to failure again',
@@ -702,7 +702,7 @@ const fst7Approach = {
       integration: 'Reserve for lagging muscle groups or end of training cycle before deload. Not a regular component.'
     },
 
-    preExhaust: {
+    pre_exhaust: {
       name: 'Pre-Exhaust',
       when: 'Optional technique used before heavy compound movements for stubborn muscles',
       how: 'Perform isolation exercise to near failure (1 RIR) immediately before compound movement',
@@ -731,7 +731,7 @@ const fst7Approach = {
       priority: 'Optional technique for intermediate/advanced. Not required for FST-7 effectiveness.'
     },
 
-    restPauseOnFst7: {
+    rest_pause: {
       name: 'Rest-Pause on FST-7 Sets',
       when: 'Advanced technique to extend sets 5-7 when reps are dropping too low',
       how: 'When reaching failure at low reps (6-7), rest 10-15 seconds, then continue for 2-4 more reps',
@@ -752,7 +752,7 @@ const fst7Approach = {
       priority: 'Advanced option, not required'
     },
 
-    extendedSets: {
+    lengthened_partials: {
       name: 'Extended Sets (Lengthened Partials)',
       when: 'When reaching failure, perform additional partial reps in the stretched/lengthened position',
       how: 'After reaching full ROM failure, continue with partial reps in the bottom half of the movement for 5-10 reps',
