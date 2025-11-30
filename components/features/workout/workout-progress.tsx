@@ -96,7 +96,7 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
                 {/* Tecnica avanzata (se presente) */}
                 {ex.advancedTechnique && (
                   <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-                    {ex.advancedTechnique}
+                    {ex.advancedTechnique.technique.replace('_', ' ')}
                   </span>
                 )}
 
