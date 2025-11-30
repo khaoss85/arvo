@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus, Check, Loader2, AlertTriangle } from "lucide-react";
 import type { ExerciseExecution } from "@/lib/stores/workout-execution.store";
@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { SimpleRestTimer } from "./simple-rest-timer";
 import { SimpleHydration } from "./simple-hydration";
+import { expandTechniqueToVirtualSets, type VirtualSet, type TechniqueLabel } from "@/lib/utils/technique-expansion";
 
 interface SimpleSetLoggerProps {
   exercise: ExerciseExecution;
@@ -36,16 +37,61 @@ export function SimpleSetLogger({
   const suggestion = exercise.currentAISuggestion;
   const lastSet = exercise.completedSets[exercise.completedSets.length - 1];
 
-  const [weight, setWeight] = useState(
-    lastSet?.weight || suggestion?.suggestion?.weight || exercise.targetWeight || 20
-  );
-  const [reps, setReps] = useState(
-    lastSet?.reps || suggestion?.suggestion?.reps || exercise.targetReps[0] || 10
-  );
+  // Calculate warmup sets
+  const warmupSetsCount = exercise.warmupSets?.length || 0;
+  const warmupSetsSkipped = exercise.warmupSetsSkipped || 0;
+  const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped;
+
+  // Calculate virtual sets for techniques
+  const techniqueExpansion = useMemo(() => {
+    if (!exercise.advancedTechnique) {
+      return null;
+    }
+    return expandTechniqueToVirtualSets(
+      exercise.advancedTechnique,
+      exercise.targetWeight || 20,
+      exercise.targetReps[1] || 10,
+      exercise.targetSets
+    );
+  }, [exercise.advancedTechnique, exercise.targetWeight, exercise.targetReps, exercise.targetSets]);
+
+  const virtualSets = techniqueExpansion?.virtualSets || null;
+
+  // Total sets = warmup + (virtual sets if technique, otherwise target sets)
+  const workingSetsCount = virtualSets?.length || exercise.targetSets;
+  const totalSets = remainingWarmupSets + workingSetsCount;
+  const currentSetNumber = exercise.completedSets.length + 1;
+  const isExerciseComplete = exercise.completedSets.length >= totalSets;
+
+  // Get current virtual set (if in working sets phase and has technique)
+  const workingSetIndex = currentSetNumber - remainingWarmupSets - 1;
+  const currentVirtualSet: VirtualSet | null =
+    virtualSets && workingSetIndex >= 0 && workingSetIndex < virtualSets.length
+      ? virtualSets[workingSetIndex]
+      : null;
+
+  // Label for current set (DROP, MYO, etc.)
+  const currentSetLabel: TechniqueLabel | undefined = currentVirtualSet?.label;
+
+  // Default weight/reps (without virtual set override)
+  const defaultWeight = lastSet?.weight || suggestion?.suggestion?.weight || exercise.targetWeight || 20;
+  const defaultReps = lastSet?.reps || suggestion?.suggestion?.reps || exercise.targetReps[0] || 10;
+
+  const [weight, setWeight] = useState(defaultWeight);
+  const [reps, setReps] = useState(defaultReps);
   const [isLogging, setIsLogging] = useState(false);
   const [isResting, setIsResting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingLogData, setPendingLogData] = useState<{weight: number, reps: number} | null>(null);
+
+  // Update weight/reps when current virtual set changes (for technique sets)
+  useEffect(() => {
+    if (currentVirtualSet) {
+      setWeight(currentVirtualSet.weight);
+      setReps(currentVirtualSet.targetReps);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVirtualSet?.setNumber]); // Only update when set number changes, not on every render
 
   // Calculate total sets completed across all exercises for hydration tracking
   const totalSetsCompleted = exercises.reduce(
@@ -55,14 +101,6 @@ export function SimpleSetLogger({
 
   // Get workout start time as timestamp
   const workoutStartTime = startedAt ? new Date(startedAt).getTime() : Date.now();
-
-  // Calculate current set number
-  const warmupSetsCount = exercise.warmupSets?.length || 0;
-  const warmupSetsSkipped = exercise.warmupSetsSkipped || 0;
-  const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped;
-  const totalSets = remainingWarmupSets + exercise.targetSets;
-  const currentSetNumber = exercise.completedSets.length + 1;
-  const isExerciseComplete = exercise.completedSets.length >= totalSets;
 
   // Determine exercise type for AI suggestions and hydration
   const isCompoundExercise =
@@ -231,9 +269,9 @@ export function SimpleSetLogger({
           />
         )}
 
-        {/* Rest Timer */}
+        {/* Rest Timer - use virtual set rest if available (shorter for technique mini-sets) */}
         <SimpleRestTimer
-          totalSeconds={exercise.restSeconds || 90}
+          totalSeconds={currentVirtualSet?.restSeconds || exercise.restSeconds || 90}
           onComplete={handleRestComplete}
           onSkip={handleRestSkip}
         />
@@ -241,14 +279,42 @@ export function SimpleSetLogger({
     );
   }
 
+  // Get label color based on technique type
+  const getLabelColor = (label: TechniqueLabel) => {
+    switch (label) {
+      case 'DROP':
+        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'MYO':
+        return 'bg-pink-500/20 text-pink-400 border-pink-500/30';
+      case 'CLUSTER':
+        return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
+      case '+15s':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'FST-7':
+        return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
   return (
     <Card className="bg-gray-900 border-gray-800 p-6">
       <div className="text-center mb-6">
         <p className="text-sm text-gray-400 mb-1">Set corrente</p>
-        <p className="text-3xl font-bold text-white">
-          {currentSetNumber}{" "}
-          <span className="text-gray-500 text-xl">/ {totalSets}</span>
-        </p>
+        <div className="flex items-center justify-center gap-3">
+          <p className="text-3xl font-bold text-white">
+            {currentSetNumber}{" "}
+            <span className="text-gray-500 text-xl">/ {totalSets}</span>
+          </p>
+          {currentSetLabel && (
+            <span className={cn(
+              "px-3 py-1 text-sm font-bold rounded-full border",
+              getLabelColor(currentSetLabel)
+            )}>
+              {currentSetLabel}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Weight input */}

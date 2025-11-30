@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ChevronUp, Info, Check } from "lucide-react";
 import type { ExerciseExecution } from "@/lib/stores/workout-execution.store";
 import { ExerciseAnimation } from "@/components/features/workout/exercise-animation";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
+import { expandTechniqueToVirtualSets } from "@/lib/utils/technique-expansion";
 
 interface SimpleExerciseCardProps {
   exercise: ExerciseExecution;
@@ -22,7 +23,23 @@ export function SimpleExerciseCard({
   const warmupSetsCount = exercise.warmupSets?.length || 0;
   const warmupSetsSkipped = exercise.warmupSetsSkipped || 0;
   const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped;
-  const totalSets = remainingWarmupSets + exercise.targetSets;
+
+  // Calculate virtual sets for techniques (same logic as simple-set-logger)
+  const techniqueExpansion = useMemo(() => {
+    if (!exercise.advancedTechnique) {
+      return null;
+    }
+    return expandTechniqueToVirtualSets(
+      exercise.advancedTechnique,
+      exercise.targetWeight || 20,
+      exercise.targetReps[1] || 10,
+      exercise.targetSets
+    );
+  }, [exercise.advancedTechnique, exercise.targetWeight, exercise.targetReps, exercise.targetSets]);
+
+  const virtualSets = techniqueExpansion?.virtualSets || null;
+  const workingSetsCount = virtualSets?.length || exercise.targetSets;
+  const totalSets = remainingWarmupSets + workingSetsCount;
   const completedSetsCount = exercise.completedSets.length;
   const progress = (completedSetsCount / totalSets) * 100;
 
