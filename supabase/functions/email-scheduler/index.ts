@@ -1,6 +1,7 @@
 // Supabase Edge Function: Email Scheduler
 // Scheduled to run hourly to send automated emails
-// Handles: first workout reminders, weekly progress, re-engagement emails
+// Handles: first workout reminders, weekly progress, re-engagement,
+//          PR digest, milestones, plateau detection
 
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
@@ -18,10 +19,16 @@ Deno.serve(async (req) => {
       firstWorkoutReminders: 0,
       weeklyProgress: 0,
       reengagement: 0,
+      prDigest: 0,
+      milestones: 0,
+      plateau: 0,
       errors: [] as string[],
     }
 
-    // 1. Send first workout reminders
+    const currentHour = new Date().getUTCHours()
+    const currentDay = new Date().getUTCDay() // 0 = Sunday, 1 = Monday
+
+    // 1. Send first workout reminders (every hour)
     try {
       console.log('[EmailScheduler] Checking for first workout reminders...')
       const { data: users, error } = await supabase.rpc('get_users_needing_first_workout_reminder')
@@ -115,7 +122,7 @@ Deno.serve(async (req) => {
       results.errors.push(`Weekly progress section: ${error}`)
     }
 
-    // 3. Send re-engagement emails
+    // 3. Send re-engagement emails (every hour)
     try {
       console.log('[EmailScheduler] Checking for re-engagement emails...')
       const { data: users, error } = await supabase.rpc('get_users_needing_reengagement')
@@ -161,12 +168,100 @@ Deno.serve(async (req) => {
       results.errors.push(`Re-engagement section: ${error}`)
     }
 
+    // 4. Send PR digest emails (daily at 20:00 UTC)
+    if (currentHour === 20) {
+      try {
+        console.log('[EmailScheduler] Sending PR digest emails (20:00 UTC)...')
+        const response = await fetch(`${appUrl}/api/email/pr-digest`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          results.prDigest = data.emailsSent || 0
+          console.log(`[EmailScheduler] PR digest complete: ${results.prDigest} emails sent`)
+        } else {
+          const error = await response.text()
+          console.error('[EmailScheduler] Failed to send PR digest:', error)
+          results.errors.push(`PR digest: ${error}`)
+        }
+      } catch (error) {
+        console.error('[EmailScheduler] Error in PR digest section:', error)
+        results.errors.push(`PR digest section: ${error}`)
+      }
+    } else {
+      console.log(`[EmailScheduler] Skipping PR digest (current hour: ${currentHour}, runs at 20:00 UTC)`)
+    }
+
+    // 5. Send milestone emails (daily at 10:00 UTC)
+    if (currentHour === 10) {
+      try {
+        console.log('[EmailScheduler] Checking milestone emails (10:00 UTC)...')
+        const response = await fetch(`${appUrl}/api/email/milestone`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          results.milestones = data.emailsSent || 0
+          console.log(`[EmailScheduler] Milestone check complete: ${results.milestones} emails sent`)
+        } else {
+          const error = await response.text()
+          console.error('[EmailScheduler] Failed to check milestones:', error)
+          results.errors.push(`Milestone check: ${error}`)
+        }
+      } catch (error) {
+        console.error('[EmailScheduler] Error in milestone section:', error)
+        results.errors.push(`Milestone section: ${error}`)
+      }
+    } else {
+      console.log(`[EmailScheduler] Skipping milestone check (current hour: ${currentHour}, runs at 10:00 UTC)`)
+    }
+
+    // 6. Send plateau detection emails (weekly on Mondays at 10:00 UTC)
+    if (currentDay === 1 && currentHour === 10) {
+      try {
+        console.log('[EmailScheduler] Checking plateau detection (Monday 10:00 UTC)...')
+        const response = await fetch(`${appUrl}/api/email/plateau`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          results.plateau = data.emailsSent || 0
+          console.log(`[EmailScheduler] Plateau check complete: ${results.plateau} emails sent`)
+        } else {
+          const error = await response.text()
+          console.error('[EmailScheduler] Failed to check plateaus:', error)
+          results.errors.push(`Plateau check: ${error}`)
+        }
+      } catch (error) {
+        console.error('[EmailScheduler] Error in plateau section:', error)
+        results.errors.push(`Plateau section: ${error}`)
+      }
+    } else {
+      console.log(`[EmailScheduler] Skipping plateau check (day: ${currentDay}, hour: ${currentHour}, runs Monday 10:00 UTC)`)
+    }
+
     console.log('[EmailScheduler] Scheduling process complete:', results)
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Email scheduling complete',
+        timestamp: new Date().toISOString(),
         results,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

@@ -75,6 +75,37 @@ export interface SettingsUpdateEmailData {
   impact: string;
 }
 
+// New engagement email interfaces
+export interface PRDigestEmailData {
+  firstName: string;
+  prs: Array<{
+    exerciseName: string;
+    weight: number;
+    reps: number;
+    e1rm: number;
+    previousE1rm: number;
+    improvementPercent: number;
+  }>;
+  date: string;
+}
+
+export interface MilestoneEmailData {
+  firstName: string;
+  milestoneType: 'workout_count' | 'time_based';
+  value: number;
+  unit: 'workouts' | 'months';
+  totalVolume?: number;
+  favoriteExercise?: string;
+  totalWorkouts?: number;
+}
+
+export interface PlateauEmailData {
+  firstName: string;
+  exerciseName: string;
+  currentE1rm: number;
+  weeksStuck: number;
+}
+
 // Helper function to get localized split type names
 const getSplitTypeName = (splitType: string, lang: SupportedLanguage): string => {
   const names: Record<string, Record<SupportedLanguage, string>> = {
@@ -911,32 +942,26 @@ export const emailTemplates = {
   ): { subject: string; html: string } {
     const content = {
       it: {
-        subject: '💪 Ti Manca l\'Allenamento?',
+        subject: `💪 Il tuo prossimo workout ti aspetta, ${data.firstName}`,
         greeting: `Ciao ${data.firstName},`,
-        intro: `Sono passati ${data.daysSinceLastWorkout} giorni dal tuo ultimo workout. Ti manca la palestra?`,
-        comeback: 'Tornare è Facile',
-        progress: 'I tuoi progressi ti aspettano',
-        plan: 'Il tuo piano di allenamento è ancora qui, pronto per te',
-        motivation: 'Ogni giorno è una nuova opportunità per migliorare',
-        nextWorkout: 'Il Tuo Prossimo Workout',
-        ready: `Il tuo ${data.nextWorkoutName} è pronto quando lo sei tu.`,
-        ctaButton: 'Torna ad Allenarti',
-        teamSignature: 'Non vediamo l\'ora di rivederti in azione! 💪<br><strong>Team ARVO</strong>',
-        tagline: 'ARVO - AI Personal Trainer for Serious Lifters',
+        intro: `Sono passati ${data.daysSinceLastWorkout} giorni dal tuo ultimo allenamento. La vita è impegnata — lo capiamo.`,
+        goodNews: 'La buona notizia? Il tuo piano di allenamento è esattamente dove l\'hai lasciato.',
+        nextWorkout: 'Il tuo prossimo workout',
+        ctaButton: 'Riprendi da dove eri',
+        noPressure: 'Nessuna pressione. Quando sei pronto, saremo qui.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
       },
       en: {
-        subject: '💪 Missing the Gym?',
+        subject: `💪 Your next workout is ready, ${data.firstName}`,
         greeting: `Hey ${data.firstName},`,
-        intro: `It\'s been ${data.daysSinceLastWorkout} days since your last workout. Missing the gym?`,
-        comeback: 'Coming Back is Easy',
-        progress: 'Your progress is waiting for you',
-        plan: 'Your training plan is still here, ready for you',
-        motivation: 'Every day is a new opportunity to improve',
-        nextWorkout: 'Your Next Workout',
-        ready: `Your ${data.nextWorkoutName} is ready whenever you are.`,
-        ctaButton: 'Get Back to Training',
-        teamSignature: 'We can\'t wait to see you back in action! 💪<br><strong>ARVO Team</strong>',
-        tagline: 'ARVO - AI Personal Trainer for Serious Lifters',
+        intro: `It's been ${data.daysSinceLastWorkout} days since your last session. Life gets busy — we get it.`,
+        goodNews: 'The good news? Your training plan is exactly where you left it.',
+        nextWorkout: 'Your next workout',
+        ctaButton: 'Jump Back In',
+        noPressure: 'No pressure. Whenever you\'re ready, we\'ll be here.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
       },
     };
 
@@ -951,37 +976,36 @@ export const emailTemplates = {
           <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
             <tr>
               <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px;">
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 8px 8px 0 0;">
-                      <h1 style="margin: 0; color: #ffffff; font-size: 32px;">ARVO</h1>
-                    </td>
-                  </tr>
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                   <tr>
                     <td style="padding: 40px;">
-                      <h2 style="margin: 0 0 20px 0; color: #1a1a1a; font-size: 24px;">${t.greeting}</h2>
-                      <p style="margin: 0 0 30px 0; color: #4a4a4a; font-size: 16px;">${t.intro}</p>
-                      <h3 style="margin: 0 0 15px 0; color: #1a1a1a; font-size: 20px;">${t.comeback}</h3>
-                      <ul style="margin: 0 0 30px 0; padding-left: 20px; color: #4a4a4a; font-size: 15px; line-height: 1.8;">
-                        <li>${t.progress}</li>
-                        <li>${t.plan}</li>
-                        <li>${t.motivation}</li>
-                      </ul>
-                      <h3 style="margin: 0 0 15px 0; color: #1a1a1a; font-size: 18px;">${t.nextWorkout}</h3>
-                      <p style="color: #4a4a4a; font-size: 15px;">${t.ready}</p>
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.greeting}</p>
+
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.intro}</p>
+
+                      <p style="margin: 0 0 30px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.goodNews}</p>
+
+                      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 0 0 30px 0;">
+                        <p style="margin: 0 0 8px 0; color: #666; font-size: 14px; font-weight: 600;">${t.nextWorkout}:</p>
+                        <p style="margin: 0; color: #1a1a1a; font-size: 18px; font-weight: 600;">${data.nextWorkoutName}</p>
+                      </div>
+
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td align="center">
-                            <a href="${appUrl}/workouts" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 6px; font-size: 16px; font-weight: bold; margin: 20px 0;">${t.ctaButton}</a>
+                            <a href="${appUrl}/dashboard" style="display: inline-block; background-color: #4F46E5; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: 600;">${t.ctaButton}</a>
                           </td>
                         </tr>
                       </table>
-                      <p style="margin: 30px 0 0 0; color: #4a4a4a; font-size: 16px; text-align: center;">${t.teamSignature}</p>
+
+                      <p style="margin: 30px 0 0 0; color: #666; font-size: 15px; text-align: center; font-style: italic;">${t.noPressure}</p>
+
+                      <p style="margin: 30px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${t.signature}</p>
                     </td>
                   </tr>
                   <tr>
-                    <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
-                      <p style="margin: 0; color: #666; font-size: 12px;">${t.tagline}</p>
+                    <td style="padding: 20px 40px; border-top: 1px solid #eee; text-align: center;">
+                      <p style="margin: 0; color: #999; font-size: 12px;">${t.tagline}<br><a href="https://arvo.guru" style="color: #999;">arvo.guru</a></p>
                     </td>
                   </tr>
                 </table>
@@ -1095,6 +1119,295 @@ export const emailTemplates = {
                   <tr>
                     <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
                       <p style="margin: 0; color: #666; font-size: 12px;">${t.tagline}</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    };
+  },
+
+  /**
+   * Email 9: PR Celebration (Daily Digest)
+   */
+  prCelebration(
+    data: PRDigestEmailData,
+    appUrl: string,
+    lang: SupportedLanguage = 'en'
+  ): { subject: string; html: string } {
+    const content = {
+      it: {
+        subject: `🏆 Oggi ti sei superato, ${data.firstName}!`,
+        greeting: `Ciao ${data.firstName},`,
+        intro: `Hai battuto ${data.prs.length} record personale${data.prs.length > 1 ? 'i' : ''} oggi! Ecco cosa hai raggiunto:`,
+        prLabel: 'Nuovo E1RM',
+        improvement: 'miglioramento',
+        outro: 'Continua così — ogni rep conta.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+      en: {
+        subject: `🏆 You crushed it today, ${data.firstName}!`,
+        greeting: `Hey ${data.firstName},`,
+        intro: `You hit ${data.prs.length} personal record${data.prs.length > 1 ? 's' : ''} today! Here's what you achieved:`,
+        prLabel: 'New E1RM',
+        improvement: 'improvement',
+        outro: 'Keep pushing — every rep counts.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+    };
+
+    const t = content[lang];
+
+    const prsHtml = data.prs.map(pr => `
+      <div style="background-color: #f0fdf4; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #22c55e;">
+        <p style="margin: 0 0 8px 0; color: #1a1a1a; font-size: 16px; font-weight: 600;">✅ ${pr.exerciseName}</p>
+        <p style="margin: 0; color: #333; font-size: 14px;">${pr.weight}kg × ${pr.reps} reps</p>
+        <p style="margin: 4px 0 0 0; color: #16a34a; font-size: 14px; font-weight: 500;">→ ${t.prLabel}: ${pr.e1rm}kg (+${pr.improvementPercent}% ${t.improvement})</p>
+      </div>
+    `).join('');
+
+    return {
+      subject: t.subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.greeting}</p>
+                      <p style="margin: 0 0 24px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.intro}</p>
+
+                      ${prsHtml}
+
+                      <p style="margin: 24px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${t.outro}</p>
+                      <p style="margin: 24px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${t.signature}</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px 40px; border-top: 1px solid #eee; text-align: center;">
+                      <p style="margin: 0; color: #999; font-size: 12px;">${t.tagline}<br><a href="https://arvo.guru" style="color: #999;">arvo.guru</a></p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    };
+  },
+
+  /**
+   * Email 10: Milestone Celebration
+   */
+  milestone(
+    data: MilestoneEmailData,
+    appUrl: string,
+    lang: SupportedLanguage = 'en'
+  ): { subject: string; html: string } {
+    // Workout count milestone content
+    const workoutMilestones: Record<number, Record<SupportedLanguage, { subject: string; emoji: string; message: string; extra: string }>> = {
+      10: {
+        it: { subject: '🎯 10 workout completati', emoji: '🎯', message: 'Hai completato il tuo 10° workout! Questo è vero impegno.', extra: 'I primi 10 sono i più difficili. Ora hai costruito l\'abitudine.' },
+        en: { subject: '🎯 10 workouts done', emoji: '🎯', message: 'You just completed your 10th workout! That\'s real commitment.', extra: 'The first 10 are the hardest. Now you\'ve built the habit.' },
+      },
+      25: {
+        it: { subject: '💪 25 workout completati', emoji: '💪', message: 'Hai raggiunto 25 workout! Stai diventando una forza della natura.', extra: 'Un quarto di cento. La costanza paga sempre.' },
+        en: { subject: '💪 25 workouts done', emoji: '💪', message: 'You\'ve hit 25 workouts! You\'re becoming a force of nature.', extra: 'A quarter of a hundred. Consistency always pays off.' },
+      },
+      50: {
+        it: { subject: '🔥 50 workout completati', emoji: '🔥', message: '50 workout! Sei a metà strada verso i 100.', extra: 'Questo non è più un hobby — è uno stile di vita.' },
+        en: { subject: '🔥 50 workouts done', emoji: '🔥', message: '50 workouts! You\'re halfway to 100.', extra: 'This isn\'t a hobby anymore — it\'s a lifestyle.' },
+      },
+      100: {
+        it: { subject: '🏆 100 workout completati', emoji: '🏆', message: 'CENTO WORKOUT! Sei entrato nel Century Club.', extra: 'Questo traguardo appartiene solo ai più dedicati. Sei una leggenda.' },
+        en: { subject: '🏆 100 workouts done', emoji: '🏆', message: 'ONE HUNDRED WORKOUTS! You\'ve entered the Century Club.', extra: 'This milestone belongs only to the most dedicated. You\'re a legend.' },
+      },
+    };
+
+    // Time-based milestone content
+    const timeMilestones: Record<number, Record<SupportedLanguage, { subject: string; emoji: string; message: string; extra: string }>> = {
+      1: {
+        it: { subject: '📅 1 mese con Arvo', emoji: '📅', message: 'Un mese insieme! Il primo mese è sempre il più importante.', extra: 'Hai gettato le fondamenta. Ora costruiamo sopra.' },
+        en: { subject: '📅 1 month with Arvo', emoji: '📅', message: 'One month together! The first month is always the most important.', extra: 'You\'ve laid the foundation. Now let\'s build on it.' },
+      },
+      3: {
+        it: { subject: '⭐ 3 mesi di allenamento', emoji: '⭐', message: 'Tre mesi di dedizione! Questo non è più una streak — è un cambiamento di vita.', extra: 'Il tuo corpo sta cambiando. Continua così.' },
+        en: { subject: '⭐ 3 months strong', emoji: '⭐', message: 'Three months of dedication! This isn\'t a streak anymore — it\'s a lifestyle change.', extra: 'Your body is changing. Keep going.' },
+      },
+      6: {
+        it: { subject: '🌟 6 mesi di progressi', emoji: '🌟', message: 'Sei mesi! Mezzo anno di lavoro duro e risultati.', extra: 'Guarda indietro a dove eri 6 mesi fa. Incredibile, vero?' },
+        en: { subject: '🌟 6 months of progress', emoji: '🌟', message: 'Six months! Half a year of hard work and results.', extra: 'Look back at where you were 6 months ago. Incredible, right?' },
+      },
+      12: {
+        it: { subject: '👑 1 anno con Arvo', emoji: '👑', message: 'UN ANNO INTERO! 365 giorni di dedizione al tuo corpo.', extra: 'Sei tra il top 1% delle persone che si allenano. Rispetto totale.' },
+        en: { subject: '👑 1 year with Arvo', emoji: '👑', message: 'ONE FULL YEAR! 365 days of dedication to your body.', extra: 'You\'re in the top 1% of people who train. Total respect.' },
+      },
+    };
+
+    const isWorkoutMilestone = data.milestoneType === 'workout_count';
+    const milestoneData = isWorkoutMilestone
+      ? workoutMilestones[data.value]?.[lang]
+      : timeMilestones[data.value]?.[lang];
+
+    if (!milestoneData) {
+      return { subject: 'Milestone', html: '' };
+    }
+
+    const statsHtml = isWorkoutMilestone && data.totalVolume ? `
+      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">📊 ${lang === 'it' ? 'Le tue statistiche' : 'Your stats'}:</p>
+        <p style="margin: 0; color: #333; font-size: 14px;">
+          ${lang === 'it' ? 'Volume totale sollevato' : 'Total volume lifted'}: <strong>${Math.round(data.totalVolume / 1000)}t</strong>
+          ${data.favoriteExercise ? `<br>${lang === 'it' ? 'Esercizio preferito' : 'Favorite exercise'}: <strong>${data.favoriteExercise}</strong>` : ''}
+        </p>
+      </div>
+    ` : '';
+
+    const content = {
+      it: {
+        greeting: `Ciao ${data.firstName},`,
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+      en: {
+        greeting: `Hey ${data.firstName},`,
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+    };
+
+    const t = content[lang];
+
+    return {
+      subject: `${milestoneData.emoji} ${milestoneData.subject}, ${data.firstName}!`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0; font-size: 48px; text-align: center;">${milestoneData.emoji}</p>
+                      <p style="margin: 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.greeting}</p>
+                      <p style="margin: 0 0 16px 0; color: #333; font-size: 18px; line-height: 1.6; font-weight: 600;">${milestoneData.message}</p>
+
+                      ${statsHtml}
+
+                      <p style="margin: 20px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${milestoneData.extra}</p>
+                      <p style="margin: 24px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${t.signature}</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px 40px; border-top: 1px solid #eee; text-align: center;">
+                      <p style="margin: 0; color: #999; font-size: 12px;">${t.tagline}<br><a href="https://arvo.guru" style="color: #999;">arvo.guru</a></p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `,
+    };
+  },
+
+  /**
+   * Email 11: Plateau Detection
+   */
+  plateauDetection(
+    data: PlateauEmailData,
+    appUrl: string,
+    lang: SupportedLanguage = 'en'
+  ): { subject: string; html: string } {
+    const content = {
+      it: {
+        subject: `📊 Superiamo questo plateau, ${data.firstName}`,
+        greeting: `Ciao ${data.firstName},`,
+        intro: `Il tuo <strong>${data.exerciseName}</strong> è fermo a <strong>${data.currentE1rm}kg</strong> da ${data.weeksStuck} settimane.`,
+        explanation: 'I plateau sono normali — significano che il corpo si è adattato. Ecco come superarlo:',
+        tip1Title: 'Settimana di scarico',
+        tip1Desc: 'Riduci il peso del 40%, concentrati sulla tecnica',
+        tip2Title: 'Aggiungi variazione',
+        tip2Desc: 'Pause rep, tempo work, presa diversa',
+        tip3Title: 'Controlla il recupero',
+        tip3Desc: 'Sonno, alimentazione, stress',
+        outro: 'A volte un piccolo cambiamento fa una grande differenza.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+      en: {
+        subject: `📊 Let's break through that plateau, ${data.firstName}`,
+        greeting: `Hey ${data.firstName},`,
+        intro: `Your <strong>${data.exerciseName}</strong> has been steady at <strong>${data.currentE1rm}kg</strong> for ${data.weeksStuck} weeks.`,
+        explanation: 'Plateaus are normal — they mean your body has adapted. Here\'s how to break through:',
+        tip1Title: 'Deload week',
+        tip1Desc: 'Reduce weight 40%, focus on form',
+        tip2Title: 'Add variation',
+        tip2Desc: 'Pause reps, tempo work, different grip',
+        tip3Title: 'Check recovery',
+        tip3Desc: 'Sleep, nutrition, stress',
+        outro: 'Sometimes a small change makes a big difference.',
+        signature: '<strong>Daniele</strong><br><span style="color: #666;">Founder, Arvo</span>',
+        tagline: 'Arvo - AI Personal Trainer for Serious Lifters',
+      },
+    };
+
+    const t = content[lang];
+
+    return {
+      subject: t.subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+            <tr>
+              <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.greeting}</p>
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.intro}</p>
+                      <p style="margin: 0 0 20px 0; color: #333; font-size: 16px; line-height: 1.6;">${t.explanation}</p>
+
+                      <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                        <div style="margin-bottom: 16px;">
+                          <p style="margin: 0 0 4px 0; color: #4F46E5; font-size: 14px; font-weight: 600;">• ${t.tip1Title}</p>
+                          <p style="margin: 0; color: #666; font-size: 14px;">${t.tip1Desc}</p>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                          <p style="margin: 0 0 4px 0; color: #4F46E5; font-size: 14px; font-weight: 600;">• ${t.tip2Title}</p>
+                          <p style="margin: 0; color: #666; font-size: 14px;">${t.tip2Desc}</p>
+                        </div>
+                        <div>
+                          <p style="margin: 0 0 4px 0; color: #4F46E5; font-size: 14px; font-weight: 600;">• ${t.tip3Title}</p>
+                          <p style="margin: 0; color: #666; font-size: 14px;">${t.tip3Desc}</p>
+                        </div>
+                      </div>
+
+                      <p style="margin: 20px 0 0 0; color: #333; font-size: 16px; line-height: 1.6; font-style: italic;">${t.outro}</p>
+                      <p style="margin: 24px 0 0 0; color: #333; font-size: 16px; line-height: 1.6;">${t.signature}</p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 20px 40px; border-top: 1px solid #eee; text-align: center;">
+                      <p style="margin: 0; color: #999; font-size: 12px;">${t.tagline}<br><a href="https://arvo.guru" style="color: #999;">arvo.guru</a></p>
                     </td>
                   </tr>
                 </table>

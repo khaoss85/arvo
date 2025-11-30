@@ -11,6 +11,9 @@ import {
   type CycleCompleteEmailData,
   type ReengagementEmailData,
   type SettingsUpdateEmailData,
+  type PRDigestEmailData,
+  type MilestoneEmailData,
+  type PlateauEmailData,
 } from './email-templates';
 import type { Database } from '@/lib/types/database.types';
 
@@ -171,32 +174,64 @@ export class EmailService {
       const { data, error } = await resend.emails.send({
         from: this.getFromAddress('ARVO'),
         to: [entry.email],
-        subject: '🎊 Sei stato approvato! Benvenuto in ARVO',
+        subject: '🎉 Welcome to Arvo! Your access has been approved',
         html: `
-          <h2>Congratulazioni! Hai accesso a ARVO</h2>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1a1a1a; margin-bottom: 24px;">Welcome to Arvo! 🎉</h2>
 
-          <p>Ciao ${entry.first_name || 'là'},</p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              Hi ${entry.first_name || 'there'},
+            </p>
 
-          <p>Sei stato approvato per l'accesso early a <strong>ARVO AI Training</strong>!</p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              Thanks for signing up for the Arvo waiting list — <strong>your access has been approved!</strong>
+            </p>
 
-          <p>Clicca il link qui sotto per creare il tuo account e iniziare subito:</p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              You can now log in and start testing the app.
+            </p>
 
-          <a href="${magicLink}" style="background-color: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; font-size: 16px; font-weight: bold;">
-            Accedi a ARVO
-          </a>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${magicLink}" style="background-color: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-size: 16px; font-weight: 600;">
+                Access Arvo
+              </a>
+            </div>
 
-          <p style="color: #666; font-size: 14px;">
-            ⏰ Il link è valido per 24 ore.
-          </p>
+            <p style="color: #666; font-size: 14px; text-align: center;">
+              ⏰ This link expires in 24 hours.<br>
+              You can always request a new one at <a href="https://arvo.guru/login" style="color: #4F46E5;">arvo.guru/login</a>
+            </p>
 
-          <br>
-          <p>Pronto a trasformare il tuo allenamento?</p>
-          <p><strong>Team ARVO</strong></p>
+            <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 24px 0;">
+              <p style="color: #333; font-size: 14px; font-weight: 600; margin: 0 0 12px 0;">
+                What you can do now:
+              </p>
+              <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li>Complete onboarding to personalize your training plan</li>
+                <li>Test the AI coach during your workouts</li>
+                <li>Explore all beta features</li>
+              </ul>
+            </div>
 
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #666; font-size: 12px;">
-            ARVO - AI Personal Trainer for Serious Lifters
-          </p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              We're in beta, so your feedback is incredibly valuable. If you find bugs, have suggestions, or just want to share how it's going — reply to this email, I'm always available.
+            </p>
+
+            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-top: 24px;">
+              See you in the gym (virtually)!
+            </p>
+
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              <strong>Daniele</strong><br>
+              <span style="color: #666;">Founder, Arvo</span>
+            </p>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              Arvo - AI Personal Trainer for Serious Lifters<br>
+              <a href="https://arvo.guru" style="color: #999;">arvo.guru</a>
+            </p>
+          </div>
         `,
       });
 
@@ -222,32 +257,48 @@ export class EmailService {
       const { data, error } = await resend.emails.send({
         from: this.getFromAddress('ARVO'),
         to: [email],
-        subject: '🔑 Il tuo link di accesso ad ARVO',
+        subject: '🔑 Your Arvo login link',
         html: `
-          <h2>Accedi ad ARVO</h2>
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1a1a1a; margin-bottom: 24px;">Access your account</h2>
 
-          <p>Ciao ${firstName},</p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              Hi ${firstName},
+            </p>
 
-          <p>Hai richiesto l'accesso ad <strong>ARVO AI Training</strong>.</p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              You requested access to your Arvo account.
+            </p>
 
-          <p>Clicca il link qui sotto per accedere:</p>
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${magicLink}" style="background-color: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-size: 16px; font-weight: 600;">
+                Access Arvo
+              </a>
+            </div>
 
-          <a href="${magicLink}" style="background-color: #4F46E5; color: white; padding: 16px 32px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; font-size: 16px; font-weight: bold;">
-            Accedi a ARVO
-          </a>
+            <p style="color: #666; font-size: 14px; text-align: center;">
+              ⏰ This link expires in 1 hour.
+            </p>
 
-          <p style="color: #666; font-size: 14px;">
-            ⏰ Il link è valido per 1 ora.
-          </p>
+            <p style="color: #888; font-size: 13px; text-align: center; margin-top: 24px;">
+              Didn't request this? You can safely ignore this email.
+            </p>
 
-          <p style="color: #666; font-size: 12px;">
-            Se non hai richiesto tu questo link, ignora questa email.
-          </p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6; margin-top: 32px;">
+              See you in the gym!
+            </p>
 
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #666; font-size: 12px;">
-            ARVO - AI Personal Trainer for Serious Lifters
-          </p>
+            <p style="color: #333; font-size: 16px; line-height: 1.6;">
+              <strong>Daniele</strong><br>
+              <span style="color: #666;">Founder, Arvo</span>
+            </p>
+
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+            <p style="color: #999; font-size: 12px; text-align: center;">
+              Arvo - AI Personal Trainer for Serious Lifters<br>
+              <a href="https://arvo.guru" style="color: #999;">arvo.guru</a>
+            </p>
+          </div>
         `,
       });
 
@@ -854,6 +905,192 @@ export class EmailService {
       return true;
     } catch (error) {
       console.error('Error in sendSettingsUpdateEmail:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Email 9: PR Celebration (Daily Digest)
+   */
+  static async sendPRDigestEmail(
+    userId: string,
+    email: string,
+    firstName: string,
+    prs: PRDigestEmailData['prs'],
+    lang: SupportedLanguage = 'en'
+  ) {
+    try {
+      // Check if already sent today
+      const supabase = getSupabaseAdmin();
+      const { data: alreadySent } = await supabase.rpc('check_email_already_sent', {
+        p_user_id: userId,
+        p_event_type: 'pr_digest',
+        p_hours_ago: 24,
+      });
+
+      if (alreadySent) {
+        console.log(`PR digest already sent to user ${userId} today`);
+        return false;
+      }
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const data: PRDigestEmailData = {
+        firstName,
+        prs,
+        date: new Date().toISOString().split('T')[0],
+      };
+
+      const { subject, html } = emailTemplates.prCelebration(data, appUrl, lang);
+
+      const resend = this.getResendClient();
+      const { data: emailData, error } = await resend.emails.send({
+        from: this.getFromAddress('ARVO'),
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (error) {
+        console.error('Error sending PR digest email:', error);
+        return false;
+      }
+
+      await this.trackEmailEvent(userId, 'pr_digest', subject, 'pr_celebration', { prCount: prs.length, lang });
+      console.log(`PR digest email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
+      return true;
+    } catch (error) {
+      console.error('Error in sendPRDigestEmail:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Email 10: Milestone Celebration (Workout count or Time-based)
+   */
+  static async sendMilestoneEmail(
+    userId: string,
+    email: string,
+    firstName: string,
+    milestoneType: 'workout_count' | 'time_based',
+    value: number,
+    additionalData?: { totalVolume?: number; favoriteExercise?: string; totalWorkouts?: number }
+  ) {
+    try {
+      const eventType = milestoneType === 'workout_count'
+        ? `milestone_${value}_workouts`
+        : `milestone_${value}_month`;
+
+      // Check if this specific milestone was already sent (lifetime - not just 24h)
+      const supabase = getSupabaseAdmin();
+      const { data: existing } = await supabase
+        .from('email_events')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('event_type', eventType)
+        .single();
+
+      if (existing) {
+        console.log(`Milestone ${eventType} already sent to user ${userId}`);
+        return false;
+      }
+
+      const lang = await this.getUserLanguage(userId);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      const data: MilestoneEmailData = {
+        firstName,
+        milestoneType,
+        value,
+        unit: milestoneType === 'workout_count' ? 'workouts' : 'months',
+        ...additionalData,
+      };
+
+      const { subject, html } = emailTemplates.milestone(data, appUrl, lang);
+
+      if (!html) {
+        console.error('No template found for milestone:', value);
+        return false;
+      }
+
+      const resend = this.getResendClient();
+      const { data: emailData, error } = await resend.emails.send({
+        from: this.getFromAddress('ARVO'),
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (error) {
+        console.error('Error sending milestone email:', error);
+        return false;
+      }
+
+      await this.trackEmailEvent(userId, eventType, subject, 'milestone', { milestoneType, value, lang });
+      console.log(`Milestone email (${eventType}) sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
+      return true;
+    } catch (error) {
+      console.error('Error in sendMilestoneEmail:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Email 11: Plateau Detection
+   */
+  static async sendPlateauDetectionEmail(
+    userId: string,
+    email: string,
+    firstName: string,
+    exerciseName: string,
+    currentE1rm: number,
+    weeksStuck: number
+  ) {
+    try {
+      const eventType = `plateau_${exerciseName.toLowerCase().replace(/\s+/g, '_')}`;
+
+      // Check if plateau email for this exercise was sent in last 30 days
+      const supabase = getSupabaseAdmin();
+      const { data: alreadySent } = await supabase.rpc('check_email_already_sent', {
+        p_user_id: userId,
+        p_event_type: eventType,
+        p_hours_ago: 720, // 30 days
+      });
+
+      if (alreadySent) {
+        console.log(`Plateau email for ${exerciseName} already sent to user ${userId} in last 30 days`);
+        return false;
+      }
+
+      const lang = await this.getUserLanguage(userId);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      const data: PlateauEmailData = {
+        firstName,
+        exerciseName,
+        currentE1rm,
+        weeksStuck,
+      };
+
+      const { subject, html } = emailTemplates.plateauDetection(data, appUrl, lang);
+
+      const resend = this.getResendClient();
+      const { data: emailData, error } = await resend.emails.send({
+        from: this.getFromAddress('ARVO'),
+        to: [email],
+        subject,
+        html,
+      });
+
+      if (error) {
+        console.error('Error sending plateau detection email:', error);
+        return false;
+      }
+
+      await this.trackEmailEvent(userId, eventType, subject, 'plateau_detection', { exerciseName, currentE1rm, weeksStuck, lang });
+      console.log(`Plateau detection email sent to: ${email} (${lang.toUpperCase()})`, emailData?.id);
+      return true;
+    } catch (error) {
+      console.error('Error in sendPlateauDetectionEmail:', error);
       return false;
     }
   }
