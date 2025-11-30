@@ -76,7 +76,9 @@ export class ExerciseDBService {
 
           const responseData = await response.json()
           const exercises = responseData.data || []
-          allExercises.push(...exercises)
+          // Normalize self-hosted API response to expected format
+          const normalizedExercises = exercises.map((ex: any) => this.normalizeApiResponse(ex))
+          allExercises.push(...normalizedExercises)
 
           // Check if there are more pages
           const totalExercises = responseData.metadata?.totalExercises || 0
@@ -218,6 +220,24 @@ export class ExerciseDBService {
     }
 
     return null
+  }
+
+  /**
+   * Normalize self-hosted API response to expected format
+   * Self-hosted API returns: exerciseId, targetMuscles[], bodyParts[], equipments[]
+   * Expected format: id, target, bodyPart, equipment
+   */
+  private static normalizeApiResponse(ex: any): ExerciseDBExercise {
+    return {
+      id: ex.exerciseId || ex.id || '',
+      name: ex.name || '',
+      gifUrl: ex.gifUrl || '',
+      target: Array.isArray(ex.targetMuscles) ? ex.targetMuscles[0] || '' : (ex.target || ''),
+      bodyPart: Array.isArray(ex.bodyParts) ? ex.bodyParts[0] || '' : (ex.bodyPart || ''),
+      equipment: Array.isArray(ex.equipments) ? ex.equipments[0] || '' : (ex.equipment || ''),
+      secondaryMuscles: ex.secondaryMuscles || [],
+      instructions: ex.instructions || [],
+    }
   }
 
   /**
