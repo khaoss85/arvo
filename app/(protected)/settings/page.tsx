@@ -19,6 +19,7 @@ import { ApproachHistoryTimeline } from "@/components/features/settings/approach
 import { AudioCoachingSettings } from "@/components/features/settings/audio-coaching-settings"
 import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
 import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
+import { RestartTourSection } from "@/components/features/settings/restart-tour-section"
 import { Card } from "@/components/ui/card"
 import type { SportGoal } from "@/lib/types/schemas"
 
@@ -106,6 +107,11 @@ export default async function SettingsPage() {
             <AppModeToggle />
           </div>
         </Card>
+      </section>
+
+      {/* Tour Section */}
+      <section id="tour" className="scroll-mt-20">
+        <RestartTourSection />
       </section>
 
       {/* Caloric Phase Section */}

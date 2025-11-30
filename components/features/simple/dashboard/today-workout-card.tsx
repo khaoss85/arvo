@@ -129,6 +129,7 @@ export function TodayWorkoutCard({
 
   return (
     <Card
+      data-tour={isToday ? "simple-workout" : undefined}
       className={cn(
         "p-6 transition-all duration-300",
         "bg-gradient-to-br",

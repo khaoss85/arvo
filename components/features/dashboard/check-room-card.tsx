@@ -62,10 +62,13 @@ export function CheckRoomCard({ userId, className }: CheckRoomCardProps) {
   }
 
   return (
-    <div className={cn(
-      'rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900',
-      className
-    )}>
+    <div
+      data-tour="check-room"
+      className={cn(
+        'rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900',
+        className
+      )}
+    >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Camera className="h-5 w-5 text-gray-500 dark:text-gray-400" />

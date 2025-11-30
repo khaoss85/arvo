@@ -14,6 +14,8 @@ import type { User } from "@supabase/supabase-js"
 import type { MuscleVolumeProgress } from "@/lib/actions/volume-progress-actions"
 import type { UserProfile } from "@/lib/types/schemas"
 import { getCycleComparisonAction, changeSplitPlanAction, getActiveSplitPlanAction, getAllSplitPlansAction } from "@/app/actions/split-actions"
+import { useTourStore } from "@/lib/stores/tour.store"
+import { OnboardingTour } from "./onboarding-tour"
 
 interface DashboardClientProps {
   user: User
@@ -30,6 +32,24 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
   const [cycleStats, setCycleStats] = useState<any>(null)
   const [splitPlanName, setSplitPlanName] = useState<string>("")
   const [availableSplits, setAvailableSplits] = useState<any[]>([])
+
+  // Tour state
+  const { hasSeenDashboardTour, markDashboardTourAsSeen } = useTourStore()
+  const [showTour, setShowTour] = useState(false)
+
+  // Show tour only on first visit
+  useEffect(() => {
+    if (!hasSeenDashboardTour) {
+      // Small delay to allow DOM elements to render
+      const timer = setTimeout(() => setShowTour(true), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [hasSeenDashboardTour])
+
+  const handleTourComplete = () => {
+    markDashboardTourAsSeen()
+    setShowTour(false)
+  }
 
   // Check if cycle was recently completed (within last 5 minutes)
   useEffect(() => {
@@ -229,6 +249,9 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
           onError={handleAdaptationError}
         />
       )}
+
+      {/* Onboarding Tour */}
+      {showTour && <OnboardingTour onComplete={handleTourComplete} />}
     </div>
   )
 }

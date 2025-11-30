@@ -312,6 +312,7 @@ export function TimelineDayCard({ dayData, isCurrentDay, userId, onGenerateWorko
 
   return (
     <div
+      data-tour={isCurrentDay ? "timeline-current" : undefined}
       className={cn(
         'flex-shrink-0 rounded-lg border-2 p-4 transition-all duration-300',
         // Mobile: 65vw width, Desktop (sm+): Fixed 280px/320px

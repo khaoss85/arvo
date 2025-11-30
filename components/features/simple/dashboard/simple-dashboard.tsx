@@ -9,6 +9,8 @@ import type { TimelineDayData } from "@/lib/services/split-timeline.types";
 import { TodayWorkoutCard } from "./today-workout-card";
 import { BarChart3, Camera } from "lucide-react";
 import Link from "next/link";
+import { useTourStore } from "@/lib/stores/tour.store";
+import { OnboardingTour, SIMPLE_TOUR_STEPS } from "@/components/features/dashboard/onboarding-tour";
 
 interface SimpleDashboardProps {
   user: User;
@@ -25,6 +27,23 @@ export function SimpleDashboard({
   const tNav = useTranslations("simpleMode.navigation");
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Tour state
+  const { hasSeenSimpleTour, markSimpleTourAsSeen } = useTourStore();
+  const [showTour, setShowTour] = useState(false);
+
+  // Show tour only on first visit
+  useEffect(() => {
+    if (!hasSeenSimpleTour) {
+      const timer = setTimeout(() => setShowTour(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [hasSeenSimpleTour]);
+
+  const handleTourComplete = () => {
+    markSimpleTourAsSeen();
+    setShowTour(false);
+  };
 
   // Get the display name
   const displayName = profile.first_name || user.email?.split("@")[0] || "there";
@@ -155,7 +174,7 @@ export function SimpleDashboard({
       </div>
 
       {/* Quick Actions */}
-      <div className="flex items-center justify-center gap-4 mt-8">
+      <div data-tour="simple-actions" className="flex items-center justify-center gap-4 mt-8">
         <Link
           href="/simple/progress-checks"
           className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
@@ -180,6 +199,15 @@ export function SimpleDashboard({
           </span>
         </Link>
       </div>
+
+      {/* Onboarding Tour */}
+      {showTour && (
+        <OnboardingTour
+          onComplete={handleTourComplete}
+          steps={SIMPLE_TOUR_STEPS}
+          translationNamespace="simpleMode.tour"
+        />
+      )}
     </div>
   );
 }

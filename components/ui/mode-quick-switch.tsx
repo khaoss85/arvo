@@ -52,6 +52,7 @@ export function ModeQuickSwitch({ className }: ModeQuickSwitchProps) {
       <button
         onClick={() => setDrawerOpen(true)}
         disabled={isLoading}
+        data-tour="mode-switch"
         className={cn(
           "relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
           currentModeInfo.bgColor,

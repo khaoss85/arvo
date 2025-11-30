@@ -11,6 +11,7 @@ import { PersonalInfoEditor } from "@/components/features/settings/personal-info
 import { ResetDataSection } from "@/components/features/settings/reset-data-section"
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { LanguageSelector } from "@/components/features/settings/language-selector"
+import { RestartTourSection } from "@/components/features/settings/restart-tour-section"
 
 export async function generateMetadata(): Promise<Metadata> {
   const user = await getUser()
@@ -87,6 +88,9 @@ export default async function SimpleSettingsPage() {
             <h3 className="text-lg font-semibold mb-4">{t("preferences.title")}</h3>
             <LanguageSelector userId={user.id} />
           </Card>
+
+          {/* Tour Section */}
+          <RestartTourSection mode="simple" />
 
           {/* Personal Information Section */}
           <Card className="p-4 sm:p-6">
