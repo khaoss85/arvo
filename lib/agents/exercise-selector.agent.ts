@@ -1323,10 +1323,13 @@ ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
       * Middle sets (3-4): Intensity cues - "Visualize the muscle contracting hard"
       * Final sets: Power/explosive cues - "Imagine explosive power through the movement"`
 
-    // Pre-compute volume requirements summary for primacy effect
+    // Pre-compute volume requirements summary for primacy effect (GPT-5.1 hybrid approach)
     const volumeRequirementsSummary = Object.keys(exerciseCountByMuscle).length > 0
       ? `
 🚨🚨🚨 CRITICAL EXERCISE COUNT REQUIREMENTS - READ FIRST 🚨🚨🚨
+
+<critical_volume_requirements>
+<mandatory>TRUE</mandatory>
 
 YOU MUST GENERATE EXACTLY THESE EXERCISE COUNTS:
 ${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
@@ -1335,7 +1338,14 @@ ${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
 
 TOTAL EXERCISES NEEDED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
 
-Each exercise = ${maxSetsPerExercise} sets. This is NON-NEGOTIABLE.
+<solution_completeness>
+- You MUST generate ALL exercises for EVERY muscle group listed
+- DO NOT be overly concise or stop early
+- Incomplete workouts will be REJECTED
+- Each exercise = ${maxSetsPerExercise} working sets
+</solution_completeness>
+</critical_volume_requirements>
+
 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
 `
@@ -2031,14 +2041,18 @@ Required JSON structure:
 
 ${Object.keys(exerciseCountByMuscle).length > 0 ? `
 ═══════════════════════════════════════════════════════════════
+<validation_checklist>
 ⚠️ FINAL CHECK BEFORE SUBMITTING - COUNT YOUR EXERCISES:
+
 ${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
-  `□ ${muscle}: ___/${count} exercises (need ${count})`
+  `□ ${muscle}: ___/${count} exercises (NEED ${count})`
 ).join('\n')}
 
-TOTAL EXERCISES REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
+TOTAL REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
 
-❌ If ANY muscle has fewer exercises than required → ADD MORE EXERCISES NOW
+❌ If ANY muscle has fewer exercises than required → ADD MORE NOW
+❌ Incomplete responses will be REJECTED
+</validation_checklist>
 ═══════════════════════════════════════════════════════════════
 ` : ''}
     `
