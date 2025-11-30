@@ -5084,6 +5084,8 @@
     }
   },
   "muscleGroups": {
+    "arms": "Arms",
+    "legs": "Legs",
     "chest": "Chest",
     "chest_upper": "Upper Chest",
     "chest_lower": "Lower Chest",
