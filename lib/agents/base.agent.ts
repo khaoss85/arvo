@@ -89,11 +89,13 @@ export abstract class BaseAgent {
   protected verbosity: 'low' | 'medium' | 'high' = 'low'
   protected model: string = process.env.OPENAI_MODEL || 'gpt-5-mini'
   protected lastResponseId?: string  // Track response ID for multi-turn CoT persistence
+  protected userId?: string  // User ID for credit tracking
 
   constructor(
     supabaseClient?: any,
     reasoningEffort?: 'none' | 'minimal' | 'low' | 'medium' | 'high',
-    verbosity?: 'low' | 'medium' | 'high'
+    verbosity?: 'low' | 'medium' | 'high',
+    userId?: string
   ) {
     // Initialize OpenAI client (will only work on server due to server-only in client.ts)
     this.openai = getOpenAIClient()
@@ -105,6 +107,54 @@ export abstract class BaseAgent {
     if (reasoningEffort) this.reasoningEffort = reasoningEffort
     // Configure verbosity (default: low for concise responses)
     if (verbosity) this.verbosity = verbosity
+    // Store user ID for credit tracking
+    if (userId) this.userId = userId
+  }
+
+  /**
+   * Set the user ID for credit tracking (can be called after construction)
+   */
+  setUserId(userId: string): void {
+    this.userId = userId
+  }
+
+  /**
+   * Track credit usage after successful AI completion
+   * Called asynchronously to not block the response
+   */
+  private async trackCreditUsage(response: any): Promise<void> {
+    if (!this.userId) return
+
+    try {
+      const { CreditTrackingService } = await import('@/lib/services/credit-tracking.service')
+
+      const operationType = CreditTrackingService.getOperationTypeForAgent(this.constructor.name)
+      const tokensInput = response.usage?.input_tokens || 0
+      const tokensOutput = response.usage?.output_tokens || 0
+      const tokensReasoning = response.usage?.reasoning_tokens || 0
+
+      const creditsUsed = CreditTrackingService.calculateCreditsFromTokens(
+        operationType,
+        tokensInput,
+        tokensOutput,
+        tokensReasoning
+      )
+
+      await CreditTrackingService.recordUsage({
+        userId: this.userId,
+        operationType,
+        creditsUsed,
+        tokensInput: tokensInput || undefined,
+        tokensOutput: tokensOutput || undefined,
+        tokensReasoning: tokensReasoning || undefined,
+        modelUsed: this.model,
+        agentName: this.constructor.name,
+        reasoningEffort: this.reasoningEffort,
+      })
+    } catch (error) {
+      // Log but don't throw - credit tracking should never break the main flow
+      console.error('[BASE_AGENT] Credit tracking error:', error)
+    }
   }
 
   abstract get systemPrompt(): string
@@ -846,7 +896,16 @@ ${mems.map(mem => {
       // Control chars inside string values (if any) will be removed to preserve JSON validity
       cleanedContent = cleanedContent.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
 
-      return JSON.parse(cleanedContent) as T
+      const result = JSON.parse(cleanedContent) as T
+
+      // Track credit usage (async, non-blocking)
+      if (this.userId) {
+        this.trackCreditUsage(response).catch((err) => {
+          console.warn('[BASE_AGENT] Credit tracking failed (non-blocking):', err)
+        })
+      }
+
+      return result
     } catch (error) {
       // Detailed error logging for AI failures
       console.error('🔴 [BASE_AGENT] AI completion error:', {

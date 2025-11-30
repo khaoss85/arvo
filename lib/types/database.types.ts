@@ -94,6 +94,71 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_usage: {
+        Row: {
+          agent_name: string | null
+          characters_processed: number | null
+          created_at: string
+          credits_used: number
+          estimated_cost_usd: number | null
+          id: string
+          metadata: Json | null
+          model_used: string | null
+          operation_type: Database["public"]["Enums"]["credit_operation_type"]
+          reasoning_effort: string | null
+          request_id: string | null
+          tokens_input: number | null
+          tokens_output: number | null
+          tokens_reasoning: number | null
+          user_id: string
+          workout_id: string | null
+        }
+        Insert: {
+          agent_name?: string | null
+          characters_processed?: number | null
+          created_at?: string
+          credits_used?: number
+          estimated_cost_usd?: number | null
+          id?: string
+          metadata?: Json | null
+          model_used?: string | null
+          operation_type: Database["public"]["Enums"]["credit_operation_type"]
+          reasoning_effort?: string | null
+          request_id?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          tokens_reasoning?: number | null
+          user_id: string
+          workout_id?: string | null
+        }
+        Update: {
+          agent_name?: string | null
+          characters_processed?: number | null
+          created_at?: string
+          credits_used?: number
+          estimated_cost_usd?: number | null
+          id?: string
+          metadata?: Json | null
+          model_used?: string | null
+          operation_type?: Database["public"]["Enums"]["credit_operation_type"]
+          reasoning_effort?: string | null
+          request_id?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          tokens_reasoning?: number | null
+          user_id?: string
+          workout_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_usage_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cycle_completions: {
         Row: {
           avg_mental_readiness: number | null
@@ -1405,6 +1470,13 @@ export type Database = {
         }[]
       }
       get_user_onboarding_stats: { Args: { p_user_id: string }; Returns: Json }
+      get_users_auth_data: {
+        Args: { user_ids: string[] }
+        Returns: {
+          last_sign_in_at: string
+          user_id: string
+        }[]
+      }
       get_users_needing_first_workout_reminder: {
         Args: never
         Returns: {
@@ -1447,6 +1519,20 @@ export type Database = {
       update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {
+      credit_operation_type:
+        | "workout_generation"
+        | "split_generation"
+        | "audio_script_generation"
+        | "tts_synthesis"
+        | "embedding_generation"
+        | "exercise_substitution"
+        | "approach_recommendation"
+        | "insight_generation"
+        | "memory_consolidation"
+        | "technique_recommendation"
+        | "weight_estimation"
+        | "modification_validation"
+        | "other"
       email_frequency: "immediate" | "daily_digest" | "weekly_digest" | "none"
       generation_status: "pending" | "in_progress" | "completed" | "failed"
       split_type:
@@ -1597,6 +1683,21 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      credit_operation_type: [
+        "workout_generation",
+        "split_generation",
+        "audio_script_generation",
+        "tts_synthesis",
+        "embedding_generation",
+        "exercise_substitution",
+        "approach_recommendation",
+        "insight_generation",
+        "memory_consolidation",
+        "technique_recommendation",
+        "weight_estimation",
+        "modification_validation",
+        "other",
+      ],
       email_frequency: ["immediate", "daily_digest", "weekly_digest", "none"],
       generation_status: ["pending", "in_progress", "completed", "failed"],
       split_type: [
