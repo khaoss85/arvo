@@ -726,6 +726,25 @@
       "cycleInfo": "Ciclo {cycle}, Giorno {day}",
       "cancel": "Annulla",
       "checkPreviewAlt": "Anteprima check"
+    },
+    "tour": {
+      "skip": "Salta tour",
+      "next": "Avanti",
+      "finish": "Ho capito!",
+      "steps": {
+        "startWorkout": {
+          "title": "Inizia il Workout",
+          "description": "Tocca la card di oggi per generare il tuo allenamento con AI. Arvo pianifica la sessione perfetta in base ai tuoi progressi."
+        },
+        "modeSwitch": {
+          "title": "Cambia Modalita",
+          "description": "Passa tra modalita Semplice e Avanzata. Semplice per allenamenti veloci, Avanzata per controllo completo."
+        },
+        "progressCheck": {
+          "title": "Monitora i Progressi",
+          "description": "Scatta foto e registra misure per visualizzare la tua trasformazione. I tuoi dati restano privati."
+        }
+      }
     }
   },
   "share": {
@@ -895,6 +914,8 @@
           "markingAsReady": "Contrassegno come Pronto...",
           "reorder": "Riordina",
           "saveAndReturn": "Salva e Torna",
+          "save": "Salva",
+          "saveWithAiReview": "Salva con AI Review",
           "saving": "Salvataggio..."
         },
         "actions": {
@@ -1025,6 +1046,15 @@
           "proceedAnyway": "Procedi Comunque",
           "error": "Impossibile validare la tecnica. Puoi comunque applicarla."
         }
+      },
+      "techniqueRecommendations": {
+        "title": "Suggerimenti Tecniche AI",
+        "subtitle": "Abbiamo trovato tecniche avanzate che potrebbero migliorare il tuo allenamento",
+        "loading": "Analizzando i tuoi esercizi...",
+        "noRecommendations": "Nessun suggerimento tecnico per i tuoi esercizi attuali",
+        "applySelected": "Applica {count} e Salva",
+        "selectToApply": "Seleziona tecniche da applicare",
+        "saveWithout": "Salva Senza Modifiche"
       }
     },
     "summary": {
@@ -2218,6 +2248,11 @@
       "languageDescription": "Scegli la tua lingua preferita per l'interfaccia e i contenuti generati dall'AI",
       "theme": "Tema",
       "notifications": "Notifiche"
+    },
+    "tour": {
+      "title": "Tour Dashboard",
+      "description": "Rivedi il tour introduttivo per imparare a usare Arvo",
+      "restartButton": "Rivedi Tour"
     },
     "audioCoaching": {
       "title": "Coaching Audio",
@@ -5509,6 +5544,25 @@
       "workoutReady": "Workout pronto",
       "preGenerateWorkout": "Pre-Genera Workout",
       "targetMuscles": "Muscoli target"
+    },
+    "tour": {
+      "steps": {
+        "workoutCard": {
+          "title": "Il Tuo Workout",
+          "description": "Scorri per vedere i prossimi allenamenti. Tocca per iniziare."
+        },
+        "modeSwitch": {
+          "title": "Cambia Modalità",
+          "description": "Vuoi più controllo? Passa alla modalità Avanzata per personalizzare tutto."
+        },
+        "quickActions": {
+          "title": "Monitora e Rivedi",
+          "description": "Scatta foto progress e controlla il tuo storico di allenamento."
+        }
+      },
+      "skip": "Salta",
+      "next": "Avanti",
+      "finish": "Capito!"
     },
     "workoutCard": {
       "today": "Oggi",

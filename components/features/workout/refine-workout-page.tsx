@@ -33,8 +33,10 @@ import { getProgressiveTargetAction } from '@/app/actions/exercise-history-actio
 import { TechniqueIndicator } from './technique-indicator'
 import { TechniqueInstructionsModal } from './technique-instructions-modal'
 import { TechniqueSelectionModal } from './technique-selection-modal'
+import { TechniqueRecommendationsConfirmModal } from './technique-recommendations-confirm-modal'
 import type { AppliedTechnique } from '@/lib/types/advanced-techniques'
-import type { TechniqueRecommendationInput } from '@/lib/agents/technique-recommender.agent'
+import type { TechniqueRecommendationInput, TechniqueRecommendationOutput } from '@/lib/agents/technique-recommender.agent'
+import { getBatchTechniqueRecommendationsAction } from '@/app/actions/technique-recommendation-actions'
 
 interface Exercise {
   name: string
@@ -149,6 +151,22 @@ export function RefineWorkoutPage({
     currentTechnique?: AppliedTechnique
     aiContext?: TechniqueRecommendationInput
   } | null>(null)
+
+  // Technique recommendations confirm modal state (for save flow)
+  const [recommendationsModal, setRecommendationsModal] = useState<{
+    open: boolean
+    isLoading: boolean
+    exerciseRecommendations: Array<{
+      exerciseIndex: number
+      exerciseName: string
+      recommendations: TechniqueRecommendationOutput | null
+      error?: string
+    }>
+  }>({
+    open: false,
+    isLoading: false,
+    exerciseRecommendations: [],
+  })
 
   // Build AI context for technique recommendations
   const buildTechniqueAiContext = (exerciseIndex: number): TechniqueRecommendationInput | undefined => {
@@ -729,6 +747,68 @@ export function RefineWorkoutPage({
   const handleMarkAsReady = async () => {
     if (!workout) return
 
+    // Find exercises without techniques
+    const exercisesWithoutTechniques = exercises
+      .map((ex, idx) => ({ exercise: ex, index: idx }))
+      .filter(({ exercise }) => !exercise.advancedTechnique && exercise.name)
+
+    // If there are exercises without techniques, fetch recommendations in parallel
+    if (exercisesWithoutTechniques.length > 0) {
+      // Open modal in loading state
+      setRecommendationsModal({
+        open: true,
+        isLoading: true,
+        exerciseRecommendations: [],
+      })
+
+      try {
+        // Build AI context for each exercise
+        const inputs = exercisesWithoutTechniques
+          .map(({ exercise, index }) => {
+            const aiContext = buildTechniqueAiContext(index)
+            return aiContext ? { exerciseIndex: index, input: aiContext } : null
+          })
+          .filter((input): input is { exerciseIndex: number; input: TechniqueRecommendationInput } => input !== null)
+
+        // Fetch recommendations in parallel
+        const result = await getBatchTechniqueRecommendationsAction(inputs)
+
+        if (result.success && result.data) {
+          // Map results to exercise names
+          const exerciseRecommendations = result.data.map(item => ({
+            exerciseIndex: item.exerciseIndex,
+            exerciseName: exercises[item.exerciseIndex]?.name || '',
+            recommendations: item.recommendations,
+            error: item.error,
+          }))
+
+          setRecommendationsModal({
+            open: true,
+            isLoading: false,
+            exerciseRecommendations,
+          })
+        } else {
+          // If batch call failed, just save without recommendations
+          setRecommendationsModal({ open: false, isLoading: false, exerciseRecommendations: [] })
+          await saveWorkoutAndNavigate()
+        }
+      } catch (error) {
+        console.error('Failed to fetch technique recommendations:', error)
+        // On error, just save without recommendations
+        setRecommendationsModal({ open: false, isLoading: false, exerciseRecommendations: [] })
+        await saveWorkoutAndNavigate()
+      }
+      return
+    }
+
+    // If all exercises already have techniques, save directly
+    await saveWorkoutAndNavigate()
+  }
+
+  // Save workout and navigate to dashboard
+  const saveWorkoutAndNavigate = async () => {
+    if (!workout) return
+
     setIsMarkingReady(true)
 
     try {
@@ -745,6 +825,37 @@ export function RefineWorkoutPage({
     } finally {
       setIsMarkingReady(false)
     }
+  }
+
+  // Handle confirm from recommendations modal
+  const handleRecommendationsConfirm = async (selectedTechniques: Map<number, AppliedTechnique>) => {
+    // Apply selected techniques to exercises
+    if (selectedTechniques.size > 0) {
+      const newExercises = [...exercises]
+      selectedTechniques.forEach((technique, exerciseIndex) => {
+        if (newExercises[exerciseIndex]) {
+          newExercises[exerciseIndex].advancedTechnique = technique
+        }
+      })
+      setExercises(newExercises)
+
+      // Save exercises with techniques
+      try {
+        await updateWorkoutExercisesAction(workout!.id, newExercises)
+      } catch (error) {
+        console.error('Failed to save exercises with techniques:', error)
+      }
+    }
+
+    // Close modal and save workout
+    setRecommendationsModal({ open: false, isLoading: false, exerciseRecommendations: [] })
+    await saveWorkoutAndNavigate()
+  }
+
+  // Handle skip from recommendations modal (save without applying)
+  const handleRecommendationsSkip = async () => {
+    setRecommendationsModal({ open: false, isLoading: false, exerciseRecommendations: [] })
+    await saveWorkoutAndNavigate()
   }
 
   const handleStartWorkout = async () => {
@@ -1531,12 +1642,13 @@ export function RefineWorkoutPage({
 
       {/* Footer Actions */}
       <div className="sticky bottom-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md py-4 px-4 border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto flex gap-3">
+          {/* Save without AI */}
           <Button
-            variant="default"
-            onClick={handleMarkAsReady}
+            variant="outline"
+            onClick={saveWorkoutAndNavigate}
             disabled={isMarkingReady}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all h-12 text-base font-semibold"
+            className="flex-1 h-12 text-base font-semibold"
           >
             {isMarkingReady ? (
               <>
@@ -1546,7 +1658,27 @@ export function RefineWorkoutPage({
             ) : (
               <>
                 <Check className="w-5 h-5 mr-2" />
-                {t('buttons.saveAndReturn')}
+                {t('buttons.save')}
+              </>
+            )}
+          </Button>
+
+          {/* Save with AI Review */}
+          <Button
+            variant="default"
+            onClick={handleMarkAsReady}
+            disabled={isMarkingReady}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all h-12 text-base font-semibold"
+          >
+            {isMarkingReady ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                {t('buttons.saving')}
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-2" />
+                {t('buttons.saveWithAiReview')}
               </>
             )}
           </Button>
@@ -1666,6 +1798,20 @@ export function RefineWorkoutPage({
           aiContext={techniqueSelectionModal.aiContext}
         />
       )}
+
+      {/* Technique Recommendations Confirm Modal (save flow) */}
+      <TechniqueRecommendationsConfirmModal
+        open={recommendationsModal.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRecommendationsModal({ open: false, isLoading: false, exerciseRecommendations: [] })
+          }
+        }}
+        exerciseRecommendations={recommendationsModal.exerciseRecommendations}
+        isLoading={recommendationsModal.isLoading}
+        onConfirm={handleRecommendationsConfirm}
+        onSkip={handleRecommendationsSkip}
+      />
     </div>
   )
 }

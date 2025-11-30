@@ -81,3 +81,55 @@ export async function validateTechniqueChoiceAction(
   }
 }
 
+/**
+ * Get AI-powered technique recommendations for multiple exercises in parallel
+ * Used when saving workout review to batch all AI calls
+ */
+export async function getBatchTechniqueRecommendationsAction(
+  inputs: Array<{ exerciseIndex: number; input: TechniqueRecommendationInput }>
+): Promise<{
+  success: boolean
+  data?: Array<{
+    exerciseIndex: number
+    recommendations: TechniqueRecommendationOutput | null
+    error?: string
+  }>
+  error?: string
+}> {
+  try {
+    const user = await getUser()
+    if (!user) {
+      return { success: false, error: 'Not authenticated' }
+    }
+
+    const supabase = await getSupabaseServerClient()
+
+    // Execute all recommendations in parallel
+    const results = await Promise.all(
+      inputs.map(async ({ exerciseIndex, input }) => {
+        try {
+          const agent = new TechniqueRecommenderAgent(supabase)
+          agent.setUserId(user.id)
+          const recommendations = await agent.recommend(input)
+          return { exerciseIndex, recommendations, error: undefined }
+        } catch (error) {
+          console.error(`[Action] getBatchTechniqueRecommendationsAction error for exercise ${exerciseIndex}:`, error)
+          return {
+            exerciseIndex,
+            recommendations: null,
+            error: error instanceof Error ? error.message : 'Failed to get recommendations',
+          }
+        }
+      })
+    )
+
+    return { success: true, data: results }
+  } catch (error) {
+    console.error('[Action] getBatchTechniqueRecommendationsAction error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get batch technique recommendations',
+    }
+  }
+}
+

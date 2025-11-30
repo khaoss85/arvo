@@ -726,6 +726,25 @@
       "cycleInfo": "Cycle {cycle}, Day {day}",
       "cancel": "Cancel",
       "checkPreviewAlt": "Check preview"
+    },
+    "tour": {
+      "skip": "Skip tour",
+      "next": "Next",
+      "finish": "Got it!",
+      "steps": {
+        "startWorkout": {
+          "title": "Start Your Workout",
+          "description": "Tap on today's card to generate your AI-powered workout. Arvo plans the perfect session based on your progress."
+        },
+        "modeSwitch": {
+          "title": "Switch Modes",
+          "description": "Toggle between Simple and Advanced mode. Simple is perfect for quick training, Advanced gives you full control."
+        },
+        "progressCheck": {
+          "title": "Track Your Progress",
+          "description": "Take photos and measurements to visualize your transformation over time. Your data stays private."
+        }
+      }
     }
   },
   "share": {
@@ -894,6 +913,8 @@
           "markingAsReady": "Marking as Ready...",
           "reorder": "Reorder",
           "saveAndReturn": "Save & Return",
+          "save": "Save",
+          "saveWithAiReview": "Save with AI Review",
           "saving": "Saving...",
           "replace": "Replace"
         },
@@ -1025,6 +1046,15 @@
           "proceedAnyway": "Proceed Anyway",
           "error": "Could not validate technique. You can still apply it."
         }
+      },
+      "techniqueRecommendations": {
+        "title": "AI Technique Suggestions",
+        "subtitle": "We found some advanced techniques that could enhance your workout",
+        "loading": "Analyzing your exercises...",
+        "noRecommendations": "No technique recommendations for your current exercises",
+        "applySelected": "Apply {count} & Save",
+        "selectToApply": "Select techniques to apply",
+        "saveWithout": "Save Without Changes"
       }
     },
     "summary": {
@@ -2217,6 +2247,11 @@
       "languageDescription": "Choose your preferred language for the interface and AI-generated content",
       "theme": "Theme",
       "notifications": "Notifications"
+    },
+    "tour": {
+      "title": "Dashboard Tour",
+      "description": "Rewatch the introduction tour to learn how to use Arvo",
+      "restartButton": "Restart Tour"
     },
     "audioCoaching": {
       "title": "Audio Coaching",
@@ -5484,6 +5519,25 @@
       "workoutReady": "Workout ready",
       "preGenerateWorkout": "Pre-Generate Workout",
       "targetMuscles": "Target muscles"
+    },
+    "tour": {
+      "steps": {
+        "workoutCard": {
+          "title": "Your Daily Workout",
+          "description": "Swipe to see your upcoming workouts. Tap to start today's session."
+        },
+        "modeSwitch": {
+          "title": "Switch Modes",
+          "description": "Want more control? Switch to Advanced mode for full customization."
+        },
+        "quickActions": {
+          "title": "Track & Review",
+          "description": "Take progress photos and check your training history."
+        }
+      },
+      "skip": "Skip",
+      "next": "Next",
+      "finish": "Got it!"
     },
     "workoutCard": {
       "today": "Today",
