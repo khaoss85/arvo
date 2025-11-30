@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus, Check, Info, History } from 'lucide-react'
+import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil, Plus, Minus, Check, Info, History, PlayCircle, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
@@ -23,6 +23,8 @@ import { EditSetModal } from './edit-set-modal'
 import { ExerciseHistoryModal } from './exercise-history-modal'
 import { TechniqueIndicator } from './technique-indicator'
 import { TechniqueInstructionsModal } from './technique-instructions-modal'
+import { TechniqueSelectionModal } from './technique-selection-modal'
+import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
 import { SetStructureDisplay } from './set-structure-display'
@@ -96,6 +98,8 @@ export function ExerciseCard({
   const [warmupSkipPromptDismissed, setWarmupSkipPromptDismissed] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [showTechniqueModal, setShowTechniqueModal] = useState(false)
+  const [showAnimationModal, setShowAnimationModal] = useState(false)
+  const [showTechniqueSelectionModal, setShowTechniqueSelectionModal] = useState(false)
 
   // Hydration reminder state
   const [hydrationDismissedAt, setHydrationDismissedAt] = useState<Date | null>(null)
@@ -747,13 +751,6 @@ export function ExerciseCard({
 
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setShowHistoryModal(true)}
-              className="p-2 hover:bg-white/10 rounded-xl transition-colors"
-              title={t('exercise.viewHistory')}
-            >
-              <History className="w-5 h-5 text-gray-400 hover:text-green-400" />
-            </button>
-            <button
               onClick={loadExerciseExplanation}
               disabled={loadingExerciseExplanation}
               className="p-2 hover:bg-white/10 rounded-xl transition-colors disabled:opacity-50"
@@ -800,6 +797,70 @@ export function ExerciseCard({
               <span className="text-xs text-gray-500 font-medium">kg</span>
             </div>
           </div>
+        </div>
+
+        {/* Action Bar */}
+        <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-gray-700/50">
+          {/* How To */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAnimationModal(true)}
+            disabled={!exercise.hasAnimation}
+            className="text-xs gap-1.5 h-8 border-gray-700 disabled:opacity-40"
+          >
+            <PlayCircle className="w-3.5 h-3.5" />
+            {t('actions.howTo')}
+          </Button>
+
+          {/* History */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowHistoryModal(true)}
+            className="text-xs gap-1.5 h-8 border-gray-700 text-green-400 hover:text-green-300 hover:bg-green-900/20 hover:border-green-700"
+          >
+            <History className="w-3.5 h-3.5" />
+            {t('actions.history')}
+          </Button>
+
+          {/* Swap */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSubstitution(true)}
+            className="text-xs gap-1.5 h-8 border-gray-700 text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 hover:border-purple-700"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            {t('actions.swap')}
+          </Button>
+
+          {/* Add Set */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => addSetToExercise(exerciseIndex)}
+            className="text-xs gap-1.5 h-8 border-gray-700 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 hover:border-blue-700"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            {t('actions.addSet')}
+          </Button>
+
+          {/* Technique */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTechniqueSelectionModal(true)}
+            className={cn(
+              "text-xs gap-1.5 h-8 border-gray-700",
+              exercise.advancedTechnique
+                ? "text-orange-400 hover:text-orange-300 hover:bg-orange-900/20 hover:border-orange-700"
+                : "text-gray-400 hover:text-gray-300"
+            )}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {t('actions.technique')}
+          </Button>
         </div>
 
         {/* Set Structure Overview */}
@@ -944,29 +1005,6 @@ export function ExerciseCard({
         </>
       )}
 
-      {/* Action Buttons */}
-      {!isLastSet && !isResting && (
-        <div className="mt-4 mb-2 grid grid-cols-2 gap-3">
-          <Button
-            onClick={() => setShowSubstitution(true)}
-            variant="outline"
-            className="border-gray-700 text-gray-300 hover:border-purple-600 hover:text-purple-400 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            {t('exercise.changeExercise')}
-          </Button>
-
-          <Button
-            onClick={() => addSetToExercise(exerciseIndex)}
-            variant="outline"
-            className="border-gray-700 text-gray-300 hover:border-green-600 hover:text-green-400 transition-colors"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Aggiungi set
-          </Button>
-        </div>
-      )}
-
       {/* Exercise Substitution Modal */}
       {showSubstitution && (
         <ExerciseSubstitution
@@ -1056,6 +1094,34 @@ export function ExerciseCard({
           onOpenChange={setShowTechniqueModal}
         />
       )}
+
+      {/* Exercise Animation Modal */}
+      {showAnimationModal && exercise.hasAnimation && (
+        <ExerciseAnimationModal
+          isOpen={true}
+          onClose={() => setShowAnimationModal(false)}
+          exerciseName={exercise.exerciseName}
+          animationUrl={exercise.animationUrl || null}
+        />
+      )}
+
+      {/* Technique Selection Modal */}
+      <TechniqueSelectionModal
+        open={showTechniqueSelectionModal}
+        onOpenChange={setShowTechniqueSelectionModal}
+        currentTechnique={exercise.advancedTechnique}
+        exerciseName={exercise.exerciseName}
+        onSelectTechnique={(technique) => {
+          // TODO: Integrate with workout-execution store to persist technique change
+          console.log('Technique selected:', technique)
+          setShowTechniqueSelectionModal(false)
+        }}
+        otherExercises={allExercises
+          .map((ex, idx) => ({ index: idx, name: ex.exerciseName }))
+          .filter(ex => ex.index !== exerciseIndex)
+        }
+        currentExerciseIndex={exerciseIndex}
+      />
     </div>
   )
 }

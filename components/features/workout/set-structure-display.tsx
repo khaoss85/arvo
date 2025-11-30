@@ -89,11 +89,6 @@ export function SetStructureDisplay({ exercise, compact = false, className }: Se
                     {displayWeight}kg × {displayReps} {t('setStructure.reps')}
                     {completedSet && <span className="text-green-500 ml-1">✓</span>}
                   </div>
-                  {guidance?.technicalFocus && (
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      {guidance.technicalFocus}
-                    </div>
-                  )}
                 </div>
               </div>
             )
@@ -148,11 +143,6 @@ export function SetStructureDisplay({ exercise, compact = false, className }: Se
                     {actualPercentage}% ({actualWeight}kg) × {completedSet?.reps || warmup.reps} {t('setStructure.reps')}
                     {completedSet && <span className="text-green-500 ml-1">✓</span>}
                   </div>
-                  {warmup.technicalFocus && (
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      {warmup.technicalFocus}
-                    </div>
-                  )}
                 </div>
               </div>
             )
@@ -198,11 +188,6 @@ export function SetStructureDisplay({ exercise, compact = false, className }: Se
                     {displayWeight}kg × {displayReps} {t('setStructure.reps')}
                     {completedSet && <span className="text-green-500 ml-1">✓</span>}
                   </div>
-                  {guidance?.technicalFocus && (
-                    <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      {guidance.technicalFocus}
-                    </div>
-                  )}
                 </div>
               </div>
             )

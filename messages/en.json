@@ -883,7 +883,15 @@
           "markingAsReady": "Marking as Ready...",
           "reorder": "Reorder",
           "saveAndReturn": "Save & Return",
-          "saving": "Saving..."
+          "saving": "Saving...",
+          "replace": "Replace"
+        },
+        "actions": {
+          "howTo": "How To",
+          "history": "History",
+          "swap": "Swap",
+          "add": "Add",
+          "technique": "Technique"
         },
         "addExercise": {
           "extraExercises": "Extra exercises: {current}/{max}",
@@ -911,6 +919,74 @@
           "failedToAddSet": "Failed to add set. Please try again.",
           "failedToPrepareWorkout": "Failed to prepare workout: {error}",
           "failedToPrepareWorkoutGeneric": "Failed to prepare workout. Please try again."
+        }
+      },
+      "techniqueSelection": {
+        "title": "Select Technique",
+        "configureTitle": "Configure Technique",
+        "removeTechnique": "Remove",
+        "cancel": "Cancel",
+        "apply": "Apply",
+        "back": "Back",
+        "userSelected": "User selected technique",
+        "techniques": {
+          "drop_set": {
+            "name": "Drop Set",
+            "brief": "Reduce weight, continue to failure"
+          },
+          "rest_pause": {
+            "name": "Rest-Pause",
+            "brief": "Brief rest, more reps same weight"
+          },
+          "myo_reps": {
+            "name": "Myo-Reps",
+            "brief": "Activation set + mini-sets"
+          },
+          "top_set_backoff": {
+            "name": "Top Set + Backoff",
+            "brief": "Heavy set, then lighter volume"
+          },
+          "cluster_set": {
+            "name": "Cluster Set",
+            "brief": "Mini-rest between reps"
+          },
+          "pyramid": {
+            "name": "Pyramid",
+            "brief": "Ascending/descending weight"
+          },
+          "superset": {
+            "name": "Superset",
+            "brief": "Paired with another exercise"
+          },
+          "giant_set": {
+            "name": "Giant Set",
+            "brief": "3+ exercises, no rest"
+          }
+        },
+        "levels": {
+          "beginner": "Beginner",
+          "intermediate": "Intermediate",
+          "advanced": "Advanced"
+        },
+        "superset": {
+          "selectExercise": "Select the exercise to pair with:",
+          "noExercises": "No other exercises available for pairing"
+        },
+        "giantSet": {
+          "selectExercises": "Select exercises to include in the giant set:",
+          "selected": "selected",
+          "needMore": "Need at least 2 other exercises for a giant set"
+        },
+        "validation": {
+          "title": "AI Validation",
+          "checking": "Checking technique compatibility...",
+          "approved": "Good Choice",
+          "caution": "Proceed with Caution",
+          "not_recommended": "Not Recommended",
+          "tryInstead": "Try {technique} instead:",
+          "useAlternative": "Use This Alternative",
+          "proceedAnyway": "Proceed Anyway",
+          "error": "Could not validate technique. You can still apply it."
         }
       }
     },
@@ -1071,8 +1147,17 @@
         "title": "Workout Progress",
         "exercisesCount": "{current} of {total} exercises",
         "sets": "sets",
+        "reps": "reps",
         "viewExercise": "View exercise",
-        "changeExercise": "Change exercise"
+        "changeExercise": "Change exercise",
+        "current": "Current"
+      },
+      "actions": {
+        "howTo": "How To",
+        "history": "History",
+        "swap": "Swap",
+        "addSet": "Set",
+        "technique": "Technique"
       },
       "exercise": {
         "exerciseNumber": "Exercise {current} of {total}",
@@ -1276,6 +1361,30 @@
         "bodyPartLabels": {
           "general": "General",
           "any": "Any"
+        },
+        "techniqueStep": {
+          "title": "Add Technique (Optional)",
+          "description": "Optionally add an advanced training technique to maximize results",
+          "addWithTechnique": "Add with Technique",
+          "addWithoutTechnique": "Add Exercise",
+          "hint": "Advanced techniques can help break plateaus and increase intensity"
+        },
+        "customInput": {
+          "libraryMode": "Library",
+          "photoMode": "Photo",
+          "textMode": "Text",
+          "placeholder": "Enter exercise name...",
+          "validate": "Validate with AI",
+          "validating": "Validating...",
+          "recognizing": "Recognizing exercise...",
+          "detected": "Detected",
+          "addExercise": "Add Exercise",
+          "hint": "Enter exercise name and validate with AI"
+        },
+        "library": {
+          "searchPlaceholder": "Search exercises in ExerciseDB...",
+          "hint": "Type at least 2 characters to search",
+          "noResults": "No exercises found"
         }
       },
       "exerciseValidation": {
@@ -5284,7 +5393,22 @@
       "noWorkouts": "No workout available",
       "noWorkoutsDescription": "Talk to your coach to plan your workouts",
       "contactCoach": "Contact Coach",
-      "swipeHint": "Swipe to navigate"
+      "swipeHint": "Swipe to navigate",
+      "restDay": "Rest Day",
+      "day": "Day {day}",
+      "recoveryEssential": "Recovery is essential for muscle growth",
+      "today": "Today",
+      "inProgress": "In Progress",
+      "ready": "Ready",
+      "exercises": "{count} exercises",
+      "workoutInProgress": "Workout in progress",
+      "continueWorkout": "Continue Workout",
+      "startWorkout": "Start Workout",
+      "generateWorkout": "Generate Workout",
+      "generating": "Generating...",
+      "workoutReady": "Workout ready",
+      "preGenerateWorkout": "Pre-Generate Workout",
+      "targetMuscles": "Target muscles"
     },
     "workoutCard": {
       "today": "Today",

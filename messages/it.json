@@ -886,6 +886,13 @@
           "saveAndReturn": "Salva e Torna",
           "saving": "Salvataggio..."
         },
+        "actions": {
+          "howTo": "Come Si Fa",
+          "history": "Storico",
+          "swap": "Sostituisci",
+          "add": "Aggiungi",
+          "technique": "Tecnica"
+        },
         "addExercise": {
           "extraExercises": "Esercizi extra: {current}/{max}",
           "hardLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo."
@@ -912,6 +919,74 @@
           "failedToAddSet": "Impossibile aggiungere la serie. Riprova.",
           "failedToPrepareWorkout": "Impossibile preparare l'allenamento: {error}",
           "failedToPrepareWorkoutGeneric": "Impossibile preparare l'allenamento. Riprova."
+        }
+      },
+      "techniqueSelection": {
+        "title": "Seleziona Tecnica",
+        "configureTitle": "Configura Tecnica",
+        "removeTechnique": "Rimuovi",
+        "cancel": "Annulla",
+        "apply": "Applica",
+        "back": "Indietro",
+        "userSelected": "Tecnica selezionata dall'utente",
+        "techniques": {
+          "drop_set": {
+            "name": "Drop Set",
+            "brief": "Riduci peso, continua fino a cedimento"
+          },
+          "rest_pause": {
+            "name": "Rest-Pause",
+            "brief": "Breve pausa, più ripetizioni stesso peso"
+          },
+          "myo_reps": {
+            "name": "Myo-Reps",
+            "brief": "Serie attivazione + mini-serie"
+          },
+          "top_set_backoff": {
+            "name": "Top Set + Backoff",
+            "brief": "Serie pesante, poi volume leggero"
+          },
+          "cluster_set": {
+            "name": "Cluster Set",
+            "brief": "Mini-pausa tra le ripetizioni"
+          },
+          "pyramid": {
+            "name": "Piramide",
+            "brief": "Peso ascendente/discendente"
+          },
+          "superset": {
+            "name": "Superset",
+            "brief": "Abbinato ad un altro esercizio"
+          },
+          "giant_set": {
+            "name": "Giant Set",
+            "brief": "3+ esercizi senza pausa"
+          }
+        },
+        "levels": {
+          "beginner": "Principiante",
+          "intermediate": "Intermedio",
+          "advanced": "Avanzato"
+        },
+        "superset": {
+          "selectExercise": "Seleziona l'esercizio da abbinare:",
+          "noExercises": "Nessun altro esercizio disponibile per l'abbinamento"
+        },
+        "giantSet": {
+          "selectExercises": "Seleziona gli esercizi da includere nel giant set:",
+          "selected": "selezionati",
+          "needMore": "Servono almeno 2 altri esercizi per un giant set"
+        },
+        "validation": {
+          "title": "Validazione AI",
+          "checking": "Verificando compatibilità tecnica...",
+          "approved": "Ottima Scelta",
+          "caution": "Procedi con Cautela",
+          "not_recommended": "Non Consigliato",
+          "tryInstead": "Prova {technique} invece:",
+          "useAlternative": "Usa Questa Alternativa",
+          "proceedAnyway": "Procedi Comunque",
+          "error": "Impossibile validare la tecnica. Puoi comunque applicarla."
         }
       }
     },
@@ -1074,8 +1149,17 @@
         "title": "Progresso Allenamento",
         "exercisesCount": "{current} di {total} esercizi",
         "sets": "serie",
+        "reps": "reps",
         "viewExercise": "Visualizza esercizio",
-        "changeExercise": "Cambia esercizio"
+        "changeExercise": "Cambia esercizio",
+        "current": "Attuale"
+      },
+      "actions": {
+        "howTo": "Come fare",
+        "history": "Storico",
+        "swap": "Cambia",
+        "addSet": "Serie",
+        "technique": "Tecnica"
       },
       "exercise": {
         "exerciseNumber": "Esercizio {current} di {total}",
@@ -1279,6 +1363,30 @@
         "bodyPartLabels": {
           "general": "Generale",
           "any": "Qualsiasi"
+        },
+        "techniqueStep": {
+          "title": "Aggiungi Tecnica (Opzionale)",
+          "description": "Aggiungi opzionalmente una tecnica avanzata per massimizzare i risultati",
+          "addWithTechnique": "Aggiungi con Tecnica",
+          "addWithoutTechnique": "Aggiungi Esercizio",
+          "hint": "Le tecniche avanzate aiutano a superare i plateau e aumentare l'intensità"
+        },
+        "customInput": {
+          "libraryMode": "Libreria",
+          "photoMode": "Foto",
+          "textMode": "Testo",
+          "placeholder": "Inserisci nome esercizio...",
+          "validate": "Valida con AI",
+          "validating": "Validazione...",
+          "recognizing": "Riconoscimento esercizio...",
+          "detected": "Riconosciuto",
+          "addExercise": "Aggiungi Esercizio",
+          "hint": "Inserisci il nome dell'esercizio e valida con AI"
+        },
+        "library": {
+          "searchPlaceholder": "Cerca esercizi in ExerciseDB...",
+          "hint": "Digita almeno 2 caratteri per cercare",
+          "noResults": "Nessun esercizio trovato"
         }
       },
       "exerciseValidation": {
@@ -5310,7 +5418,22 @@
       "noWorkouts": "Nessun workout disponibile",
       "noWorkoutsDescription": "Parla con il tuo coach per pianificare i tuoi allenamenti",
       "contactCoach": "Contatta il Coach",
-      "swipeHint": "Swipe per navigare"
+      "swipeHint": "Swipe per navigare",
+      "restDay": "Giorno di Riposo",
+      "day": "Giorno {day}",
+      "recoveryEssential": "Il recupero è essenziale per la crescita muscolare",
+      "today": "Oggi",
+      "inProgress": "In corso",
+      "ready": "Pronto",
+      "exercises": "{count} esercizi",
+      "workoutInProgress": "Workout in corso",
+      "continueWorkout": "Continua Workout",
+      "startWorkout": "Inizia Workout",
+      "generateWorkout": "Genera Workout",
+      "generating": "Generando...",
+      "workoutReady": "Workout pronto",
+      "preGenerateWorkout": "Pre-Genera Workout",
+      "targetMuscles": "Muscoli target"
     },
     "workoutCard": {
       "today": "Oggi",
