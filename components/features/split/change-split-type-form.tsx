@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { analyzeSplitTypeChangeAction } from '@/app/actions/split-customization-actions'
+import { getUserWeakPointsAction } from '@/app/actions/ai-actions'
 import type { SplitType } from '@/lib/types/split.types'
 import type { SplitTypeChangeOutput } from '@/lib/agents/split-type-change-validator.agent'
-import { SPECIALIZABLE_MUSCLES, MUSCLE_GROUP_CATEGORIES } from '@/lib/types/split.types'
+import { mapWeakPointToSpecialization } from '@/lib/types/split.types'
 import { SplitTypeRecommendationDialog } from './split-type-recommendation-dialog'
 import { useUIStore } from '@/lib/stores/ui.store'
 
@@ -37,19 +39,37 @@ export function ChangeSplitTypeForm({
   const { addToast } = useUIStore()
 
   const [selectedSplitType, setSelectedSplitType] = useState<SplitType | null>(null)
-  const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null)
+  const [selectedWeakPoint, setSelectedWeakPoint] = useState<string | null>(null)
   const [expandedCard, setExpandedCard] = useState<SplitType | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<SplitTypeChangeOutput | null>(null)
   const [showRecommendationDialog, setShowRecommendationDialog] = useState(false)
+  const [userWeakPoints, setUserWeakPoints] = useState<string[]>([])
+  const [loadingWeakPoints, setLoadingWeakPoints] = useState(false)
+
+  // Load user's weak points when component mounts
+  useEffect(() => {
+    async function loadWeakPoints() {
+      setLoadingWeakPoints(true)
+      const result = await getUserWeakPointsAction(userId)
+      if (result.success) {
+        setUserWeakPoints(result.data)
+      }
+      setLoadingWeakPoints(false)
+    }
+    loadWeakPoints()
+  }, [userId])
 
   const requiresMuscleSelection =
     selectedSplitType === 'weak_point_focus' && currentSplitType !== 'weak_point_focus'
 
+  // Map the selected weak point to a specialization muscle
+  const mappedMuscle = selectedWeakPoint ? mapWeakPointToSpecialization(selectedWeakPoint) : null
+
   const canAnalyze =
     selectedSplitType &&
     selectedSplitType !== currentSplitType &&
-    (!requiresMuscleSelection || selectedMuscle)
+    (!requiresMuscleSelection || mappedMuscle)
 
   const handleAnalyze = async () => {
     if (!canAnalyze) return
@@ -62,7 +82,7 @@ export function ChangeSplitTypeForm({
       const analysisPromise = analyzeSplitTypeChangeAction(
         userId,
         selectedSplitType!,
-        selectedMuscle || undefined
+        mappedMuscle || undefined
       )
 
       const timeoutPromise = new Promise<never>((_, reject) =>
@@ -123,7 +143,7 @@ export function ChangeSplitTypeForm({
                   if (!isCurrentSplit) {
                     setSelectedSplitType(option.type)
                     if (!option.requiresMuscle) {
-                      setSelectedMuscle(null)
+                      setSelectedWeakPoint(null)
                     }
                   }
                 }}
@@ -240,37 +260,53 @@ export function ChangeSplitTypeForm({
         </div>
       </div>
 
-      {/* Muscle Selection for Weak Point Focus */}
+      {/* Weak Point Selection for Weak Point Focus Split */}
       {requiresMuscleSelection && (
         <div className="space-y-3">
           <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
-            {t('selectWeakPointMuscle')}
+            {t('selectFromYourWeakPoints')}
           </label>
 
-          <div className="space-y-4">
-            {MUSCLE_GROUP_CATEGORIES.map((category) => (
-              <div key={category.category} className="space-y-2">
-                <h5 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  {category.category}
-                </h5>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {category.muscles.map((muscle) => (
-                    <button
-                      key={muscle}
-                      onClick={() => setSelectedMuscle(muscle)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedMuscle === muscle
-                          ? 'bg-purple-600 text-white shadow-md'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {muscle.replace(/_/g, ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          {loadingWeakPoints ? (
+            <div className="flex items-center justify-center py-8">
+              <span className="inline-block animate-spin mr-2">⚙️</span>
+              <span className="text-sm text-gray-500">Loading...</span>
+            </div>
+          ) : userWeakPoints.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {userWeakPoints.map((weakPoint) => (
+                <button
+                  key={weakPoint}
+                  onClick={() => setSelectedWeakPoint(weakPoint)}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all text-left ${
+                    selectedWeakPoint === weakPoint
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <span className="capitalize">{weakPoint.replace(/_/g, ' ')}</span>
+                  {selectedWeakPoint === weakPoint && (
+                    <span className="ml-2">✓</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+              <p className="text-sm font-medium text-orange-900 dark:text-orange-100 mb-2">
+                {t('noWeakPointsConfigured')}
+              </p>
+              <p className="text-sm text-orange-800 dark:text-orange-200 mb-4">
+                {t('configureWeakPointsFirst')}
+              </p>
+              <Link
+                href="/settings"
+                className="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                {t('goToSettings')}
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -309,7 +345,7 @@ export function ChangeSplitTypeForm({
           onOpenChange={setShowRecommendationDialog}
           analysis={analysis}
           targetSplitType={selectedSplitType!}
-          weakPointMuscle={selectedMuscle || undefined}
+          weakPointMuscle={mappedMuscle || undefined}
           userId={userId}
           onSuccess={onSuccess}
         />

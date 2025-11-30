@@ -62,6 +62,28 @@ export function isSpecializableMuscle(muscle: string): muscle is SpecializableMu
   return SPECIALIZABLE_MUSCLES.includes(muscle as SpecializableMuscle)
 }
 
+// Mapping from BodyMap weak points to SpecializableMuscle
+// BodyMap uses: chest_upper, chest_lower, shoulders, back_width, back_thickness, biceps, triceps, quads, hamstrings, glutes, calves, abs
+export const WEAK_POINT_TO_SPECIALIZATION_MAP: Record<string, SpecializableMuscle> = {
+  chest_upper: 'chest',
+  chest_lower: 'chest',
+  shoulders: 'shoulders',
+  back_width: 'lats',
+  back_thickness: 'back',
+  biceps: 'biceps',
+  triceps: 'triceps',
+  quads: 'quads',
+  hamstrings: 'hamstrings',
+  glutes: 'glutes',
+  calves: 'calves',
+  abs: 'abs',
+}
+
+// Helper to map a weak point to its specialization muscle
+export function mapWeakPointToSpecialization(weakPoint: string): SpecializableMuscle | null {
+  return WEAK_POINT_TO_SPECIALIZATION_MAP[weakPoint] || null
+}
+
 // Configuration for weak point focus splits
 export interface WeakPointFocusConfig {
   muscle: SpecializableMuscle

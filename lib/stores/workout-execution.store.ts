@@ -115,6 +115,9 @@ interface WorkoutExecutionState {
   // Exercise substitution
   substituteExercise: (index: number, newExercise: ExerciseExecution) => void
 
+  // Advanced technique
+  setExerciseTechnique: (exerciseIndex: number, technique: AppliedTechnique | null) => void
+
   // Exercise reordering
   reorderExercises: (newOrder: ExerciseExecution[]) => void
 
@@ -294,7 +297,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const exercises: ExerciseExecution[] = await Promise.all(
           (workout.exercises as any[] || []).map(async (ex) => {
             const exerciseSets = sets.filter((s) => {
-              const exId = ex.id || null
+              const exId = ex.id || ex.exerciseId || null
               const exerciseName = getExerciseName(ex)
               const nameMatch = s.exercise_name?.toLowerCase().trim() === exerciseName.toLowerCase().trim()
 
@@ -369,9 +372,12 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         )
 
         // Find first incomplete exercise
-        const firstIncompleteIndex = exercises.findIndex(
-          ex => ex.completedSets.length < ex.targetSets
-        )
+        // Must account for TOTAL expected sets (warmup + working), not just working sets
+        const firstIncompleteIndex = exercises.findIndex((ex) => {
+          const warmupSetsExpected = (ex.warmupSets?.length || 0) - (ex.warmupSetsSkipped || 0)
+          const totalExpectedSets = warmupSetsExpected + ex.targetSets
+          return ex.completedSets.length < totalExpectedSets
+        })
 
         console.log('[Store] Resume - Animation status:', exercises.map(ex => ({
           name: ex.exerciseName,
@@ -747,6 +753,27 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const { exercises } = get()
         const updatedExercises = [...exercises]
         updatedExercises[index] = newExercise
+
+        set({
+          exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+      },
+
+      // Set advanced technique for exercise
+      setExerciseTechnique: (exerciseIndex: number, technique: AppliedTechnique | null) => {
+        const { exercises } = get()
+        const updatedExercises = [...exercises]
+
+        if (!updatedExercises[exerciseIndex]) {
+          console.error('Exercise not found at index:', exerciseIndex)
+          return
+        }
+
+        updatedExercises[exerciseIndex] = {
+          ...updatedExercises[exerciseIndex],
+          advancedTechnique: technique || undefined
+        }
 
         set({
           exercises: updatedExercises,

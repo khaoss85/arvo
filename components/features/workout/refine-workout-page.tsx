@@ -867,23 +867,19 @@ export function RefineWorkoutPage({
 
     const exerciseToRemove = exercises[indexToRemove]
 
-    // Only allow removing user-added exercises
-    if (!exerciseToRemove.isUserAdded) {
-      setConfirmDialog({
-        isOpen: true,
-        type: 'alert',
-        title: t('removeDialog.cannotRemoveTitle'),
-        message: t('removeDialog.cannotRemoveMessage'),
-      })
-      return
-    }
+    // Different confirmation message for planned vs user-added exercises
+    const isPlannedExercise = !exerciseToRemove.isUserAdded
 
-    // Confirm removal
+    // Confirm removal with appropriate message
     setConfirmDialog({
       isOpen: true,
       type: 'warning',
-      title: t('removeDialog.confirmTitle'),
-      message: t('removeDialog.confirmMessage', { name: exerciseToRemove.name }),
+      title: isPlannedExercise
+        ? t('removeDialog.removePlannedTitle')
+        : t('removeDialog.confirmTitle'),
+      message: isPlannedExercise
+        ? t('removeDialog.removePlannedMessage', { name: exerciseToRemove.name })
+        : t('removeDialog.confirmMessage', { name: exerciseToRemove.name }),
       confirmText: t('removeDialog.removeButton'),
       onConfirm: async () => {
         try {
@@ -1036,18 +1032,16 @@ export function RefineWorkoutPage({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  {/* Show remove button only for user-added exercises */}
-                  {exercise.isUserAdded && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveExercise(index)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                      title={t('exercise.removeExercise')}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
+                  {/* Remove exercise button - always visible */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveExercise(index)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                    title={t('exercise.removeExercise')}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

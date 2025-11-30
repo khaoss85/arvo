@@ -300,6 +300,10 @@
         "selectNewSplit": "Seleziona Nuovo Tipo di Split",
         "requiresMuscleSelection": "Seleziona un gruppo muscolare da enfatizzare",
         "selectWeakPointMuscle": "Seleziona Muscolo Punto Debole",
+        "selectFromYourWeakPoints": "Seleziona tra i tuoi punti deboli configurati",
+        "noWeakPointsConfigured": "Nessun punto debole configurato",
+        "configureWeakPointsFirst": "Per usare lo split Weak Point Focus, configura prima i tuoi punti deboli nelle impostazioni.",
+        "goToSettings": "Vai alle Impostazioni",
         "aiAnalysisNote": {
           "title": "Analisi AI",
           "description": "La nostra AI analizzerà il progresso del tuo ciclo, i livelli di fatica e i pattern di allenamento per raccomandare il timing migliore per questo cambiamento."
@@ -858,12 +862,16 @@
         "library": {
           "searchPlaceholder": "Cerca esercizi...",
           "noResults": "Nessun esercizio trovato",
-          "hint": "Digita almeno 2 caratteri per cercare",
+          "hint": "Digita almeno 2 caratteri o usa i filtri",
           "selectedFrom": "Selezionato dalla libreria esercizi",
-          "basedOnHistory": "📊 Basato sul tuo storico",
+          "basedOnHistory": "Basato sul tuo storico",
           "progressiveOverload": "Progressive overload applicato",
           "directSelection": "Selezione diretta dalla libreria",
-          "muscleWarning": "Questo allena {target} ({bodyPart}) - diverso dall'esercizio attuale"
+          "muscleWarning": "Questo allena {target} ({bodyPart}) - diverso dall'esercizio attuale",
+          "filters": {
+            "muscleGroup": "Gruppo muscolare",
+            "equipment": "Tipologia"
+          }
         },
         "validation": {
           "caution": "⚠️ Attenzione: {rationale}",
@@ -902,6 +910,8 @@
           "cannotRemoveMessage": "Non puoi rimuovere esercizi raccomandati dall'AI. Puoi solo rimuovere esercizi aggiunti da te.",
           "confirmTitle": "Conferma Rimozione",
           "confirmMessage": "Vuoi rimuovere \"{name}\"?",
+          "removePlannedTitle": "Rimuovere Esercizio Pianificato?",
+          "removePlannedMessage": "Stai per rimuovere \"{name}\" che fa parte del piano di allenamento. Sei sicuro?",
           "removeButton": "Rimuovi"
         },
         "alerts": {
@@ -1104,7 +1114,7 @@
         "workingSetLabel": "Allenante",
         "totalLabel": "Totale",
         "totalProgress": "Progresso Totale",
-        "mentalDrainedOptional": "Mi sento stanco (Opzionale)",
+        "mentalDrainedOptional": "Come ti senti? (Opzionale)",
         "hideMentalState": "Nascondi Stato Mentale",
         "selectMentalState": "Seleziona come ti senti",
         "mentalState": "Stato mentale: {state}",
@@ -1117,7 +1127,15 @@
         "skipping": "Saltando...",
         "skipWarmupTitle": "Saltare il Riscaldamento?",
         "skipWarmupConfirm": "Saltare {count, plural, one {la serie} other {tutte le # serie}} di riscaldamento? Puoi passare direttamente alle serie di lavoro.",
-        "confirmSkip": "Salta alle Serie"
+        "confirmSkip": "Salta alle Serie",
+        "sanityCheck": {
+          "title": "Valori insoliti rilevati",
+          "description": "I valori inseriti sembrano insolitamente alti. Vuoi confermare?",
+          "weightWarning": "{value}kg è {multiplier}x il target ({target}kg)",
+          "repsWarning": "{value} reps è {multiplier}x il target ({target})",
+          "cancel": "Correggo",
+          "confirm": "Sì, conferma"
+        }
       },
       "setStructure": {
         "title": "Struttura Allenamento",

@@ -2,12 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, Check, Loader2 } from "lucide-react";
+import { Plus, Minus, Check, Loader2, AlertTriangle } from "lucide-react";
 import type { ExerciseExecution } from "@/lib/stores/workout-execution.store";
 import { useWorkoutExecutionStore } from "@/lib/stores/workout-execution.store";
 import { useProgressionSuggestion } from "@/lib/hooks/useAI";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils/cn";
 import { SimpleRestTimer } from "./simple-rest-timer";
 import { SimpleHydration } from "./simple-hydration";
@@ -36,6 +44,8 @@ export function SimpleSetLogger({
   );
   const [isLogging, setIsLogging] = useState(false);
   const [isResting, setIsResting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingLogData, setPendingLogData] = useState<{weight: number, reps: number} | null>(null);
 
   // Calculate total sets completed across all exercises for hydration tracking
   const totalSetsCompleted = exercises.reduce(
@@ -115,14 +125,29 @@ export function SimpleSetLogger({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exercise.completedSets.length]);
 
-  const handleLogSet = async () => {
-    if (isLogging || isExerciseComplete) return;
+  // Sanity check: detect unusually high values (5x target)
+  const checkSanityValues = (checkWeight: number, checkReps: number): string[] => {
+    const targetWeight = exercise.targetWeight || 0;
+    const targetRepsMax = exercise.targetReps?.[1] || 12;
+    const warnings: string[] = [];
 
+    if (targetWeight > 0 && checkWeight > targetWeight * 5) {
+      warnings.push(`${checkWeight}kg è ${Math.round(checkWeight / targetWeight)}x il target (${targetWeight}kg)`);
+    }
+
+    if (checkReps > targetRepsMax * 5) {
+      warnings.push(`${checkReps} reps è ${Math.round(checkReps / targetRepsMax)}x il target (${targetRepsMax})`);
+    }
+
+    return warnings;
+  };
+
+  const performLogSet = async (data: {weight: number, reps: number}) => {
     setIsLogging(true);
     try {
       await logSet({
-        weight,
-        reps,
+        weight: data.weight,
+        reps: data.reps,
         rir: 2, // Default RIR for simple mode (not tracked visually)
       });
       // Start rest timer after successful log (only if not the last set)
@@ -130,11 +155,27 @@ export function SimpleSetLogger({
       if (newCompletedCount < totalSets) {
         setIsResting(true);
       }
+      setShowConfirmation(false);
+      setPendingLogData(null);
     } catch (error) {
       console.error("Failed to log set:", error);
     } finally {
       setIsLogging(false);
     }
+  };
+
+  const handleLogSet = async () => {
+    if (isLogging || isExerciseComplete) return;
+
+    const warnings = checkSanityValues(weight, reps);
+
+    if (warnings.length > 0) {
+      setPendingLogData({ weight, reps });
+      setShowConfirmation(true);
+      return;
+    }
+
+    await performLogSet({ weight, reps });
   };
 
   const handleRestComplete = () => {
@@ -279,6 +320,42 @@ export function SimpleSetLogger({
           </>
         )}
       </Button>
+
+      {/* Sanity Check Confirmation Dialog */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-sm bg-gray-900 border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-white">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              Valori insoliti rilevati
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div>
+                <p className="text-gray-400">I valori inseriti sembrano insolitamente alti. Vuoi confermare?</p>
+                <ul className="mt-3 space-y-1">
+                  {pendingLogData && checkSanityValues(pendingLogData.weight, pendingLogData.reps).map((warning, i) => (
+                    <li key={i} className="flex items-start gap-2 text-amber-400">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => setShowConfirmation(false)}>
+              Correggo
+            </Button>
+            <Button
+              onClick={() => pendingLogData && performLogSet(pendingLogData)}
+              className="bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              Sì, conferma
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

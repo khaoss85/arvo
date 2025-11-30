@@ -1416,34 +1416,54 @@ ROTATION RULES:
 5. User prefers CONSERVATIVE rotation - only change when plateau is clearly evident
 ` : ''}
 
-=== ADVANCED TRAINING TECHNIQUES ===
-You can optionally apply ONE advanced technique per exercise when appropriate to maximize training effectiveness.
+=== ADVANCED TRAINING TECHNIQUES (MANDATORY CONSIDERATION) ===
+You MUST apply 2-3 advanced techniques per workout when the approach supports them (check approach.advancedTechniques).
+This is NOT optional - techniques are a core part of effective training programming.
 
-Available techniques (use sparingly, max 2-3 per workout):
-- drop_set: Reduce weight and continue without rest. Best for isolation exercises at end of workout.
-  Config: { "type": "drop_set", "drops": 2-4, "dropPercentage": 20-25 }
+Available techniques:
+- drop_set: Reduce weight and continue without rest. Best for ISOLATION exercises at END of workout.
+  Config: { "type": "drop_set", "drops": 2, "dropPercentage": 20 }
 - rest_pause: Brief pauses (10-15s) within a set to extend volume. Works for compound and isolation.
-  Config: { "type": "rest_pause", "miniSets": 2-3, "restSeconds": 10-15 }
+  Config: { "type": "rest_pause", "miniSets": 3, "restSeconds": 15 }
 - superset: Two exercises back-to-back without rest. Pair agonist-antagonist or same muscle group.
-  Config: { "type": "superset", "pairedExerciseIndex": <index of paired exercise>, "restAfterBoth": 90-120 }
-- top_set_backoff: One heavy top set followed by lighter backoff sets. Best for main compound lifts.
-  Config: { "type": "top_set_backoff", "topSetReps": 3-5, "backoffSets": 2-3, "backoffPercentage": 10-15, "backoffReps": 8-12 }
-- myo_reps: Activation set + multiple mini-sets with 3-5s rest. For isolation, advanced users only.
-  Config: { "type": "myo_reps", "activationReps": 12-20, "miniSetReps": 3-5, "miniSets": 3-5, "restSeconds": 3-5 }
+  Config: { "type": "superset", "pairedExerciseIndex": <index of paired exercise>, "restAfterBoth": 90 }
+- top_set_backoff: One heavy top set followed by lighter backoff sets. Best for MAIN compound lifts at START.
+  Config: { "type": "top_set_backoff", "topSetReps": 5, "backoffSets": 2, "backoffPercentage": 15, "backoffReps": 8 }
+- myo_reps: Activation set + multiple mini-sets with 3-5s rest. For isolation, ADVANCED users only.
+  Config: { "type": "myo_reps", "activationReps": 15, "miniSetReps": 5, "miniSets": 4, "restSeconds": 5 }
 - cluster_set: Intra-set rest (15-30s) between small rep clusters. For heavy compounds, strength focus.
-  Config: { "type": "cluster_set", "repsPerCluster": 2-3, "clusters": 4-6, "intraRestSeconds": 15-30 }
+  Config: { "type": "cluster_set", "repsPerCluster": 2, "clusters": 5, "intraRestSeconds": 20 }
 - pyramid: Progressive weight changes across sets. Good for beginners/intermediate.
-  Config: { "type": "pyramid", "direction": "ascending"|"descending"|"full", "steps": 3-5 }
+  Config: { "type": "pyramid", "direction": "ascending", "steps": 4 }
 
-TECHNIQUE APPLICATION RULES:
-1. Only apply techniques when the approach philosophy supports them (check advancedTechniques in approach)
-2. Match technique to user experience level:
-   - Beginner: superset, pyramid only
-   - Intermediate: + drop_set, rest_pause, top_set_backoff
-   - Advanced: + myo_reps, cluster_set
-3. Consider fatigue accumulation - apply intensification techniques later in workout
-4. Provide clear rationale for why the technique benefits this specific exercise
+TECHNIQUE APPLICATION REQUIREMENTS:
+1. Check approach.advancedTechniques - if the approach supports techniques, you MUST use them
+2. Apply AT LEAST this many techniques based on user experience:
+   - Beginner: 1 technique (superset or pyramid only)
+   - Intermediate: 2 techniques minimum
+   - Advanced: 3 techniques minimum
+3. Match technique to exercise type and position:
+   - MAIN compound (position 1-2): top_set_backoff, cluster_set, or pyramid
+   - ISOLATION exercises (last 2-3): drop_set, rest_pause, or myo_reps
+   - Antagonist pairs: superset (e.g., biceps + triceps)
+4. Provide clear rationale explaining WHY this technique benefits this specific exercise
 5. If applying superset, both paired exercises must have matching "pairedExerciseIndex" pointing to each other
+
+=== TECHNIQUE ENFORCEMENT CHECKLIST ===
+Before returning your response, VERIFY these conditions:
+□ If approach.advancedTechniques has entries → at least 2 exercises MUST have advancedTechnique
+□ At least ONE compound exercise has a technique (top_set_backoff, cluster_set, or pyramid)
+□ At least ONE isolation exercise has a technique (drop_set, rest_pause, or myo_reps)
+□ The LAST isolation exercise should have drop_set or myo_reps for maximum pump
+
+EXAMPLE - Intermediate Push Day (4 exercises):
+1. Bench Press - advancedTechnique: { technique: "top_set_backoff", config: { type: "top_set_backoff", topSetReps: 5, backoffSets: 2, backoffPercentage: 15, backoffReps: 8 }, rationale: "Build strength with heavy top set, then accumulate volume" }
+2. Incline DB Press - NO technique (volume accumulation)
+3. Cable Fly - advancedTechnique: { technique: "rest_pause", config: { type: "rest_pause", miniSets: 3, restSeconds: 15 }, rationale: "Extend time under tension for chest isolation" }
+4. Tricep Pushdown - advancedTechnique: { technique: "drop_set", config: { type: "drop_set", drops: 2, dropPercentage: 20 }, rationale: "Maximum pump on final exercise" }
+Result: 3 techniques applied ✓
+
+FAILURE TO APPLY TECHNIQUES when approach supports them = INCOMPLETE WORKOUT
 
 <constraint_hierarchy>
   <priority_1 level="ABSOLUTE" override="none">

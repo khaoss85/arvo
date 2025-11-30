@@ -690,6 +690,36 @@ export async function updateWeakPointsAction(
 }
 
 /**
+ * Server action to get user's weak points
+ * Returns the weak points array from user_profiles table
+ */
+export async function getUserWeakPointsAction(
+  userId: string
+): Promise<{ success: true; data: string[] } | { success: false; error: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('weak_points')
+      .eq('user_id', userId)
+      .single()
+
+    if (error) {
+      throw new Error(`Failed to get weak points: ${error.message}`)
+    }
+
+    return { success: true, data: data?.weak_points || [] }
+  } catch (error) {
+    console.error('Server action - Get weak points error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to get weak points'
+    }
+  }
+}
+
+/**
  * Server action to update user's caloric phase
  * Updates the user_profiles table with the selected caloric phase (bulk/cut/maintenance)
  * and optionally the caloric intake (surplus/deficit in kcal)

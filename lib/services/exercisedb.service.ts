@@ -688,13 +688,42 @@ export class ExerciseDBService {
   }
 
   /**
+   * Get unique filter options from cached exercises
+   * Returns sorted arrays of bodyParts and equipments
+   */
+  static async getFilterOptions(): Promise<{ bodyParts: string[]; equipments: string[] }> {
+    await this.initializeCache()
+
+    const bodyPartsSet = new Set<string>()
+    const equipmentsSet = new Set<string>()
+
+    this.cache.allExercises.forEach(e => {
+      if (e.bodyPart) bodyPartsSet.add(e.bodyPart)
+      if (e.equipment) equipmentsSet.add(e.equipment)
+    })
+
+    const bodyParts = Array.from(bodyPartsSet).sort()
+    const equipments = Array.from(equipmentsSet).sort()
+
+    return { bodyParts, equipments }
+  }
+
+  /**
    * Search exercises for autocomplete/library mode
    * Returns full exercise objects matching the query
    * Priority: exact name match > all tokens in name > target muscle > keywords
    * Does NOT match by equipment alone (too generic)
+   * Supports optional filters for bodyPart and equipment
    */
-  static async searchExercises(query: string, limit: number = 20): Promise<ExerciseDBExercise[]> {
-    if (!query || query.length < 2) return []
+  static async searchExercises(
+    query: string,
+    limit: number = 20,
+    filters?: { bodyParts?: string[]; equipments?: string[] }
+  ): Promise<ExerciseDBExercise[]> {
+    const hasFilters = (filters?.bodyParts?.length ?? 0) > 0 || (filters?.equipments?.length ?? 0) > 0
+
+    // Allow search with just filters (no query) or with query >= 2 chars
+    if ((!query || query.length < 2) && !hasFilters) return []
 
     await this.initializeCache()
 
@@ -704,12 +733,12 @@ export class ExerciseDBService {
       return []
     }
 
-    console.log(`[ExerciseDB] Searching "${query}" in ${this.cache.allExercises.length} exercises`)
+    console.log(`[ExerciseDB] Searching "${query || '(filters only)'}" in ${this.cache.allExercises.length} exercises`)
 
-    const normalizedQuery = query.toLowerCase().trim()
+    const normalizedQuery = query?.toLowerCase().trim() || ''
 
     // Tokenize query for multi-word searches (e.g., "leg curl" → ["leg", "curl"])
-    const queryTokens = normalizedQuery.split(/\s+/).filter(t => t.length >= 2)
+    const queryTokens = normalizedQuery ? normalizedQuery.split(/\s+/).filter(t => t.length >= 2) : []
 
     // Find matching alias to get muscles and keywords
     let aliasMuscles: string[] = []
@@ -730,6 +759,14 @@ export class ExerciseDBService {
       // Skip duplicates
       if (exercise.id && seenIds.has(exercise.id)) continue
 
+      // Apply filters first (if provided)
+      if (filters?.bodyParts?.length && !filters.bodyParts.includes(exercise.bodyPart)) {
+        continue
+      }
+      if (filters?.equipments?.length && !filters.equipments.includes(exercise.equipment)) {
+        continue
+      }
+
       const exerciseNameLower = exercise.name?.toLowerCase() ?? ''
       const targetLower = exercise.target?.toLowerCase() ?? ''
       const bodyPartLower = exercise.bodyPart?.toLowerCase() ?? ''
@@ -737,13 +774,18 @@ export class ExerciseDBService {
       let matched = false
       let bestPriority = 999
 
+      // If no query but filters match, include all filtered exercises (priority 6)
+      if (!normalizedQuery && hasFilters) {
+        matched = true
+        bestPriority = 6
+      }
       // Priority 0: Name starts with the exact query
-      if (exerciseNameLower.startsWith(normalizedQuery)) {
+      else if (normalizedQuery && exerciseNameLower.startsWith(normalizedQuery)) {
         matched = true
         bestPriority = 0
       }
       // Priority 1: Name contains the exact query
-      else if (exerciseNameLower.includes(normalizedQuery)) {
+      else if (normalizedQuery && exerciseNameLower.includes(normalizedQuery)) {
         matched = true
         bestPriority = 1
       }

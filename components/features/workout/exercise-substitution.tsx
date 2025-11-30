@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import { motion, AnimatePresence } from 'framer-motion'
 
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { suggestExerciseSubstitutionAction, validateCustomSubstitutionAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
@@ -9,7 +10,7 @@ import { getProgressiveTargetAction, type ProgressiveTarget } from '@/app/action
 import type { SubstitutionSuggestion, CurrentExerciseInfo, SubstitutionInput, CustomSubstitutionInput } from '@/lib/agents/exercise-substitution.agent'
 import { Button } from '@/components/ui/button'
 import { PhotoUploader } from '@/components/ui/photo-uploader'
-import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type, Camera, BookOpen, Search } from 'lucide-react'
+import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type, Camera, BookOpen, Search, X } from 'lucide-react'
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { memoryService } from '@/lib/services/memory.service'
 import { AnimationService } from '@/lib/services/animation.service'
@@ -205,6 +206,12 @@ export function ExerciseSubstitution({
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
   const [libraryResults, setLibraryResults] = useState<ExerciseDBExercise[]>([])
   const [isSearchingLibrary, setIsSearchingLibrary] = useState(false)
+
+  // Library filter state
+  const [filterOptions, setFilterOptions] = useState<{ bodyParts: string[]; equipments: string[] }>({ bodyParts: [], equipments: [] })
+  const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([])
+  const [selectedEquipments, setSelectedEquipments] = useState<string[]>([])
+  const [filtersLoaded, setFiltersLoaded] = useState(false)
 
   // Animation modal state
   const [animationModalExercise, setAnimationModalExercise] = useState<{ name: string; url: string | null } | null>(null)
@@ -464,11 +471,32 @@ export function ExerciseSubstitution({
     setUploadedImage(null)
     setLibrarySearchQuery('')
     setLibraryResults([])
+    setSelectedBodyParts([])
+    setSelectedEquipments([])
   }
 
-  // Library search with debounce
+  // Load filter options when library mode is first accessed
   useEffect(() => {
-    if (inputMode !== 'library' || librarySearchQuery.length < 2) {
+    if (inputMode === 'library' && !filtersLoaded) {
+      ExerciseDBService.getFilterOptions().then(options => {
+        setFilterOptions(options)
+        setFiltersLoaded(true)
+      }).catch(err => {
+        console.error('Failed to load filter options:', err)
+      })
+    }
+  }, [inputMode, filtersLoaded])
+
+  // Library search with debounce (supports filters)
+  useEffect(() => {
+    if (inputMode !== 'library') {
+      return
+    }
+
+    const hasFilters = selectedBodyParts.length > 0 || selectedEquipments.length > 0
+
+    // Allow search with filters only OR query >= 2 chars
+    if (librarySearchQuery.length < 2 && !hasFilters) {
       setLibraryResults([])
       return
     }
@@ -476,7 +504,14 @@ export function ExerciseSubstitution({
     setIsSearchingLibrary(true)
     const debounceTimer = setTimeout(async () => {
       try {
-        const results = await ExerciseDBService.searchExercises(librarySearchQuery, 15)
+        const results = await ExerciseDBService.searchExercises(
+          librarySearchQuery,
+          20,
+          {
+            bodyParts: selectedBodyParts.length > 0 ? selectedBodyParts : undefined,
+            equipments: selectedEquipments.length > 0 ? selectedEquipments : undefined
+          }
+        )
         setLibraryResults(results)
       } catch (err) {
         console.error('Library search failed:', err)
@@ -487,7 +522,7 @@ export function ExerciseSubstitution({
     }, 300)
 
     return () => clearTimeout(debounceTimer)
-  }, [librarySearchQuery, inputMode])
+  }, [librarySearchQuery, inputMode, selectedBodyParts, selectedEquipments])
 
   // Handle library exercise selection (skip AI validation)
   const handleLibrarySelect = async (exercise: ExerciseDBExercise) => {
@@ -581,23 +616,39 @@ export function ExerciseSubstitution({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-      <div className="bg-gray-900 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/80 z-[60] backdrop-blur-sm"
+      />
+
+      {/* Drawer */}
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="fixed inset-x-0 bottom-0 z-[60] bg-gray-900 border-t border-gray-800 rounded-t-2xl shadow-2xl"
+        style={{ maxHeight: '85vh' }}
+      >
         {/* Header */}
-        <div className="sticky top-0 bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">{t('title')}</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+          <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white"
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
             aria-label={t('closeAriaLabel')}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-5 h-5 text-gray-300" />
           </button>
         </div>
 
-        <div className="p-4">
+        {/* Content */}
+        <div className="overflow-y-auto p-4" style={{ maxHeight: 'calc(85vh - 72px)' }}>
           {/* Current Exercise Info */}
           <div className="bg-gray-800 rounded-lg p-4 mb-4">
             <h3 className="text-sm text-gray-400 mb-1">{t('currentExercise.label')}</h3>
@@ -751,6 +802,63 @@ export function ExerciseSubstitution({
                         )}
                       </div>
 
+                      {/* Filters */}
+                      {filtersLoaded && (
+                        <div className="space-y-2">
+                          {/* Body Part Filters */}
+                          <div>
+                            <p className="text-xs text-gray-400 mb-1.5">{t('library.filters.muscleGroup')}</p>
+                            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                              {filterOptions.bodyParts.map((bodyPart) => (
+                                <button
+                                  key={bodyPart}
+                                  onClick={() => {
+                                    setSelectedBodyParts(prev =>
+                                      prev.includes(bodyPart)
+                                        ? prev.filter(bp => bp !== bodyPart)
+                                        : [...prev, bodyPart]
+                                    )
+                                  }}
+                                  className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full border transition-all capitalize ${
+                                    selectedBodyParts.includes(bodyPart)
+                                      ? 'bg-purple-600 border-purple-500 text-white'
+                                      : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'
+                                  }`}
+                                >
+                                  {bodyPart}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Equipment Filters */}
+                          <div>
+                            <p className="text-xs text-gray-400 mb-1.5">{t('library.filters.equipment')}</p>
+                            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+                              {filterOptions.equipments.map((equipment) => (
+                                <button
+                                  key={equipment}
+                                  onClick={() => {
+                                    setSelectedEquipments(prev =>
+                                      prev.includes(equipment)
+                                        ? prev.filter(eq => eq !== equipment)
+                                        : [...prev, equipment]
+                                    )
+                                  }}
+                                  className={`flex-shrink-0 px-2.5 py-1 text-xs rounded-full border transition-all capitalize ${
+                                    selectedEquipments.includes(equipment)
+                                      ? 'bg-purple-600 border-purple-500 text-white'
+                                      : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'
+                                  }`}
+                                >
+                                  {equipment}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Search Results */}
                       {libraryResults.length > 0 && (
                         <div className="max-h-[300px] overflow-y-auto space-y-2 border border-gray-700 rounded-lg p-2 bg-gray-900/50">
@@ -783,14 +891,14 @@ export function ExerciseSubstitution({
                       )}
 
                       {/* No results */}
-                      {librarySearchQuery.length >= 2 && !isSearchingLibrary && libraryResults.length === 0 && (
+                      {(librarySearchQuery.length >= 2 || selectedBodyParts.length > 0 || selectedEquipments.length > 0) && !isSearchingLibrary && libraryResults.length === 0 && (
                         <p className="text-sm text-gray-500 text-center py-4">
                           {t('library.noResults')}
                         </p>
                       )}
 
                       {/* Hint */}
-                      {librarySearchQuery.length < 2 && (
+                      {librarySearchQuery.length < 2 && selectedBodyParts.length === 0 && selectedEquipments.length === 0 && (
                         <p className="text-xs text-gray-500 text-center">
                           {t('library.hint')}
                         </p>
@@ -1041,7 +1149,7 @@ export function ExerciseSubstitution({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Animation Modal */}
       {animationModalExercise && (
@@ -1052,6 +1160,6 @@ export function ExerciseSubstitution({
           animationUrl={animationModalExercise.url}
         />
       )}
-    </div>
+    </AnimatePresence>
   )
 }

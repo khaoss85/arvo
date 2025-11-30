@@ -300,6 +300,10 @@
         "selectNewSplit": "Select New Split Type",
         "requiresMuscleSelection": "Select a muscle group to emphasize",
         "selectWeakPointMuscle": "Select Weak Point Muscle",
+        "selectFromYourWeakPoints": "Select from your configured weak points",
+        "noWeakPointsConfigured": "No weak points configured",
+        "configureWeakPointsFirst": "To use the Weak Point Focus split, first configure your weak points in the settings.",
+        "goToSettings": "Go to Settings",
         "aiAnalysisNote": {
           "title": "AI Analysis",
           "description": "Our AI will analyze your cycle progress, fatigue levels, and training patterns to recommend the best timing for this change."
@@ -858,12 +862,16 @@
         "library": {
           "searchPlaceholder": "Search exercises...",
           "noResults": "No exercises found",
-          "hint": "Type at least 2 characters to search",
+          "hint": "Type at least 2 characters or use filters",
           "selectedFrom": "Selected from exercise library",
-          "basedOnHistory": "📊 Based on your training history",
+          "basedOnHistory": "Based on your training history",
           "progressiveOverload": "Progressive overload applied",
           "directSelection": "Direct selection from library",
-          "muscleWarning": "This targets {target} ({bodyPart}) - different from current exercise"
+          "muscleWarning": "This targets {target} ({bodyPart}) - different from current exercise",
+          "filters": {
+            "muscleGroup": "Muscle group",
+            "equipment": "Equipment"
+          }
         },
         "validation": {
           "caution": "⚠️ Caution: {rationale}",
@@ -902,6 +910,8 @@
           "cannotRemoveMessage": "You cannot remove AI-recommended exercises. You can only remove exercises you added.",
           "confirmTitle": "Confirm Removal",
           "confirmMessage": "Do you want to remove \"{name}\"?",
+          "removePlannedTitle": "Remove Planned Exercise?",
+          "removePlannedMessage": "You are about to remove \"{name}\" which is part of your training plan. Are you sure?",
           "removeButton": "Remove"
         },
         "alerts": {
@@ -1102,7 +1112,7 @@
         "workingSetLabel": "Working Set",
         "totalLabel": "Total",
         "totalProgress": "Total Progress",
-        "mentalDrainedOptional": "I feel drained (Optional)",
+        "mentalDrainedOptional": "How do you feel? (Optional)",
         "hideMentalState": "Hide Mental State",
         "selectMentalState": "Select how you feel",
         "mentalState": "Mental State: {state}",
@@ -1115,7 +1125,15 @@
         "skipping": "Skipping...",
         "skipWarmupTitle": "Skip Warmup?",
         "skipWarmupConfirm": "Skip all {count} warmup {count, plural, one {set} other {sets}}? You can go straight to your working sets.",
-        "confirmSkip": "Skip to Working Sets"
+        "confirmSkip": "Skip to Working Sets",
+        "sanityCheck": {
+          "title": "Unusual values detected",
+          "description": "The values you entered seem unusually high. Did you mean to enter these?",
+          "weightWarning": "{value}kg is {multiplier}x the target ({target}kg)",
+          "repsWarning": "{value} reps is {multiplier}x the target ({target})",
+          "cancel": "Let me fix it",
+          "confirm": "Yes, log it"
+        }
       },
       "setStructure": {
         "title": "Workout Structure",

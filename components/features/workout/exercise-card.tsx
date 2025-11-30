@@ -34,6 +34,7 @@ import type { HydrationOutput } from '@/lib/types/hydration'
 import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
+import type { TechniqueRecommendationInput } from '@/lib/agents/technique-recommender.agent'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { getCachedExplanation, setCachedExplanation } from '@/lib/utils/exercise-explanation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
@@ -63,7 +64,7 @@ export function ExerciseCard({
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -153,6 +154,47 @@ export function ExerciseCard({
     exercise.completedSets.length === 0 &&
     warmupSkipSuggestion.shouldSuggest &&
     !warmupSkipPromptDismissed
+
+  // Build AI context for technique recommendations
+  const buildTechniqueAiContext = (): TechniqueRecommendationInput | undefined => {
+    const muscleGroups = extractMuscleGroupsFromExercise(exercise.exerciseName, exercise.equipmentVariant)
+    const exercisesWithTechniques = allExercises.filter(ex => ex.advancedTechnique).length
+    const totalVolume = allExercises.reduce((sum, ex) => sum + (ex.targetSets || 3), 0)
+    const isCompound = muscleGroups.primary.length > 1 || muscleGroups.secondary.length > 0
+    const inferredType = inferWorkoutType(allExercises.map(ex => ({
+      name: ex.exerciseName,
+      primaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).primary,
+      secondaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).secondary
+    })))
+    // Map inferred type to valid technique recommendation workout types
+    const validWorkoutTypes = ['push', 'pull', 'legs', 'upper', 'lower', 'full_body'] as const
+    const workoutType = validWorkoutTypes.includes(inferredType as typeof validWorkoutTypes[number])
+      ? (inferredType as typeof validWorkoutTypes[number])
+      : 'full_body'
+
+    return {
+      exerciseInfo: {
+        name: exercise.exerciseName,
+        muscleGroups: {
+          primary: muscleGroups.primary,
+          secondary: muscleGroups.secondary,
+        },
+        equipmentType: exercise.equipmentVariant,
+        isCompound,
+        positionInWorkout: exerciseIndex + 1,
+        totalExercises,
+      },
+      workoutContext: {
+        workoutType,
+        totalVolume,
+        exercisesWithTechniques,
+      },
+      userContext: {
+        experienceYears: userExperienceYears ?? 2,
+        mentalReadiness: overallMentalReadiness ?? undefined,
+      },
+    }
+  }
 
   // Fetch user demographics for personalized progression
   useEffect(() => {
@@ -1111,9 +1153,9 @@ export function ExerciseCard({
         onOpenChange={setShowTechniqueSelectionModal}
         currentTechnique={exercise.advancedTechnique}
         exerciseName={exercise.exerciseName}
+        aiContext={buildTechniqueAiContext()}
         onSelectTechnique={(technique) => {
-          // TODO: Integrate with workout-execution store to persist technique change
-          console.log('Technique selected:', technique)
+          setExerciseTechnique(exerciseIndex, technique)
           setShowTechniqueSelectionModal(false)
         }}
         otherExercises={allExercises

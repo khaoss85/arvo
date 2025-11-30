@@ -6,7 +6,15 @@ import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/w
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { rirToIntensityPercent } from '@/lib/utils/workout-helpers'
-import { Target, Sparkles, Minus, Plus, Headphones, Brain, ChevronDown } from 'lucide-react'
+import { Target, Sparkles, Minus, Plus, Headphones, Brain, ChevronDown, AlertTriangle } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { audioCoachingService } from '@/lib/services/audio-coaching.service'
 import type { PreSetCoachingScript } from '@/lib/types/pre-set-coaching'
 import { cn } from '@/lib/utils/cn'
@@ -166,6 +174,8 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false)
   const [mentalReadiness, setMentalReadiness] = useState<number | undefined>(undefined)
   const [showMentalSelector, setShowMentalSelector] = useState(false)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [pendingLogData, setPendingLogData] = useState<{weight: number, reps: number, rir: number, mentalReadiness?: number} | null>(null)
 
   // Mental readiness emoji mapping with translations
   const getMentalReadinessEmoji = (value: number): { emoji: string; label: string } => {
@@ -193,19 +203,62 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
     setRir(getInitialRir())
   }, [getInitialWeight, getInitialReps, getInitialRir])
 
-  const handleLogSet = async () => {
+  // Sanity check: detect unusually high values (5x target)
+  const checkSanityValues = (checkWeight: number, checkReps: number): string[] => {
+    const targetWeight = exercise.targetWeight || 0
+    const targetRepsMax = exercise.targetReps?.[1] || 12
+    const warnings: string[] = []
+
+    // Check weight: if > 5x target AND target is > 0
+    if (targetWeight > 0 && checkWeight > targetWeight * 5) {
+      warnings.push(t('setLogger.sanityCheck.weightWarning', {
+        value: checkWeight,
+        multiplier: Math.round(checkWeight / targetWeight),
+        target: targetWeight
+      }))
+    }
+
+    // Check reps: if > 5x target max
+    if (checkReps > targetRepsMax * 5) {
+      warnings.push(t('setLogger.sanityCheck.repsWarning', {
+        value: checkReps,
+        multiplier: Math.round(checkReps / targetRepsMax),
+        target: targetRepsMax
+      }))
+    }
+
+    return warnings
+  }
+
+  const performLogSet = async (data: {weight: number, reps: number, rir: number, mentalReadiness?: number}) => {
     setIsLogging(true)
     try {
-      await logSet({ weight, reps, rir, mentalReadiness })
-      // Reset mental readiness after logging
+      await logSet(data)
+      // Reset states after logging
       setMentalReadiness(undefined)
       setShowMentalSelector(false)
+      setShowConfirmation(false)
+      setPendingLogData(null)
     } catch (error) {
       console.error('Failed to log set:', error)
       alert(tCommon('errors.failedToLogSet'))
     } finally {
       setIsLogging(false)
     }
+  }
+
+  const handleLogSet = async () => {
+    const warnings = checkSanityValues(weight, reps)
+
+    if (warnings.length > 0) {
+      // Save data and show confirmation
+      setPendingLogData({ weight, reps, rir, mentalReadiness })
+      setShowConfirmation(true)
+      return
+    }
+
+    // Proceed normally
+    await performLogSet({ weight, reps, rir, mentalReadiness })
   }
 
   const handleStartAudioCoaching = async () => {
@@ -604,6 +657,45 @@ export function SetLogger({ exercise, setNumber, suggestion, technicalCues }: Se
           )}
         </Button>
       </div>
+
+      {/* Sanity Check Confirmation Dialog */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              {t('setLogger.sanityCheck.title')}
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div>
+                <p>{t('setLogger.sanityCheck.description')}</p>
+                <ul className="mt-3 space-y-1">
+                  {pendingLogData && checkSanityValues(pendingLogData.weight, pendingLogData.reps).map((warning, i) => (
+                    <li key={i} className="flex items-start gap-2 text-amber-600 dark:text-amber-400">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="ghost"
+              onClick={() => setShowConfirmation(false)}
+            >
+              {t('setLogger.sanityCheck.cancel')}
+            </Button>
+            <Button
+              onClick={() => pendingLogData && performLogSet(pendingLogData)}
+              className="bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              {t('setLogger.sanityCheck.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
