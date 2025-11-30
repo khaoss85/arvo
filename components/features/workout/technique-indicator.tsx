@@ -12,6 +12,13 @@ import {
   Layers,
   Target,
   ArrowUpDown,
+  // Proprietary technique icons
+  CircleDot,
+  Flower2,
+  RefreshCw,
+  Ruler,
+  Users,
+  Crosshair,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -32,6 +39,13 @@ const TECHNIQUE_ICONS: Record<TechniqueType, React.ComponentType<{ className?: s
   giant_set: Layers,
   cluster_set: Target,
   pyramid: ArrowUpDown,
+  // Proprietary techniques
+  fst7_protocol: CircleDot,
+  loaded_stretching: Flower2,
+  mechanical_drop_set: RefreshCw,
+  lengthened_partials: Ruler,
+  forced_reps: Users,
+  pre_exhaust: Crosshair,
 }
 
 // Color mapping for each technique type
@@ -44,6 +58,13 @@ const TECHNIQUE_COLORS: Record<TechniqueType, string> = {
   giant_set: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
   cluster_set: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
   pyramid: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  // Proprietary techniques
+  fst7_protocol: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
+  loaded_stretching: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+  mechanical_drop_set: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  lengthened_partials: 'bg-lime-500/20 text-lime-400 border-lime-500/30',
+  forced_reps: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  pre_exhaust: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
 }
 
 export function TechniqueIndicator({

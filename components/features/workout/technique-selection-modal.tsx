@@ -21,6 +21,13 @@ import {
   Sparkles,
   AlertTriangle,
   Loader2,
+  // New technique icons
+  CircleDot,
+  Flower2,
+  RefreshCw,
+  Ruler,
+  Users,
+  Crosshair,
 } from 'lucide-react'
 import type {
   AppliedTechnique,
@@ -65,6 +72,13 @@ const TECHNIQUE_ICONS: Record<TechniqueType, React.ReactNode> = {
   giant_set: <Layers className="w-5 h-5" />,
   cluster_set: <Target className="w-5 h-5" />,
   pyramid: <ArrowUpDown className="w-5 h-5" />,
+  // Proprietary techniques
+  fst7_protocol: <CircleDot className="w-5 h-5" />,
+  loaded_stretching: <Flower2 className="w-5 h-5" />,
+  mechanical_drop_set: <RefreshCw className="w-5 h-5" />,
+  lengthened_partials: <Ruler className="w-5 h-5" />,
+  forced_reps: <Users className="w-5 h-5" />,
+  pre_exhaust: <Crosshair className="w-5 h-5" />,
 }
 
 // Colors for each technique
@@ -77,6 +91,13 @@ const TECHNIQUE_COLORS: Record<TechniqueType, { bg: string; border: string; text
   giant_set: { bg: 'bg-pink-500/10', border: 'border-pink-500/30', text: 'text-pink-400' },
   cluster_set: { bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400' },
   pyramid: { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400' },
+  // Proprietary techniques
+  fst7_protocol: { bg: 'bg-violet-500/10', border: 'border-violet-500/30', text: 'text-violet-400' },
+  loaded_stretching: { bg: 'bg-teal-500/10', border: 'border-teal-500/30', text: 'text-teal-400' },
+  mechanical_drop_set: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-400' },
+  lengthened_partials: { bg: 'bg-lime-500/10', border: 'border-lime-500/30', text: 'text-lime-400' },
+  forced_reps: { bg: 'bg-rose-500/10', border: 'border-rose-500/30', text: 'text-rose-400' },
+  pre_exhaust: { bg: 'bg-sky-500/10', border: 'border-sky-500/30', text: 'text-sky-400' },
 }
 
 // All technique types in display order
@@ -89,6 +110,13 @@ const ALL_TECHNIQUES: TechniqueType[] = [
   'pyramid',
   'superset',
   'giant_set',
+  // Proprietary techniques
+  'fst7_protocol',
+  'loaded_stretching',
+  'mechanical_drop_set',
+  'lengthened_partials',
+  'forced_reps',
+  'pre_exhaust',
 ]
 
 export function TechniqueSelectionModal({
