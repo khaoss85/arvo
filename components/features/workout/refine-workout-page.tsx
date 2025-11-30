@@ -1678,14 +1678,14 @@ export function RefineWorkoutPage({
                             )}
 
                             {/* No results */}
-                            {(librarySearchQuery.get(index)?.length || 0) >= 2 && !isSearchingLibrary.get(index) && (libraryResults.get(index)?.length || 0) === 0 && (
+                            {((librarySearchQuery.get(index)?.length || 0) >= 2 || (selectedBodyParts.get(index)?.length || 0) > 0 || (selectedEquipments.get(index)?.length || 0) > 0) && !isSearchingLibrary.get(index) && (libraryResults.get(index)?.length || 0) === 0 && (
                               <p className="text-xs text-gray-500 text-center py-3">
                                 {t('library.noResults')}
                               </p>
                             )}
 
                             {/* Hint */}
-                            {(librarySearchQuery.get(index)?.length || 0) < 2 && (
+                            {(librarySearchQuery.get(index)?.length || 0) < 2 && (selectedBodyParts.get(index)?.length || 0) === 0 && (selectedEquipments.get(index)?.length || 0) === 0 && (
                               <p className="text-[10px] text-gray-400 text-center">
                                 {t('library.hint')}
                               </p>
