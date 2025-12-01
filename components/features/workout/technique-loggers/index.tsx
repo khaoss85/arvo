@@ -9,6 +9,7 @@ import {
   isFst7ProtocolConfig,
   isLoadedStretchingConfig,
   isMechanicalDropSetConfig,
+  isTopSetBackoffConfig,
 } from '@/lib/types/advanced-techniques'
 
 import { DropSetLogger } from './drop-set-logger'
@@ -18,6 +19,7 @@ import { ClusterSetLogger } from './cluster-set-logger'
 import { Fst7Logger } from './fst7-logger'
 import { LoadedStretchingLogger } from './loaded-stretching-logger'
 import { MechanicalDropSetLogger } from './mechanical-drop-set-logger'
+import { TopSetBackoffLogger } from './top-set-backoff-logger'
 
 interface TechniqueSetLoggerProps {
   technique: AppliedTechnique
@@ -116,7 +118,18 @@ export function TechniqueSetLogger({
     )
   }
 
-  // For techniques without specialized loggers (superset, pyramid, top_set_backoff, giant_set,
+  if (isTopSetBackoffConfig(config)) {
+    return (
+      <TopSetBackoffLogger
+        config={config}
+        initialWeight={initialWeight}
+        onComplete={onComplete}
+        onCancel={onCancel}
+      />
+    )
+  }
+
+  // For techniques without specialized loggers (superset, pyramid, giant_set,
   // lengthened_partials, forced_reps, pre_exhaust), return null - these will use the
   // standard set logger with technique info displayed
   console.warn(`No specialized logger for technique: ${technique.technique}`)
@@ -131,3 +144,4 @@ export { ClusterSetLogger } from './cluster-set-logger'
 export { Fst7Logger } from './fst7-logger'
 export { LoadedStretchingLogger } from './loaded-stretching-logger'
 export { MechanicalDropSetLogger } from './mechanical-drop-set-logger'
+export { TopSetBackoffLogger } from './top-set-backoff-logger'

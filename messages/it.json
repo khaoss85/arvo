@@ -1155,7 +1155,17 @@
       },
       "topSetBackoff": {
         "name": "Top Set + Backoff",
-        "description": "Una serie pesante seguita da serie più leggere per il volume"
+        "description": "Una serie pesante seguita da serie più leggere per il volume",
+        "instructions": "Esegui una top set pesante ({topReps} reps), poi riduci il peso del {percentage}% per {backoffSets} serie backoff ({backoffReps} reps ciascuna).",
+        "startBackoff": "Inizia Serie Backoff",
+        "nextBackoff": "Prossimo Backoff",
+        "finish": "Termina",
+        "setsNotLogged": "Alcune serie non registrate",
+        "topSetLabel": "Top Set",
+        "backoffLabel": "Backoff",
+        "repsTarget": "{reps} reps obiettivo",
+        "complete": "Completa",
+        "cancel": "Annulla"
       },
       "myoReps": {
         "name": "Myo-Reps",
@@ -1255,7 +1265,16 @@
         "sets": "{count, plural, one {serie} other {serie}}",
         "set": "Serie",
         "reps": "reps",
-        "intensity": "Intensità"
+        "intensity": "Intensità",
+        "topSetBackoff": "Top Set + Backoff",
+        "dropSet": "Drop Set",
+        "restPause": "Rest-Pause",
+        "topSet": "Top Set",
+        "backoff": "Backoff",
+        "drop": "Drop",
+        "initial": "Iniziale",
+        "miniSet": "Mini-serie",
+        "toFailure": "a cedimento"
       },
       "reps": "Reps",
       "weight": "Peso",

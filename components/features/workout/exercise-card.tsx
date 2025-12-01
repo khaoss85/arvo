@@ -11,6 +11,7 @@ import type { ModificationValidationInput, ModificationValidationOutput } from '
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
 import { SetLogger } from './set-logger'
+import { TechniqueSetLogger } from './technique-loggers'
 import { RestTimer } from './rest-timer'
 import { AISuggestionCard } from './ai-suggestion-card'
 import { CompletedSetsList } from './completed-sets-list'
@@ -35,6 +36,7 @@ import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import type { TechniqueRecommendationInput } from '@/lib/agents/technique-recommender.agent'
+import type { TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { getCachedExplanation, setCachedExplanation } from '@/lib/utils/exercise-explanation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
@@ -64,7 +66,7 @@ export function ExerciseCard({
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique, logSet } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -698,6 +700,77 @@ export function ExerciseCard({
     }
   }
 
+  // Handle technique set completion
+  const handleTechniqueComplete = async (result: TechniqueExecutionResult) => {
+    try {
+      // Log sets based on technique type
+      if (result.dropWeights && result.dropReps) {
+        // Drop sets: log each drop as a separate set
+        for (let i = 0; i < result.dropWeights.length; i++) {
+          await logSet({
+            weight: result.dropWeights[i],
+            reps: result.dropReps[i],
+            rir: i === 0 ? 1 : 0, // Top set has 1 RIR, drops are to failure
+          })
+        }
+      } else if (result.miniSetReps && result.activationReps !== undefined) {
+        // Myo-reps: log activation set + mini-sets
+        await logSet({
+          weight: exercise.targetWeight,
+          reps: result.activationReps,
+          rir: 1,
+        })
+        for (const miniReps of result.miniSetReps) {
+          await logSet({
+            weight: exercise.targetWeight,
+            reps: miniReps,
+            rir: 0,
+          })
+        }
+      } else if (result.miniSetReps) {
+        // Rest-pause: log initial set + mini-sets as individual sets
+        for (let i = 0; i < result.miniSetReps.length; i++) {
+          await logSet({
+            weight: exercise.targetWeight,
+            reps: result.miniSetReps[i],
+            rir: i === 0 ? 1 : 0,
+          })
+        }
+      } else if (result.clusterReps) {
+        // Cluster sets: log total reps as one set
+        await logSet({
+          weight: exercise.targetWeight,
+          reps: result.clusterReps.reduce((a, b) => a + b, 0),
+          rir: 1,
+        })
+      } else if (result.pyramidWeights && result.pyramidReps) {
+        // Top set + backoff: log each set individually
+        for (let i = 0; i < result.pyramidWeights.length; i++) {
+          await logSet({
+            weight: result.pyramidWeights[i],
+            reps: result.pyramidReps[i],
+            rir: i === 0 ? 1 : 2, // Top set has 1 RIR, backoff sets have 2
+          })
+        }
+      } else {
+        // Fallback: log as single set
+        await logSet({
+          weight: exercise.targetWeight,
+          reps: exercise.targetReps[0],
+          rir: 1,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to log technique sets:', error)
+      alert(tCommon('errors.failedToLogSet'))
+    }
+  }
+
+  // Handle technique cancellation - remove the technique and use standard logger
+  const handleTechniqueCancel = () => {
+    setExerciseTechnique(exerciseIndex, null)
+  }
+
   // Helper: Create audio script for next set
   const getNextSetAudioScript = (): AudioScript | null => {
     if (isLastSet) return null // No more sets
@@ -1029,12 +1102,22 @@ export function ExerciseCard({
                 />
               )}
 
-              <SetLogger
-                exercise={exercise}
-                setNumber={currentSetNumber}
-                suggestion={exercise.currentAISuggestion?.suggestion}
-                technicalCues={exercise.technicalCues}
-              />
+              {/* Use TechniqueSetLogger if exercise has advanced technique, otherwise standard SetLogger */}
+              {exercise.advancedTechnique ? (
+                <TechniqueSetLogger
+                  technique={exercise.advancedTechnique}
+                  initialWeight={exercise.targetWeight}
+                  onComplete={handleTechniqueComplete}
+                  onCancel={handleTechniqueCancel}
+                />
+              ) : (
+                <SetLogger
+                  exercise={exercise}
+                  setNumber={currentSetNumber}
+                  suggestion={exercise.currentAISuggestion?.suggestion}
+                  technicalCues={exercise.technicalCues}
+                />
+              )}
 
               {isSuggestionPending && (
                 <div className="mt-4 text-center text-sm text-gray-400">
