@@ -1053,6 +1053,11 @@
           "intermediate": "Intermedio",
           "advanced": "Avanzato"
         },
+        "filters": {
+          "level": "Livello",
+          "aiRecommended": "Solo AI Consigliati",
+          "noResults": "Nessuna tecnica corrisponde ai filtri selezionati"
+        },
         "superset": {
           "selectExercise": "Seleziona l'esercizio da abbinare:",
           "noExercises": "Nessun altro esercizio disponibile per l'abbinamento"

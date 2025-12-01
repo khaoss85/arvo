@@ -237,6 +237,16 @@ ${input.lastSet.mentalReadiness && input.lastSet.mentalReadiness <= 2 ? `IMPORTA
 
 Based on this approach, suggest the next set.
 
+${targetLanguage === 'it' ? `
+⚠️ LINGUA OBBLIGATORIA: ITALIANO
+Scrivi TUTTI i campi di testo in italiano:
+- "rationale": spiegazione in italiano
+- "alternatives[].explanation": spiegazione in italiano
+- "advancedTechniqueSuggestion.when/protocol": in italiano
+- "tempoReminder" e "restReminder": in italiano
+- "insightWarnings[].warning/suggestion": in italiano
+I nomi degli esercizi possono restare in inglese.
+` : ''}
 Required JSON structure:
 {
   "suggestion": {

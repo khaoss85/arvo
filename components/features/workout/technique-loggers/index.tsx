@@ -10,6 +10,10 @@ import {
   isLoadedStretchingConfig,
   isMechanicalDropSetConfig,
   isTopSetBackoffConfig,
+  isPyramidConfig,
+  isSupersetConfig,
+  isGiantSetConfig,
+  isPreExhaustConfig,
 } from '@/lib/types/advanced-techniques'
 
 import { DropSetLogger } from './drop-set-logger'
@@ -20,6 +24,10 @@ import { Fst7Logger } from './fst7-logger'
 import { LoadedStretchingLogger } from './loaded-stretching-logger'
 import { MechanicalDropSetLogger } from './mechanical-drop-set-logger'
 import { TopSetBackoffLogger } from './top-set-backoff-logger'
+import { PyramidLogger } from './pyramid-logger'
+import { SupersetLogger } from './superset-logger'
+import { GiantSetLogger } from './giant-set-logger'
+import { PreExhaustLogger } from './pre-exhaust-logger'
 
 interface TechniqueSetLoggerProps {
   technique: AppliedTechnique
@@ -129,9 +137,52 @@ export function TechniqueSetLogger({
     )
   }
 
-  // For techniques without specialized loggers (superset, pyramid, giant_set,
-  // lengthened_partials, forced_reps, pre_exhaust), return null - these will use the
-  // standard set logger with technique info displayed
+  if (isPyramidConfig(config)) {
+    return (
+      <PyramidLogger
+        config={config}
+        initialWeight={initialWeight}
+        onComplete={onComplete}
+        onCancel={onCancel}
+      />
+    )
+  }
+
+  if (isSupersetConfig(config)) {
+    return (
+      <SupersetLogger
+        config={config}
+        initialWeight={initialWeight}
+        onComplete={onComplete}
+        onCancel={onCancel}
+      />
+    )
+  }
+
+  if (isGiantSetConfig(config)) {
+    return (
+      <GiantSetLogger
+        config={config}
+        initialWeight={initialWeight}
+        onComplete={onComplete}
+        onCancel={onCancel}
+      />
+    )
+  }
+
+  if (isPreExhaustConfig(config)) {
+    return (
+      <PreExhaustLogger
+        config={config}
+        initialWeight={initialWeight}
+        onComplete={onComplete}
+        onCancel={onCancel}
+      />
+    )
+  }
+
+  // For techniques without specialized loggers (lengthened_partials, forced_reps),
+  // return null - these will use the standard set logger with technique info displayed
   console.warn(`No specialized logger for technique: ${technique.technique}`)
   return null
 }
@@ -145,3 +196,7 @@ export { Fst7Logger } from './fst7-logger'
 export { LoadedStretchingLogger } from './loaded-stretching-logger'
 export { MechanicalDropSetLogger } from './mechanical-drop-set-logger'
 export { TopSetBackoffLogger } from './top-set-backoff-logger'
+export { PyramidLogger } from './pyramid-logger'
+export { SupersetLogger } from './superset-logger'
+export { GiantSetLogger } from './giant-set-logger'
+export { PreExhaustLogger } from './pre-exhaust-logger'

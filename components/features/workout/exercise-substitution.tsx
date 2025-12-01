@@ -638,6 +638,7 @@ export function ExerciseSubstitution({
     <AnimatePresence>
       {/* Backdrop */}
       <motion.div
+        key="backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -647,6 +648,7 @@ export function ExerciseSubstitution({
 
       {/* Drawer */}
       <motion.div
+        key="drawer"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}

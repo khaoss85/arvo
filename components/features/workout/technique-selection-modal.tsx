@@ -149,6 +149,10 @@ export function TechniqueSelectionModal({
   const [validationResult, setValidationResult] = useState<TechniqueValidationOutput | null>(null)
   const [isValidating, setIsValidating] = useState(false)
 
+  // Filter state
+  const [selectedLevels, setSelectedLevels] = useState<('beginner' | 'intermediate' | 'advanced')[]>([])
+  const [showOnlyRecommended, setShowOnlyRecommended] = useState(false)
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -202,6 +206,8 @@ export function TechniqueSelectionModal({
       setPendingTechnique(null)
       setValidationResult(null)
       setIsValidating(false)
+      setSelectedLevels([])
+      setShowOnlyRecommended(false)
       // Don't reset recommendations - keep them cached for the modal session
     }
     onOpenChange(isOpen)
@@ -409,9 +415,82 @@ export function TechniqueSelectionModal({
                     </div>
                   )}
 
+                  {/* Filters */}
+                  <div className="space-y-3 mb-4">
+                    {/* Level filter */}
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1.5">{t('filters.level')}</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {(['beginner', 'intermediate', 'advanced'] as const).map((level) => (
+                          <button
+                            key={level}
+                            onClick={() => {
+                              setSelectedLevels(prev =>
+                                prev.includes(level)
+                                  ? prev.filter(l => l !== level)
+                                  : [...prev, level]
+                              )
+                            }}
+                            className={cn(
+                              'px-2.5 py-1 text-xs rounded-full border transition-all',
+                              selectedLevels.includes(level)
+                                ? 'bg-purple-600 border-purple-500 text-white'
+                                : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'
+                            )}
+                          >
+                            {t(`levels.${level}`)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* AI Recommended toggle */}
+                    {recommendations && (
+                      <button
+                        onClick={() => setShowOnlyRecommended(!showOnlyRecommended)}
+                        className={cn(
+                          'flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full border transition-all',
+                          showOnlyRecommended
+                            ? 'bg-purple-600 border-purple-500 text-white'
+                            : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'
+                        )}
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        {t('filters.aiRecommended')}
+                      </button>
+                    )}
+                  </div>
+
                   {/* Technique grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {ALL_TECHNIQUES.map((type) => {
+                  {(() => {
+                    const filteredTechniques = ALL_TECHNIQUES.filter(type => {
+                      const compat = TECHNIQUE_COMPATIBILITY[type]
+                      const recommendation = getRecommendation(type)
+
+                      // Level filter
+                      if (selectedLevels.length > 0 && !selectedLevels.includes(compat.minExperience)) {
+                        return false
+                      }
+
+                      // AI Recommended filter (score >= 60)
+                      if (showOnlyRecommended && (!recommendation || recommendation.score < 60)) {
+                        return false
+                      }
+
+                      return true
+                    })
+
+                    if (filteredTechniques.length === 0) {
+                      return (
+                        <p className="text-center text-gray-400 text-sm py-8">
+                          {t('filters.noResults')}
+                        </p>
+                      )
+                    }
+
+                    return (
+                      <div className="grid grid-cols-2 gap-3">
+                        {filteredTechniques.map((type) => {
                       const colors = TECHNIQUE_COLORS[type]
                       const compatibility = TECHNIQUE_COMPATIBILITY[type]
                       const isSelected = currentTechnique?.technique === type
@@ -502,8 +581,10 @@ export function TechniqueSelectionModal({
                           </div>
                         </button>
                       )
-                    })}
-                  </div>
+                        })}
+                      </div>
+                    )
+                  })()}
 
                   {/* Cancel button */}
                   <div className="mt-4 flex justify-end">

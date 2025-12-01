@@ -890,13 +890,38 @@ ${mems.map(mem => {
         cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1)
       }
 
-      // Remove control characters from the JSON string
-      // This handles cases where the AI response contains literal newlines, tabs, etc.
-      // Control chars between JSON structural elements are just whitespace
-      // Control chars inside string values (if any) will be removed to preserve JSON validity
-      cleanedContent = cleanedContent.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+      // Remove control characters from the JSON string EXCEPT valid JSON whitespace
+      // Keep: \t (0x09), \n (0x0A), \r (0x0D) - these are valid in JSON structure
+      // Remove: all other control chars (0x00-0x08, 0x0B-0x0C, 0x0E-0x1F, 0x7F-0x9F)
+      cleanedContent = cleanedContent.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
 
-      const result = JSON.parse(cleanedContent) as T
+      // Escape literal newlines inside JSON string values
+      // JSON strings cannot contain actual newlines - they must be escaped as \n
+      // This regex finds newlines that appear within quoted strings and escapes them
+      cleanedContent = cleanedContent.replace(
+        /"([^"\\]*(\\.[^"\\]*)*)"/g,
+        (match) => match.replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t')
+      )
+
+      // Try to parse JSON, with repair attempt on failure
+      let result: T
+      try {
+        result = JSON.parse(cleanedContent) as T
+      } catch (parseError) {
+        // Attempt to repair common JSON issues
+        console.warn('[BASE_AGENT] JSON parse failed, attempting repair...', {
+          errorPosition: (parseError as Error).message.match(/position (\d+)/)?.[1],
+          contentPreview: cleanedContent.substring(0, 200)
+        })
+
+        // Log the problematic content for debugging
+        const errorPos = parseInt((parseError as Error).message.match(/position (\d+)/)?.[1] || '0')
+        console.error('[BASE_AGENT] JSON parse error. Content around position:', {
+          before: cleanedContent.substring(Math.max(0, errorPos - 50), errorPos),
+          after: cleanedContent.substring(errorPos, errorPos + 50)
+        })
+        throw parseError
+      }
 
       // Track credit usage (async, non-blocking)
       if (this.userId) {

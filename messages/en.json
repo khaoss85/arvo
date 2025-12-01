@@ -1053,6 +1053,11 @@
           "intermediate": "Intermediate",
           "advanced": "Advanced"
         },
+        "filters": {
+          "level": "Level",
+          "aiRecommended": "AI Recommended Only",
+          "noResults": "No techniques match the selected filters"
+        },
         "superset": {
           "selectExercise": "Select the exercise to pair with:",
           "noExercises": "No other exercises available for pairing"

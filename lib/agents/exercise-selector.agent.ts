@@ -1962,6 +1962,20 @@ If any check fails (✗) → REVISE your exercise selection and re-verify
 
 ==========================================================================
 
+${targetLanguage === 'it' ? `
+⚠️ LINGUA OBBLIGATORIA: ITALIANO
+Scrivi TUTTI i seguenti campi in italiano:
+- "technicalCues": suggerimenti tecnici in italiano (es. "Controlla l'eccentrica", "Contrai i pettorali in cima")
+- "setGuidance[].technicalFocus": focus tecnico in italiano (es. "ROM completo", "Controlla il movimento")
+- "setGuidance[].mentalFocus": visualizzazione mentale in italiano (es. "Immagina di spingere il peso lontano")
+- "warmupSets[].technicalFocus": focus tecnico warmup in italiano
+- "rationaleForSelection": motivazione della scelta in italiano
+- "workoutRationale": motivazione generale del workout in italiano
+- "weakPointAddress": come vengono affrontati i punti deboli in italiano
+- "advancedTechnique.rationale": motivazione della tecnica avanzata in italiano
+I nomi degli esercizi possono restare in inglese.
+` : ''}
+
 Required JSON structure:
 {
   "exercises": [

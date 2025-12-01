@@ -35,6 +35,9 @@ export interface ProgressionInput {
   // Multi-turn CoT persistence (GPT-5.1 optimization)
   previousResponseId?: string
 
+  // Language for AI response
+  locale?: 'en' | 'it'
+
   // === POWERLIFTING-SPECIFIC FIELDS ===
   // Training Max for percentage-based programs (Wendler, Sheiko)
   trainingMax?: number | null

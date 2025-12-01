@@ -13,6 +13,7 @@ import { ExerciseDBService } from "@/lib/services/exercisedb.service";
 import { Toaster } from "@/components/ui/toast";
 import { HtmlLangWrapper } from "@/components/html-lang-wrapper";
 import { detectUserLocale } from "@/lib/utils/locale";
+import { updatePreferredLanguage } from "@/app/actions/user-actions";
 import enMessages from "@/messages/en.json";
 import itMessages from "@/messages/it.json";
 
@@ -23,7 +24,7 @@ const messages = {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
-  const { setUser, setLoading } = useAuthStore();
+  const { user, setUser, setLoading } = useAuthStore();
   const { locale, setLocale, _hasHydrated } = useLocaleStore();
   const [isLocaleInitialized, setIsLocaleInitialized] = useState(false);
 
@@ -37,6 +38,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
     setIsLocaleInitialized(true);
   }, [_hasHydrated, isLocaleInitialized, locale, setLocale]);
+
+  // Sync detected locale to database when user is authenticated
+  // This ensures AI responses use the same language as the UI
+  useEffect(() => {
+    if (!isLocaleInitialized || !user?.id) return;
+
+    // Sync current locale to database
+    // This handles the case where browser language differs from database preference
+    updatePreferredLanguage(user.id, locale).catch((err) => {
+      console.error('[Providers] Failed to sync locale to database:', err);
+    });
+  }, [isLocaleInitialized, user?.id, locale]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
