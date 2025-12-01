@@ -105,22 +105,26 @@ export function SetStructureDisplay({ exercise, compact = false, className }: Se
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-red-500" />
               <span className="text-sm font-bold text-red-600 dark:text-red-400 uppercase tracking-wide">
-                {t('setStructure.workingPhase')} (1 {t('setStructure.topSet')} + {config.backoffSets} {t('setStructure.backoff')})
+                {t('setStructure.workingPhase')} ({config.topSets || 1} {t('setStructure.topSet')} + {config.backoffSets} {t('setStructure.backoff')})
               </span>
             </div>
             <div className="space-y-2">
-              <div className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
-                <span className="font-medium text-red-600 dark:text-red-400 min-w-[4rem]">
-                  {t('setStructure.topSet')}
-                </span>
-                <div className="flex-1">
-                  <div className="font-medium">
-                    {effectiveTargetWeight}kg × {config.topSetReps} {t('setStructure.reps')}
+              {/* Top Sets */}
+              {Array.from({ length: config.topSets || 1 }, (_, i) => (
+                <div key={`top-${i}`} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                  <span className="font-medium text-red-600 dark:text-red-400 min-w-[4rem]">
+                    {t('setStructure.topSet')}{(config.topSets || 1) > 1 ? ` ${i + 1}` : ''}
+                  </span>
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {effectiveTargetWeight}kg × {config.topSetReps} {t('setStructure.reps')}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
+              {/* Backoff Sets */}
               {Array.from({ length: config.backoffSets }, (_, i) => (
-                <div key={i} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                <div key={`backoff-${i}`} className="text-xs text-gray-700 dark:text-gray-300 flex items-start gap-2">
                   <span className="font-medium text-amber-600 dark:text-amber-400 min-w-[4rem]">
                     {t('setStructure.backoff')} {i + 1}
                   </span>

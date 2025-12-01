@@ -57,6 +57,8 @@ export interface SupersetConfig {
 
 export interface TopSetBackoffConfig {
   type: 'top_set_backoff'
+  /** Number of heavy top sets (typically 1, can be 2+) */
+  topSets?: number
   /** Reps for the heavy top set (typically 3-5) */
   topSetReps: number
   /** Number of backoff sets (typically 2-3) */
@@ -468,6 +470,7 @@ export const DEFAULT_TECHNIQUE_CONFIGS: Record<TechniqueType, TechniqueConfig> =
   },
   top_set_backoff: {
     type: 'top_set_backoff',
+    topSets: 1,
     topSetReps: 5,
     backoffSets: 2,
     backoffPercentage: 15,

@@ -7,7 +7,14 @@ import { WorkoutService } from '@/lib/services/workout.service'
 import { SetLogService } from '@/lib/services/set-log.service'
 import { AnimationService } from '@/lib/services/animation.service'
 import { getExerciseName } from '@/lib/utils/exercise-helpers'
-import type { AppliedTechnique, TechniqueExecutionState, TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
+import type { AppliedTechnique, TechniqueExecutionState, TechniqueExecutionResult, TechniqueConfig } from '@/lib/types/advanced-techniques'
+import {
+  isTopSetBackoffConfig,
+  isDropSetConfig,
+  isRestPauseConfig,
+  isMyoRepsConfig,
+  isClusterSetConfig,
+} from '@/lib/types/advanced-techniques'
 
 export interface WarmupSet {
   setNumber: number
@@ -123,6 +130,9 @@ interface WorkoutExecutionState {
 
   // Add extra sets
   addSetToExercise: (exerciseIndex: number) => { success: boolean; error?: string; message?: string; warning?: string }
+
+  // Update technique configuration (for adding sets to techniques)
+  updateTechniqueConfig: (exerciseIndex: number, updates: Partial<TechniqueConfig>) => { success: boolean; warning?: string }
 
   // Add extra exercise
   addExerciseToWorkout: (position: number, exercise: ExerciseExecution) => { success: boolean; error?: string; message?: string }
@@ -859,6 +869,87 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         return {
           success: true,
           warning: newAddedSets >= 3 ? warnings[0] : undefined
+        }
+      },
+
+      // Update technique configuration (for adding sets to techniques)
+      updateTechniqueConfig: (exerciseIndex: number, updates: Partial<TechniqueConfig>) => {
+        const { exercises } = get()
+        const updatedExercises = [...exercises]
+        const exercise = updatedExercises[exerciseIndex]
+
+        if (!exercise || !exercise.advancedTechnique) {
+          console.error('Exercise or technique not found at index:', exerciseIndex)
+          return { success: false }
+        }
+
+        // Save original AI recommendation on first modification
+        if (!exercise.aiRecommendedSets) {
+          exercise.aiRecommendedSets = exercise.targetSets
+        }
+
+        // Track user modifications
+        const currentAddedSets = exercise.userAddedSets || 0
+        const newAddedSets = currentAddedSets + 1
+
+        // HARD LIMIT: Maximum 5 extra sets
+        if (newAddedSets > 5) {
+          console.warn('Hard limit reached: Cannot add more than 5 extra technique sets')
+          return { success: false }
+        }
+
+        // Merge updates into existing config
+        const currentConfig = exercise.advancedTechnique.config
+        const newConfig = { ...currentConfig, ...updates } as TechniqueConfig
+
+        // Calculate new targetSets based on technique config
+        let newTargetSets = 0
+        if (isTopSetBackoffConfig(newConfig)) {
+          newTargetSets = (newConfig.topSets || 1) + newConfig.backoffSets
+        } else if (isDropSetConfig(newConfig)) {
+          // Initial set + drops
+          newTargetSets = 1 + newConfig.drops
+        } else if (isRestPauseConfig(newConfig)) {
+          // Initial set + mini-sets
+          newTargetSets = 1 + newConfig.miniSets
+        } else if (isMyoRepsConfig(newConfig)) {
+          // Activation set + mini-sets
+          newTargetSets = 1 + newConfig.miniSets
+        } else if (isClusterSetConfig(newConfig)) {
+          newTargetSets = newConfig.clusters
+        } else {
+          // Fallback: keep existing targetSets
+          newTargetSets = exercise.targetSets
+        }
+
+        // Update exercise
+        exercise.advancedTechnique = {
+          ...exercise.advancedTechnique,
+          config: newConfig,
+        }
+        exercise.targetSets = newTargetSets
+        exercise.userAddedSets = newAddedSets
+
+        // Track modifications
+        exercise.userModifications = {
+          addedSets: newAddedSets,
+          reason: undefined,
+          aiWarnings: newAddedSets >= 3 ? ['You\'re adding significant volume beyond the AI recommendation.'] : [],
+          userOverride: newAddedSets >= 3,
+          modifiedAt: new Date().toISOString()
+        }
+
+        set({
+          exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+
+        // Save to database
+        get().saveProgress()
+
+        return {
+          success: true,
+          warning: newAddedSets >= 3 ? 'You\'re adding significant volume beyond the AI recommendation.' : undefined
         }
       },
 

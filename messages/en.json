@@ -1209,6 +1209,20 @@
       "techniqueIndicator": {
         "applied": "Advanced technique applied",
         "viewInstructions": "Tap for instructions"
+      },
+      "techniqueAddSet": {
+        "addSet": "Add Set",
+        "selectType": "What type of set?",
+        "addTopSet": "Add Top Set",
+        "addTopSetDesc": "Add another heavy top set",
+        "addBackoff": "Add Backoff",
+        "addBackoffDesc": "Add another lighter backoff set",
+        "addDrop": "Add Drop",
+        "addDropDesc": "Add another weight drop",
+        "addMiniSet": "Add Mini-Set",
+        "addMiniSetDesc": "Add another mini-set with brief rest",
+        "addCluster": "Add Cluster",
+        "addClusterDesc": "Add another cluster of reps"
       }
     },
     "execution": {

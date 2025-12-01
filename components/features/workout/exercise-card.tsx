@@ -29,6 +29,7 @@ import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { WarmupSkipPrompt } from './warmup-skip-prompt'
 import { HydrationReminder } from './hydration-reminder'
 import { SetStructureDisplay } from './set-structure-display'
+import { TechniqueAddSetMenu, type TechniqueSetType } from './technique-add-set-menu'
 import { shouldSuggestWarmupSkip, getSkipReasonCode } from '@/lib/utils/warmup-skip-intelligence'
 import { getHydrationSuggestionAction } from '@/app/actions/hydration-actions'
 import type { HydrationOutput } from '@/lib/types/hydration'
@@ -36,7 +37,8 @@ import { Button } from '@/components/ui/button'
 import { extractMuscleGroupsFromExercise } from '@/lib/utils/exercise-muscle-mapper'
 import { inferWorkoutType } from '@/lib/services/muscle-groups.service'
 import type { TechniqueRecommendationInput } from '@/lib/agents/technique-recommender.agent'
-import type { TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
+import type { TechniqueExecutionResult, TopSetBackoffConfig, DropSetConfig, RestPauseConfig, MyoRepsConfig, ClusterSetConfig } from '@/lib/types/advanced-techniques'
+import { isTopSetBackoffConfig, isDropSetConfig, isRestPauseConfig, isMyoRepsConfig, isClusterSetConfig } from '@/lib/types/advanced-techniques'
 import { validationCache } from '@/lib/utils/validation-cache'
 import { getCachedExplanation, setCachedExplanation } from '@/lib/utils/exercise-explanation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
@@ -66,7 +68,7 @@ export function ExerciseCard({
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique, logSet } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, updateTechniqueConfig, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique, logSet } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -700,6 +702,55 @@ export function ExerciseCard({
     }
   }
 
+  // Handle adding set to technique
+  const handleTechniqueAddSet = (type: TechniqueSetType) => {
+    if (!exercise.advancedTechnique) return
+
+    const config = exercise.advancedTechnique.config
+
+    switch (type) {
+      case 'topSet':
+        if (isTopSetBackoffConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            topSets: (config.topSets || 1) + 1
+          })
+        }
+        break
+      case 'backoff':
+        if (isTopSetBackoffConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            backoffSets: config.backoffSets + 1
+          })
+        }
+        break
+      case 'drop':
+        if (isDropSetConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            drops: config.drops + 1
+          })
+        }
+        break
+      case 'miniSet':
+        if (isRestPauseConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            miniSets: config.miniSets + 1
+          })
+        } else if (isMyoRepsConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            miniSets: config.miniSets + 1
+          })
+        }
+        break
+      case 'cluster':
+        if (isClusterSetConfig(config)) {
+          updateTechniqueConfig(exerciseIndex, {
+            clusters: config.clusters + 1
+          })
+        }
+        break
+    }
+  }
+
   // Handle technique set completion
   const handleTechniqueComplete = async (result: TechniqueExecutionResult) => {
     try {
@@ -950,16 +1001,23 @@ export function ExerciseCard({
             {t('actions.swap')}
           </Button>
 
-          {/* Add Set */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => addSetToExercise(exerciseIndex)}
-            className="text-xs gap-1.5 h-8 border-gray-700 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 hover:border-blue-700"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            {t('actions.addSet')}
-          </Button>
+          {/* Add Set - uses contextual menu when technique is active */}
+          {exercise.advancedTechnique ? (
+            <TechniqueAddSetMenu
+              technique={exercise.advancedTechnique}
+              onAddSet={handleTechniqueAddSet}
+            />
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addSetToExercise(exerciseIndex)}
+              className="text-xs gap-1.5 h-8 border-gray-700 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 hover:border-blue-700"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {t('actions.addSet')}
+            </Button>
+          )}
 
           {/* Technique */}
           <Button

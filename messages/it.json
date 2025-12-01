@@ -1210,6 +1210,20 @@
       "techniqueIndicator": {
         "applied": "Tecnica avanzata applicata",
         "viewInstructions": "Tocca per le istruzioni"
+      },
+      "techniqueAddSet": {
+        "addSet": "Aggiungi Serie",
+        "selectType": "Che tipo di serie?",
+        "addTopSet": "Aggiungi Top Set",
+        "addTopSetDesc": "Aggiungi un'altra serie pesante",
+        "addBackoff": "Aggiungi Backoff",
+        "addBackoffDesc": "Aggiungi un'altra serie leggera",
+        "addDrop": "Aggiungi Drop",
+        "addDropDesc": "Aggiungi un altro scalino di peso",
+        "addMiniSet": "Aggiungi Mini-Set",
+        "addMiniSetDesc": "Aggiungi un'altra mini-serie con breve pausa",
+        "addCluster": "Aggiungi Cluster",
+        "addClusterDesc": "Aggiungi un altro cluster di ripetizioni"
       }
     },
     "execution": {

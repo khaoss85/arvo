@@ -19,6 +19,8 @@ interface SetEntry {
   weight: number
   reps: number
   isTopSet: boolean
+  topSetIndex?: number  // For multiple top sets: 1, 2, etc.
+  backoffIndex?: number // For backoff sets: 1, 2, etc.
 }
 
 export function TopSetBackoffLogger({
@@ -38,18 +40,22 @@ export function TopSetBackoffLogger({
 
   const backoffWeight = calculateBackoffWeight()
 
-  // Total sets: 1 top set + N backoff sets
-  const totalSets = 1 + config.backoffSets
+  // Number of top sets (default 1 for backwards compatibility)
+  const numTopSets = config.topSets || 1
+
+  // Total sets: N top sets + M backoff sets
+  const totalSets = numTopSets + config.backoffSets
 
   // Initialize sets state
   const [sets, setSets] = useState<SetEntry[]>(() => {
-    const entries: SetEntry[] = [
-      // Top set (heavy, low reps)
-      { weight: initialWeight, reps: 0, isTopSet: true },
-    ]
+    const entries: SetEntry[] = []
+    // Top sets (heavy, low reps)
+    for (let i = 0; i < numTopSets; i++) {
+      entries.push({ weight: initialWeight, reps: 0, isTopSet: true, topSetIndex: i + 1 })
+    }
     // Backoff sets (lighter, higher reps)
     for (let i = 0; i < config.backoffSets; i++) {
-      entries.push({ weight: backoffWeight, reps: 0, isTopSet: false })
+      entries.push({ weight: backoffWeight, reps: 0, isTopSet: false, backoffIndex: i + 1 })
     }
     return entries
   })
@@ -100,7 +106,7 @@ export function TopSetBackoffLogger({
         <TrendingUp className="h-5 w-5" />
         <span className="font-semibold">{t('topSetBackoff.name')}</span>
         <span className="text-sm text-gray-400">
-          (1 top set + {config.backoffSets} backoff)
+          ({numTopSets} top {numTopSets === 1 ? 'set' : 'sets'} + {config.backoffSets} backoff)
         </span>
       </div>
 
@@ -141,7 +147,7 @@ export function TopSetBackoffLogger({
                   {isCompleted && index < currentSet ? (
                     <Check className="h-4 w-4" />
                   ) : (
-                    set.isTopSet ? 'T' : `B${index}`
+                    set.isTopSet ? `T${numTopSets > 1 ? set.topSetIndex : ''}` : `B${set.backoffIndex}`
                   )}
                 </div>
 
@@ -151,7 +157,10 @@ export function TopSetBackoffLogger({
                     'text-sm font-medium',
                     isActive ? (set.isTopSet ? 'text-red-300' : 'text-amber-300') : 'text-gray-400'
                   )}>
-                    {set.isTopSet ? t('topSetBackoff.topSetLabel') : `${t('topSetBackoff.backoffLabel')} ${index}`}
+                    {set.isTopSet
+                      ? (numTopSets > 1 ? `${t('topSetBackoff.topSetLabel')} ${set.topSetIndex}` : t('topSetBackoff.topSetLabel'))
+                      : `${t('topSetBackoff.backoffLabel')} ${set.backoffIndex}`
+                    }
                   </span>
                   <span className="ml-2 text-xs text-gray-500">
                     {t('topSetBackoff.repsTarget', { reps: set.isTopSet ? config.topSetReps : config.backoffReps })}
@@ -208,7 +217,14 @@ export function TopSetBackoffLogger({
                   size="sm"
                 >
                   <ChevronRight className="h-4 w-4 mr-1" />
-                  {set.isTopSet ? t('topSetBackoff.startBackoff') : index === totalSets - 2 ? t('topSetBackoff.finish') : t('topSetBackoff.nextBackoff')}
+                  {set.isTopSet && set.topSetIndex && set.topSetIndex < numTopSets
+                    ? `${t('topSetBackoff.topSetLabel')} ${set.topSetIndex + 1}`
+                    : set.isTopSet
+                      ? t('topSetBackoff.startBackoff')
+                      : index === totalSets - 2
+                        ? t('topSetBackoff.finish')
+                        : t('topSetBackoff.nextBackoff')
+                  }
                 </Button>
               )}
             </div>
