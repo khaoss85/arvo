@@ -162,8 +162,23 @@ export default function SplitSelectionPage() {
               type="number"
               min="1"
               max="7"
-              value={weeklyFrequency}
-              onChange={(e) => setWeeklyFrequency(parseInt(e.target.value) || 1)}
+              value={weeklyFrequency || ''}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '') {
+                  setWeeklyFrequency(0)
+                } else {
+                  const num = parseInt(val)
+                  if (!isNaN(num) && num >= 1 && num <= 7) {
+                    setWeeklyFrequency(num)
+                  }
+                }
+              }}
+              onBlur={() => {
+                if (!weeklyFrequency || weeklyFrequency < 1) {
+                  setWeeklyFrequency(1)
+                }
+              }}
               className="w-24 px-4 py-2 text-lg font-semibold border-2 border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <span className="text-gray-600 dark:text-gray-400">{t('daysPerWeek')}</span>
