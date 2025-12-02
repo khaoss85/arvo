@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Triangle, Check, ChevronRight, AlertCircle, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
@@ -25,6 +26,8 @@ export function PyramidLogger({
   onComplete,
   onCancel,
 }: PyramidLoggerProps) {
+  const t = useTranslations('workout.techniques.pyramid')
+
   // Calculate total steps based on direction
   const totalSteps = config.direction === 'full' ? config.steps * 2 : config.steps
 
@@ -147,11 +150,11 @@ export function PyramidLogger({
   const getDirectionInfo = () => {
     switch (config.direction) {
       case 'ascending':
-        return { icon: ArrowUp, label: 'Ascending', description: 'Light to heavy' }
+        return { icon: ArrowUp, label: t('ascending'), description: t('lightToHeavy') }
       case 'descending':
-        return { icon: ArrowDown, label: 'Descending', description: 'Heavy to light' }
+        return { icon: ArrowDown, label: t('descending'), description: t('heavyToLight') }
       case 'full':
-        return { icon: ArrowUpDown, label: 'Full', description: 'Up then down' }
+        return { icon: ArrowUpDown, label: t('full'), description: t('upThenDown') }
     }
   }
 
@@ -166,19 +169,19 @@ export function PyramidLogger({
       {/* Header */}
       <div className="flex items-center gap-2 text-purple-400">
         <Triangle className="h-5 w-5" />
-        <span className="font-semibold">Pyramid Set</span>
+        <span className="font-semibold">{t('pyramidSet')}</span>
         <DirectionIcon className="h-4 w-4 ml-1" />
         <span className="text-sm text-gray-400">
-          ({directionInfo.label} - {totalSteps} steps)
+          ({directionInfo.label} - {totalSteps} {t('steps')})
         </span>
       </div>
 
       {/* Instructions */}
       <div className="text-sm text-gray-400">
-        {directionInfo.description}. Rest 90-120s between steps.
+        {directionInfo.description}. {t('restBetweenSteps')}
         {config.direction === 'full' && (
           <span className="block mt-1 text-purple-300">
-            Peak at step {config.steps}, then reverse.
+            {t('peakAtStep', { step: config.steps })}
           </span>
         )}
       </div>
@@ -217,14 +220,14 @@ export function PyramidLogger({
           const isFuture = index > currentStep
 
           // Determine step label
-          let stepLabel = `Step ${index + 1}`
+          let stepLabel = `${t('step')} ${index + 1}`
           if (config.direction === 'full') {
             if (index === config.steps - 1) {
-              stepLabel = 'Peak'
+              stepLabel = t('peak')
             } else if (index < config.steps - 1) {
-              stepLabel = `Up ${index + 1}`
+              stepLabel = `${t('up')} ${index + 1}`
             } else {
-              stepLabel = `Down ${index - config.steps + 2}`
+              stepLabel = `${t('down')} ${index - config.steps + 2}`
             }
           }
 
@@ -279,7 +282,7 @@ export function PyramidLogger({
               {isActive && (
                 <div className="mt-3 grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Weight (kg)</label>
+                    <label className="text-xs text-gray-400 mb-1 block">{t('weightLabel')}</label>
                     <Input
                       type="number"
                       value={entry.weight || ''}
@@ -289,7 +292,7 @@ export function PyramidLogger({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-400 mb-1 block">Reps</label>
+                    <label className="text-xs text-gray-400 mb-1 block">{t('repsLabel')}</label>
                     <Input
                       type="number"
                       value={entry.reps || ''}
@@ -309,7 +312,7 @@ export function PyramidLogger({
                   size="sm"
                 >
                   <ChevronRight className="h-4 w-4 mr-1" />
-                  {index === totalSteps - 2 ? 'Final Step' : 'Next Step'}
+                  {index === totalSteps - 2 ? t('finalStep') : t('nextStep')}
                 </Button>
               )}
             </div>
@@ -319,14 +322,14 @@ export function PyramidLogger({
 
       {/* Summary */}
       <div className="text-sm text-gray-400 pt-2 border-t border-gray-700">
-        Total reps: {entries.reduce((sum, e) => sum + e.reps, 0)}
+        {t('totalReps')} {entries.reduce((sum, e) => sum + e.reps, 0)}
       </div>
 
       {/* Warning if not all steps completed */}
       {!allStepsLogged && currentStep === totalSteps - 1 && (
         <div className="flex items-center gap-2 text-yellow-400 text-sm">
           <AlertCircle className="h-4 w-4" />
-          <span>Some steps not logged</span>
+          <span>{t('someStepsNotLogged')}</span>
         </div>
       )}
 
@@ -338,7 +341,7 @@ export function PyramidLogger({
           className="flex-1"
           size="sm"
         >
-          Cancel
+          {t('cancel')}
         </Button>
         <Button
           onClick={handleComplete}
@@ -347,7 +350,7 @@ export function PyramidLogger({
           size="sm"
         >
           <Check className="h-4 w-4 mr-1" />
-          Complete Pyramid
+          {t('completePyramid')}
         </Button>
       </div>
     </div>

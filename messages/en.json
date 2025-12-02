@@ -1155,7 +1155,11 @@
       },
       "superset": {
         "name": "Superset",
-        "description": "Two exercises back-to-back without rest"
+        "description": "Two exercises back-to-back without rest",
+        "noRestBetween": "Proceed immediately to the next exercise without rest!",
+        "restAfterBoth": "Rest after both:",
+        "cancel": "Cancel",
+        "complete": "Complete"
       },
       "topSetBackoff": {
         "name": "Top Set + Backoff",
@@ -1177,7 +1181,12 @@
       },
       "giantSet": {
         "name": "Giant Set",
-        "description": "Three or more exercises in sequence"
+        "description": "Three or more exercises in sequence",
+        "noRestBetweenExercises": "No rest between exercises!",
+        "restAfterAll": "Rest after all:",
+        "exercises": "exercises",
+        "cancel": "Cancel",
+        "complete": "Complete"
       },
       "clusterSet": {
         "name": "Cluster Set",
@@ -1185,7 +1194,29 @@
       },
       "pyramid": {
         "name": "Pyramid",
-        "description": "Progressive weight changes across sets"
+        "description": "Progressive weight changes across sets",
+        "pyramidSet": "Pyramid Set",
+        "ascending": "Ascending",
+        "descending": "Descending",
+        "full": "Full",
+        "lightToHeavy": "Light to heavy",
+        "heavyToLight": "Heavy to light",
+        "upThenDown": "Up then down",
+        "restBetweenSteps": "Rest 90-120s between steps.",
+        "peakAtStep": "Peak at step {step}, then reverse.",
+        "steps": "steps",
+        "step": "Step",
+        "peak": "Peak",
+        "up": "Up",
+        "down": "Down",
+        "weightLabel": "Weight (kg)",
+        "repsLabel": "Reps",
+        "nextStep": "Next Step",
+        "finalStep": "Final Step",
+        "totalReps": "Total reps:",
+        "someStepsNotLogged": "Some steps not logged",
+        "cancel": "Cancel",
+        "completePyramid": "Complete Pyramid"
       },
       "fst7Protocol": {
         "name": "FST-7 Protocol",
@@ -1209,7 +1240,12 @@
       },
       "preExhaust": {
         "name": "Pre-Exhaust",
-        "description": "Isolation to compound pairing without rest"
+        "description": "Isolation to compound pairing without rest",
+        "isolation": "Isolation",
+        "compound": "Compound",
+        "restBetween": "Rest between exercises:",
+        "cancel": "Cancel",
+        "complete": "Complete"
       },
       "techniqueIndicator": {
         "applied": "Advanced technique applied",

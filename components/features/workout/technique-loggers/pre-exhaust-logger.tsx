@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Target, Check, ArrowRight } from 'lucide-react'
 import type { PreExhaustConfig, TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
@@ -17,6 +18,7 @@ export function PreExhaustLogger({
   onComplete,
   onCancel,
 }: PreExhaustLoggerProps) {
+  const t = useTranslations('workout.techniques.preExhaust')
   const [isCompleting, setIsCompleting] = useState(false)
 
   const handleComplete = () => {
@@ -36,18 +38,18 @@ export function PreExhaustLogger({
       {/* Header */}
       <div className="flex items-center gap-2 text-teal-400">
         <Target className="h-5 w-5" />
-        <span className="font-semibold">Pre-Exhaust</span>
+        <span className="font-semibold">{t('name')}</span>
       </div>
 
       {/* Instructions */}
       <div className="text-sm text-gray-400">
         <div className="flex items-center gap-2">
-          <span>Isolation</span>
+          <span>{t('isolation')}</span>
           <ArrowRight className="h-4 w-4" />
-          <span>Compound</span>
+          <span>{t('compound')}</span>
         </div>
         <span className="block mt-1 text-teal-300">
-          Rest tra esercizi: {config.restBetween}s
+          {t('restBetween')} {config.restBetween}s
         </span>
       </div>
 
@@ -59,7 +61,7 @@ export function PreExhaustLogger({
           className="flex-1"
           size="sm"
         >
-          Cancel
+          {t('cancel')}
         </Button>
         <Button
           onClick={handleComplete}
@@ -68,7 +70,7 @@ export function PreExhaustLogger({
           size="sm"
         >
           <Check className="h-4 w-4 mr-1" />
-          Complete
+          {t('complete')}
         </Button>
       </div>
     </div>

@@ -758,33 +758,41 @@ export function ExerciseCard({
       if (result.dropWeights && result.dropReps) {
         // Drop sets: log each drop as a separate set
         for (let i = 0; i < result.dropWeights.length; i++) {
+          const isLastStep = i === result.dropWeights.length - 1
           await logSet({
             weight: result.dropWeights[i],
             reps: result.dropReps[i],
             rir: i === 0 ? 1 : 0, // Top set has 1 RIR, drops are to failure
+            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
           })
         }
       } else if (result.miniSetReps && result.activationReps !== undefined) {
         // Myo-reps: log activation set + mini-sets
+        const totalSets = 1 + result.miniSetReps.length
         await logSet({
           weight: exercise.targetWeight,
           reps: result.activationReps,
           rir: 1,
+          skipAutoAdvance: totalSets > 1, // Skip if there are mini-sets
         })
-        for (const miniReps of result.miniSetReps) {
+        for (let i = 0; i < result.miniSetReps.length; i++) {
+          const isLastStep = i === result.miniSetReps.length - 1
           await logSet({
             weight: exercise.targetWeight,
-            reps: miniReps,
+            reps: result.miniSetReps[i],
             rir: 0,
+            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
           })
         }
       } else if (result.miniSetReps) {
         // Rest-pause: log initial set + mini-sets as individual sets
         for (let i = 0; i < result.miniSetReps.length; i++) {
+          const isLastStep = i === result.miniSetReps.length - 1
           await logSet({
             weight: exercise.targetWeight,
             reps: result.miniSetReps[i],
             rir: i === 0 ? 1 : 0,
+            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
           })
         }
       } else if (result.clusterReps) {
@@ -797,10 +805,12 @@ export function ExerciseCard({
       } else if (result.pyramidWeights && result.pyramidReps) {
         // Top set + backoff: log each set individually
         for (let i = 0; i < result.pyramidWeights.length; i++) {
+          const isLastStep = i === result.pyramidWeights.length - 1
           await logSet({
             weight: result.pyramidWeights[i],
             reps: result.pyramidReps[i],
             rir: i === 0 ? 1 : 2, // Top set has 1 RIR, backoff sets have 2
+            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
           })
         }
       } else {

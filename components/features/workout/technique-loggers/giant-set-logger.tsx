@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dumbbell, Check } from 'lucide-react'
 import type { GiantSetConfig, TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
@@ -17,6 +18,7 @@ export function GiantSetLogger({
   onComplete,
   onCancel,
 }: GiantSetLoggerProps) {
+  const t = useTranslations('workout.techniques.giantSet')
   const [isCompleting, setIsCompleting] = useState(false)
 
   const exerciseCount = config.exerciseIndices.length
@@ -38,17 +40,17 @@ export function GiantSetLogger({
       {/* Header */}
       <div className="flex items-center gap-2 text-amber-400">
         <Dumbbell className="h-5 w-5" />
-        <span className="font-semibold">Giant Set</span>
+        <span className="font-semibold">{t('name')}</span>
         <span className="text-sm text-gray-400">
-          ({exerciseCount} esercizi)
+          ({exerciseCount} {t('exercises')})
         </span>
       </div>
 
       {/* Instructions */}
       <div className="text-sm text-gray-400">
-        Nessun riposo tra gli esercizi!
+        {t('noRestBetweenExercises')}
         <span className="block mt-1 text-amber-300">
-          Rest dopo tutti: {config.restAfterAll}s
+          {t('restAfterAll')} {config.restAfterAll}s
         </span>
       </div>
 
@@ -60,7 +62,7 @@ export function GiantSetLogger({
           className="flex-1"
           size="sm"
         >
-          Cancel
+          {t('cancel')}
         </Button>
         <Button
           onClick={handleComplete}
@@ -69,7 +71,7 @@ export function GiantSetLogger({
           size="sm"
         >
           <Check className="h-4 w-4 mr-1" />
-          Complete
+          {t('complete')}
         </Button>
       </div>
     </div>

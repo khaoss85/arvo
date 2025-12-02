@@ -1156,7 +1156,11 @@
       },
       "superset": {
         "name": "Superset",
-        "description": "Due esercizi eseguiti consecutivamente senza riposo"
+        "description": "Due esercizi eseguiti consecutivamente senza riposo",
+        "noRestBetween": "Vai subito all'esercizio successivo senza riposo!",
+        "restAfterBoth": "Rest dopo entrambi:",
+        "cancel": "Annulla",
+        "complete": "Completa"
       },
       "topSetBackoff": {
         "name": "Top Set + Backoff",
@@ -1178,7 +1182,12 @@
       },
       "giantSet": {
         "name": "Giant Set",
-        "description": "3+ esercizi eseguiti consecutivamente senza riposo"
+        "description": "3+ esercizi eseguiti consecutivamente senza riposo",
+        "noRestBetweenExercises": "Nessun riposo tra gli esercizi!",
+        "restAfterAll": "Rest dopo tutti:",
+        "exercises": "esercizi",
+        "cancel": "Annulla",
+        "complete": "Completa"
       },
       "clusterSet": {
         "name": "Cluster Set",
@@ -1186,7 +1195,29 @@
       },
       "pyramid": {
         "name": "Piramide",
-        "description": "Peso e ripetizioni progressivamente modificati attraverso le serie"
+        "description": "Peso e ripetizioni progressivamente modificati attraverso le serie",
+        "pyramidSet": "Serie Piramide",
+        "ascending": "Ascendente",
+        "descending": "Discendente",
+        "full": "Completa",
+        "lightToHeavy": "Da leggero a pesante",
+        "heavyToLight": "Da pesante a leggero",
+        "upThenDown": "Salita e discesa",
+        "restBetweenSteps": "Rest 90-120s tra gli step.",
+        "peakAtStep": "Picco allo step {step}, poi inverti.",
+        "steps": "step",
+        "step": "Step",
+        "peak": "Picco",
+        "up": "Salita",
+        "down": "Discesa",
+        "weightLabel": "Peso (kg)",
+        "repsLabel": "Reps",
+        "nextStep": "Prossimo Step",
+        "finalStep": "Ultimo Step",
+        "totalReps": "Reps totali:",
+        "someStepsNotLogged": "Alcuni step non registrati",
+        "cancel": "Annulla",
+        "completePyramid": "Completa Piramide"
       },
       "fst7Protocol": {
         "name": "FST-7 Protocol",
@@ -1210,7 +1241,12 @@
       },
       "preExhaust": {
         "name": "Pre-Exhaust",
-        "description": "Abbinamento isolation e compound senza riposo"
+        "description": "Abbinamento isolation e compound senza riposo",
+        "isolation": "Isolation",
+        "compound": "Compound",
+        "restBetween": "Rest tra esercizi:",
+        "cancel": "Annulla",
+        "complete": "Completa"
       },
       "techniqueIndicator": {
         "applied": "Tecnica avanzata applicata",

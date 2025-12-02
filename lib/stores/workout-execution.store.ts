@@ -107,7 +107,7 @@ interface WorkoutExecutionState {
   goToExercise: (index: number) => void
 
   // Set logging
-  logSet: (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => Promise<void>
+  logSet: (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; skipAutoAdvance?: boolean }) => Promise<void>
   editSet: (exerciseIndex: number, setIndex: number, setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; notes?: string }) => Promise<void>
   deleteSet: (exerciseIndex: number, setIndex: number) => Promise<void>
   skipWarmupSets: (reason?: string) => Promise<void>
@@ -449,7 +449,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       },
 
       // Log a set
-      logSet: async (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number }) => {
+      logSet: async (setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; skipAutoAdvance?: boolean }) => {
         const { workoutId, exercises, currentExerciseIndex } = get()
 
         if (!workoutId) {
@@ -538,7 +538,7 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           // Auto-advance to next exercise if all sets are completed
           const newCompletedCount = currentExercise.completedSets.length + 1
 
-          if (newCompletedCount >= totalSets) {
+          if (newCompletedCount >= totalSets && !setData.skipAutoAdvance) {
             // Exercise is now complete - auto-advance to next exercise
             const { currentExerciseIndex, exercises } = get()
             if (currentExerciseIndex < exercises.length - 1) {

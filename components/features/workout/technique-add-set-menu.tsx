@@ -105,7 +105,7 @@ export function TechniqueAddSetMenu({
   onAddSet,
   disabled = false,
 }: TechniqueAddSetMenuProps) {
-  const t = useTranslations('workout.techniqueAddSet')
+  const t = useTranslations('workout.techniques.techniqueAddSet')
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 

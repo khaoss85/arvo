@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Link2, Check } from 'lucide-react'
 import type { SupersetConfig, TechniqueExecutionResult } from '@/lib/types/advanced-techniques'
@@ -17,6 +18,7 @@ export function SupersetLogger({
   onComplete,
   onCancel,
 }: SupersetLoggerProps) {
+  const t = useTranslations('workout.techniques.superset')
   const [isCompleting, setIsCompleting] = useState(false)
 
   const handleComplete = () => {
@@ -36,14 +38,14 @@ export function SupersetLogger({
       {/* Header */}
       <div className="flex items-center gap-2 text-indigo-400">
         <Link2 className="h-5 w-5" />
-        <span className="font-semibold">Superset</span>
+        <span className="font-semibold">{t('name')}</span>
       </div>
 
       {/* Instructions */}
       <div className="text-sm text-gray-400">
-        Vai subito all'esercizio successivo senza riposo!
+        {t('noRestBetween')}
         <span className="block mt-1 text-indigo-300">
-          Rest dopo entrambi: {config.restAfterBoth}s
+          {t('restAfterBoth')} {config.restAfterBoth}s
         </span>
       </div>
 
@@ -55,7 +57,7 @@ export function SupersetLogger({
           className="flex-1"
           size="sm"
         >
-          Cancel
+          {t('cancel')}
         </Button>
         <Button
           onClick={handleComplete}
@@ -64,7 +66,7 @@ export function SupersetLogger({
           size="sm"
         >
           <Check className="h-4 w-4 mr-1" />
-          Complete
+          {t('complete')}
         </Button>
       </div>
     </div>
