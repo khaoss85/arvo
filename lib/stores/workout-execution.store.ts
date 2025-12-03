@@ -467,7 +467,8 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
         const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
         const totalSets = remainingWarmupSets + currentExercise.targetSets
 
-        if (currentExercise.completedSets.length >= totalSets) {
+        // Allow extra sets when logging multi-step techniques (skipAutoAdvance indicates technique logging)
+        if (currentExercise.completedSets.length >= totalSets && !setData.skipAutoAdvance) {
           throw new Error('All sets already completed for this exercise')
         }
 

@@ -755,44 +755,42 @@ export function ExerciseCard({
   const handleTechniqueComplete = async (result: TechniqueExecutionResult) => {
     try {
       // Log sets based on technique type
+      // All technique sets use skipAutoAdvance: true to bypass the "all sets completed" check
+      // and prevent mid-technique auto-advance. We handle auto-advance manually at the end.
       if (result.dropWeights && result.dropReps) {
         // Drop sets: log each drop as a separate set
         for (let i = 0; i < result.dropWeights.length; i++) {
-          const isLastStep = i === result.dropWeights.length - 1
           await logSet({
             weight: result.dropWeights[i],
             reps: result.dropReps[i],
             rir: i === 0 ? 1 : 0, // Top set has 1 RIR, drops are to failure
-            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
+            skipAutoAdvance: true,
           })
         }
       } else if (result.miniSetReps && result.activationReps !== undefined) {
         // Myo-reps: log activation set + mini-sets
-        const totalSets = 1 + result.miniSetReps.length
         await logSet({
           weight: exercise.targetWeight,
           reps: result.activationReps,
           rir: 1,
-          skipAutoAdvance: totalSets > 1, // Skip if there are mini-sets
+          skipAutoAdvance: true,
         })
         for (let i = 0; i < result.miniSetReps.length; i++) {
-          const isLastStep = i === result.miniSetReps.length - 1
           await logSet({
             weight: exercise.targetWeight,
             reps: result.miniSetReps[i],
             rir: 0,
-            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
+            skipAutoAdvance: true,
           })
         }
       } else if (result.miniSetReps) {
         // Rest-pause: log initial set + mini-sets as individual sets
         for (let i = 0; i < result.miniSetReps.length; i++) {
-          const isLastStep = i === result.miniSetReps.length - 1
           await logSet({
             weight: exercise.targetWeight,
             reps: result.miniSetReps[i],
             rir: i === 0 ? 1 : 0,
-            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
+            skipAutoAdvance: true,
           })
         }
       } else if (result.clusterReps) {
@@ -801,16 +799,16 @@ export function ExerciseCard({
           weight: exercise.targetWeight,
           reps: result.clusterReps.reduce((a, b) => a + b, 0),
           rir: 1,
+          skipAutoAdvance: true,
         })
       } else if (result.pyramidWeights && result.pyramidReps) {
         // Top set + backoff: log each set individually
         for (let i = 0; i < result.pyramidWeights.length; i++) {
-          const isLastStep = i === result.pyramidWeights.length - 1
           await logSet({
             weight: result.pyramidWeights[i],
             reps: result.pyramidReps[i],
             rir: i === 0 ? 1 : 2, // Top set has 1 RIR, backoff sets have 2
-            skipAutoAdvance: !isLastStep, // Only last step can auto-advance
+            skipAutoAdvance: true,
           })
         }
       } else {
@@ -819,7 +817,14 @@ export function ExerciseCard({
           weight: exercise.targetWeight,
           reps: exercise.targetReps[0],
           rir: 1,
+          skipAutoAdvance: true,
         })
+      }
+
+      // After logging all technique sets, check if we should auto-advance
+      // This is done here instead of in logSet to ensure all sets are logged first
+      if (exerciseIndex < allExercises.length - 1) {
+        nextExercise()
       }
     } catch (error) {
       console.error('Failed to log technique sets:', error)
