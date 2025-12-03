@@ -129,6 +129,10 @@ const EXERCISE_MUSCLE_MAPPING: Record<
     primary: ['triceps'],
     secondary: [],
   },
+  'skullcrusher': {
+    primary: ['triceps'],
+    secondary: [],
+  },
   'close grip': {
     primary: ['triceps'],
     secondary: ['chest_lower'],
