@@ -14,7 +14,38 @@ import {
   isRestPauseConfig,
   isMyoRepsConfig,
   isClusterSetConfig,
+  isPyramidConfig,
+  isFst7ProtocolConfig,
 } from '@/lib/types/advanced-techniques'
+
+/**
+ * Calculate minimum required sets for a technique based on its configuration
+ */
+function calculateMinSetsForTechnique(config: TechniqueConfig): number {
+  if (isDropSetConfig(config)) {
+    return 1 + config.drops // Initial set + drops
+  }
+  if (isRestPauseConfig(config)) {
+    return 1 + config.miniSets // Initial set + mini-sets
+  }
+  if (isMyoRepsConfig(config)) {
+    return 1 + config.miniSets // Activation set + mini-sets
+  }
+  if (isTopSetBackoffConfig(config)) {
+    return (config.topSets || 1) + config.backoffSets
+  }
+  if (isClusterSetConfig(config)) {
+    return config.clusters
+  }
+  if (isPyramidConfig(config)) {
+    return config.steps
+  }
+  if (isFst7ProtocolConfig(config)) {
+    return 7 // FST-7 always requires 7 sets
+  }
+  // For techniques without specific set requirements (superset, giant_set, etc.)
+  return 1
+}
 
 export interface WarmupSet {
   setNumber: number
@@ -775,15 +806,35 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
       setExerciseTechnique: (exerciseIndex: number, technique: AppliedTechnique | null) => {
         const { exercises } = get()
         const updatedExercises = [...exercises]
+        const exercise = updatedExercises[exerciseIndex]
 
-        if (!updatedExercises[exerciseIndex]) {
+        if (!exercise) {
           console.error('Exercise not found at index:', exerciseIndex)
           return
         }
 
-        updatedExercises[exerciseIndex] = {
-          ...updatedExercises[exerciseIndex],
-          advancedTechnique: technique || undefined
+        if (!technique) {
+          // Removing technique - keep current targetSets (don't restore to original)
+          updatedExercises[exerciseIndex] = {
+            ...exercise,
+            advancedTechnique: undefined
+          }
+        } else {
+          // Applying technique - auto-adjust targetSets if needed
+          const minRequiredSets = calculateMinSetsForTechnique(technique.config)
+
+          // Save original AI recommendation if not already saved
+          const aiRecommendedSets = exercise.aiRecommendedSets ?? exercise.targetSets
+
+          // Only increase sets, never decrease (user might have added extra sets)
+          const newTargetSets = Math.max(exercise.targetSets, minRequiredSets)
+
+          updatedExercises[exerciseIndex] = {
+            ...exercise,
+            advancedTechnique: technique,
+            targetSets: newTargetSets,
+            aiRecommendedSets,
+          }
         }
 
         set({
