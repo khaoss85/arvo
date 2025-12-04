@@ -16,10 +16,21 @@ import {
   Trophy,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useToast } from '@/lib/hooks/use-toast';
+
+type UserRole = 'user' | 'coach' | 'gym_owner' | 'admin';
+
+const ROLE_CONFIG: Record<UserRole, { label: string; color: string }> = {
+  user: { label: 'User', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300' },
+  coach: { label: 'Coach', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  gym_owner: { label: 'Gym Owner', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+  admin: { label: 'Admin', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+};
 
 interface UserEntry {
   id: string;
   email: string;
+  role: UserRole;
   firstName: string | null;
   createdAt: string;
   lastSignInAt: string | null;
@@ -42,6 +53,74 @@ interface Pagination {
   limit: number;
   total: number;
   totalPages: number;
+}
+
+interface RoleSelectorProps {
+  userId: string;
+  currentRole: UserRole;
+  onRoleChange: (newRole: UserRole) => void;
+}
+
+function RoleSelector({ userId, currentRole, onRoleChange }: RoleSelectorProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  const handleRoleChange = async (newRole: UserRole) => {
+    if (newRole === currentRole) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update role');
+      }
+
+      onRoleChange(newRole);
+      toast({
+        title: 'Role updated',
+        description: `User role changed to ${ROLE_CONFIG[newRole].label}`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update role',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <select
+        value={currentRole}
+        onChange={(e) => handleRoleChange(e.target.value as UserRole)}
+        disabled={isUpdating}
+        className={`
+          px-2 py-1 text-xs font-medium rounded-full border-0 cursor-pointer
+          ${ROLE_CONFIG[currentRole].color}
+          ${isUpdating ? 'opacity-50 cursor-wait' : ''}
+          focus:ring-2 focus:ring-primary-500 focus:ring-offset-1
+        `}
+      >
+        {Object.entries(ROLE_CONFIG).map(([role, config]) => (
+          <option key={role} value={role}>
+            {config.label}
+          </option>
+        ))}
+      </select>
+      {isUpdating && (
+        <Loader2 className="absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 animate-spin" />
+      )}
+    </div>
+  );
 }
 
 export function UsersTable() {
@@ -213,6 +292,9 @@ export function UsersTable() {
                 User
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Role
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Approach
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -235,13 +317,13 @@ export function UsersTable() {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center">
+                <td colSpan={8} className="px-6 py-12 text-center">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                   No users found
                 </td>
               </tr>
@@ -264,6 +346,21 @@ export function UsersTable() {
                         </div>
                       </div>
                     </div>
+                  </td>
+
+                  {/* Role */}
+                  <td className="px-6 py-4">
+                    <RoleSelector
+                      userId={user.id}
+                      currentRole={user.role}
+                      onRoleChange={(newRole) => {
+                        setUsers(prev =>
+                          prev.map(u =>
+                            u.id === user.id ? { ...u, role: newRole } : u
+                          )
+                        );
+                      }}
+                    />
                   </td>
 
                   {/* Approach */}

@@ -5,6 +5,7 @@ import { getUserLanguage } from "@/lib/utils/get-user-language"
 import { getTranslations } from "next-intl/server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
 import { TrainingApproachService } from "@/lib/services/training-approach.service"
+import { CoachService } from "@/lib/services/coach.service"
 import { SettingsClientWrapper } from "@/components/features/settings/settings-client-wrapper"
 import { CaloricPhaseSelector } from "@/components/features/settings/caloric-phase-selector"
 import { WeakPointsEditor } from "@/components/features/settings/weak-points-editor"
@@ -20,6 +21,7 @@ import { AudioCoachingSettings } from "@/components/features/settings/audio-coac
 import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
 import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
 import { RestartTourSection } from "@/components/features/settings/restart-tour-section"
+import { CoachCodeInput } from "@/components/features/settings/coach-code-input"
 import { Card } from "@/components/ui/card"
 import type { SportGoal } from "@/lib/types/schemas"
 
@@ -87,6 +89,13 @@ export default async function SettingsPage() {
     )
     : null
 
+  // Get coach name if user has a coach
+  let coachName: string | null = null
+  if (profile.coach_id) {
+    const coachProfile = await CoachService.getProfileServer(profile.coach_id)
+    coachName = coachProfile?.display_name || null
+  }
+
   // Get translations
   const locale = await getUserLanguage(user.id)
   const t = await getTranslations({ locale, namespace: 'settings.page' })
@@ -112,6 +121,17 @@ export default async function SettingsPage() {
       {/* Tour Section */}
       <section id="tour" className="scroll-mt-20">
         <RestartTourSection />
+      </section>
+
+      {/* Coach Code Section */}
+      <section id="coach" className="scroll-mt-20">
+        <Card className="p-4 sm:p-6">
+          <CoachCodeInput
+            userId={user.id}
+            currentCoachId={profile.coach_id ?? null}
+            currentCoachName={coachName}
+          />
+        </Card>
       </section>
 
       {/* Caloric Phase Section */}

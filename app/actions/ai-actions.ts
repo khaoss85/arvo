@@ -424,13 +424,31 @@ export async function calculateProgressionAction(userId: string, input: Progress
       exerciseType: input.exerciseType,
       approachId: input.approachId,
       experienceYears: input.experienceYears,
-      userAge: input.userAge
+      userAge: input.userAge,
+      workoutId: input.workoutId
     },
     timestamp: new Date().toISOString()
   })
 
   try {
     const supabase = await getSupabaseServerClient()
+
+    // Check if AI suggestions are disabled for this workout
+    if (input.workoutId) {
+      const { data: workout } = await supabase
+        .from('workouts')
+        .select('ai_suggestions_enabled')
+        .eq('id', input.workoutId)
+        .single()
+
+      if (workout?.ai_suggestions_enabled === false) {
+        console.log('[calculateProgressionAction] AI suggestions disabled for workout', input.workoutId)
+        return {
+          success: true,
+          suggestion: null
+        }
+      }
+    }
 
     // Fetch user profile for mesocycle context and language preference
     console.log('[calculateProgressionAction] Fetching user profile for mesocycle context')

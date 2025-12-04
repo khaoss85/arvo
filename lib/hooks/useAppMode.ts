@@ -23,15 +23,21 @@ export function useAppMode() {
     }
   }, [mode, setMode, setLoading]);
 
-  const switchToMode = useCallback(async (newMode: "simple" | "advanced") => {
+  const switchToMode = useCallback(async (newMode: AppMode) => {
     if (newMode === mode) return;
 
     setLoading(true);
 
     try {
-      const result = await updateAppModeAction(newMode);
-      if (result.success) {
+      // For coach mode, we don't persist to user_profiles.app_mode
+      // since it's a separate role-based mode
+      if (newMode === "coach") {
         setMode(newMode);
+      } else {
+        const result = await updateAppModeAction(newMode);
+        if (result.success) {
+          setMode(newMode);
+        }
       }
     } catch (error) {
       console.error("Failed to update app mode:", error);
@@ -44,6 +50,7 @@ export function useAppMode() {
     mode,
     isSimpleMode: mode === "simple",
     isAdvancedMode: mode === "advanced",
+    isCoachMode: mode === "coach",
     isLoading,
     toggleMode,
     switchToMode,

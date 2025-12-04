@@ -138,6 +138,7 @@ export function SimpleSetLogger({
             exerciseName: exercise.exerciseName,
             exerciseType: isCompoundExercise ? "compound" : "isolation",
             approachId: workout.approach_id,
+            workoutId: workout.id,
           },
         },
         {

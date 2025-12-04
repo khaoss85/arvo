@@ -2435,6 +2435,17 @@
       },
       "note": "This information helps personalize your training and AI coaching experience"
     },
+    "coachCode": {
+      "title": "Coach Connection",
+      "description": "Connect with your personal trainer using their invite code",
+      "placeholder": "Enter coach code",
+      "connectedTo": "Connected to",
+      "connectedDescription": "Your coach can view your progress and assign personalized workouts",
+      "disconnect": "Disconnect",
+      "confirmDisconnect": "Are you sure you want to disconnect from your coach? You can reconnect later with the same code.",
+      "success": "Successfully connected with your coach!",
+      "instructions": "Ask your coach for their invite code to get connected"
+    },
     "trainingMax": {
       "title": "Training Maxes",
       "description": "Set your Training Max (TM) for powerlifting programs. TM is typically 90% of your true 1RM.",
@@ -5742,6 +5753,8 @@
       "advancedModeDescription": "Full features: AI suggestions, exercise customization, detailed analytics.",
       "coachMode": "Coach",
       "coachModeDescription": "Manage your clients and create personalized workout plans.",
+      "gymAdminMode": "Gym Admin",
+      "gymAdminModeDescription": "Manage your gym, staff, and members.",
       "comingSoon": "Coming Soon",
       "changingMode": "Changing mode..."
     },
@@ -6236,6 +6249,457 @@
           "answer": "We offer a 30-day money-back guarantee. If you're not satisfied with Pro, contact us within 30 days for a full refund, no questions asked."
         }
       }
+    }
+  },
+  "coach": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "templates": "Templates",
+      "workouts": "Workouts",
+      "splits": "Programs",
+      "library": "Library",
+      "invite": "Invite"
+    },
+    "library": {
+      "title": "Library",
+      "tabWorkouts": "Workouts",
+      "tabPrograms": "Programs"
+    },
+    "dashboard": {
+      "title": "Coach Dashboard",
+      "welcome": "Welcome to your coach dashboard",
+      "welcomeBack": "Welcome back, {name}",
+      "inviteCode": "Your Invite Code",
+      "copyCode": "Copy invite code"
+    },
+    "stats": {
+      "activeClients": "Active Clients",
+      "pendingInvites": "Pending Invites",
+      "workoutsThisWeek": "Workouts This Week",
+      "completionRate": "Completion Rate"
+    },
+    "clients": {
+      "title": "Your Clients",
+      "addClient": "Add Client",
+      "noClients": "No clients yet",
+      "noClientsDescription": "Share your invite code to start onboarding clients",
+      "inviteFirst": "Invite Your First Client",
+      "unknownClient": "Unknown Client",
+      "workoutsThisWeek": "{count, plural, =0 {No workouts} =1 {1 workout} other {# workouts}} this week",
+      "lastWorkout": "Last: {date}",
+      "noWorkoutsYet": "No workouts yet"
+    },
+    "clientStatus": {
+      "onTrack": "On Track",
+      "needsAttention": "Needs Attention",
+      "overdue": "Overdue"
+    },
+    "invite": {
+      "title": "Invite Client",
+      "description": "Share your invite code with clients to connect",
+      "codeLabel": "Your Invite Code",
+      "shareInstructions": "Share this code with your client. They can enter it in their app settings to connect with you.",
+      "copySuccess": "Code copied to clipboard!",
+      "searchClient": "Search by email",
+      "searchPlaceholder": "client@email.com",
+      "searchButton": "Search",
+      "noResults": "No user found with this email",
+      "sendInvite": "Send Invite",
+      "inviteSent": "Invite sent successfully!"
+    },
+    "clientDetail": {
+      "overview": "Overview",
+      "workouts": "Workouts",
+      "progress": "Progress",
+      "assignWorkout": "Assign Workout",
+      "autonomyLevel": "Autonomy Level",
+      "notes": "Notes",
+      "memberSince": "Member since",
+      "totalWorkouts": "Total Workouts",
+      "thisWeek": "This Week",
+      "cyclesCompleted": "Cycles Completed",
+      "volume": "Volume",
+      "sets": "Sets",
+      "progressPhotos": "Progress Photos",
+      "profile": "Profile",
+      "age": "Age",
+      "gender": "Gender",
+      "experience": "Experience",
+      "trainingFocus": "Training Focus",
+      "currentSplit": "Current Split",
+      "goal": "Goal",
+      "years": "years",
+      "noNotes": "No notes yet. Add notes about this client's goals, preferences, or special considerations.",
+      "noWorkoutsHeading": "No workouts yet",
+      "assignFirstWorkout": "Assign the first workout to get started",
+      "coachBadge": "Coach",
+      "autonomyMinimal": "Minimal",
+      "autonomyStandard": "Standard",
+      "autonomyFull": "Full",
+      "viewDetails": "View Details"
+    },
+    "assignment": {
+      "title": "Assign Workout",
+      "aiAssisted": "AI-Assisted",
+      "aiAssistedDescription": "Generate a personalized workout using AI based on the client's profile",
+      "fromTemplate": "From Template",
+      "fromTemplateDescription": "Select from your saved workout templates",
+      "custom": "Custom",
+      "customDescription": "Build a workout from scratch with exercise picker",
+      "coachNotes": "Notes for Client",
+      "coachNotesPlaceholder": "Add any instructions or notes for your client...",
+      "generate": "Generate Workout",
+      "assign": "Assign to Client"
+    },
+    "templates": {
+      "title": "Workout Templates",
+      "create": "New Template",
+      "empty": "No templates saved yet",
+      "emptyDescription": "Save workouts as templates to reuse them with multiple clients",
+      "noResults": "No templates found",
+      "noResultsDescription": "Try a different search term",
+      "searchPlaceholder": "Search templates...",
+      "otherTemplates": "Other",
+      "edit": "Edit Template",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this template? This action cannot be undone.",
+      "usageCount": "{count, plural, =0 {Never used} =1 {Used 1 time} other {Used # times}}",
+      "name": "Template Name",
+      "description": "Description",
+      "workoutType": "Workout Type",
+      "multiSelectHint": "(select one or more)",
+      "tags": "Tags",
+      "tagsPlaceholder": "strength, hypertrophy, beginner",
+      "tagsHint": "Separate tags with commas",
+      "exercises": "Exercises",
+      "noExercises": "No exercises in this template",
+      "cancel": "Cancel",
+      "save": "Save Changes"
+    },
+    "scheduling": {
+      "when": "When should this workout be done?",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "dayAfterTomorrow": "Day after",
+      "pickDate": "Pick date",
+      "selectedDate": "Scheduled for"
+    },
+    "customBuilder": {
+      "title": "Custom Workout",
+      "workoutName": "Workout Name",
+      "workoutNamePlaceholder": "e.g., Monday Push",
+      "workoutType": "Workout Type",
+      "exercises": "Exercises",
+      "noExercises": "No exercises added yet",
+      "addFirst": "Add First Exercise",
+      "addExercise": "Add Exercise",
+      "coachNotes": "Notes for Client",
+      "coachNotesPlaceholder": "Add any instructions or notes...",
+      "coachNotesHint": "These notes will be visible to your client",
+      "saveAsTemplate": "Save as Template",
+      "saveAsTemplateHint": "Reuse this workout with other clients",
+      "createWorkout": "Create Workout",
+      "creating": "Creating...",
+      "defaultWorkoutName": "Custom Workout",
+      "sets": "Sets",
+      "reps": "Reps",
+      "weight": "Weight",
+      "rir": "RIR",
+      "rest": "Rest",
+      "notesPlaceholder": "Notes for this exercise...",
+      "generateNotes": "Generate technical cues with AI",
+      "removeExercise": "Remove exercise",
+      "viewAnimation": "View animation",
+      "types": {
+        "push": "Push",
+        "pull": "Pull",
+        "legs": "Legs",
+        "upper": "Upper",
+        "lower": "Lower",
+        "full_body": "Full Body",
+        "chest": "Chest",
+        "back": "Back",
+        "shoulders": "Shoulders",
+        "arms": "Arms",
+        "cardio": "Cardio",
+        "custom": "Custom"
+      },
+      "errors": {
+        "noExercises": "Please add at least one exercise"
+      },
+      "picker": {
+        "title": "Add Exercise",
+        "searchPlaceholder": "Search exercises...",
+        "muscleGroup": "Muscle Group",
+        "equipment": "Equipment",
+        "hint": "Search or use filters to find exercises",
+        "noResults": "No exercises found",
+        "footer": "{count, plural, =0 {No exercises} =1 {1 exercise} other {# exercises}} found"
+      }
+    },
+    "templateBuilder": {
+      "title": "Create Template",
+      "subtitle": "Build a reusable workout template",
+      "templateName": "Template Name",
+      "templateNamePlaceholder": "e.g., Push Day A",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for this template...",
+      "workoutType": "Workout Type",
+      "multiSelectHint": "(select one or more)",
+      "tags": "Tags",
+      "tagPlaceholder": "Add a tag...",
+      "addTag": "Add",
+      "exercises": "Exercises",
+      "noExercises": "No exercises added yet. Add your first exercise to get started.",
+      "addFirst": "Add First Exercise",
+      "addExercise": "Add Exercise",
+      "createTemplate": "Create Template",
+      "creating": "Creating...",
+      "editTitle": "Edit Template",
+      "editSubtitle": "Modify your workout template",
+      "saveTemplate": "Save Template",
+      "saving": "Saving...",
+      "generateWithAI": "Generate with AI",
+      "or": "or",
+      "errors": {
+        "noExercises": "Please add at least one exercise",
+        "noName": "Please enter a template name"
+      },
+      "aiSuggestions": {
+        "title": "AI Suggestions",
+        "description": "Client will see real-time weight and rep suggestions during workout"
+      }
+    },
+    "aiGenerator": {
+      "title": "AI Exercise Generator",
+      "subtitle": "Generate exercises based on your specifications",
+      "muscleFocus": "Muscle Focus",
+      "experienceLevel": "Client Experience Level",
+      "equipmentPreference": "Equipment Preference",
+      "exerciseCount": "Number of Exercises",
+      "intensityTechniques": "Intensity Techniques",
+      "intensityTechniquesHint": "Optional: AI will apply these to suitable exercises",
+      "aiPrompt": "AI Instructions",
+      "aiPromptHint": "Customize how AI generates exercises. Click a preset or write your own.",
+      "aiPromptPlaceholder": "E.g., Focus on lengthened exercises, avoid barbell movements...",
+      "generate": "Generate Exercises",
+      "generating": "Generating...",
+      "cancel": "Cancel",
+      "generated": "{count} exercises generated!",
+      "modeQuestion": "You have {count} existing exercise(s). What would you like to do?",
+      "modeReplace": "Replace All",
+      "modeReplaceDescription": "Remove existing exercises and use only AI-generated ones",
+      "modeAppend": "Add to Existing",
+      "modeAppendDescription": "Keep existing exercises and add the new ones",
+      "levels": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "equipment": {
+        "free_weights": "Free Weights",
+        "machines": "Machines",
+        "cables": "Cables",
+        "bodyweight": "Bodyweight"
+      },
+      "presetLabels": {
+        "compoundFocus": "Compound Focus",
+        "hypertrophy": "Hypertrophy",
+        "strength": "Strength",
+        "timeEfficient": "Time Efficient",
+        "weakPoints": "Weak Points"
+      },
+      "presets": {
+        "compoundFocus": "Prioritize multi-joint compound movements over isolation exercises",
+        "hypertrophy": "Optimize for muscle hypertrophy with moderate rep ranges (8-12) and adequate volume",
+        "strength": "Focus on strength development with lower rep ranges (4-6) and heavier loads",
+        "timeEfficient": "Design a time-efficient workout using supersets and compound movements",
+        "weakPoints": "Include extra volume for lagging muscle groups and weak points"
+      },
+      "errors": {
+        "noFocus": "Please select at least one muscle group",
+        "noEquipment": "Please select at least one equipment type",
+        "generic": "Failed to generate exercises. Please try again."
+      }
+    },
+    "techniques": {
+      "addTechnique": "Add Technique",
+      "removeTechnique": "Remove",
+      "selectTechnique": "Select Technique",
+      "configure": "Configure",
+      "configureDrops": "Number of drops",
+      "configureRest": "Rest (seconds)",
+      "configurePercentage": "Drop percentage",
+      "configureMiniSets": "Number of mini-sets",
+      "configureClusters": "Number of clusters",
+      "configureSteps": "Number of steps",
+      "configureBackoffSets": "Backoff sets",
+      "configureRestSeconds": "Rest (seconds)",
+      "configureActivationReps": "Activation reps",
+      "configureRepsPerCluster": "Reps per cluster",
+      "configureDirection": "Direction",
+      "configureTopSetReps": "Top set reps",
+      "pyramidAscending": "Ascending",
+      "pyramidDescending": "Descending",
+      "pyramidFull": "Full",
+      "apply": "Apply",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "drops": "Number of drops",
+      "miniSets": "Mini-sets",
+      "restSeconds": "Rest (seconds)",
+      "dropPercentage": "Drop percentage",
+      "intraSetRest": "Intra-set rest",
+      "rampSets": "Ramp sets",
+      "backoffSets": "Backoff sets",
+      "topSetRpe": "Top set RPE",
+      "compound": "Compound",
+      "isolation": "Isolation",
+      "drop_set": {
+        "name": "Drop Set",
+        "description": "Reduce weight and continue reps without rest"
+      },
+      "rest_pause": {
+        "name": "Rest-Pause",
+        "description": "Brief pauses to extend set beyond failure"
+      },
+      "myo_reps": {
+        "name": "Myo-Reps",
+        "description": "Activation set followed by mini-sets"
+      },
+      "cluster_set": {
+        "name": "Cluster Set",
+        "description": "Brief rests within set for strength"
+      },
+      "pyramid": {
+        "name": "Pyramid",
+        "description": "Progressive weight changes each set"
+      },
+      "top_set_backoff": {
+        "name": "Top Set + Backoff",
+        "description": "Heavy single followed by volume sets"
+      },
+      "superset": {
+        "name": "Superset",
+        "description": "Two exercises performed consecutively without rest"
+      },
+      "giant_set": {
+        "name": "Giant Set",
+        "description": "Three or more exercises performed consecutively"
+      },
+      "dropSet": {
+        "name": "Drop Set",
+        "description": "Reduce weight and continue reps without rest"
+      },
+      "restPause": {
+        "name": "Rest-Pause",
+        "description": "Brief pauses to extend set beyond failure"
+      },
+      "myoReps": {
+        "name": "Myo-Reps",
+        "description": "Activation set followed by mini-sets"
+      },
+      "clusterSet": {
+        "name": "Cluster Set",
+        "description": "Brief rests within set for strength"
+      },
+      "topSetBackoff": {
+        "name": "Top Set + Backoff",
+        "description": "Heavy single followed by volume sets"
+      }
+    },
+    "workoutRecap": {
+      "backToClient": "Back to {name}",
+      "feedbackSection": "Coach Feedback",
+      "privateNotes": "Private Notes (Coach Only)",
+      "privateNotesPlaceholder": "Notes about this workout visible only to you...",
+      "clientNotes": "Notes for Client (Visible)",
+      "clientNotesPlaceholder": "Feedback or instructions visible to the client...",
+      "editNotes": "Edit",
+      "saveNotes": "Save",
+      "cancelEdit": "Cancel",
+      "notesSaved": "Notes saved",
+      "noNotes": "No notes yet",
+      "assignNewWorkout": "Assign New Workout",
+      "notAssignedByCoach": "This workout was not assigned by a coach"
+    },
+    "splitPlan": {
+      "whatToAssign": "What do you want to assign?",
+      "singleWorkout": "Single Workout",
+      "fullProgram": "Full Program",
+      "programDescription": "Assign a complete training program (split plan) to your client. They will follow the cycle automatically.",
+      "selectOrCreate": "Select or Create Program",
+      "assignProgram": "Assign Program",
+      "aiAssisted": "AI-Assisted",
+      "aiAssistedDescription": "Generate a personalized program based on the client's profile",
+      "fromTemplate": "From Template",
+      "fromTemplateDescription": "Select from your saved program templates",
+      "custom": "Custom",
+      "customDescription": "Build a program from scratch",
+      "comingSoon": "Coming soon",
+      "selectTemplate": "Select Template",
+      "noTemplates": "No program templates yet",
+      "createTemplateFirst": "Create your first program template",
+      "days": "days",
+      "coachNotes": "Notes for Client",
+      "coachNotesPlaceholder": "Add any instructions or notes for your client...",
+      "assigning": "Assigning...",
+      "programInfo": "A program assigns a training cycle to your client. They will follow the sessions in order (Day 1, Day 2, etc.) without needing specific dates."
+    },
+    "splitPlanTemplates": {
+      "title": "Program Templates",
+      "create": "New Template",
+      "empty": "No program templates yet",
+      "emptyDescription": "Create program templates to easily assign training cycles to your clients",
+      "createFirst": "Create Your First Template",
+      "noResults": "No templates found",
+      "noResultsDescription": "Try a different search term",
+      "searchPlaceholder": "Search templates...",
+      "edit": "Edit",
+      "duplicate": "Duplicate",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this template? This action cannot be undone.",
+      "usageCount": "{count, plural, =0 {Never used} =1 {Used 1 time} other {Used # times}}",
+      "session": "session",
+      "sessions": "sessions",
+      "days": "days",
+      "createTitle": "Create Program Template",
+      "editTitle": "Edit Program Template",
+      "templateName": "Template Name",
+      "templateNamePlaceholder": "e.g., Push/Pull/Legs 6-day",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description for this program...",
+      "splitType": "Split Type",
+      "cycleDays": "Cycle Length (days)",
+      "tags": "Tags",
+      "tagsPlaceholder": "strength, hypertrophy, beginner",
+      "tagsHint": "Separate tags with commas",
+      "sessions": "Sessions",
+      "day": "Day",
+      "sessionName": "Session Name",
+      "restDay": "Rest Day",
+      "workoutType": "Workout Type",
+      "selectType": "Select type...",
+      "targetMuscles": "Target Muscles",
+      "addDay": "Add Day",
+      "sessionNotes": "Session Notes",
+      "sessionNotesPlaceholder": "Notes for this session...",
+      "cancel": "Cancel",
+      "save": "Save Changes",
+      "nameRequired": "Template name is required",
+      "sessionsRequired": "At least one session is required",
+      "baseTemplates": "Base Templates",
+      "baseTemplatesDescription": "Ready-to-use templates. Duplicate them to customize.",
+      "myTemplates": "My Templates",
+      "myTemplatesCount": "custom templates",
+      "emptyCustom": "No custom templates yet",
+      "emptyCustomDescription": "Create your own templates or duplicate base templates to customize",
+      "systemBadge": "Base",
+      "duplicateToCustomize": "Duplicate to customize",
+      "showStructure": "Show structure",
+      "hideStructure": "Hide structure",
+      "dayPrefix": "D"
     }
   }
 }

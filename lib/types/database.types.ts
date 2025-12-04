@@ -94,6 +94,203 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_client_relationships: {
+        Row: {
+          accepted_at: string | null
+          client_autonomy: string | null
+          client_id: string
+          coach_id: string
+          created_at: string | null
+          id: string
+          invited_at: string | null
+          notes: string | null
+          status: string | null
+          terminated_at: string | null
+          termination_reason: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_autonomy?: string | null
+          client_id: string
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          invited_at?: string | null
+          notes?: string | null
+          status?: string | null
+          terminated_at?: string | null
+          termination_reason?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_autonomy?: string | null
+          client_id?: string
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          invited_at?: string | null
+          notes?: string | null
+          status?: string | null
+          terminated_at?: string | null
+          termination_reason?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      coach_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          display_name: string
+          gym_id: string | null
+          invite_code: string
+          max_clients: number | null
+          subscription_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          display_name: string
+          gym_id?: string | null
+          invite_code: string
+          max_clients?: number | null
+          subscription_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string
+          gym_id?: string | null
+          invite_code?: string
+          max_clients?: number | null
+          subscription_status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_profiles_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_split_plan_assignments: {
+        Row: {
+          assigned_at: string | null
+          assignment_type: string
+          client_id: string
+          coach_id: string
+          coach_notes: string | null
+          created_at: string | null
+          id: string
+          split_plan_id: string
+          template_id: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          assignment_type: string
+          client_id: string
+          coach_id: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          split_plan_id: string
+          template_id?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          assignment_type?: string
+          client_id?: string
+          coach_id?: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          split_plan_id?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_split_plan_assignments_split_plan_id_fkey"
+            columns: ["split_plan_id"]
+            isOneToOne: false
+            referencedRelation: "split_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_split_plan_assignments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "split_plan_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_workout_assignments: {
+        Row: {
+          approved_at: string | null
+          assigned_at: string | null
+          assignment_type: string | null
+          client_id: string
+          client_notes: string | null
+          coach_id: string
+          coach_notes: string | null
+          created_at: string | null
+          id: string
+          template_id: string | null
+          workout_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          assigned_at?: string | null
+          assignment_type?: string | null
+          client_id: string
+          client_notes?: string | null
+          coach_id: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          template_id?: string | null
+          workout_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          assigned_at?: string | null
+          assignment_type?: string | null
+          client_id?: string
+          client_notes?: string | null
+          coach_id?: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          template_id?: string | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_workout_assignments_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "workout_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_workout_assignments_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_usage: {
         Row: {
           agent_name: string | null
@@ -290,6 +487,270 @@ export type Database = {
           name?: string
           usage_count?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      gym_branding: {
+        Row: {
+          accent_color: string | null
+          app_name: string | null
+          background_color: string | null
+          created_at: string | null
+          custom_domain: string | null
+          custom_texts: Json | null
+          favicon_url: string | null
+          font_family: string | null
+          font_heading: string | null
+          footer_text: Json | null
+          gym_id: string
+          id: string
+          logo_dark_url: string | null
+          logo_url: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          short_name: string | null
+          show_arvo_branding: boolean | null
+          splash_image_url: string | null
+          tagline: Json | null
+          text_color: string | null
+          updated_at: string | null
+          welcome_message: Json | null
+        }
+        Insert: {
+          accent_color?: string | null
+          app_name?: string | null
+          background_color?: string | null
+          created_at?: string | null
+          custom_domain?: string | null
+          custom_texts?: Json | null
+          favicon_url?: string | null
+          font_family?: string | null
+          font_heading?: string | null
+          footer_text?: Json | null
+          gym_id: string
+          id?: string
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          short_name?: string | null
+          show_arvo_branding?: boolean | null
+          splash_image_url?: string | null
+          tagline?: Json | null
+          text_color?: string | null
+          updated_at?: string | null
+          welcome_message?: Json | null
+        }
+        Update: {
+          accent_color?: string | null
+          app_name?: string | null
+          background_color?: string | null
+          created_at?: string | null
+          custom_domain?: string | null
+          custom_texts?: Json | null
+          favicon_url?: string | null
+          font_family?: string | null
+          font_heading?: string | null
+          footer_text?: Json | null
+          gym_id?: string
+          id?: string
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          short_name?: string | null
+          show_arvo_branding?: boolean | null
+          splash_image_url?: string | null
+          tagline?: Json | null
+          text_color?: string | null
+          updated_at?: string | null
+          welcome_message?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_branding_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: true
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_members: {
+        Row: {
+          assigned_coach_id: string | null
+          created_at: string | null
+          gym_id: string
+          id: string
+          internal_notes: string | null
+          last_active_at: string | null
+          membership_expires_at: string | null
+          membership_type: string | null
+          registered_at: string | null
+          registration_source: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          assigned_coach_id?: string | null
+          created_at?: string | null
+          gym_id: string
+          id?: string
+          internal_notes?: string | null
+          last_active_at?: string | null
+          membership_expires_at?: string | null
+          membership_type?: string | null
+          registered_at?: string | null
+          registration_source?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          assigned_coach_id?: string | null
+          created_at?: string | null
+          gym_id?: string
+          id?: string
+          internal_notes?: string | null
+          last_active_at?: string | null
+          membership_expires_at?: string | null
+          membership_type?: string | null
+          registered_at?: string | null
+          registration_source?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_members_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_staff: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          gym_id: string
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          notes: string | null
+          permissions: Json | null
+          staff_role: string
+          status: string
+          terminated_at: string | null
+          termination_reason: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          gym_id: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          notes?: string | null
+          permissions?: Json | null
+          staff_role?: string
+          status?: string
+          terminated_at?: string | null
+          termination_reason?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          gym_id?: string
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          notes?: string | null
+          permissions?: Json | null
+          staff_role?: string
+          status?: string
+          terminated_at?: string | null
+          termination_reason?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_staff_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gyms: {
+        Row: {
+          address: Json | null
+          created_at: string | null
+          description: string | null
+          email: string | null
+          id: string
+          invite_code: string
+          max_members: number | null
+          max_staff: number | null
+          name: string
+          owner_id: string
+          phone: string | null
+          settings: Json | null
+          slug: string
+          subscription_plan: string | null
+          subscription_status: string
+          trial_ends_at: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: Json | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          invite_code: string
+          max_members?: number | null
+          max_staff?: number | null
+          name: string
+          owner_id: string
+          phone?: string | null
+          settings?: Json | null
+          slug: string
+          subscription_plan?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: Json | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          invite_code?: string
+          max_members?: number | null
+          max_staff?: number | null
+          name?: string
+          owner_id?: string
+          phone?: string | null
+          settings?: Json | null
+          slug?: string
+          subscription_plan?: string | null
+          subscription_status?: string
+          trial_ends_at?: string | null
+          updated_at?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -529,6 +990,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      split_plan_templates: {
+        Row: {
+          coach_id: string | null
+          created_at: string | null
+          cycle_days: number
+          description: string | null
+          frequency_map: Json | null
+          id: string
+          is_public: boolean | null
+          is_system: boolean | null
+          name: string
+          sessions: Json
+          split_type: string
+          tags: string[] | null
+          updated_at: string | null
+          usage_count: number | null
+          volume_distribution: Json | null
+        }
+        Insert: {
+          coach_id?: string | null
+          created_at?: string | null
+          cycle_days: number
+          description?: string | null
+          frequency_map?: Json | null
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          name: string
+          sessions: Json
+          split_type: string
+          tags?: string[] | null
+          updated_at?: string | null
+          usage_count?: number | null
+          volume_distribution?: Json | null
+        }
+        Update: {
+          coach_id?: string | null
+          created_at?: string | null
+          cycle_days?: number
+          description?: string | null
+          frequency_map?: Json | null
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          name?: string
+          sessions?: Json
+          split_type?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          usage_count?: number | null
+          volume_distribution?: Json | null
+        }
+        Relationships: []
       }
       split_plans: {
         Row: {
@@ -879,6 +1394,7 @@ export type Database = {
           caloric_intake_kcal: number | null
           caloric_phase: string | null
           caloric_phase_start_date: string | null
+          coach_id: string | null
           created_at: string | null
           current_cycle_day: number | null
           current_cycle_start_date: string | null
@@ -891,6 +1407,7 @@ export type Database = {
           experience_years: number | null
           first_name: string | null
           gender: string
+          gym_id: string | null
           height: number | null
           injuries_notes: string | null
           last_cycle_completed_at: string | null
@@ -922,6 +1439,7 @@ export type Database = {
           caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
+          coach_id?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_cycle_start_date?: string | null
@@ -936,6 +1454,7 @@ export type Database = {
           experience_years?: number | null
           first_name?: string | null
           gender?: string
+          gym_id?: string | null
           height?: number | null
           injuries_notes?: string | null
           last_cycle_completed_at?: string | null
@@ -967,6 +1486,7 @@ export type Database = {
           caloric_intake_kcal?: number | null
           caloric_phase?: string | null
           caloric_phase_start_date?: string | null
+          coach_id?: string | null
           created_at?: string | null
           current_cycle_day?: number | null
           current_cycle_start_date?: string | null
@@ -981,6 +1501,7 @@ export type Database = {
           experience_years?: number | null
           first_name?: string | null
           gender?: string
+          gym_id?: string | null
           height?: number | null
           injuries_notes?: string | null
           last_cycle_completed_at?: string | null
@@ -1012,6 +1533,13 @@ export type Database = {
             columns: ["approach_id"]
             isOneToOne: false
             referencedRelation: "training_approaches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
             referencedColumns: ["id"]
           },
           {
@@ -1270,11 +1798,62 @@ export type Database = {
           },
         ]
       }
+      workout_templates: {
+        Row: {
+          ai_suggestions_enabled: boolean | null
+          coach_id: string
+          created_at: string | null
+          description: string | null
+          exercises: Json
+          id: string
+          is_public: boolean | null
+          name: string
+          tags: string[] | null
+          target_muscle_groups: string[] | null
+          updated_at: string | null
+          usage_count: number | null
+          workout_type: string[] | null
+        }
+        Insert: {
+          ai_suggestions_enabled?: boolean | null
+          coach_id: string
+          created_at?: string | null
+          description?: string | null
+          exercises: Json
+          id?: string
+          is_public?: boolean | null
+          name: string
+          tags?: string[] | null
+          target_muscle_groups?: string[] | null
+          updated_at?: string | null
+          usage_count?: number | null
+          workout_type?: string[] | null
+        }
+        Update: {
+          ai_suggestions_enabled?: boolean | null
+          coach_id?: string
+          created_at?: string | null
+          description?: string | null
+          exercises?: Json
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          tags?: string[] | null
+          target_muscle_groups?: string[] | null
+          updated_at?: string | null
+          usage_count?: number | null
+          workout_type?: string[] | null
+        }
+        Relationships: []
+      }
       workouts: {
         Row: {
           ai_response_id: string | null
+          ai_suggestions_enabled: boolean | null
           approach_id: string | null
+          assigned_by_coach_id: string | null
           audio_scripts: Json | null
+          coach_locked: boolean | null
           completed_at: string | null
           created_at: string | null
           cycle_day: number | null
@@ -1301,8 +1880,11 @@ export type Database = {
         }
         Insert: {
           ai_response_id?: string | null
+          ai_suggestions_enabled?: boolean | null
           approach_id?: string | null
+          assigned_by_coach_id?: string | null
           audio_scripts?: Json | null
+          coach_locked?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           cycle_day?: number | null
@@ -1329,8 +1911,11 @@ export type Database = {
         }
         Update: {
           ai_response_id?: string | null
+          ai_suggestions_enabled?: boolean | null
           approach_id?: string | null
+          assigned_by_coach_id?: string | null
           audio_scripts?: Json | null
+          coach_locked?: boolean | null
           completed_at?: string | null
           created_at?: string | null
           cycle_day?: number | null
@@ -1416,6 +2001,22 @@ export type Database = {
         }
         Returns: Json
       }
+      create_gym_with_branding: {
+        Args: {
+          p_email?: string
+          p_logo_url?: string
+          p_name: string
+          p_owner_id: string
+          p_primary_color?: string
+        }
+        Returns: string
+      }
+      generate_coach_invite_code: {
+        Args: { coach_name: string }
+        Returns: string
+      }
+      generate_gym_invite_code: { Args: never; Returns: string }
+      generate_gym_slug: { Args: { gym_name: string }; Returns: string }
       generate_referral_code: { Args: never; Returns: string }
       get_active_insights: {
         Args: { p_min_relevance?: number; p_user_id: string }
@@ -1445,6 +2046,24 @@ export type Database = {
           title: string
         }[]
       }
+      get_gym_branding_by_slug: {
+        Args: { p_slug: string }
+        Returns: {
+          accent_color: string
+          app_name: string
+          font_family: string
+          gym_description: string
+          gym_id: string
+          gym_name: string
+          logo_dark_url: string
+          logo_url: string
+          primary_color: string
+          secondary_color: string
+          splash_image_url: string
+          tagline: Json
+          welcome_message: Json
+        }[]
+      }
       get_last_split_modification: {
         Args: { p_user_id: string }
         Returns: {
@@ -1467,6 +2086,17 @@ export type Database = {
           split_plan_id: string
           user_override: boolean
           user_reason: string
+        }[]
+      }
+      get_user_gym_context: {
+        Args: { p_user_id: string }
+        Returns: {
+          gym_id: string
+          gym_name: string
+          gym_slug: string
+          is_member: boolean
+          is_owner: boolean
+          is_staff: boolean
         }[]
       }
       get_user_onboarding_stats: { Args: { p_user_id: string }; Returns: Json }
@@ -1555,12 +2185,54 @@ export type Database = {
           user_id: string
         }[]
       }
+      gym_can_add_member: { Args: { p_gym_id: string }; Returns: boolean }
+      gym_can_add_staff: { Args: { p_gym_id: string }; Returns: boolean }
       increment_share_view_count: {
         Args: { token: string }
         Returns: undefined
       }
+      increment_split_plan_template_usage: {
+        Args: { template_uuid: string }
+        Returns: undefined
+      }
+      increment_template_usage: {
+        Args: { template_id: string }
+        Returns: undefined
+      }
       is_current_user_admin: { Args: never; Returns: boolean }
+      is_gym_member: {
+        Args: { p_gym_id: string; p_user_id?: string }
+        Returns: boolean
+      }
+      is_gym_owner: {
+        Args: { p_gym_id: string; p_user_id?: string }
+        Returns: boolean
+      }
+      is_gym_staff: {
+        Args: { p_gym_id: string; p_user_id?: string }
+        Returns: boolean
+      }
+      is_gym_staff_with_member_permission: {
+        Args: { p_gym_id: string; p_user_id?: string }
+        Returns: boolean
+      }
+      is_member_of_owned_gym: {
+        Args: { p_member_user_id: string; p_owner_user_id?: string }
+        Returns: boolean
+      }
+      is_member_of_staff_gym: {
+        Args: { p_member_user_id: string; p_staff_user_id?: string }
+        Returns: boolean
+      }
       refresh_all_queue_positions: { Args: never; Returns: undefined }
+      register_gym_member_by_code: {
+        Args: { p_invite_code: string; p_user_id: string }
+        Returns: string
+      }
+      register_gym_member_by_slug: {
+        Args: { p_slug: string; p_user_id: string }
+        Returns: string
+      }
       update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
     Enums: {

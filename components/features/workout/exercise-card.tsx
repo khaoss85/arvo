@@ -532,7 +532,8 @@ export function ExerciseCard({
               : 'isolation',
             approachId,
             experienceYears: userExperienceYears,
-            userAge: userAge
+            userAge: userAge,
+            workoutId: workout?.id
           }
         },
         {
@@ -557,7 +558,8 @@ export function ExerciseCard({
     userExperienceYears,
     userAge,
     setAISuggestion,
-    setShowSuggestion
+    setShowSuggestion,
+    workout?.id
   ])
 
   const handleValidateAddSet = async (): Promise<ModificationValidationOutput | null> => {

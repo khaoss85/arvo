@@ -1,14 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Sparkles, Zap, Check, Users, X } from "lucide-react";
+import { Sparkles, Zap, Check, Users, X, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAppMode } from "@/lib/hooks/useAppMode";
+import { useUserRole } from "@/lib/hooks/useUserRole";
 import { useRouter } from "next/navigation";
+import type { AppMode } from "@/lib/stores/app-mode.store";
 
 interface ModeSelectionDrawerProps {
   open: boolean;
@@ -18,6 +20,7 @@ interface ModeSelectionDrawerProps {
 export function ModeSelectionDrawer({ open, onOpenChange }: ModeSelectionDrawerProps) {
   const t = useTranslations("simpleMode.settings");
   const { mode, isLoading, switchToMode } = useAppMode();
+  const { canAccessCoachMode, canAccessGymAdminMode, isLoading: isRoleLoading } = useUserRole();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -26,7 +29,7 @@ export function ModeSelectionDrawer({ open, onOpenChange }: ModeSelectionDrawerP
     setMounted(true);
   }, []);
 
-  const modes = [
+  const modes = useMemo(() => [
     {
       id: "simple" as const,
       name: t("trainingMode"),
@@ -52,12 +55,32 @@ export function ModeSelectionDrawer({ open, onOpenChange }: ModeSelectionDrawerP
       icon: Users,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
-      disabled: true,
-      badge: t("comingSoon"),
+      // Coach mode is enabled for users with coach or admin role
+      disabled: !canAccessCoachMode,
+      badge: canAccessCoachMode ? undefined : t("comingSoon"),
     },
-  ];
+    {
+      id: "gym-admin" as const,
+      name: t("gymAdminMode"),
+      description: t("gymAdminModeDescription"),
+      icon: Building2,
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      // Gym admin is enabled for users with gym_owner or admin role
+      disabled: !canAccessGymAdminMode,
+      badge: canAccessGymAdminMode ? undefined : t("comingSoon"),
+      isExternal: true, // This is not an app mode, it's a separate section
+    },
+  ], [t, canAccessCoachMode, canAccessGymAdminMode]);
 
-  const handleModeSelect = async (newMode: "simple" | "advanced") => {
+  const handleModeSelect = async (newMode: AppMode | "gym-admin") => {
+    // Gym admin is a separate section, not a mode switch
+    if (newMode === "gym-admin") {
+      onOpenChange(false);
+      router.push("/gym-admin");
+      return;
+    }
+
     if (newMode === mode) {
       onOpenChange(false);
       return;
@@ -69,6 +92,8 @@ export function ModeSelectionDrawer({ open, onOpenChange }: ModeSelectionDrawerP
     // Redirect to appropriate dashboard after mode switch
     if (newMode === "simple") {
       router.push("/simple");
+    } else if (newMode === "coach") {
+      router.push("/coach");
     } else {
       router.push("/dashboard");
     }
@@ -124,8 +149,8 @@ export function ModeSelectionDrawer({ open, onOpenChange }: ModeSelectionDrawerP
                 return (
                   <motion.button
                     key={modeOption.id}
-                    onClick={() => !isDisabled && handleModeSelect(modeOption.id as "simple" | "advanced")}
-                    disabled={isDisabled || isLoading}
+                    onClick={() => !isDisabled && handleModeSelect(modeOption.id)}
+                    disabled={isDisabled || isLoading || isRoleLoading}
                     whileTap={!isDisabled ? { scale: 0.98 } : undefined}
                     className={cn(
                       "w-full flex items-start gap-4 p-4 rounded-xl text-left transition-all",

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { isAdmin } from '@/lib/utils/auth.server'
 
@@ -9,7 +8,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden - Admin access required' }, { status: 403 })
   }
 
-  const supabase = await getSupabaseServerClient()
   const adminSupabase = getSupabaseAdmin()
   const { searchParams } = new URL(request.url)
 
@@ -22,12 +20,13 @@ export async function GET(request: NextRequest) {
   const dateRange = searchParams.get('dateRange') // '7d' | '30d' | '90d'
 
   try {
-    // Build base query for users
-    let query = supabase
+    // Build base query for users (use admin client to bypass RLS)
+    let query = adminSupabase
       .from('users')
       .select(`
         id,
         email,
+        role,
         created_at,
         user_profiles (
           first_name,
@@ -67,23 +66,23 @@ export async function GET(request: NextRequest) {
 
     const userIds = users.map(u => u.id)
 
-    // Batch enrichment queries (parallel)
+    // Batch enrichment queries (parallel) - use admin client to bypass RLS
     const [approaches, workoutCounts, creditUsage, milestones, authData] = await Promise.all([
       // Get all approaches
-      supabase.from('training_approaches').select('id, name'),
+      adminSupabase.from('training_approaches').select('id, name'),
 
       // Get workout counts per user
-      supabase.from('workouts')
+      adminSupabase.from('workouts')
         .select('user_id, status')
         .in('user_id', userIds),
 
       // Get credit usage per user
-      supabase.from('credit_usage')
+      adminSupabase.from('credit_usage')
         .select('user_id, credits_used')
         .in('user_id', userIds),
 
       // Get milestones per user
-      supabase.from('user_milestones')
+      adminSupabase.from('user_milestones')
         .select('user_id, milestone_type')
         .in('user_id', userIds),
 
@@ -116,6 +115,7 @@ export async function GET(request: NextRequest) {
       return {
         id: user.id,
         email: user.email,
+        role: user.role || 'user',
         firstName: profile?.first_name || null,
         createdAt: user.created_at,
         lastSignInAt: authInfo?.last_sign_in_at || null,

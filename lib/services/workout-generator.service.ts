@@ -14,7 +14,8 @@ import {
   type WorkoutType,
   type SplitType
 } from './muscle-groups.service'
-import type { Workout, InsertWorkout, WorkoutStatus } from '@/lib/types/schemas'
+import type { Workout, InsertWorkout, WorkoutStatus, AssignmentType } from '@/lib/types/schemas'
+import { CoachService } from './coach.service'
 import { normalizeExercise, getExerciseName } from '@/lib/utils/exercise-helpers'
 
 export class WorkoutGeneratorService {
@@ -22,11 +23,15 @@ export class WorkoutGeneratorService {
    * Generate AI-powered workout for user
    * Supports both split-based and rotation-based generation
    *
-   * @param userId - User ID
+   * @param userId - User ID (can be coach ID when generating for client)
    * @param options - Optional configuration
    * @param options.targetCycleDay - Generate for specific cycle day (for pre-generation)
    * @param options.status - Workout status (default: 'ready')
    * @param options.onProgress - Progress callback for async generation
+   * @param options.coachId - Coach ID when generating for a client (coach mode)
+   * @param options.targetUserId - Target client user ID (required when coachId is set)
+   * @param options.coachNotes - Notes from coach visible to client
+   * @param options.assignmentType - Type of assignment (ai_generated, template, custom)
    */
   static async generateWorkout(
     userId: string,
@@ -35,6 +40,12 @@ export class WorkoutGeneratorService {
       status?: WorkoutStatus
       onProgress?: (phase: string, percent: number, message: string) => Promise<void>
       supabaseClient?: any
+      // Coach mode options
+      coachId?: string
+      targetUserId?: string
+      coachNotes?: string
+      assignmentType?: AssignmentType
+      plannedAt?: string // YYYY-MM-DD format
     }
   ): Promise<{
     workout: Workout
@@ -49,7 +60,20 @@ export class WorkoutGeneratorService {
     }>
   }> {
     // Extract progress callback and custom client
-    const { onProgress, supabaseClient } = options || {}
+    const { onProgress, supabaseClient, coachId, targetUserId, coachNotes, assignmentType, plannedAt } = options || {}
+
+    // Determine the actual target user for workout generation
+    // In coach mode, userId may be the coach, and targetUserId is the actual client
+    const effectiveUserId = coachId && targetUserId ? targetUserId : userId
+    const isCoachMode = !!coachId && !!targetUserId
+
+    if (isCoachMode) {
+      console.log('[WorkoutGenerator] Coach mode active', {
+        coachId,
+        targetUserId: effectiveUserId,
+        assignmentType: assignmentType || 'ai_generated'
+      })
+    }
 
     // Use provided client (for background workers) or default to server client (for API routes)
     let supabase
@@ -67,8 +91,8 @@ export class WorkoutGeneratorService {
     // Progress: Starting
     await onProgress?.('profile', 5, 'Loading user profile and preferences')
 
-    // Get user profile (use admin client if provided to bypass RLS in background workers)
-    const profile = await UserProfileService.getByUserIdServer(userId, supabase)
+    // Get user profile for the target user (client in coach mode, or the user themselves)
+    const profile = await UserProfileService.getByUserIdServer(effectiveUserId, supabase)
     if (!profile) {
       throw new Error('User profile not found. Please create a profile first.')
     }
@@ -80,8 +104,8 @@ export class WorkoutGeneratorService {
     // Progress: Loading history
     await onProgress?.('profile', 15, 'Loading recent workout history')
 
-    // Get recent workouts
-    const recentWorkouts = await WorkoutService.getCompleted(userId, 3)
+    // Get recent workouts for the target user
+    const recentWorkouts = await WorkoutService.getCompleted(effectiveUserId, 3)
 
     let workoutType: WorkoutType
     let splitPlanId: string | null = null
@@ -132,7 +156,7 @@ export class WorkoutGeneratorService {
       }
     } else {
       // Check if user has an active split plan (for regular generation)
-      const nextWorkoutData = await SplitPlanService.getNextWorkoutServer(userId)
+      const nextWorkoutData = await SplitPlanService.getNextWorkoutServer(effectiveUserId)
 
       if (nextWorkoutData) {
         // SPLIT-BASED GENERATION
@@ -175,14 +199,14 @@ export class WorkoutGeneratorService {
     // Fetch active insights (includes proactive physical limitations from Settings)
     const { data: activeInsights } = await supabase
       .rpc('get_active_insights', {
-        p_user_id: userId,
+        p_user_id: effectiveUserId,
         p_min_relevance: 0.3
       })
 
     // Fetch active memories (learned user preferences and patterns)
     const { data: activeMemories } = await supabase
       .rpc('get_active_memories', {
-        p_user_id: userId,
+        p_user_id: effectiveUserId,
         p_min_confidence: 0.6
       })
 
@@ -217,7 +241,7 @@ export class WorkoutGeneratorService {
       // Only calculate cycle progress if user has an active split plan
       if (profile.active_split_plan_id) {
         const cycleStats = await CycleStatsService.calculateCycleStats(
-          userId,
+          effectiveUserId,
           profile.active_split_plan_id
         )
 
@@ -274,7 +298,7 @@ export class WorkoutGeneratorService {
 
     // Calculate exercise stagnation/plateau data for AI rotation recommendations
     const exerciseHistoryContext = await this.getExerciseStagnationData(
-      userId,
+      effectiveUserId,
       recentExerciseNames,
       supabase
     )
@@ -288,7 +312,7 @@ export class WorkoutGeneratorService {
         recentExercises: recentExerciseNames,
         exerciseHistoryContext, // NEW: Stagnation/plateau data for rotation recommendations
         approachId: profile.approach_id,
-        userId,
+        userId: effectiveUserId,
         experienceYears: profile.experience_years,
         userAge: profile.age,
         userGender: profile.gender,
@@ -332,13 +356,13 @@ export class WorkoutGeneratorService {
     // Get exercise history and calculate initial targets
     const exercisesWithTargets = await Promise.all(
       selection.exercises.map(async (exercise) => {
-        const history = await this.getExerciseHistory(userId, exercise.name)
+        const history = await this.getExerciseHistory(effectiveUserId, exercise.name)
 
         let targetWeight = 0
         let targetReps = exercise.repRange[0]
 
         // First, check for learned weights from recent completed workouts
-        const learnedWeight = await this.getLearnedTargetWeight(userId, exercise.name, supabase)
+        const learnedWeight = await this.getLearnedTargetWeight(effectiveUserId, exercise.name, supabase)
 
         if (history.length > 0) {
           // Calculate progressive overload based on actual performance
@@ -446,10 +470,10 @@ export class WorkoutGeneratorService {
     const workoutName = generateWorkoutName(workoutType, targetMuscleGroups)
 
     // Create workout
-    const workoutData: InsertWorkout = {
-      user_id: userId,
+    const workoutData: InsertWorkout & { assigned_by_coach_id?: string | null; coach_locked?: boolean } = {
+      user_id: effectiveUserId,
       approach_id: profile.approach_id,
-      planned_at: new Date().toISOString().split('T')[0],
+      planned_at: plannedAt || new Date().toISOString().split('T')[0],
       exercises: exercisesWithTargets as any,
       started_at: null,
       completed_at: null,
@@ -469,14 +493,42 @@ export class WorkoutGeneratorService {
       // Workout status
       status: options?.status || 'ready',
       // GPT-5 reasoning persistence
-      ai_response_id: selection.responseId || null
+      ai_response_id: selection.responseId || null,
+      // Coach mode fields
+      assigned_by_coach_id: isCoachMode ? coachId : null,
+      coach_locked: isCoachMode ? false : undefined // Coach can set this to true later if needed
     }
 
     // Progress: Finalizing
     await onProgress?.('finalize', 95, 'Finalizing workout details')
 
     // Create workout using admin client (for background workers) or server client (for API routes)
-    const workout = await WorkoutService.createServer(workoutData, supabase)
+    const workout = await WorkoutService.createServer(workoutData as InsertWorkout, supabase)
+
+    // If in coach mode, create assignment record
+    if (isCoachMode && coachId) {
+      try {
+        await CoachService.createAssignment({
+          workout_id: workout.id,
+          coach_id: coachId,
+          client_id: effectiveUserId,
+          assignment_type: assignmentType || 'ai_generated',
+          template_id: null,
+          coach_notes: coachNotes || null,
+          client_notes: null,
+          assigned_at: new Date().toISOString(),
+          approved_at: null
+        })
+        console.log('[WorkoutGenerator] Coach assignment created', {
+          workoutId: workout.id,
+          coachId,
+          clientId: effectiveUserId
+        })
+      } catch (assignmentError) {
+        // Log but don't fail - workout was already created
+        console.error('[WorkoutGenerator] Failed to create coach assignment:', assignmentError)
+      }
+    }
 
     // Progress: Complete!
     await onProgress?.('complete', 100, 'Workout ready!')
@@ -487,7 +539,7 @@ export class WorkoutGeneratorService {
       workout.id,
       {
         exercises: exercisesWithTargets,
-        userId,
+        userId: effectiveUserId,
         approachId: profile.approach_id,
         userName: profile.first_name || undefined, // User's first name for personalized audio coaching
         experienceYears: profile.experience_years || undefined,

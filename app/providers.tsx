@@ -12,6 +12,7 @@ import { useLocaleStore } from "@/lib/stores/locale.store";
 import { ExerciseDBService } from "@/lib/services/exercisedb.service";
 import { Toaster } from "@/components/ui/toast";
 import { HtmlLangWrapper } from "@/components/html-lang-wrapper";
+import { GymBrandingProvider } from "@/components/providers/gym-branding-provider";
 import { detectUserLocale } from "@/lib/utils/locale";
 import { updatePreferredLanguage } from "@/app/actions/user-actions";
 import enMessages from "@/messages/en.json";
@@ -94,7 +95,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <GymBrandingProvider>
+            {children}
+          </GymBrandingProvider>
           <Toaster />
         </ThemeProvider>
       </NextIntlClientProvider>

@@ -4,6 +4,7 @@ import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { WorkoutService } from '@/lib/services/workout.service'
 import { SplitPlanService } from '@/lib/services/split-plan.service'
 import { UserProfileService } from '@/lib/services/user-profile.service'
+import { CoachService } from '@/lib/services/coach.service'
 import { RefineWorkoutPage } from '@/components/features/workout/refine-workout-page'
 
 export default async function WorkoutReviewPage({ params }: { params: { id: string } }) {
@@ -29,8 +30,21 @@ export default async function WorkoutReviewPage({ params }: { params: { id: stri
     redirect('/dashboard')
   }
 
-  // Verify ownership
-  if (workout.user_id !== user.id) {
+  // Verify ownership or coach access
+  const isOwner = workout.user_id === user.id
+  let isCoachOfClient = false
+
+  if (!isOwner && workout.user_id) {
+    // Check if current user is the coach of the workout owner
+    const relationship = await CoachService.getClientRelationshipServer(
+      user.id,
+      workout.user_id,
+      supabase
+    )
+    isCoachOfClient = relationship?.status === 'active'
+  }
+
+  if (!isOwner && !isCoachOfClient) {
     redirect('/dashboard')
   }
 

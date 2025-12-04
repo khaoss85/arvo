@@ -112,6 +112,8 @@ export const userProfileSchema = z.object({
   app_mode: z.enum(['simple', 'advanced']).optional().default('advanced'),
   // Sport-specific goal for approach recommendations
   sport_goal: sportGoalSchema.nullable().optional().default('none'),
+  // Coach relationship (if user is assigned to a coach)
+  coach_id: z.string().uuid().nullable().optional(),
 });
 
 export const insertUserProfileSchema = userProfileSchema;
@@ -272,6 +274,14 @@ export const workoutSchema = z.object({
   audio_scripts: z.record(z.string(), z.unknown()).nullable().optional(),
   // GPT-5 reasoning persistence for exercise selection
   ai_response_id: z.string().nullable().optional(),
+  // Timestamps
+  created_at: z.string().datetime().nullable().optional(),
+  updated_at: z.string().datetime().nullable().optional(),
+  // Coach assignment fields
+  assigned_by_coach_id: z.string().uuid().nullable().optional(),
+  coach_locked: z.boolean().nullable().optional(),
+  // AI suggestions toggle (can be disabled by coach)
+  ai_suggestions_enabled: z.boolean().default(true).nullable().optional(),
 });
 
 export const insertWorkoutSchema = workoutSchema.omit({ id: true }).extend({
@@ -350,3 +360,227 @@ export type UpdateCaloricPhaseHistory = z.infer<typeof updateCaloricPhaseHistory
 export type CycleCompletion = z.infer<typeof cycleCompletionSchema>;
 export type InsertCycleCompletion = z.infer<typeof insertCycleCompletionSchema>;
 export type UpdateCycleCompletion = z.infer<typeof updateCycleCompletionSchema>;
+
+// =====================================================
+// Coach Mode Schemas
+// =====================================================
+
+// Coach Profile Schema
+export const coachProfileSchema = z.object({
+  user_id: z.string().uuid(),
+  display_name: z.string().min(1, "Display name is required"),
+  bio: z.string().nullable(),
+  invite_code: z.string().min(6, "Invite code is required"),
+  max_clients: z.number().int().min(1).max(100).default(30),
+  subscription_status: z.enum(['trial', 'active', 'inactive']).default('trial'),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachProfileSchema = coachProfileSchema.omit({ created_at: true, updated_at: true }).extend({
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCoachProfileSchema = insertCoachProfileSchema.partial().required({ user_id: true });
+
+// Client Autonomy Level
+export const clientAutonomySchema = z.enum(['minimal', 'standard', 'full']);
+export type ClientAutonomy = z.infer<typeof clientAutonomySchema>;
+
+// Relationship Status
+export const relationshipStatusSchema = z.enum(['pending', 'active', 'paused', 'terminated']);
+export type RelationshipStatus = z.infer<typeof relationshipStatusSchema>;
+
+// Coach-Client Relationship Schema
+export const coachClientRelationshipSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  status: relationshipStatusSchema.default('pending'),
+  client_autonomy: clientAutonomySchema.default('standard'),
+  notes: z.string().nullable(),
+  invited_at: z.string().datetime().nullable(),
+  accepted_at: z.string().datetime().nullable(),
+  terminated_at: z.string().datetime().nullable(),
+  termination_reason: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachClientRelationshipSchema = coachClientRelationshipSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCoachClientRelationshipSchema = insertCoachClientRelationshipSchema.partial();
+
+// Workout Template Schema
+export const workoutTemplateSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  name: z.string().min(1, "Template name is required"),
+  description: z.string().nullable(),
+  workout_type: z.array(z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms'])).nullable(),
+  exercises: z.array(z.record(z.string(), z.unknown())),
+  target_muscle_groups: z.array(z.string()).nullable(),
+  tags: z.array(z.string()).nullable(),
+  is_public: z.boolean().default(false),
+  usage_count: z.number().int().min(0).default(0),
+  ai_suggestions_enabled: z.boolean().default(true),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertWorkoutTemplateSchema = workoutTemplateSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  usage_count: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+  usage_count: z.number().int().min(0).optional(),
+});
+
+export const updateWorkoutTemplateSchema = insertWorkoutTemplateSchema.partial();
+
+// Assignment Type
+export const assignmentTypeSchema = z.enum(['ai_generated', 'template', 'custom']);
+export type AssignmentType = z.infer<typeof assignmentTypeSchema>;
+
+// Coach Workout Assignment Schema
+export const coachWorkoutAssignmentSchema = z.object({
+  id: z.string().uuid(),
+  workout_id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  assignment_type: assignmentTypeSchema.default('custom'),
+  template_id: z.string().uuid().nullable(),
+  coach_notes: z.string().nullable(),
+  client_notes: z.string().nullable(),
+  assigned_at: z.string().datetime().nullable(),
+  approved_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachWorkoutAssignmentSchema = coachWorkoutAssignmentSchema.omit({
+  id: true,
+  created_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+});
+
+export const updateCoachWorkoutAssignmentSchema = insertCoachWorkoutAssignmentSchema.partial();
+
+// Coach Mode Type Exports
+export type CoachProfile = z.infer<typeof coachProfileSchema>;
+export type InsertCoachProfile = z.infer<typeof insertCoachProfileSchema>;
+export type UpdateCoachProfile = z.infer<typeof updateCoachProfileSchema>;
+
+export type CoachClientRelationship = z.infer<typeof coachClientRelationshipSchema>;
+export type InsertCoachClientRelationship = z.infer<typeof insertCoachClientRelationshipSchema>;
+export type UpdateCoachClientRelationship = z.infer<typeof updateCoachClientRelationshipSchema>;
+
+export type WorkoutTemplate = z.infer<typeof workoutTemplateSchema>;
+export type InsertWorkoutTemplate = z.infer<typeof insertWorkoutTemplateSchema>;
+export type UpdateWorkoutTemplate = z.infer<typeof updateWorkoutTemplateSchema>;
+
+export type CoachWorkoutAssignment = z.infer<typeof coachWorkoutAssignmentSchema>;
+export type InsertCoachWorkoutAssignment = z.infer<typeof insertCoachWorkoutAssignmentSchema>;
+export type UpdateCoachWorkoutAssignment = z.infer<typeof updateCoachWorkoutAssignmentSchema>;
+
+// =====================================================
+// Coach Split Plan Templates & Assignments
+// =====================================================
+
+// Split Type (shared with split_plans)
+export const splitTypeSchema = z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom', 'bro_split', 'weak_point_focus']);
+export type SplitType = z.infer<typeof splitTypeSchema>;
+
+// Session Definition Schema (for sessions JSONB array)
+export const sessionDefinitionSchema = z.object({
+  day: z.number().int().min(1),
+  name: z.string(),
+  workoutType: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest']),
+  variation: z.enum(['A', 'B', 'none']).nullable().optional(),
+  focus: z.array(z.string()), // muscle groups
+  targetVolume: z.record(z.string(), z.number()).nullable().optional(), // muscle group -> sets
+  principles: z.array(z.string()).nullable().optional(),
+});
+
+export type SessionDefinition = z.infer<typeof sessionDefinitionSchema>;
+
+// Split Plan Template Schema
+export const splitPlanTemplateSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid().nullable(), // NULL for system templates
+  name: z.string().min(1, "Template name is required"),
+  description: z.string().nullable(),
+  split_type: splitTypeSchema,
+  cycle_days: z.number().int().min(1).max(14),
+  sessions: z.array(sessionDefinitionSchema),
+  frequency_map: z.record(z.string(), z.number()).nullable(), // muscle group -> frequency per week
+  volume_distribution: z.record(z.string(), z.number()).nullable(), // muscle group -> total sets in cycle
+  tags: z.array(z.string()).nullable(),
+  is_public: z.boolean().default(false),
+  is_system: z.boolean().default(false), // true for base templates, false for coach-created
+  usage_count: z.number().int().min(0).default(0),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertSplitPlanTemplateSchema = splitPlanTemplateSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  usage_count: true,
+  is_system: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+  usage_count: z.number().int().min(0).optional(),
+  is_system: z.boolean().optional().default(false),
+});
+
+export const updateSplitPlanTemplateSchema = insertSplitPlanTemplateSchema.partial();
+
+// Coach Split Plan Assignment Schema
+export const coachSplitPlanAssignmentSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  split_plan_id: z.string().uuid(),
+  template_id: z.string().uuid().nullable(),
+  assignment_type: assignmentTypeSchema,
+  coach_notes: z.string().nullable(),
+  assigned_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachSplitPlanAssignmentSchema = coachSplitPlanAssignmentSchema.omit({
+  id: true,
+  created_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+});
+
+export const updateCoachSplitPlanAssignmentSchema = insertCoachSplitPlanAssignmentSchema.partial();
+
+// Split Plan Template Type Exports
+export type SplitPlanTemplate = z.infer<typeof splitPlanTemplateSchema>;
+export type InsertSplitPlanTemplate = z.infer<typeof insertSplitPlanTemplateSchema>;
+export type UpdateSplitPlanTemplate = z.infer<typeof updateSplitPlanTemplateSchema>;
+
+export type CoachSplitPlanAssignment = z.infer<typeof coachSplitPlanAssignmentSchema>;
+export type InsertCoachSplitPlanAssignment = z.infer<typeof insertCoachSplitPlanAssignmentSchema>;
+export type UpdateCoachSplitPlanAssignment = z.infer<typeof updateCoachSplitPlanAssignmentSchema>;

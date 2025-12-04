@@ -2436,6 +2436,17 @@
       },
       "note": "Queste informazioni aiutano a personalizzare il tuo allenamento e l'esperienza di coaching AI"
     },
+    "coachCode": {
+      "title": "Collegamento Coach",
+      "description": "Collegati al tuo personal trainer usando il suo codice invito",
+      "placeholder": "Inserisci codice coach",
+      "connectedTo": "Collegato a",
+      "connectedDescription": "Il tuo coach può visualizzare i tuoi progressi e assegnarti allenamenti personalizzati",
+      "disconnect": "Disconnetti",
+      "confirmDisconnect": "Sei sicuro di volerti disconnettere dal tuo coach? Potrai ricollegarti in seguito con lo stesso codice.",
+      "success": "Collegato con successo al tuo coach!",
+      "instructions": "Chiedi al tuo coach il suo codice invito per collegarti"
+    },
     "trainingMax": {
       "title": "Training Max",
       "description": "Imposta il tuo Training Max (TM) per i programmi di powerlifting. Il TM è tipicamente il 90% del tuo vero 1RM.",
@@ -5767,6 +5778,8 @@
       "advancedModeDescription": "Funzionalità complete: AI suggestions, personalizzazione, analytics.",
       "coachMode": "Coach",
       "coachModeDescription": "Gestisci i tuoi clienti e crea schede personalizzate.",
+      "gymAdminMode": "Gestione Palestra",
+      "gymAdminModeDescription": "Gestisci la tua palestra, staff e membri.",
       "comingSoon": "Prossimamente",
       "changingMode": "Cambio modalità..."
     },
@@ -6261,6 +6274,456 @@
           "answer": "Offriamo una garanzia di rimborso di 30 giorni. Se non sei soddisfatto di Pro, contattaci entro 30 giorni per un rimborso completo, senza domande."
         }
       }
+    }
+  },
+  "coach": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "templates": "Template",
+      "workouts": "Workout",
+      "splits": "Programmi",
+      "library": "Libreria",
+      "invite": "Invita"
+    },
+    "library": {
+      "title": "Libreria",
+      "tabWorkouts": "Workout",
+      "tabPrograms": "Programmi"
+    },
+    "dashboard": {
+      "title": "Dashboard Coach",
+      "welcome": "Benvenuto nella tua dashboard coach",
+      "welcomeBack": "Bentornato, {name}",
+      "inviteCode": "Il tuo Codice Invito",
+      "copyCode": "Copia codice invito"
+    },
+    "stats": {
+      "activeClients": "Clienti Attivi",
+      "pendingInvites": "Inviti in Attesa",
+      "workoutsThisWeek": "Workout Questa Settimana",
+      "completionRate": "Tasso Completamento"
+    },
+    "clients": {
+      "title": "I tuoi Clienti",
+      "addClient": "Aggiungi Cliente",
+      "noClients": "Nessun cliente ancora",
+      "noClientsDescription": "Condividi il tuo codice invito per iniziare ad aggiungere clienti",
+      "inviteFirst": "Invita il tuo Primo Cliente",
+      "unknownClient": "Cliente Sconosciuto",
+      "workoutsThisWeek": "{count, plural, =0 {Nessun workout} =1 {1 workout} other {# workout}} questa settimana",
+      "lastWorkout": "Ultimo: {date}",
+      "noWorkoutsYet": "Nessun workout ancora"
+    },
+    "clientStatus": {
+      "onTrack": "In Linea",
+      "needsAttention": "Richiede Attenzione",
+      "overdue": "In Ritardo"
+    },
+    "invite": {
+      "title": "Invita Cliente",
+      "description": "Condividi il tuo codice invito con i clienti per connetterli",
+      "codeLabel": "Il tuo Codice Invito",
+      "shareInstructions": "Condividi questo codice con il tuo cliente. Può inserirlo nelle impostazioni dell'app per connettersi con te.",
+      "copySuccess": "Codice copiato negli appunti!",
+      "searchClient": "Cerca per email",
+      "searchPlaceholder": "cliente@email.com",
+      "searchButton": "Cerca",
+      "noResults": "Nessun utente trovato con questa email",
+      "sendInvite": "Invia Invito",
+      "inviteSent": "Invito inviato con successo!"
+    },
+    "clientDetail": {
+      "overview": "Panoramica",
+      "workouts": "Workout",
+      "progress": "Progressi",
+      "assignWorkout": "Assegna Workout",
+      "autonomyLevel": "Livello Autonomia",
+      "notes": "Note",
+      "memberSince": "Membro dal",
+      "totalWorkouts": "Workout Totali",
+      "thisWeek": "Questa Settimana",
+      "cyclesCompleted": "Cicli Completati",
+      "volume": "Volume",
+      "sets": "Serie",
+      "progressPhotos": "Foto Progressi",
+      "profile": "Profilo",
+      "age": "Età",
+      "gender": "Genere",
+      "experience": "Esperienza",
+      "trainingFocus": "Focus Allenamento",
+      "currentSplit": "Split Attuale",
+      "goal": "Obiettivo",
+      "years": "anni",
+      "noNotes": "Nessuna nota. Aggiungi note sugli obiettivi, preferenze o considerazioni speciali del cliente.",
+      "noWorkoutsHeading": "Nessun workout",
+      "assignFirstWorkout": "Assegna il primo workout per iniziare",
+      "coachBadge": "Coach",
+      "autonomyMinimal": "Minima",
+      "autonomyStandard": "Standard",
+      "autonomyFull": "Completa",
+      "viewDetails": "Vedi Dettagli"
+    },
+    "assignment": {
+      "title": "Assegna Workout",
+      "aiAssisted": "Assistito da AI",
+      "aiAssistedDescription": "Genera un workout personalizzato usando l'AI basato sul profilo del cliente",
+      "fromTemplate": "Da Template",
+      "fromTemplateDescription": "Seleziona dai tuoi template salvati",
+      "custom": "Personalizzato",
+      "customDescription": "Costruisci un workout da zero con il selettore esercizi",
+      "coachNotes": "Note per il Cliente",
+      "coachNotesPlaceholder": "Aggiungi istruzioni o note per il tuo cliente...",
+      "generate": "Genera Workout",
+      "assign": "Assegna al Cliente"
+    },
+    "templates": {
+      "title": "Template Workout",
+      "create": "Nuovo Template",
+      "empty": "Nessun template salvato",
+      "emptyDescription": "Salva workout come template per riutilizzarli con più clienti",
+      "noResults": "Nessun template trovato",
+      "noResultsDescription": "Prova con un termine diverso",
+      "searchPlaceholder": "Cerca template...",
+      "otherTemplates": "Altri",
+      "edit": "Modifica Template",
+      "duplicate": "Duplica",
+      "delete": "Elimina",
+      "confirmDelete": "Sei sicuro di voler eliminare questo template? L'azione non può essere annullata.",
+      "usageCount": "{count, plural, =0 {Mai usato} =1 {Usato 1 volta} other {Usato # volte}}",
+      "name": "Nome Template",
+      "description": "Descrizione",
+      "workoutType": "Tipo Workout",
+      "multiSelectHint": "(seleziona uno o più)",
+      "tags": "Tag",
+      "tagsPlaceholder": "forza, ipertrofia, principiante",
+      "tagsHint": "Separa i tag con virgole",
+      "exercises": "Esercizi",
+      "noExercises": "Nessun esercizio in questo template",
+      "cancel": "Annulla",
+      "save": "Salva Modifiche"
+    },
+    "scheduling": {
+      "when": "Quando deve fare questo workout?",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "dayAfterTomorrow": "Dopodomani",
+      "pickDate": "Scegli data",
+      "selectedDate": "Programmato per"
+    },
+    "customBuilder": {
+      "title": "Workout Personalizzato",
+      "workoutName": "Nome Workout",
+      "workoutNamePlaceholder": "es. Lunedì Push",
+      "workoutType": "Tipo Workout",
+      "exercises": "Esercizi",
+      "noExercises": "Nessun esercizio ancora",
+      "addFirst": "Aggiungi Primo Esercizio",
+      "addExercise": "Aggiungi Esercizio",
+      "coachNotes": "Note per il Cliente",
+      "coachNotesPlaceholder": "Aggiungi istruzioni o note...",
+      "coachNotesHint": "Queste note saranno visibili al tuo cliente",
+      "saveAsTemplate": "Salva come Template",
+      "saveAsTemplateHint": "Riutilizza questo workout con altri clienti",
+      "createWorkout": "Crea Workout",
+      "creating": "Creazione...",
+      "defaultWorkoutName": "Workout Personalizzato",
+      "sets": "Serie",
+      "reps": "Reps",
+      "weight": "Peso",
+      "rir": "RIR",
+      "rest": "Rest",
+      "notesPlaceholder": "Note per questo esercizio...",
+      "generateNotes": "Genera cue tecnici con AI",
+      "removeExercise": "Rimuovi esercizio",
+      "viewAnimation": "Vedi animazione",
+      "types": {
+        "push": "Push",
+        "pull": "Pull",
+        "legs": "Gambe",
+        "upper": "Upper",
+        "lower": "Lower",
+        "full_body": "Full Body",
+        "chest": "Petto",
+        "back": "Schiena",
+        "shoulders": "Spalle",
+        "arms": "Braccia",
+        "cardio": "Cardio",
+        "custom": "Personalizzato"
+      },
+      "errors": {
+        "noExercises": "Aggiungi almeno un esercizio"
+      },
+      "picker": {
+        "title": "Aggiungi Esercizio",
+        "searchPlaceholder": "Cerca esercizi...",
+        "muscleGroup": "Gruppo Muscolare",
+        "equipment": "Attrezzatura",
+        "hint": "Cerca o usa i filtri per trovare esercizi",
+        "noResults": "Nessun esercizio trovato",
+        "footer": "{count, plural, =0 {Nessun esercizio} =1 {1 esercizio} other {# esercizi}} trovati"
+      }
+    },
+    "templateBuilder": {
+      "title": "Crea Template",
+      "subtitle": "Costruisci un template riutilizzabile",
+      "templateName": "Nome Template",
+      "templateNamePlaceholder": "es. Push Day A",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Descrizione opzionale per questo template...",
+      "workoutType": "Tipo Workout",
+      "multiSelectHint": "(seleziona uno o più)",
+      "tags": "Tag",
+      "tagPlaceholder": "Aggiungi un tag...",
+      "addTag": "Aggiungi",
+      "exercises": "Esercizi",
+      "noExercises": "Nessun esercizio aggiunto. Aggiungi il primo esercizio per iniziare.",
+      "addFirst": "Aggiungi Primo Esercizio",
+      "addExercise": "Aggiungi Esercizio",
+      "createTemplate": "Crea Template",
+      "creating": "Creazione...",
+      "editTitle": "Modifica Template",
+      "editSubtitle": "Modifica il tuo template di allenamento",
+      "saveTemplate": "Salva Template",
+      "saving": "Salvataggio...",
+      "generateWithAI": "Genera con AI",
+      "or": "oppure",
+      "errors": {
+        "noExercises": "Aggiungi almeno un esercizio",
+        "noName": "Inserisci un nome per il template"
+      },
+      "aiSuggestions": {
+        "title": "Suggerimenti AI",
+        "description": "Il cliente vedrà suggerimenti in tempo reale per peso e ripetizioni"
+      }
+    },
+    "aiGenerator": {
+      "title": "Generatore Esercizi AI",
+      "subtitle": "Genera esercizi in base alle tue specifiche",
+      "muscleFocus": "Focus Muscolare",
+      "experienceLevel": "Livello Esperienza Cliente",
+      "equipmentPreference": "Preferenza Attrezzatura",
+      "exerciseCount": "Numero di Esercizi",
+      "intensityTechniques": "Tecniche di Intensità",
+      "intensityTechniquesHint": "Opzionale: AI applicherà queste tecniche agli esercizi adatti",
+      "aiPrompt": "Istruzioni AI",
+      "aiPromptHint": "Personalizza come AI genera gli esercizi. Clicca un preset o scrivi il tuo.",
+      "aiPromptPlaceholder": "Es. Focus su esercizi in allungamento, evita bilanciere...",
+      "generate": "Genera Esercizi",
+      "generating": "Generazione...",
+      "cancel": "Annulla",
+      "generated": "{count} esercizi generati!",
+      "modeQuestion": "Hai {count} esercizio/i esistenti. Cosa vuoi fare?",
+      "modeReplace": "Sostituisci Tutto",
+      "modeReplaceDescription": "Rimuovi gli esercizi esistenti e usa solo quelli generati",
+      "modeAppend": "Aggiungi agli Esistenti",
+      "modeAppendDescription": "Mantieni gli esercizi esistenti e aggiungi i nuovi",
+      "levels": {
+        "beginner": "Principiante",
+        "intermediate": "Intermedio",
+        "advanced": "Avanzato"
+      },
+      "equipment": {
+        "free_weights": "Pesi Liberi",
+        "machines": "Macchine",
+        "cables": "Cavi",
+        "bodyweight": "Corpo Libero"
+      },
+      "presetLabels": {
+        "compoundFocus": "Focus Compound",
+        "hypertrophy": "Ipertrofia",
+        "strength": "Forza",
+        "timeEfficient": "Workout Veloce",
+        "weakPoints": "Punti Deboli"
+      },
+      "presets": {
+        "compoundFocus": "Privilegia movimenti compound multi-articolari rispetto all'isolamento",
+        "hypertrophy": "Ottimizza per ipertrofia muscolare con rep range moderati (8-12) e volume adeguato",
+        "strength": "Focus sullo sviluppo della forza con rep range bassi (4-6) e carichi pesanti",
+        "timeEfficient": "Progetta un workout efficiente usando superset e movimenti compound",
+        "weakPoints": "Includi volume extra per gruppi muscolari carenti e punti deboli"
+      },
+      "errors": {
+        "noFocus": "Seleziona almeno un gruppo muscolare",
+        "noEquipment": "Seleziona almeno un tipo di attrezzatura",
+        "generic": "Generazione esercizi fallita. Riprova."
+      }
+    },
+    "techniques": {
+      "addTechnique": "Aggiungi Tecnica",
+      "removeTechnique": "Rimuovi",
+      "selectTechnique": "Seleziona Tecnica",
+      "configure": "Configura",
+      "configureDrops": "Numero di drop",
+      "configureRest": "Riposo (secondi)",
+      "configurePercentage": "Percentuale di riduzione",
+      "configureMiniSets": "Numero mini-serie",
+      "configureClusters": "Numero di cluster",
+      "configureSteps": "Numero di step",
+      "configureBackoffSets": "Serie di backoff",
+      "configureRestSeconds": "Riposo (secondi)",
+      "configureActivationReps": "Reps attivazione",
+      "configureRepsPerCluster": "Reps per cluster",
+      "configureDirection": "Direzione",
+      "configureTopSetReps": "Reps top set",
+      "pyramidAscending": "Ascendente",
+      "pyramidDescending": "Discendente",
+      "pyramidFull": "Completa",
+      "apply": "Applica",
+      "confirm": "Conferma",
+      "cancel": "Annulla",
+      "drops": "Numero di drop",
+      "miniSets": "Mini-serie",
+      "restSeconds": "Riposo (secondi)",
+      "dropPercentage": "Percentuale di riduzione",
+      "intraSetRest": "Riposo intra-serie",
+      "rampSets": "Serie di ramp",
+      "backoffSets": "Serie di backoff",
+      "topSetRpe": "RPE serie top",
+      "compound": "Compound",
+      "isolation": "Isolation",
+      "drop_set": {
+        "name": "Drop Set",
+        "description": "Riduci il peso e continua senza riposo"
+      },
+      "rest_pause": {
+        "name": "Rest-Pause",
+        "description": "Brevi pause per superare il cedimento"
+      },
+      "myo_reps": {
+        "name": "Myo-Reps",
+        "description": "Serie di attivazione seguita da mini-serie"
+      },
+      "cluster_set": {
+        "name": "Cluster Set",
+        "description": "Brevi riposi all'interno della serie per la forza"
+      },
+      "pyramid": {
+        "name": "Piramide",
+        "description": "Cambi progressivi di peso ogni serie"
+      },
+      "top_set_backoff": {
+        "name": "Top Set + Backoff",
+        "description": "Serie pesante singola seguita da serie di volume"
+      },
+      "superset": {
+        "name": "Superset",
+        "description": "Due esercizi eseguiti consecutivamente senza riposo"
+      },
+      "giant_set": {
+        "name": "Giant Set",
+        "description": "Tre o più esercizi eseguiti consecutivamente"
+      },
+      "dropSet": {
+        "name": "Drop Set",
+        "description": "Riduci il peso e continua senza riposo"
+      },
+      "restPause": {
+        "name": "Rest-Pause",
+        "description": "Brevi pause per superare il cedimento"
+      },
+      "myoReps": {
+        "name": "Myo-Reps",
+        "description": "Serie di attivazione seguita da mini-serie"
+      },
+      "clusterSet": {
+        "name": "Cluster Set",
+        "description": "Brevi riposi all'interno della serie per la forza"
+      },
+      "topSetBackoff": {
+        "name": "Top Set + Backoff",
+        "description": "Serie pesante singola seguita da serie di volume"
+      }
+    },
+    "workoutRecap": {
+      "backToClient": "Torna a {name}",
+      "feedbackSection": "Feedback Coach",
+      "privateNotes": "Note Private (Solo Coach)",
+      "privateNotesPlaceholder": "Note su questo workout visibili solo a te...",
+      "clientNotes": "Note per il Cliente (Visibili)",
+      "clientNotesPlaceholder": "Feedback o istruzioni visibili al cliente...",
+      "editNotes": "Modifica",
+      "saveNotes": "Salva",
+      "cancelEdit": "Annulla",
+      "notesSaved": "Note salvate",
+      "noNotes": "Nessuna nota",
+      "assignNewWorkout": "Assegna Nuovo Workout",
+      "notAssignedByCoach": "Questo workout non e' stato assegnato da un coach"
+    },
+    "splitPlan": {
+      "whatToAssign": "Cosa vuoi assegnare?",
+      "singleWorkout": "Singolo Workout",
+      "fullProgram": "Programmazione",
+      "programDescription": "Assegna una programmazione completa (split plan) al tuo cliente. Seguira' il ciclo automaticamente.",
+      "selectOrCreate": "Seleziona o Crea Programma",
+      "assignProgram": "Assegna Programma",
+      "aiAssisted": "Generato con AI",
+      "aiAssistedDescription": "Genera un programma personalizzato basato sul profilo del cliente",
+      "fromTemplate": "Da Template",
+      "fromTemplateDescription": "Seleziona dai tuoi template salvati",
+      "custom": "Personalizzato",
+      "customDescription": "Costruisci un programma da zero",
+      "comingSoon": "Prossimamente",
+      "selectTemplate": "Seleziona Template",
+      "noTemplates": "Nessun template di programma",
+      "createTemplateFirst": "Crea il tuo primo template di programma",
+      "days": "giorni",
+      "coachNotes": "Note per il Cliente",
+      "coachNotesPlaceholder": "Aggiungi istruzioni o note per il tuo cliente...",
+      "assigning": "Assegnazione...",
+      "programInfo": "Un programma assegna un ciclo di allenamento al tuo cliente. Seguira' le sessioni in ordine (Giorno 1, Giorno 2, ecc.) senza bisogno di date specifiche."
+    },
+    "splitPlanTemplates": {
+      "title": "Template Programmi",
+      "create": "Nuovo Template",
+      "empty": "Nessun template di programma",
+      "emptyDescription": "Crea template di programma per assegnare facilmente cicli di allenamento ai tuoi clienti",
+      "createFirst": "Crea il Tuo Primo Template",
+      "noResults": "Nessun template trovato",
+      "noResultsDescription": "Prova un termine di ricerca diverso",
+      "searchPlaceholder": "Cerca template...",
+      "edit": "Modifica",
+      "duplicate": "Duplica",
+      "delete": "Elimina",
+      "confirmDelete": "Sei sicuro di voler eliminare questo template? Questa azione non puo' essere annullata.",
+      "usageCount": "{count, plural, =0 {Mai usato} =1 {Usato 1 volta} other {Usato # volte}}",
+      "session": "sessione",
+      "sessions": "sessioni",
+      "days": "giorni",
+      "createTitle": "Crea Template Programma",
+      "editTitle": "Modifica Template Programma",
+      "templateName": "Nome Template",
+      "templateNamePlaceholder": "es. Push/Pull/Legs 6 giorni",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Descrizione opzionale per questo programma...",
+      "splitType": "Tipo Split",
+      "cycleDays": "Durata Ciclo (giorni)",
+      "tags": "Tag",
+      "tagsPlaceholder": "forza, ipertrofia, principiante",
+      "tagsHint": "Separa i tag con virgole",
+      "day": "Giorno",
+      "sessionName": "Nome Sessione",
+      "restDay": "Giorno di Riposo",
+      "workoutType": "Tipo Allenamento",
+      "selectType": "Seleziona tipo...",
+      "targetMuscles": "Muscoli Target",
+      "addDay": "Aggiungi Giorno",
+      "sessionNotes": "Note Sessione",
+      "sessionNotesPlaceholder": "Note per questa sessione...",
+      "cancel": "Annulla",
+      "save": "Salva Modifiche",
+      "nameRequired": "Il nome del template e' obbligatorio",
+      "sessionsRequired": "E' richiesta almeno una sessione",
+      "baseTemplates": "Template Base",
+      "baseTemplatesDescription": "Template pronti all'uso. Duplicali per personalizzarli.",
+      "myTemplates": "I Miei Template",
+      "myTemplatesCount": "template personalizzati",
+      "emptyCustom": "Nessun template personalizzato",
+      "emptyCustomDescription": "Crea i tuoi template o duplica quelli base per personalizzarli",
+      "systemBadge": "Base",
+      "duplicateToCustomize": "Duplica e personalizza",
+      "showStructure": "Mostra struttura",
+      "hideStructure": "Nascondi struttura",
+      "dayPrefix": "G"
     }
   }
 }

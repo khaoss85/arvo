@@ -9,6 +9,8 @@ export interface ProgressionInput {
   setNumber: number
   exerciseType: 'compound' | 'isolation'
   approachId: string
+  // Workout context for AI suggestions toggle
+  workoutId?: string
   // User demographics for personalized progression
   experienceYears?: number | null
   userAge?: number | null
