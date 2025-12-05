@@ -348,6 +348,32 @@ export class GenerationQueueService {
   }
 
   /**
+   * Mark generation as failed (client-side)
+   * Uses browser client for cancellation from UI
+   */
+  static async markAsFailedClient(input: FailGenerationInput): Promise<GenerationQueueEntry> {
+    const supabase = getSupabaseBrowserClient()
+
+    const { data, error } = await supabase
+      .from('workout_generation_queue')
+      .update({
+        status: 'failed',
+        error_message: input.errorMessage,
+        completed_at: new Date().toISOString()
+      })
+      .eq('request_id', input.requestId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('[GenerationQueueService] Failed to mark as failed (client):', error)
+      throw new Error(`Failed to mark generation as failed: ${error.message}`)
+    }
+
+    return data as GenerationQueueEntry
+  }
+
+  /**
    * Mark split generation as completed (server-side)
    */
   static async markSplitAsCompleted(input: CompleteSplitInput): Promise<GenerationQueueEntry> {

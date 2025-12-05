@@ -251,8 +251,8 @@ export default function ReviewPage() {
       try {
         const { GenerationQueueService } = await import('@/lib/services/generation-queue.service')
 
-        // Mark as failed with "User cancelled" message
-        await GenerationQueueService.markAsFailed({
+        // Mark as failed with "User cancelled" message (using client-side method)
+        await GenerationQueueService.markAsFailedClient({
           requestId: requestIdToCancel,
           errorMessage: 'User cancelled generation'
         })

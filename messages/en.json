@@ -2565,6 +2565,19 @@
       "errorResetting": "Error resetting data",
       "unknownError": "Unknown error"
     },
+    "gymMembership": {
+      "title": "Gym",
+      "currentGym": "Current gym",
+      "notMember": "You are not a member of any gym",
+      "leaveGym": "Leave Gym",
+      "leaveConfirmTitle": "Confirm leave",
+      "leaveConfirmMessage": "Are you sure you want to leave {gymName}? You will lose access to gym features.",
+      "confirmLeave": "Confirm Leave",
+      "leaving": "Leaving...",
+      "leaveSuccess": "You have left the gym",
+      "leaveError": "Error leaving gym",
+      "cancel": "Cancel"
+    },
     "deleteAccount": {
       "title": "Danger Zone",
       "description": "Permanently delete your account and all associated data. This action cannot be undone.",

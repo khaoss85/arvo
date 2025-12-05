@@ -582,6 +582,37 @@ export class GymService {
     return data as string;
   }
 
+  /**
+   * Leave gym - Member removes themselves from gym
+   */
+  static async leaveGym(userId: string): Promise<void> {
+    const supabase = getSupabaseBrowserClient();
+
+    // 1. Update gym_members status to 'churned'
+    const { error: memberError } = await supabase
+      .from("gym_members")
+      .update({
+        status: "churned",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId)
+      .eq("status", "active");
+
+    if (memberError) {
+      throw new Error(`Failed to leave gym: ${memberError.message}`);
+    }
+
+    // 2. Clear gym_id from user_profiles
+    const { error: profileError } = await supabase
+      .from("user_profiles")
+      .update({ gym_id: null })
+      .eq("user_id", userId);
+
+    if (profileError) {
+      throw new Error(`Failed to update profile: ${profileError.message}`);
+    }
+  }
+
   // =====================================================
   // Stats Methods
   // =====================================================

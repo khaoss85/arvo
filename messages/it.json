@@ -2566,6 +2566,19 @@
       "errorResetting": "Errore nel reset dei dati",
       "unknownError": "Errore sconosciuto"
     },
+    "gymMembership": {
+      "title": "Palestra",
+      "currentGym": "Palestra attuale",
+      "notMember": "Non sei iscritto a nessuna palestra",
+      "leaveGym": "Lascia Palestra",
+      "leaveConfirmTitle": "Conferma uscita",
+      "leaveConfirmMessage": "Sei sicuro di voler lasciare {gymName}? Perderai l'accesso alle funzionalità della palestra.",
+      "confirmLeave": "Conferma Uscita",
+      "leaving": "Uscita in corso...",
+      "leaveSuccess": "Hai lasciato la palestra",
+      "leaveError": "Errore durante l'uscita dalla palestra",
+      "cancel": "Annulla"
+    },
     "deleteAccount": {
       "title": "Zona Pericolosa",
       "description": "Elimina permanentemente il tuo account e tutti i dati associati. Questa azione non può essere annullata.",

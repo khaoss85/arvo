@@ -54,6 +54,16 @@ export async function resetUserData() {
       .delete()
       .eq('user_id', user.id)
 
+    // 3. Delete gym membership (must be before user_profiles due to foreign key)
+    const { error: gymMemberError } = await supabase
+      .from('gym_members')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (gymMemberError) {
+      console.error('Failed to delete gym membership:', gymMemberError)
+    }
+
     const { error: profileError } = await supabase
       .from('user_profiles')
       .delete()
