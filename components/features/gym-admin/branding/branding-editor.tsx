@@ -33,9 +33,17 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [tagline, setTagline] = useState("");
   const [fontFamily, setFontFamily] = useState("");
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
-  // Load branding data
+  // Debug: log state changes
   useEffect(() => {
+    console.log("[BrandingEditor] State updated:", { primaryColor, secondaryColor, accentColor, tagline, fontFamily });
+  }, [primaryColor, secondaryColor, accentColor, tagline, fontFamily]);
+
+  // Load branding data - only once on mount
+  useEffect(() => {
+    if (hasLoadedInitialData) return;
+
     async function loadBranding() {
       try {
         const data = await GymService.getBranding(gymId);
@@ -59,6 +67,7 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
           setTagline(data.tagline?.it || data.tagline?.en || "");
           setFontFamily(data.font_family || "");
         }
+        setHasLoadedInitialData(true);
       } catch (error) {
         console.error("Failed to load branding:", error);
         toast({
@@ -72,7 +81,7 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
     }
 
     loadBranding();
-  }, [gymId, toast]);
+  }, [gymId, toast, hasLoadedInitialData]);
 
   // Handle logo upload
   const handleLogoUpload = useCallback(
