@@ -679,9 +679,62 @@ Design a training split plan that:
 ## Important Guidelines
 - Follow the approach's frequency recommendations
 - Distribute volume appropriately across muscle groups
-- Use workout variations (A/B) if approach recommends them
-- Ensure adequate recovery between sessions
 - Only include muscle groups with sets > 0 in targetVolume and volumeDistribution
+
+## Cycle Structure Rules (CRITICAL)
+
+**For Push/Pull/Legs (PPL) with 6 days/week:**
+- Use 8-day cycle with A/B variations
+- Pattern: 3 training days → 1 rest → 3 training days → 1 rest
+- Structure:
+  * Day 1: Push A
+  * Day 2: Pull A
+  * Day 3: Legs A
+  * Day 4: Rest (workoutType: "rest", variation: "none")
+  * Day 5: Push B
+  * Day 6: Pull B
+  * Day 7: Legs B
+  * Day 8: Rest
+- cycleDays = 8 (MUST include rest days in count)
+- ALL 3 workout types (push, pull, legs) MUST have BOTH A and B variations
+
+**For PPL with 3 days/week:**
+- Use 7-day cycle without A/B variations
+- Pattern: Push → Pull → Legs → Rest → Rest → Rest → Rest
+
+**For Upper/Lower with 4 days/week:**
+- Use 8-day cycle: Upper A, Lower A, Rest, Upper B, Lower B, Rest, Rest, Rest
+
+**For Bro Split with 5-6 days/week:**
+- Use 10-12 day cycle with A/B variations
+- 5 workout types: chest, back, shoulders, arms, legs
+- Each type has A (strength/compounds) and B (hypertrophy/isolation) variation
+- Pattern: 3-4 training → 1 rest → 3-4 training → 1 rest
+- cycleDays = 10-12 (includes rest days)
+
+**For Full Body with 3 days/week:**
+- Use 7-day cycle
+- Pattern: Full Body A → Rest → Full Body B → Rest → Full Body C → Rest → Rest
+- Each session covers all major muscle groups with different exercise selection
+- cycleDays = 7
+
+**For Weak Point Focus:**
+- Use 7-8 day cycle
+- Target muscle trained 3-4× per cycle with 1.5× normal volume
+- Other muscles trained 1-2× per cycle at maintenance volume
+- Ensure target muscle has adequate recovery between sessions (48-72h)
+
+**REST DAYS must be explicit sessions with:**
+- workoutType: "rest"
+- variation: "none"
+- focus: []
+- targetVolume: {}
+- principles: ["Active recovery", "Sleep and nutrition focus"]
+
+**VALIDATION BEFORE OUTPUT:**
+□ For PPL 6x: Verify push, pull, AND legs all have A and B variations (6 training sessions total)
+□ cycleDays count includes rest days
+□ No more than 3 consecutive training days before a rest
 
 ${lang === 'it' ? 'Fornisci la risposta in italiano.' : 'Provide response in English.'}
 
