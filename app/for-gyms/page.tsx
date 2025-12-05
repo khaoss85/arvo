@@ -5,6 +5,7 @@ import { HeroSectionGym } from "@/components/features/landing-gym/hero-section-g
 import { PainPointGym } from "@/components/features/landing-gym/pain-point-gym";
 import { WhiteLabelShowcase } from "@/components/features/landing-gym/white-label-showcase";
 import { MemberExperience } from "@/components/features/landing-gym/member-experience";
+import { BookingShowcase } from "@/components/features/landing-gym/booking-showcase";
 import { AIValueGym } from "@/components/features/landing-gym/ai-value-gym";
 import { GymComparison } from "@/components/features/landing-gym/gym-comparison";
 import { GymPricing } from "@/components/features/landing-gym/gym-pricing";
@@ -46,6 +47,10 @@ const gymFAQs = [
     question: "What happens to members if I cancel?",
     answer: "Members keep their workout history. They can export data or continue with a personal Arvo account.",
   },
+  {
+    question: "How does the AI booking system work?",
+    answer: "Coaches can book sessions with natural language like \"Book Marco Tuesday at 6pm\". The AI understands, checks availability, and schedules automatically. Confirmations and reminders are sent without any manual work.",
+  },
 ];
 
 export const metadata: Metadata = {
@@ -62,10 +67,14 @@ export const metadata: Metadata = {
     'virtuagym alternative',
     'gym app for members',
     'AI workout generator for gyms',
+    'AI booking system for gyms',
+    'gym appointment scheduling',
+    'personal trainer booking software',
     'software gestionale palestra',
     'app palestra personalizzata',
     'gestione membri palestra',
     'app fitness white label',
+    'prenotazione sessioni palestra',
   ],
 
   openGraph: {
@@ -103,6 +112,7 @@ export default async function ForGymsPage() {
         <PainPointGym />
         <WhiteLabelShowcase />
         <MemberExperience />
+        <BookingShowcase />
         <AIValueGym />
         <GymComparison />
         <GymPricing />

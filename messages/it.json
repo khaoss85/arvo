@@ -4577,6 +4577,32 @@
           "timer": "Timer recupero con supporto metodologie"
         }
       },
+      "booking": {
+        "title": "Prenotazioni AI, Completamente Automatizzate",
+        "subtitle": "Dalla prenotazione al promemoria - zero lavoro manuale per coach e palestre.",
+        "features": {
+          "naturalLanguage": {
+            "title": "Input in Linguaggio Naturale",
+            "description": "\"Prenota Marco martedì alle 18\" - l'AI capisce e prenota all'istante"
+          },
+          "autoScheduling": {
+            "title": "Scheduling Automatico",
+            "description": "Crea prenotazione, aggiorna pacchetto sessioni, verifica disponibilità - tutto in uno"
+          },
+          "confirmations": {
+            "title": "Conferme Istantanee",
+            "description": "Il cliente riceve la conferma automaticamente via email e app"
+          },
+          "reminders": {
+            "title": "Promemoria Intelligenti",
+            "description": "Promemoria 24h e 1h inviati automaticamente prima di ogni sessione"
+          },
+          "packageAlerts": {
+            "title": "Alert Pacchetti",
+            "description": "Notifiche automatiche quando le sessioni stanno per finire o scadere"
+          }
+        }
+      },
       "aiValue": {
         "title": "AI Che Lavora per Te",
         "subtitle": "Ogni membro riceve un programma personalizzato. Automaticamente.",
@@ -4633,6 +4659,13 @@
             "glofox": "€100/mese",
             "virtuagym": "€59/mese",
             "arvo": "Contattaci"
+          },
+          "aiBooking": {
+            "feature": "Sistema Booking AI",
+            "mindbody": "No",
+            "glofox": "Base",
+            "virtuagym": "No",
+            "arvo": "AI-Native"
           }
         }
       },
@@ -4712,6 +4745,10 @@
           "cancel": {
             "question": "Cosa succede ai membri se cancello?",
             "answer": "I membri mantengono lo storico workout. Possono esportare i dati o continuare con un account Arvo personale."
+          },
+          "booking": {
+            "question": "Come funziona il sistema di prenotazioni AI?",
+            "answer": "I coach possono prenotare sessioni con linguaggio naturale come \"Prenota Marco martedì alle 18\". L'AI capisce, verifica la disponibilità, e programma automaticamente. Conferme e promemoria vengono inviati senza alcun intervento manuale."
           }
         }
       },
@@ -6592,6 +6629,17 @@
       "startsIn": "Inizia tra",
       "hours": "ore",
       "minutes": "min"
+    },
+    "selfBook": {
+      "title": "Prenota Sessione",
+      "selectSlotWith": "Seleziona uno slot disponibile con {coach}",
+      "booked": "Sessione prenotata!",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "noSlots": "Nessuno slot disponibile",
+      "tryNextWeek": "Prova a controllare la prossima settimana",
+      "confirm": "Conferma",
+      "locale": "it"
     }
   },
   "coach": {
@@ -6624,6 +6672,30 @@
       "close": "Chiudi",
       "book": "Prenota",
       "aiPlaceholder": "Chiedi all'AI: 'prenota Marco martedì 18', 'quando sono libero?'..."
+    },
+    "packages": {
+      "title": "Pacchetti",
+      "create": "Nuovo Pacchetto",
+      "empty": "Nessun pacchetto",
+      "history": "Storico",
+      "createDescription": "Crea un nuovo pacchetto di sessioni per {client}",
+      "name": "Nome Pacchetto",
+      "totalSessions": "Sessioni Totali",
+      "perWeek": "Sessioni/Settimana",
+      "startDate": "Data Inizio",
+      "endDate": "Data Fine",
+      "used": "usate",
+      "remaining": "rimanenti",
+      "renew": "Rinnova"
+    },
+    "recap": {
+      "today": "Oggi",
+      "completed": "Completate",
+      "cancelled": "Cancellate",
+      "noShow": "Assenti",
+      "todaySessions": "Sessioni di oggi",
+      "upcoming": "Prossime sessioni",
+      "noSessions": "Nessuna sessione programmata"
     },
     "library": {
       "title": "Libreria",
@@ -6701,7 +6773,23 @@
       "autonomyMinimal": "Minima",
       "autonomyStandard": "Standard",
       "autonomyFull": "Completa",
-      "viewDetails": "Vedi Dettagli"
+      "viewDetails": "Vedi Dettagli",
+      "notesPlaceholder": "Aggiungi note su questo cliente...",
+      "saveNotes": "Salva Note",
+      "saving": "Salvataggio...",
+      "saved": "Salvato",
+      "errorSaving": "Errore",
+      "addNote": "Aggiungi Nota",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "edited": "modificato",
+      "loading": "Caricamento...",
+      "shareWithClient": "Condividi con cliente",
+      "makePrivate": "Rendi privata",
+      "shared": "Condivisa",
+      "private": "Privata"
     },
     "assignment": {
       "title": "Assegna Workout",

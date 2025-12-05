@@ -12,6 +12,7 @@ export function GymComparison() {
     { key: 'whiteLabel' },
     { key: 'aiWorkouts' },
     { key: 'methodologies' },
+    { key: 'aiBooking' },
     { key: 'setupTime' },
     { key: 'startingPrice' },
   ];

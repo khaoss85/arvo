@@ -63,7 +63,7 @@ export function AIValueGym() {
           >
             <Card className="h-full bg-gradient-to-br from-primary-500 to-primary-700 text-white">
               <CardContent className="p-6 flex flex-col justify-center h-full">
-                <div className="text-4xl font-bold mb-2">19</div>
+                <div className="text-4xl font-bold mb-2">20</div>
                 <p className="text-primary-100">AI Agents working together for every member</p>
               </CardContent>
             </Card>

@@ -4552,6 +4552,32 @@
           "timer": "Rest timer with methodology support"
         }
       },
+      "booking": {
+        "title": "AI-Powered Booking, Fully Automated",
+        "subtitle": "From booking to reminder - zero manual work for coaches and gym owners.",
+        "features": {
+          "naturalLanguage": {
+            "title": "Natural Language Input",
+            "description": "\"Book Marco Tuesday at 6pm\" - the AI understands and schedules instantly"
+          },
+          "autoScheduling": {
+            "title": "Automatic Scheduling",
+            "description": "Creates booking, updates package sessions, checks availability - all in one"
+          },
+          "confirmations": {
+            "title": "Instant Confirmations",
+            "description": "Client receives booking confirmation automatically via email and app"
+          },
+          "reminders": {
+            "title": "Smart Reminders",
+            "description": "24h and 1h reminders sent automatically before each session"
+          },
+          "packageAlerts": {
+            "title": "Package Alerts",
+            "description": "Automatic notifications when sessions are running low or expiring"
+          }
+        }
+      },
       "aiValue": {
         "title": "AI That Works for You",
         "subtitle": "Every member gets a personalized program. Automatically.",
@@ -4608,6 +4634,13 @@
             "glofox": "$100/mo",
             "virtuagym": "$59/mo",
             "arvo": "Contact us"
+          },
+          "aiBooking": {
+            "feature": "AI Booking System",
+            "mindbody": "No",
+            "glofox": "Basic",
+            "virtuagym": "No",
+            "arvo": "AI-Native"
           }
         }
       },
@@ -4687,6 +4720,10 @@
           "cancel": {
             "question": "What happens to members if I cancel?",
             "answer": "Members keep their workout history. They can export data or continue with a personal Arvo account."
+          },
+          "booking": {
+            "question": "How does the AI booking system work?",
+            "answer": "Coaches can book sessions with natural language like \"Book Marco Tuesday at 6pm\". The AI understands, checks availability, and schedules automatically. Confirmations and reminders are sent without any manual work."
           }
         }
       },
@@ -6567,6 +6604,17 @@
       "startsIn": "Starts in",
       "hours": "hours",
       "minutes": "min"
+    },
+    "selfBook": {
+      "title": "Book Session",
+      "selectSlotWith": "Select an available slot with {coach}",
+      "booked": "Session booked!",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "noSlots": "No available slots",
+      "tryNextWeek": "Try checking next week",
+      "confirm": "Confirm",
+      "locale": "en"
     }
   },
   "coach": {
@@ -6599,6 +6647,30 @@
       "close": "Close",
       "book": "Book",
       "aiPlaceholder": "Ask AI: 'book Marco Tuesday 6pm', 'when am I free?'..."
+    },
+    "packages": {
+      "title": "Packages",
+      "create": "New Package",
+      "empty": "No packages",
+      "history": "History",
+      "createDescription": "Create a new session package for {client}",
+      "name": "Package Name",
+      "totalSessions": "Total Sessions",
+      "perWeek": "Sessions/Week",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "used": "used",
+      "remaining": "remaining",
+      "renew": "Renew"
+    },
+    "recap": {
+      "today": "Today",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "noShow": "No Show",
+      "todaySessions": "Today's Sessions",
+      "upcoming": "Upcoming Sessions",
+      "noSessions": "No sessions scheduled"
     },
     "library": {
       "title": "Library",
@@ -6676,7 +6748,23 @@
       "autonomyMinimal": "Minimal",
       "autonomyStandard": "Standard",
       "autonomyFull": "Full",
-      "viewDetails": "View Details"
+      "viewDetails": "View Details",
+      "notesPlaceholder": "Add notes about this client...",
+      "saveNotes": "Save Notes",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "errorSaving": "Error",
+      "addNote": "Add Note",
+      "cancel": "Cancel",
+      "save": "Save",
+      "edit": "Edit",
+      "delete": "Delete",
+      "edited": "edited",
+      "loading": "Loading...",
+      "shareWithClient": "Share with client",
+      "makePrivate": "Make private",
+      "shared": "Shared",
+      "private": "Private"
     },
     "assignment": {
       "title": "Assign Workout",
