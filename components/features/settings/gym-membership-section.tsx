@@ -11,17 +11,17 @@ import { useGymContextStore } from '@/lib/stores/gym-context.store'
 export function GymMembershipSection() {
   const t = useTranslations('settings.gymMembership')
   const router = useRouter()
-  const { gymContext, branding, clearContext } = useGymContextStore()
+  const { gymId, gymName, isOwner, clear } = useGymContextStore()
   const [showConfirm, setShowConfirm] = useState(false)
   const [isLeaving, setIsLeaving] = useState(false)
 
   // Don't show if user is not a member of any gym
-  if (!gymContext?.gym_id) {
+  if (!gymId) {
     return null
   }
 
   // Don't show if user is the gym owner (they can't leave their own gym)
-  if (gymContext.role === 'owner') {
+  if (isOwner) {
     return null
   }
 
@@ -38,7 +38,7 @@ export function GymMembershipSection() {
       }
 
       // Clear local gym context
-      clearContext()
+      clear()
 
       // Refresh the page to update UI
       router.refresh()
@@ -63,7 +63,7 @@ export function GymMembershipSection() {
             </h3>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {t('currentGym')}: <span className="font-medium">{gymContext.gym_name}</span>
+            {t('currentGym')}: <span className="font-medium">{gymName}</span>
           </p>
         </div>
 
@@ -86,7 +86,7 @@ export function GymMembershipSection() {
                     {t('leaveConfirmTitle')}
                   </p>
                   <p className="text-sm text-orange-800 dark:text-orange-200">
-                    {t('leaveConfirmMessage', { gymName: gymContext.gym_name })}
+                    {t('leaveConfirmMessage', { gymName: gymName || '' })}
                   </p>
                 </div>
               </div>
