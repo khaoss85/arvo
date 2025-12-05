@@ -90,7 +90,15 @@ export const useGymContextStore = create<GymContextState>()(
           });
         } catch (error) {
           console.error("[GymContextStore] Failed to initialize:", error);
+          // Clear all gym-related state on error to prevent stale cache
           set({
+            gymId: null,
+            gymSlug: null,
+            gymName: null,
+            isOwner: false,
+            isStaff: false,
+            isMember: false,
+            branding: null,
             isLoading: false,
             isInitialized: true,
             error: error instanceof Error ? error.message : "Failed to load gym context",
