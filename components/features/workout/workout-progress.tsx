@@ -1,6 +1,6 @@
 'use client'
 
-import { Dumbbell, List } from 'lucide-react'
+import { Dumbbell, List, SkipForward } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { cn } from '@/lib/utils/cn'
@@ -62,6 +62,7 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
 
           const isCompleted = completedSetsCount >= totalSets
           const isCurrent = idx === currentIndex
+          const isSkipped = ex.skipped
 
           return (
             <div
@@ -70,7 +71,9 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
               className={cn(
                 "py-2 px-3 rounded-lg transition-all duration-200 flex items-center justify-between gap-2",
                 onExerciseClick && "cursor-pointer",
-                isCurrent
+                isSkipped
+                  ? "bg-gray-100/50 dark:bg-gray-800/30 opacity-60"
+                  : isCurrent
                   ? "bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800"
                   : isCompleted
                     ? "opacity-60 hover:opacity-100"
@@ -78,13 +81,19 @@ export function WorkoutProgress({ currentIndex, exercises, onReorder, onExercise
               )}
             >
               {/* Exercise Name */}
-              <span className={cn(
-                "text-sm truncate flex-1 min-w-0",
-                isCurrent ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-600 dark:text-gray-400",
-                isCompleted && "text-gray-500 dark:text-gray-500 line-through decoration-gray-300 dark:decoration-gray-600"
-              )}>
-                {ex.exerciseName}
-              </span>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {isSkipped && (
+                  <SkipForward className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                )}
+                <span className={cn(
+                  "text-sm truncate",
+                  isCurrent ? "font-semibold text-gray-900 dark:text-white" : "font-medium text-gray-600 dark:text-gray-400",
+                  isSkipped && "text-gray-400 dark:text-gray-500 line-through decoration-gray-300 dark:decoration-gray-600",
+                  isCompleted && !isSkipped && "text-gray-500 dark:text-gray-500 line-through decoration-gray-300 dark:decoration-gray-600"
+                )}>
+                  {ex.exerciseName}
+                </span>
+              </div>
 
               {/* Target Sets×Reps + Technique + Current Badge */}
               <div className="flex items-center gap-2 flex-shrink-0">

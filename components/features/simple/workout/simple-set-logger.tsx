@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, Check, Loader2, AlertTriangle } from "lucide-react";
+import { Plus, Minus, Check, Loader2, AlertTriangle, SkipForward, Undo2, Info, Target } from "lucide-react";
 import type { ExerciseExecution } from "@/lib/stores/workout-execution.store";
 import { useWorkoutExecutionStore } from "@/lib/stores/workout-execution.store";
 import { useProgressionSuggestion } from "@/lib/hooks/useAI";
+import { evaluateSkipImpactAction } from "@/app/actions/ai-actions";
+import type { SkipImpactOutput } from "@/lib/agents/skip-impact.agent";
+import { extractMuscleGroupsFromExercise } from "@/lib/utils/exercise-muscle-mapper";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -30,7 +33,7 @@ export function SimpleSetLogger({
   exercise,
   exerciseIndex,
 }: SimpleSetLoggerProps) {
-  const { logSet, workout, startedAt, exercises, setAISuggestion } = useWorkoutExecutionStore();
+  const { logSet, workout, startedAt, exercises, setAISuggestion, skipExercise, unskipExercise } = useWorkoutExecutionStore();
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion();
 
   // Get suggestion or use target values
@@ -83,6 +86,10 @@ export function SimpleSetLogger({
   const [isResting, setIsResting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingLogData, setPendingLogData] = useState<{weight: number, reps: number} | null>(null);
+  const [showSkipConfirmation, setShowSkipConfirmation] = useState(false);
+  const [isSkipping, setIsSkipping] = useState(false);
+  const [skipImpact, setSkipImpact] = useState<SkipImpactOutput | null>(null);
+  const [loadingSkipImpact, setLoadingSkipImpact] = useState(false);
 
   // Update weight/reps when current virtual set changes (for technique sets)
   useEffect(() => {
@@ -225,10 +232,124 @@ export function SimpleSetLogger({
     setIsResting(false);
   };
 
+  const handleSkipExercise = async () => {
+    setIsSkipping(true);
+    try {
+      await skipExercise(exerciseIndex);
+      setShowSkipConfirmation(false);
+    } catch (error) {
+      console.error("Failed to skip exercise:", error);
+    } finally {
+      setIsSkipping(false);
+    }
+  };
+
+  const handleUnskipExercise = async () => {
+    setIsSkipping(true);
+    try {
+      await unskipExercise(exerciseIndex);
+    } catch (error) {
+      console.error("Failed to restore exercise:", error);
+    } finally {
+      setIsSkipping(false);
+    }
+  };
+
+  // Fetch AI skip impact when dialog opens
+  const fetchSkipImpact = async () => {
+    if (loadingSkipImpact || skipImpact) return;
+
+    setLoadingSkipImpact(true);
+    try {
+      // Build input for the skip impact evaluation
+      const completedExercises = exercises
+        .slice(0, exerciseIndex)
+        .filter(ex => !ex.skipped)
+        .map(ex => ({
+          name: ex.exerciseName,
+          primaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).primary,
+          completedSets: ex.completedSets.length
+        }));
+
+      const remainingExercises = exercises
+        .slice(exerciseIndex + 1)
+        .filter(ex => !ex.skipped)
+        .map(ex => ({
+          name: ex.exerciseName,
+          primaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).primary,
+          targetSets: ex.targetSets
+        }));
+
+      const currentExerciseMuscles = extractMuscleGroupsFromExercise(exercise.exerciseName, exercise.equipmentVariant);
+
+      const result = await evaluateSkipImpactAction({
+        exerciseName: exercise.exerciseName,
+        exerciseIndex,
+        totalExercises: exercises.length,
+        completedSetsCount: exercise.completedSets.length,
+        targetSets: exercise.targetSets,
+        targetWeight: exercise.targetWeight,
+        targetReps: exercise.targetReps as [number, number],
+        primaryMuscles: currentExerciseMuscles.primary,
+        workoutType: workout?.workout_type || 'general',
+        completedExercises,
+        remainingExercises
+      });
+
+      if (result.success && result.result) {
+        setSkipImpact(result.result);
+      }
+    } catch (error) {
+      console.error('[SimpleSetLogger] Failed to fetch skip impact:', error);
+    } finally {
+      setLoadingSkipImpact(false);
+    }
+  };
+
+  // Open skip confirmation and fetch AI impact
+  const handleOpenSkipConfirmation = () => {
+    setShowSkipConfirmation(true);
+    setSkipImpact(null); // Reset previous result
+    fetchSkipImpact();
+  };
+
   const incrementWeight = () => setWeight((w: number) => Math.round((w + 2.5) * 10) / 10);
   const decrementWeight = () => setWeight((w: number) => Math.max(0, Math.round((w - 2.5) * 10) / 10));
   const incrementReps = () => setReps((r: number) => r + 1);
   const decrementReps = () => setReps((r: number) => Math.max(1, r - 1));
+
+  // If exercise is skipped, show restore option
+  if (exercise.skipped) {
+    return (
+      <Card className="bg-gray-800/50 border-gray-700 p-6">
+        <div className="flex flex-col items-center gap-3">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="w-16 h-16 rounded-full bg-gray-600 flex items-center justify-center"
+          >
+            <SkipForward className="h-8 w-8 text-gray-300" />
+          </motion.div>
+          <p className="text-gray-400 font-semibold text-lg">
+            Esercizio saltato
+          </p>
+          <Button
+            variant="outline"
+            onClick={handleUnskipExercise}
+            disabled={isSkipping}
+            className="mt-2 border-gray-600 text-gray-300 hover:bg-gray-700"
+          >
+            {isSkipping ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Undo2 className="h-4 w-4 mr-2" />
+            )}
+            Ripristina esercizio
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
   if (isExerciseComplete) {
     return (
@@ -387,6 +508,96 @@ export function SimpleSetLogger({
           </>
         )}
       </Button>
+
+      {/* Skip exercise link - subtle, positioned below log button */}
+      <button
+        onClick={handleOpenSkipConfirmation}
+        className="w-full mt-3 py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors flex items-center justify-center gap-1.5"
+      >
+        <SkipForward className="h-3.5 w-3.5" />
+        Salta esercizio
+      </button>
+
+      {/* Skip Confirmation Dialog */}
+      <Dialog open={showSkipConfirmation} onOpenChange={(open) => {
+        setShowSkipConfirmation(open);
+        if (!open) setSkipImpact(null);
+      }}>
+        <DialogContent className="max-w-sm bg-gray-900 border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              Saltare questo esercizio?
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              L&apos;esercizio non verrà conteggiato nel volume totale. Potrai ripristinarlo in seguito se cambi idea.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* AI Impact Assessment */}
+          <div className="p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+            {loadingSkipImpact ? (
+              <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                Analisi impatto...
+              </div>
+            ) : skipImpact ? (
+              <div className="space-y-2">
+                {/* Recommendation badge */}
+                <div className={cn(
+                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+                  skipImpact.recommendation === 'ok_to_skip' && "bg-green-900/50 text-green-400 border border-green-700/50",
+                  skipImpact.recommendation === 'consider_completing' && "bg-yellow-900/50 text-yellow-400 border border-yellow-700/50",
+                  skipImpact.recommendation === 'not_recommended' && "bg-red-900/50 text-red-400 border border-red-700/50"
+                )}>
+                  {skipImpact.recommendation === 'ok_to_skip' && <Check className="w-3 h-3" />}
+                  {skipImpact.recommendation === 'consider_completing' && <Info className="w-3 h-3" />}
+                  {skipImpact.recommendation === 'not_recommended' && <Target className="w-3 h-3" />}
+                  {skipImpact.recommendation === 'ok_to_skip' && "OK saltare"}
+                  {skipImpact.recommendation === 'consider_completing' && "Considera di completare"}
+                  {skipImpact.recommendation === 'not_recommended' && "Non raccomandato"}
+                </div>
+
+                {/* Impact summary */}
+                <p className="text-sm text-gray-300 leading-relaxed">{skipImpact.impactSummary}</p>
+
+                {/* Volume loss & coverage */}
+                <div className="flex flex-wrap gap-2 text-xs text-gray-400">
+                  <span className="bg-gray-700/50 px-2 py-0.5 rounded">
+                    -{skipImpact.volumeLossKg}kg volume
+                  </span>
+                  <span className="bg-gray-700/50 px-2 py-0.5 rounded">
+                    {skipImpact.muscleGroupCoverage}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">Analisi impatto non disponibile</p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" onClick={() => {
+              setShowSkipConfirmation(false);
+              setSkipImpact(null);
+            }}>
+              Annulla
+            </Button>
+            <Button
+              onClick={handleSkipExercise}
+              disabled={isSkipping}
+              variant="outline"
+              className="border-gray-600 hover:bg-gray-800"
+            >
+              {isSkipping ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <SkipForward className="h-4 w-4 mr-2" />
+              )}
+              Salta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Sanity Check Confirmation Dialog */}
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>

@@ -1110,6 +1110,8 @@
       "setsCount": "{count} serie",
       "aiRecommended": "AI raccomandato: {count} serie",
       "youAdded": "Hai aggiunto: +{count} {count, plural, one {serie} other {serie}}",
+      "skipped": "Saltato",
+      "skippedCount": "saltati",
       "notesTitle": "Note di Allenamento (Opzionale)",
       "notesDescription": "Hai avuto dolori? Problemi di tecnica? Preferenze su esercizi o recupero? Condividi qui le tue osservazioni per migliorare i prossimi allenamenti.",
       "notesPlaceholder": "Es: Ho sentito un leggero dolore alla spalla sinistra durante il Military Press. Preferisco usare i manubri per le Chest Press...",
@@ -1401,7 +1403,21 @@
         "gettingAiSuggestion": "Ottenimento suggerimento AI...",
         "exerciseLimitReached": "Hai raggiunto il limite di 3 esercizi extra. Rimuovi un esercizio per aggiungerne uno nuovo.",
         "editSet": "Modifica serie",
-        "viewHistory": "Vedi storico esercizio"
+        "viewHistory": "Vedi storico esercizio",
+        "skipExercise": "Salta esercizio",
+        "skipped": "Esercizio Saltato",
+        "skippedDescription": "Questo esercizio non verrà conteggiato nel volume totale.",
+        "restoreExercise": "Ripristina esercizio",
+        "skipConfirmTitle": "Saltare questo esercizio?",
+        "skipConfirmMessage": "L'esercizio non verrà conteggiato nel volume totale. Puoi ripristinarlo in seguito se cambi idea.",
+        "skipImpactLoading": "Analisi impatto...",
+        "skipImpactUnavailable": "Analisi impatto non disponibile",
+        "volumeLoss": "volume",
+        "skipRecommendation": {
+          "ok_to_skip": "OK saltare",
+          "consider_completing": "Considera di completare",
+          "not_recommended": "Non raccomandato"
+        }
       },
       "editSet": {
         "title": "Modifica Serie {setNumber}",
@@ -3223,7 +3239,9 @@
         "casual": "Fitness Casual",
         "casualDesc": "Allenamenti semplici, veloci ed efficaci",
         "trainers": "Personal Trainer",
-        "trainersDesc": "Gestisci clienti con programmi generati dall'AI"
+        "trainersDesc": "Gestisci clienti con programmi generati dall'AI",
+        "gyms": "Proprietari Palestre",
+        "gymsDesc": "App white-label con workout AI"
       }
     },
     "footer": {
@@ -3263,6 +3281,10 @@
         "trainers": {
           "title": "Per Personal Trainer",
           "description": "L'AI genera le schede, tu approvi. Gestisci clienti, traccia progressi, riprenditi i weekend."
+        },
+        "gyms": {
+          "title": "Per Proprietari di Palestre",
+          "description": "App fitness white-label con generazione workout AI. Il tuo brand, zero sviluppo."
         }
       }
     },
@@ -4450,6 +4472,210 @@
         "subtitle": "Unisciti a centinaia di coach che già usano Arvo per scalare il loro business.",
         "button": "Inizia Prova Gratuita",
         "note": "Nessuna carta di credito richiesta. Accesso completo per 14 giorni."
+      }
+    },
+    "forGyms": {
+      "hero": {
+        "title": "La Tua Palestra, La Tua App",
+        "subtitle": "Il Tuo Brand, Zero Sviluppo",
+        "description": "Lancia la tua app fitness brandizzata in 5 minuti. L'AI genera allenamenti personalizzati per ogni membro. White-label. Nessun codice.",
+        "cta": {
+          "primary": "Inizia Prova Gratuita",
+          "secondary": "Scopri Come Funziona"
+        },
+        "stats": {
+          "setup": "Setup in 5 Min",
+          "retention": "50% Retention Migliore",
+          "development": "Zero Sviluppo"
+        }
+      },
+      "painPoint": {
+        "title": "Lo Stack Frammentato della Palestra",
+        "subtitle": "Quanti strumenti stai gestendo in questo momento?",
+        "oldWay": {
+          "title": "Realtà Attuale",
+          "tool1": "Software gestionale iscrizioni",
+          "tool2": "App tracking generica",
+          "tool3": "Gruppi WhatsApp per comunicare",
+          "tool4": "Excel per tracciare progressi",
+          "tool5": "Moduli cartacei per iscrizioni",
+          "result": "Dati disconnessi, membri frustrati, ricavi persi"
+        },
+        "newWay": {
+          "title": "Con Arvo",
+          "feature1": "App membri brandizzata",
+          "feature2": "Generazione workout AI",
+          "feature3": "Comunicazione integrata",
+          "feature4": "Tracking progressi automatico",
+          "feature5": "Registrazione digitale",
+          "result": "Una piattaforma unificata, membri felici, business in crescita"
+        }
+      },
+      "whiteLabel": {
+        "title": "Il Tuo Brand, Ovunque",
+        "subtitle": "Personalizzazione white-label completa. I tuoi membri non vedono mai Arvo.",
+        "features": {
+          "logo": "Logo personalizzato (light & dark mode)",
+          "colors": "I colori del tuo brand",
+          "messages": "Messaggi di benvenuto personalizzati",
+          "url": "URL della tua palestra (/join/gym/nome)",
+          "onboarding": "Flusso onboarding personalizzato"
+        }
+      },
+      "memberExperience": {
+        "title": "Cosa Vedono i Tuoi Membri",
+        "subtitle": "Un'esperienza app premium. Il tuo brand.",
+        "features": {
+          "dashboard": "Dashboard personalizzata con il tuo logo",
+          "workouts": "Schede generate dall'AI",
+          "progress": "Tracking progressi con foto",
+          "animations": "Animazioni esercizi e guida",
+          "timer": "Timer recupero con supporto metodologie"
+        }
+      },
+      "aiValue": {
+        "title": "AI Che Lavora per Te",
+        "subtitle": "Ogni membro riceve un programma personalizzato. Automaticamente.",
+        "features": {
+          "methodologies": "Kuba Method, Mentzer HIT, FST-7",
+          "volume": "Tracking volume MEV/MAV/MRV",
+          "equipment": "Programmazione equipment-aware",
+          "injuries": "Rilevamento pattern infortuni",
+          "overload": "Automazione progressive overload"
+        }
+      },
+      "comparison": {
+        "title": "Come Si Confronta Arvo",
+        "subtitle": "Scopri perché i proprietari di palestre scelgono Arvo.",
+        "headers": {
+          "feature": "Funzionalità",
+          "mindbody": "Mindbody",
+          "glofox": "Glofox",
+          "virtuagym": "Virtuagym",
+          "arvo": "Arvo"
+        },
+        "rows": {
+          "whiteLabel": {
+            "feature": "App white-label",
+            "mindbody": "Parziale",
+            "glofox": "Sì",
+            "virtuagym": "Sì",
+            "arvo": "Completo"
+          },
+          "aiWorkouts": {
+            "feature": "Generazione workout AI",
+            "mindbody": "No",
+            "glofox": "No",
+            "virtuagym": "Base",
+            "arvo": "Avanzato"
+          },
+          "methodologies": {
+            "feature": "Supporto metodologie",
+            "mindbody": "No",
+            "glofox": "No",
+            "virtuagym": "No",
+            "arvo": "Kuba, Mentzer, FST-7"
+          },
+          "setupTime": {
+            "feature": "Tempo setup",
+            "mindbody": "Settimane",
+            "glofox": "Giorni",
+            "virtuagym": "Giorni",
+            "arvo": "5 minuti"
+          },
+          "startingPrice": {
+            "feature": "Prezzo iniziale",
+            "mindbody": "€139/mese",
+            "glofox": "€100/mese",
+            "virtuagym": "€59/mese",
+            "arvo": "Contattaci"
+          }
+        }
+      },
+      "pricing": {
+        "title": "Prezzi Semplici e Trasparenti",
+        "subtitle": "Scegli il piano adatto alla tua palestra.",
+        "contactCta": "Contattaci per i Prezzi",
+        "basic": {
+          "name": "Basic",
+          "description": "Per piccole palestre agli inizi",
+          "features": {
+            "members": "Fino a 50 membri",
+            "whiteLabel": "Branding white-label",
+            "ai": "Generazione workout AI",
+            "app": "Accesso app membri",
+            "analytics": "Analytics base"
+          }
+        },
+        "professional": {
+          "name": "Professional",
+          "badge": "Più Popolare",
+          "description": "Per business fitness in crescita",
+          "features": {
+            "members": "Fino a 200 membri",
+            "everything": "Tutto in Basic",
+            "staff": "Gestione staff (coach/manager)",
+            "analytics": "Analytics avanzate",
+            "support": "Supporto prioritario",
+            "registration": "Flusso registrazione custom"
+          }
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "Per grandi palestre e franchising",
+          "features": {
+            "members": "Membri illimitati",
+            "everything": "Tutto in Professional",
+            "manager": "Account manager dedicato",
+            "api": "Accesso API",
+            "integrations": "Integrazioni custom",
+            "sla": "Garanzia SLA"
+          }
+        }
+      },
+      "faq": {
+        "title": "Domande Frequenti",
+        "subtitle": "Tutto quello che devi sapere su Arvo per palestre.",
+        "items": {
+          "setup": {
+            "question": "Quanto tempo richiede il setup?",
+            "answer": "5 minuti. Carica il tuo logo, imposta i colori, condividi il link di registrazione. I membri possono iniziare immediatamente."
+          },
+          "memberPay": {
+            "question": "I membri devono pagare per l'app?",
+            "answer": "No. Il tuo abbonamento copre l'accesso dei membri. Tu decidi se/come addebitare ai membri l'iscrizione alla palestra."
+          },
+          "customize": {
+            "question": "Posso personalizzare i parametri AI?",
+            "answer": "Sì. Imposta metodologie predefinite, target volume, disponibilità attrezzature e altro a livello palestra o per singolo membro."
+          },
+          "join": {
+            "question": "Come si iscrivono i membri?",
+            "answer": "Due modi: un URL brandizzato (arvo.guru/join/gym/nome-palestra) o un codice invito di 6 caratteri da inserire nell'app."
+          },
+          "staff": {
+            "question": "Posso avere più membri dello staff?",
+            "answer": "Sì. Aggiungi coach e manager con permessi granulari. Ognuno può gestire i membri assegnati."
+          },
+          "security": {
+            "question": "I dati dei membri sono sicuri?",
+            "answer": "100%. Conforme GDPR, dati crittografati, nessuna condivisione con terze parti. I dati dei tuoi membri appartengono a te."
+          },
+          "offline": {
+            "question": "I membri possono usare l'app offline?",
+            "answer": "Sì. I workout si sincronizzano quando online. Perfetto per palestre con WiFi instabile."
+          },
+          "cancel": {
+            "question": "Cosa succede ai membri se cancello?",
+            "answer": "I membri mantengono lo storico workout. Possono esportare i dati o continuare con un account Arvo personale."
+          }
+        }
+      },
+      "cta": {
+        "title": "Pronto a Lanciare la Tua App Palestra?",
+        "subtitle": "Unisciti a centinaia di proprietari di palestre che hanno semplificato il loro stack tecnologico. Setup in 5 minuti.",
+        "button": "Richiedi una Demo",
+        "note": "14 giorni di prova gratuita. Nessuna carta di credito richiesta."
       }
     }
   },
@@ -5724,7 +5950,8 @@
       "startStreak": "Inizia il tuo streak!",
       "firstDayComplete": "Hai completato il primo giorno!",
       "keepGoing": "Continua così per costruire la tua costanza",
-      "backToHome": "Torna alla Home"
+      "backToHome": "Torna alla Home",
+      "skipped": "saltati"
     },
     "report": {
       "title": "I Tuoi Progressi",

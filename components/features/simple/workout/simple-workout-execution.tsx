@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, SkipForward } from "lucide-react";
 import type { Workout } from "@/lib/types/schemas";
 import {
   useWorkoutExecutionStore,
@@ -52,8 +52,10 @@ export function SimpleWorkoutExecution({
     initWorkout();
   }, [workout.id]);
 
-  // Check if workout is complete
+  // Check if workout is complete (skipped exercises count as "done")
   const isWorkoutComplete = exercises.every((ex) => {
+    // Skipped exercises count as complete for workout completion purposes
+    if (ex.skipped) return true;
     const warmupSetsCount = ex.warmupSets?.length || 0;
     const warmupSetsSkipped = ex.warmupSetsSkipped || 0;
     const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped;
@@ -74,11 +76,14 @@ export function SimpleWorkoutExecution({
 
   const currentExercise = exercises[currentExerciseIndex];
   const completedExercisesCount = exercises.filter((ex) => {
+    // Skipped exercises count towards progress
+    if (ex.skipped) return true;
     const warmupSetsCount = ex.warmupSets?.length || 0;
     const warmupSetsSkipped = ex.warmupSetsSkipped || 0;
     const totalSets = (warmupSetsCount - warmupSetsSkipped) + ex.targetSets;
     return ex.completedSets.length >= totalSets;
   }).length;
+  const skippedExercisesCount = exercises.filter((ex) => ex.skipped).length;
 
   if (!isInitialized) {
     return (
@@ -132,6 +137,7 @@ export function SimpleWorkoutExecution({
           const totalSets = (warmupSetsCount - warmupSetsSkipped) + ex.targetSets;
           const isComplete = ex.completedSets.length >= totalSets;
           const isCurrent = index === currentExerciseIndex;
+          const isSkipped = ex.skipped;
 
           return (
             <button
@@ -139,14 +145,18 @@ export function SimpleWorkoutExecution({
               onClick={() => goToExercise(index)}
               className={cn(
                 "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                isComplete
+                isSkipped
+                  ? "bg-gray-600 text-gray-300"
+                  : isComplete
                   ? "bg-green-500 text-white"
                   : isCurrent
                   ? "bg-primary-500 text-white scale-110"
                   : "bg-gray-800 text-gray-400"
               )}
             >
-              {isComplete ? (
+              {isSkipped ? (
+                <SkipForward className="h-3.5 w-3.5" />
+              ) : isComplete ? (
                 <Check className="h-4 w-4" />
               ) : (
                 <span className="text-xs font-medium">{index + 1}</span>

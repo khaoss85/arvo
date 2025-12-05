@@ -109,6 +109,9 @@ export interface ExerciseExecution {
   advancedTechnique?: AppliedTechnique // The technique applied to this exercise (drop_set, rest_pause, etc.)
   techniqueState?: TechniqueExecutionState // Current state during technique execution
   techniqueResult?: TechniqueExecutionResult // Final result after technique completion
+
+  // Exercise skipping
+  skipped?: boolean // Whether the user skipped this exercise (can still complete workout)
 }
 
 interface WorkoutExecutionState {
@@ -142,6 +145,10 @@ interface WorkoutExecutionState {
   editSet: (exerciseIndex: number, setIndex: number, setData: { weight: number; reps: number; rir: number; mentalReadiness?: number; notes?: string }) => Promise<void>
   deleteSet: (exerciseIndex: number, setIndex: number) => Promise<void>
   skipWarmupSets: (reason?: string) => Promise<void>
+
+  // Exercise skipping
+  skipExercise: (exerciseIndex: number) => Promise<void>
+  unskipExercise: (exerciseIndex: number) => Promise<void>
 
   // Mental readiness tracking
   setOverallMentalReadiness: (value: number) => void
@@ -408,13 +415,17 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
               advancedTechnique: ex.advancedTechnique || undefined,
               techniqueState: undefined, // Reset state on resume
               techniqueResult: undefined, // Reset results on resume
+              // Preserve skipped state on resume
+              skipped: ex.skipped || false,
             }
           })
         )
 
-        // Find first incomplete exercise
+        // Find first incomplete exercise (excluding skipped ones)
         // Must account for TOTAL expected sets (warmup + working), not just working sets
         const firstIncompleteIndex = exercises.findIndex((ex) => {
+          // Skip exercises that have been marked as skipped
+          if (ex.skipped) return false
           const warmupSetsExpected = (ex.warmupSets?.length || 0) - (ex.warmupSetsSkipped || 0)
           const totalExpectedSets = warmupSetsExpected + ex.targetSets
           return ex.completedSets.length < totalExpectedSets
@@ -755,6 +766,72 @@ export const useWorkoutExecutionStore = create<WorkoutExecutionState>()(
           console.error('Failed to skip warmup sets:', error)
           throw error
         }
+      },
+
+      // Skip an entire exercise
+      skipExercise: async (exerciseIndex: number) => {
+        const { exercises, currentExerciseIndex } = get()
+
+        const exercise = exercises[exerciseIndex]
+        if (!exercise) {
+          throw new Error('Exercise not found')
+        }
+
+        // Update local state
+        const updatedExercises = [...exercises]
+        updatedExercises[exerciseIndex] = {
+          ...exercise,
+          skipped: true
+        }
+
+        set({
+          exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+
+        // Save progress to database (skipped state is persisted in workout exercises JSONB)
+        await get().saveProgress()
+
+        // Auto-advance to next exercise if we're on the skipped one
+        if (exerciseIndex === currentExerciseIndex) {
+          const nextIncomplete = updatedExercises.findIndex((ex, idx) => {
+            if (ex.skipped) return false
+            const warmupSetsCount = ex.warmupSets?.length || 0
+            const warmupSetsSkipped = ex.warmupSetsSkipped || 0
+            const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
+            const totalSets = remainingWarmupSets + ex.targetSets
+            return ex.completedSets.length < totalSets
+          })
+
+          if (nextIncomplete >= 0) {
+            get().goToExercise(nextIncomplete)
+          }
+        }
+      },
+
+      // Unskip (restore) an exercise
+      unskipExercise: async (exerciseIndex: number) => {
+        const { exercises } = get()
+
+        const exercise = exercises[exerciseIndex]
+        if (!exercise) {
+          throw new Error('Exercise not found')
+        }
+
+        // Update local state
+        const updatedExercises = [...exercises]
+        updatedExercises[exerciseIndex] = {
+          ...exercise,
+          skipped: false
+        }
+
+        set({
+          exercises: updatedExercises,
+          lastActivityAt: new Date()
+        })
+
+        // Save progress to database
+        await get().saveProgress()
       },
 
       // Set overall mental readiness for the workout

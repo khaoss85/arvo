@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getLocale } from 'next-intl/server'
 import { getSupabaseServerClient } from '@/lib/supabase/server'
 import { getUserLanguage } from '@/lib/utils/get-user-language'
 import { ExerciseSelector } from '@/lib/agents/exercise-selector.agent'
@@ -13,6 +14,7 @@ import { WorkoutModificationValidator } from '@/lib/agents/workout-modification-
 import { ExerciseAdditionValidator, type ExerciseAdditionInput } from '@/lib/agents/exercise-addition-validator.agent'
 import { ExerciseSuggester, type ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
 import { EquipmentValidator } from '@/lib/agents/equipment-validator.agent'
+import { SkipImpactAgent, type SkipImpactInput, type SkipImpactOutput } from '@/lib/agents/skip-impact.agent'
 import { ExplanationService } from '@/lib/services/explanation.service'
 import {
   getNextWorkoutType,
@@ -1569,6 +1571,77 @@ export async function extractEquipmentNameFromImageAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to process image',
+    }
+  }
+}
+
+/**
+ * Server action to evaluate the impact of skipping an exercise
+ * Uses ultra-fast AI (gpt-5-nano) for instant feedback
+ */
+export async function evaluateSkipImpactAction(
+  input: SkipImpactInput
+): Promise<{ success: boolean; result?: SkipImpactOutput; error?: string }> {
+  try {
+    const supabase = await getSupabaseServerClient()
+    const locale = await getLocale() as 'en' | 'it'
+
+    console.log('[evaluateSkipImpactAction] Locale detected:', locale)
+
+    const agent = new SkipImpactAgent(supabase)
+    const result = await agent.evaluate(input, locale)
+
+    return { success: true, result }
+  } catch (error) {
+    console.error('[evaluateSkipImpactAction] Error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to evaluate skip impact'
+    }
+  }
+}
+
+/**
+ * Server action to extract branding from a website URL
+ * Fetches HTML and parses meta tags, colors, fonts
+ */
+export async function extractBrandingFromUrlAction(
+  url: string
+): Promise<{
+  success: boolean
+  data?: import('@/lib/types/branding-extraction.types').ExtractedBranding
+  error?: string
+}> {
+  try {
+    // Validate URL format
+    if (!url || typeof url !== 'string') {
+      return { success: false, error: 'URL is required' }
+    }
+
+    // Basic URL validation
+    let normalizedUrl = url.trim()
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `https://${normalizedUrl}`
+    }
+
+    try {
+      new URL(normalizedUrl)
+    } catch {
+      return { success: false, error: 'Invalid URL format' }
+    }
+
+    // Import service dynamically to avoid circular dependencies
+    const { BrandingExtractorService } = await import('@/lib/services/branding-extractor.service')
+
+    // Extract branding
+    const branding = await BrandingExtractorService.extractBranding(normalizedUrl)
+
+    return { success: true, data: branding }
+  } catch (error) {
+    console.error('[extractBrandingFromUrlAction] Error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to extract branding from URL'
     }
   }
 }

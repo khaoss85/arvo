@@ -1109,6 +1109,8 @@
       "setsCount": "{count} sets",
       "aiRecommended": "AI recommended: {count} sets",
       "youAdded": "You added: +{count} {count, plural, one {set} other {sets}}",
+      "skipped": "Skipped",
+      "skippedCount": "skipped",
       "notesTitle": "Workout Notes (Optional)",
       "notesDescription": "Did you experience any pain? Technique issues? Preferences on exercises or recovery? Share your observations here to improve your future workouts.",
       "notesPlaceholder": "E.g., I felt a slight pain in my left shoulder during the Military Press. I prefer to use dumbbells for Chest Press...",
@@ -1399,7 +1401,21 @@
         "gettingAiSuggestion": "Getting AI suggestion...",
         "exerciseLimitReached": "You have reached the limit of 3 extra exercises. Remove an exercise to add a new one.",
         "editSet": "Edit set",
-        "viewHistory": "View exercise history"
+        "viewHistory": "View exercise history",
+        "skipExercise": "Skip exercise",
+        "skipped": "Exercise Skipped",
+        "skippedDescription": "This exercise will not be counted in your workout volume.",
+        "restoreExercise": "Restore exercise",
+        "skipConfirmTitle": "Skip this exercise?",
+        "skipConfirmMessage": "The exercise won't be counted in your total volume. You can restore it later if you change your mind.",
+        "skipImpactLoading": "Analyzing impact...",
+        "skipImpactUnavailable": "Impact analysis unavailable",
+        "volumeLoss": "volume",
+        "skipRecommendation": {
+          "ok_to_skip": "OK to skip",
+          "consider_completing": "Consider completing",
+          "not_recommended": "Not recommended"
+        }
       },
       "editSet": {
         "title": "Edit Set {setNumber}",
@@ -3198,7 +3214,9 @@
         "casual": "Casual Fitness",
         "casualDesc": "Simple workouts, quick and effective",
         "trainers": "Personal Trainers",
-        "trainersDesc": "Manage clients with AI-generated programs"
+        "trainersDesc": "Manage clients with AI-generated programs",
+        "gyms": "Gym Owners",
+        "gymsDesc": "White-label app with AI-powered workouts"
       }
     },
     "footer": {
@@ -3238,6 +3256,10 @@
         "trainers": {
           "title": "For Personal Trainers",
           "description": "AI generates workout plans, you approve. Manage clients, track progress, reclaim your weekends."
+        },
+        "gyms": {
+          "title": "For Gym Owners",
+          "description": "White-label fitness app with AI workout generation. Your brand, zero development."
         }
       }
     },
@@ -4425,6 +4447,210 @@
         "subtitle": "Join hundreds of coaches already using Arvo to scale their business.",
         "button": "Start Free Trial",
         "note": "No credit card required. Full access for 14 days."
+      }
+    },
+    "forGyms": {
+      "hero": {
+        "title": "Your Gym, Your App",
+        "subtitle": "Your Brand, Zero Development",
+        "description": "Launch your branded fitness app in 5 minutes. AI generates personalized workouts for every member. White-label. No code.",
+        "cta": {
+          "primary": "Start Free Trial",
+          "secondary": "See How It Works"
+        },
+        "stats": {
+          "setup": "5 Min Setup",
+          "retention": "50% Better Retention",
+          "development": "Zero Development"
+        }
+      },
+      "painPoint": {
+        "title": "The Fragmented Gym Stack",
+        "subtitle": "How many tools are you juggling right now?",
+        "oldWay": {
+          "title": "Current Reality",
+          "tool1": "Membership management software",
+          "tool2": "Generic workout tracking app",
+          "tool3": "WhatsApp groups for communication",
+          "tool4": "Excel for progress tracking",
+          "tool5": "Paper forms for registrations",
+          "result": "Disconnected data, frustrated members, lost revenue"
+        },
+        "newWay": {
+          "title": "With Arvo",
+          "feature1": "Branded member app",
+          "feature2": "AI workout generation",
+          "feature3": "Built-in communication",
+          "feature4": "Automatic progress tracking",
+          "feature5": "Digital registration",
+          "result": "One unified platform, happy members, growing business"
+        }
+      },
+      "whiteLabel": {
+        "title": "Your Brand, Everywhere",
+        "subtitle": "Complete white-label customization. Your members never see Arvo.",
+        "features": {
+          "logo": "Custom logo (light & dark mode)",
+          "colors": "Your brand colors",
+          "messages": "Custom welcome messages",
+          "url": "Your gym's URL (/join/gym/your-name)",
+          "onboarding": "Personalized onboarding flow"
+        }
+      },
+      "memberExperience": {
+        "title": "What Your Members See",
+        "subtitle": "A premium app experience. Your brand.",
+        "features": {
+          "dashboard": "Personalized dashboard with your logo",
+          "workouts": "AI-generated workout plans",
+          "progress": "Progress tracking with photos",
+          "animations": "Exercise animations & guidance",
+          "timer": "Rest timer with methodology support"
+        }
+      },
+      "aiValue": {
+        "title": "AI That Works for You",
+        "subtitle": "Every member gets a personalized program. Automatically.",
+        "features": {
+          "methodologies": "Kuba Method, Mentzer HIT, FST-7",
+          "volume": "MEV/MAV/MRV volume tracking",
+          "equipment": "Equipment-aware programming",
+          "injuries": "Injury pattern detection",
+          "overload": "Progressive overload automation"
+        }
+      },
+      "comparison": {
+        "title": "How Arvo Compares",
+        "subtitle": "See why gym owners choose Arvo.",
+        "headers": {
+          "feature": "Feature",
+          "mindbody": "Mindbody",
+          "glofox": "Glofox",
+          "virtuagym": "Virtuagym",
+          "arvo": "Arvo"
+        },
+        "rows": {
+          "whiteLabel": {
+            "feature": "White-label app",
+            "mindbody": "Partial",
+            "glofox": "Yes",
+            "virtuagym": "Yes",
+            "arvo": "Full"
+          },
+          "aiWorkouts": {
+            "feature": "AI workout generation",
+            "mindbody": "No",
+            "glofox": "No",
+            "virtuagym": "Basic",
+            "arvo": "Advanced"
+          },
+          "methodologies": {
+            "feature": "Methodology support",
+            "mindbody": "No",
+            "glofox": "No",
+            "virtuagym": "No",
+            "arvo": "Kuba, Mentzer, FST-7"
+          },
+          "setupTime": {
+            "feature": "Setup time",
+            "mindbody": "Weeks",
+            "glofox": "Days",
+            "virtuagym": "Days",
+            "arvo": "5 minutes"
+          },
+          "startingPrice": {
+            "feature": "Starting price",
+            "mindbody": "$139/mo",
+            "glofox": "$100/mo",
+            "virtuagym": "$59/mo",
+            "arvo": "Contact us"
+          }
+        }
+      },
+      "pricing": {
+        "title": "Simple, Transparent Pricing",
+        "subtitle": "Choose the plan that fits your gym.",
+        "contactCta": "Contact Us for Pricing",
+        "basic": {
+          "name": "Basic",
+          "description": "For small gyms getting started",
+          "features": {
+            "members": "Up to 50 members",
+            "whiteLabel": "White-label branding",
+            "ai": "AI workout generation",
+            "app": "Member app access",
+            "analytics": "Basic analytics"
+          }
+        },
+        "professional": {
+          "name": "Professional",
+          "badge": "Most Popular",
+          "description": "For growing fitness businesses",
+          "features": {
+            "members": "Up to 200 members",
+            "everything": "Everything in Basic",
+            "staff": "Staff management (coaches/managers)",
+            "analytics": "Advanced analytics",
+            "support": "Priority support",
+            "registration": "Custom registration flow"
+          }
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "description": "For large gyms and franchises",
+          "features": {
+            "members": "Unlimited members",
+            "everything": "Everything in Professional",
+            "manager": "Dedicated account manager",
+            "api": "API access",
+            "integrations": "Custom integrations",
+            "sla": "SLA guarantee"
+          }
+        }
+      },
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Everything you need to know about Arvo for gyms.",
+        "items": {
+          "setup": {
+            "question": "How long does setup take?",
+            "answer": "5 minutes. Upload your logo, set your colors, share your registration link. Members can start immediately."
+          },
+          "memberPay": {
+            "question": "Do members need to pay for the app?",
+            "answer": "No. Your subscription covers member access. You decide if/how to charge your members for gym membership."
+          },
+          "customize": {
+            "question": "Can I customize the AI workout parameters?",
+            "answer": "Yes. Set default methodologies, volume targets, equipment availability, and more at the gym level or per-member."
+          },
+          "join": {
+            "question": "How do members join my gym?",
+            "answer": "Two ways: a branded URL (arvo.guru/join/gym/your-name) or a 6-character invite code they enter in the app."
+          },
+          "staff": {
+            "question": "Can I have multiple staff members?",
+            "answer": "Yes. Add coaches and managers with granular permissions. Each can manage assigned members."
+          },
+          "security": {
+            "question": "Is member data secure?",
+            "answer": "100%. GDPR compliant, encrypted data, no third-party sharing. Your members' data belongs to you."
+          },
+          "offline": {
+            "question": "Can members use the app offline?",
+            "answer": "Yes. Workouts sync when online. Perfect for gyms with spotty WiFi."
+          },
+          "cancel": {
+            "question": "What happens to members if I cancel?",
+            "answer": "Members keep their workout history. They can export data or continue with a personal Arvo account."
+          }
+        }
+      },
+      "cta": {
+        "title": "Ready to Launch Your Gym App?",
+        "subtitle": "Join hundreds of gym owners who've simplified their tech stack. Setup takes 5 minutes.",
+        "button": "Request a Demo",
+        "note": "14-day free trial. No credit card required."
       }
     }
   },
@@ -5699,7 +5925,8 @@
       "startStreak": "Start your streak!",
       "firstDayComplete": "You completed the first day!",
       "keepGoing": "Keep going to build your consistency",
-      "backToHome": "Back to Home"
+      "backToHome": "Back to Home",
+      "skipped": "skipped"
     },
     "report": {
       "title": "Your Progress",

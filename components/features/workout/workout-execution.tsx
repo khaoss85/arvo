@@ -93,7 +93,10 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
 
   // Check if workout is complete - only if we have exercises loaded
   // Must account for warmup sets + working sets (same logic as store's logSet)
+  // Skipped exercises count as complete for workout completion purposes
   const isWorkoutComplete = exercises.length > 0 && exercises.every(ex => {
+    // Skipped exercises count as complete
+    if (ex.skipped) return true
     const warmupSetsCount = ex.warmupSets?.length || 0
     const warmupSetsSkipped = ex.warmupSetsSkipped || 0
     const remainingWarmupSets = warmupSetsCount - warmupSetsSkipped
@@ -115,7 +118,8 @@ export function WorkoutExecution({ workout, userId }: WorkoutExecutionProps) {
         remainingWarmupSets,
         targetSets: ex.targetSets,
         totalRequired: remainingWarmupSets + ex.targetSets,
-        isComplete: ex.completedSets.length >= (remainingWarmupSets + ex.targetSets)
+        skipped: ex.skipped || false,
+        isComplete: ex.skipped || ex.completedSets.length >= (remainingWarmupSets + ex.targetSets)
       }
     }))
   }

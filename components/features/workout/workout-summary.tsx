@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sparkles, TrendingUp, Target, Heart } from 'lucide-react'
+import { Sparkles, TrendingUp, Target, Heart, SkipForward } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useWorkoutExecutionStore } from '@/lib/stores/workout-execution.store'
 import { useUIStore } from '@/lib/stores/ui.store'
@@ -550,19 +550,34 @@ export function WorkoutSummary({ workoutId, userId }: WorkoutSummaryProps) {
         {/* Exercise Breakdown - Only show after AI summary */}
         {aiSummary && (
           <div className="mb-8 text-left">
-            <h3 className="text-lg font-medium text-white mb-4">{t('exercisesCompleted')}</h3>
+            <h3 className="text-lg font-medium text-white mb-4">
+              {t('exercisesCompleted')}
+              {exercises.filter(ex => ex.skipped).length > 0 && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  ({exercises.filter(ex => ex.skipped).length} {t('skippedCount')})
+                </span>
+              )}
+            </h3>
             <div className="space-y-2">
               {exercises.map((ex, idx) => {
                 const hasModifications = ex.userAddedSets && ex.userAddedSets > 0
+                const isSkipped = ex.skipped
                 return (
-                  <div key={idx} className="bg-gray-800 rounded p-3">
+                  <div key={idx} className={`bg-gray-800 rounded p-3 ${isSkipped ? 'opacity-60' : ''}`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-300">{ex.exerciseName}</span>
-                      <span className="text-sm text-gray-400">{t('setsCount', { count: ex.completedSets.length })}</span>
+                      <div className="flex items-center gap-2">
+                        {isSkipped && <SkipForward className="w-3.5 h-3.5 text-gray-500" />}
+                        <span className={`text-sm ${isSkipped ? 'text-gray-500 line-through' : 'text-gray-300'}`}>
+                          {ex.exerciseName}
+                        </span>
+                      </div>
+                      <span className={`text-sm ${isSkipped ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {isSkipped ? t('skipped') : t('setsCount', { count: ex.completedSets.length })}
+                      </span>
                     </div>
 
                     {/* User Modification Metadata */}
-                    {hasModifications && ex.aiRecommendedSets && (
+                    {!isSkipped && hasModifications && ex.aiRecommendedSets && (
                       <div className="mt-2 pt-2 border-t border-gray-700">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-500">

@@ -6,7 +6,8 @@ import { HelpCircle, ChevronDown, Target, Clock, SkipForward, RefreshCw, Pencil,
 import { cn } from '@/lib/utils/cn'
 import { useWorkoutExecutionStore, type ExerciseExecution } from '@/lib/stores/workout-execution.store'
 import { useProgressionSuggestion } from '@/lib/hooks/useAI'
-import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction } from '@/app/actions/ai-actions'
+import { explainExerciseSelectionAction, explainProgressionAction, validateWorkoutModificationAction, evaluateSkipImpactAction } from '@/app/actions/ai-actions'
+import type { SkipImpactOutput } from '@/lib/agents/skip-impact.agent'
 import type { ModificationValidationInput, ModificationValidationOutput } from '@/lib/agents/workout-modification-validator.agent'
 import { UserProfileService } from '@/lib/services/user-profile.service'
 import { TrainingApproachService } from '@/lib/services/training-approach.service'
@@ -68,7 +69,7 @@ export function ExerciseCard({
   const t = useTranslations('workout.execution')
   const tCommon = useTranslations('common')
   const locale = useLocale()
-  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, updateTechniqueConfig, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique, logSet } = useWorkoutExecutionStore()
+  const { nextExercise, previousExercise, setAISuggestion, addSetToExercise, updateTechniqueConfig, addExerciseToWorkout, exercises: allExercises, workout, skipWarmupSets, overallMentalReadiness, audioScripts, currentExerciseIndex, setExerciseTechnique, logSet, skipExercise, unskipExercise } = useWorkoutExecutionStore()
   const { mutate: getSuggestion, isPending: isSuggestionPending } = useProgressionSuggestion()
 
   // Mental readiness emoji mapping with translations
@@ -105,6 +106,9 @@ export function ExerciseCard({
   const [showTechniqueModal, setShowTechniqueModal] = useState(false)
   const [showAnimationModal, setShowAnimationModal] = useState(false)
   const [showTechniqueSelectionModal, setShowTechniqueSelectionModal] = useState(false)
+  const [showSkipConfirmation, setShowSkipConfirmation] = useState(false)
+  const [skipImpact, setSkipImpact] = useState<SkipImpactOutput | null>(null)
+  const [loadingSkipImpact, setLoadingSkipImpact] = useState(false)
 
   // Hydration reminder state
   const [hydrationDismissedAt, setHydrationDismissedAt] = useState<Date | null>(null)
@@ -839,6 +843,76 @@ export function ExerciseCard({
     setExerciseTechnique(exerciseIndex, null)
   }
 
+  // Fetch AI skip impact when dialog opens
+  const fetchSkipImpact = async () => {
+    if (loadingSkipImpact || skipImpact) return
+
+    setLoadingSkipImpact(true)
+    try {
+      // Build input for the skip impact evaluation
+      const completedExercises = allExercises
+        .slice(0, exerciseIndex)
+        .filter(ex => !ex.skipped)
+        .map(ex => ({
+          name: ex.exerciseName,
+          primaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).primary,
+          completedSets: ex.completedSets.length
+        }))
+
+      const remainingExercises = allExercises
+        .slice(exerciseIndex + 1)
+        .filter(ex => !ex.skipped)
+        .map(ex => ({
+          name: ex.exerciseName,
+          primaryMuscles: extractMuscleGroupsFromExercise(ex.exerciseName, ex.equipmentVariant).primary,
+          targetSets: ex.targetSets
+        }))
+
+      const currentExerciseMuscles = extractMuscleGroupsFromExercise(exercise.exerciseName, exercise.equipmentVariant)
+
+      const result = await evaluateSkipImpactAction({
+        exerciseName: exercise.exerciseName,
+        exerciseIndex,
+        totalExercises: allExercises.length,
+        completedSetsCount: exercise.completedSets.length,
+        targetSets: exercise.targetSets,
+        targetWeight: exercise.targetWeight,
+        targetReps: exercise.targetReps as [number, number],
+        primaryMuscles: currentExerciseMuscles.primary,
+        workoutType: workout?.workout_type || 'general',
+        completedExercises,
+        remainingExercises
+      })
+
+      if (result.success && result.result) {
+        setSkipImpact(result.result)
+      }
+    } catch (error) {
+      console.error('[ExerciseCard] Failed to fetch skip impact:', error)
+    } finally {
+      setLoadingSkipImpact(false)
+    }
+  }
+
+  // Open skip confirmation and fetch AI impact
+  const handleOpenSkipConfirmation = () => {
+    setShowSkipConfirmation(true)
+    setSkipImpact(null) // Reset previous result
+    fetchSkipImpact()
+  }
+
+  // Handle skip exercise
+  const handleSkipExercise = async () => {
+    setShowSkipConfirmation(false)
+    setSkipImpact(null)
+    await skipExercise(exerciseIndex)
+  }
+
+  // Handle unskip/restore exercise
+  const handleUnskipExercise = async () => {
+    await unskipExercise(exerciseIndex)
+  }
+
   // Helper: Create audio script for next set
   const getNextSetAudioScript = (): AudioScript | null => {
     if (isLastSet) return null // No more sets
@@ -1099,7 +1173,33 @@ export function ExerciseCard({
       })()}
 
       {/* Current Set Logger or Next Exercise */}
-      {isLastSet ? (
+      {exercise.skipped ? (
+        /* Skipped Exercise State */
+        <div className="text-center py-8">
+          <div className="mb-4 text-gray-400">
+            <SkipForward className="w-16 h-16 mx-auto" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">{t('exercise.skipped')}</h3>
+          <p className="text-gray-400 mb-6">{t('exercise.skippedDescription')}</p>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleUnskipExercise}
+              className="w-full py-3 text-sm font-medium text-green-400 hover:text-green-300 hover:bg-green-900/20 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              {t('exercise.restoreExercise')}
+            </button>
+
+            <Button
+              onClick={handleMoveToNext}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg"
+            >
+              {exerciseIndex < totalExercises - 1 ? t('nextExercise') : t('finishWorkout')}
+            </Button>
+          </div>
+        </div>
+      ) : isLastSet ? (
         <div className="text-center py-8">
           <div className="mb-4 text-green-400">
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1200,6 +1300,15 @@ export function ExerciseCard({
                   {t('exercise.gettingAiSuggestion')}
                 </div>
               )}
+
+              {/* Skip Exercise Button - subtle, below set logger */}
+              <button
+                onClick={handleOpenSkipConfirmation}
+                className="w-full mt-4 py-2 text-sm text-gray-500 hover:text-gray-400 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <SkipForward className="h-3.5 w-3.5" />
+                {t('exercise.skipExercise')}
+              </button>
             </>
           )}
         </>
@@ -1322,6 +1431,75 @@ export function ExerciseCard({
         }
         currentExerciseIndex={exerciseIndex}
       />
+
+      {/* Skip Exercise Confirmation Dialog */}
+      {showSkipConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-xl p-6 max-w-sm w-full border border-gray-800 shadow-xl">
+            <h3 className="text-lg font-bold text-white mb-2">{t('exercise.skipConfirmTitle')}</h3>
+            <p className="text-gray-400 text-sm mb-4">{t('exercise.skipConfirmMessage')}</p>
+
+            {/* AI Impact Assessment */}
+            <div className="mb-5 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+              {loadingSkipImpact ? (
+                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  {t('exercise.skipImpactLoading')}
+                </div>
+              ) : skipImpact ? (
+                <div className="space-y-2">
+                  {/* Recommendation badge */}
+                  <div className={cn(
+                    "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium",
+                    skipImpact.recommendation === 'ok_to_skip' && "bg-green-900/50 text-green-400 border border-green-700/50",
+                    skipImpact.recommendation === 'consider_completing' && "bg-yellow-900/50 text-yellow-400 border border-yellow-700/50",
+                    skipImpact.recommendation === 'not_recommended' && "bg-red-900/50 text-red-400 border border-red-700/50"
+                  )}>
+                    {skipImpact.recommendation === 'ok_to_skip' && <Check className="w-3 h-3" />}
+                    {skipImpact.recommendation === 'consider_completing' && <Info className="w-3 h-3" />}
+                    {skipImpact.recommendation === 'not_recommended' && <Target className="w-3 h-3" />}
+                    {t(`exercise.skipRecommendation.${skipImpact.recommendation}`)}
+                  </div>
+
+                  {/* Impact summary */}
+                  <p className="text-sm text-gray-300 leading-relaxed">{skipImpact.impactSummary}</p>
+
+                  {/* Volume loss & coverage */}
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-400">
+                    <span className="bg-gray-700/50 px-2 py-0.5 rounded">
+                      -{skipImpact.volumeLossKg}kg {t('exercise.volumeLoss')}
+                    </span>
+                    <span className="bg-gray-700/50 px-2 py-0.5 rounded">
+                      {skipImpact.muscleGroupCoverage}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">{t('exercise.skipImpactUnavailable')}</p>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowSkipConfirmation(false)
+                  setSkipImpact(null)
+                }}
+                className="flex-1 py-2.5 px-4 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                {tCommon('actions.cancel')}
+              </button>
+              <button
+                onClick={handleSkipExercise}
+                className="flex-1 py-2.5 px-4 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <SkipForward className="w-4 h-4" />
+                {t('exercise.skipExercise')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

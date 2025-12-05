@@ -32,7 +32,10 @@ export default async function SimpleWorkoutRecapPage({
 
   // Calculate stats
   const totalSets = sets.filter((s) => !s.skipped).length;
-  const exerciseCount = workout.exercises?.length || 0;
+  const exercises = workout.exercises || [];
+  const exerciseCount = exercises.length;
+  const skippedExerciseCount = exercises.filter((ex: { skipped?: boolean }) => ex.skipped).length;
+  const completedExerciseCount = exerciseCount - skippedExerciseCount;
   const totalVolume = sets.reduce(
     (sum, s) => sum + (s.weight_actual || 0) * (s.reps_actual || 0),
     0
@@ -61,7 +64,8 @@ export default async function SimpleWorkoutRecapPage({
     <WorkoutRecap
       workoutId={workout.id}
       workoutName={workout.workout_name || "Workout"}
-      exerciseCount={exerciseCount}
+      exerciseCount={completedExerciseCount}
+      skippedExerciseCount={skippedExerciseCount}
       totalSets={totalSets}
       totalVolume={Math.round(totalVolume)}
     />

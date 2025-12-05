@@ -14,6 +14,7 @@ interface WorkoutRecapProps {
   workoutId: string;
   workoutName: string;
   exerciseCount: number;
+  skippedExerciseCount?: number;
   totalSets: number;
   totalVolume: number;
 }
@@ -22,6 +23,7 @@ export function WorkoutRecap({
   workoutId,
   workoutName,
   exerciseCount,
+  skippedExerciseCount = 0,
   totalSets,
   totalVolume,
 }: WorkoutRecapProps) {
@@ -144,7 +146,14 @@ export function WorkoutRecap({
                   <Dumbbell className="h-6 w-6 text-blue-400" />
                 </div>
                 <p className="text-2xl font-bold text-white">{exerciseCount}</p>
-                <p className="text-xs text-gray-400">{t("exercisesDone")}</p>
+                <p className="text-xs text-gray-400">
+                  {t("exercisesDone")}
+                  {skippedExerciseCount > 0 && (
+                    <span className="block text-gray-500">
+                      ({skippedExerciseCount} {t("skipped")})
+                    </span>
+                  )}
+                </p>
               </div>
 
               <div className="text-center">
