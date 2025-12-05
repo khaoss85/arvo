@@ -51,7 +51,10 @@ export function GymBrandingProvider({ children }: GymBrandingProviderProps) {
   }, [user?.id, _hasHydrated, isInitialized, initialize, clear]);
 
   // Apply branding colors as CSS variables
+  // Wait for isInitialized to prevent applying cached branding before DB validation
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!branding?.primary_color) {
       // Remove any previously applied custom colors
       removeColorScale(document.documentElement, "primary");
@@ -72,10 +75,11 @@ export function GymBrandingProvider({ children }: GymBrandingProviderProps) {
     return () => {
       removeColorScale(document.documentElement, "primary");
     };
-  }, [branding?.primary_color, resolvedTheme]);
+  }, [branding?.primary_color, resolvedTheme, isInitialized]);
 
   // Apply secondary color if present
   useEffect(() => {
+    if (!isInitialized) return;
     if (!branding?.secondary_color) return;
 
     const hsl = parseHSL(branding.secondary_color);
@@ -91,10 +95,11 @@ export function GymBrandingProvider({ children }: GymBrandingProviderProps) {
     return () => {
       removeColorScale(document.documentElement, "secondary");
     };
-  }, [branding?.secondary_color, resolvedTheme]);
+  }, [branding?.secondary_color, resolvedTheme, isInitialized]);
 
   // Apply accent color if present
   useEffect(() => {
+    if (!isInitialized) return;
     if (!branding?.accent_color) return;
 
     const hsl = parseHSL(branding.accent_color);
@@ -110,10 +115,12 @@ export function GymBrandingProvider({ children }: GymBrandingProviderProps) {
     return () => {
       removeColorScale(document.documentElement, "accent");
     };
-  }, [branding?.accent_color, resolvedTheme]);
+  }, [branding?.accent_color, resolvedTheme, isInitialized]);
 
   // Apply custom font if present
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!branding?.font_family) {
       document.documentElement.style.removeProperty("--font-gym-body");
       return;
@@ -141,7 +148,7 @@ export function GymBrandingProvider({ children }: GymBrandingProviderProps) {
     return () => {
       document.documentElement.style.removeProperty("--font-gym-body");
     };
-  }, [branding?.font_family]);
+  }, [branding?.font_family, isInitialized]);
 
   return <>{children}</>;
 }
