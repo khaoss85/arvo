@@ -8,6 +8,7 @@ import { ClientDashboardPreview } from "@/components/features/landing-coach/clie
 import { ProgressMonitoringSection } from "@/components/features/landing-coach/progress-monitoring-section";
 import { InterfaceModesSection } from "@/components/features/landing-coach/interface-modes-section";
 import { CoachComparison } from "@/components/features/landing-coach/coach-comparison";
+import { GettingStartedSection } from "@/components/features/landing-coach/getting-started-section";
 import { CoachFAQ } from "@/components/features/landing-coach/coach-faq";
 import { CoachCTA } from "@/components/features/landing-coach/coach-cta";
 import { Footer } from "@/components/features/landing/footer";
@@ -98,6 +99,7 @@ export default async function ForTrainersPage() {
         <ProgressMonitoringSection />
         <InterfaceModesSection />
         <CoachComparison />
+        <GettingStartedSection />
         <CoachFAQ />
         <CoachCTA isAuthenticated={isAuthenticated} showWaitlist={showWaitlist} />
         <Footer />

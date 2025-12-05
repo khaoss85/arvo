@@ -4437,6 +4437,24 @@
           }
         }
       },
+      "gettingStarted": {
+        "title": "Iniziare è Semplice",
+        "subtitle": "Pronto a coaching più smart in pochi minuti",
+        "steps": {
+          "invite": {
+            "title": "Invita il cliente",
+            "description": "Condividi un link o codice. Si registra in 2 minuti."
+          },
+          "generate": {
+            "title": "L'AI genera, tu approvi",
+            "description": "Programma completo in secondi. Rivedi e personalizza."
+          },
+          "train": {
+            "title": "Il cliente inizia",
+            "description": "Vede l'allenamento nell'app. Tu monitori tutto."
+          }
+        }
+      },
       "faq": {
         "title": "FAQ per Coach",
         "subtitle": "Domande comuni sul coaching con Arvo.",

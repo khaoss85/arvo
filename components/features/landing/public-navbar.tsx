@@ -4,7 +4,7 @@ import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, Dumbbell, Code2, Sparkles, Users } from "lucide-react";
+import { Menu, X, ChevronDown, Dumbbell, Code2, Sparkles, Users, Building2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 
@@ -58,6 +58,7 @@ export function PublicNavbar({ isAuthenticated = false }: PublicNavbarProps) {
     { href: '/', label: t('idealFor.techSavvy'), icon: Code2, description: t('idealFor.techSavvyDesc') },
     { href: '/lite', label: t('idealFor.casual'), icon: Sparkles, description: t('idealFor.casualDesc') },
     { href: '/for-trainers', label: t('idealFor.trainers'), icon: Users, description: t('idealFor.trainersDesc') },
+    { href: '/for-gyms', label: t('idealFor.gyms'), icon: Building2, description: t('idealFor.gymsDesc') },
   ];
 
   return (
@@ -98,7 +99,7 @@ export function PublicNavbar({ isAuthenticated = false }: PublicNavbarProps) {
                 <button
                   onClick={() => setIdealForOpen(!idealForOpen)}
                   className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary ${
-                    idealForOpen || ['/pro', '/lite', '/for-trainers'].includes(pathname)
+                    idealForOpen || ['/pro', '/lite', '/for-trainers', '/for-gyms'].includes(pathname)
                       ? 'text-primary'
                       : 'text-muted-foreground'
                   }`}

@@ -4412,6 +4412,24 @@
           }
         }
       },
+      "gettingStarted": {
+        "title": "Getting Started is Easy",
+        "subtitle": "Ready to coach smarter in minutes",
+        "steps": {
+          "invite": {
+            "title": "Invite your client",
+            "description": "Share a link or code. They sign up in 2 minutes."
+          },
+          "generate": {
+            "title": "AI generates, you approve",
+            "description": "Complete workout program ready in seconds. Review and customize."
+          },
+          "train": {
+            "title": "Client starts training",
+            "description": "They see the workout in their app. You track everything."
+          }
+        }
+      },
       "faq": {
         "title": "FAQ for Coaches",
         "subtitle": "Common questions about coaching with Arvo.",

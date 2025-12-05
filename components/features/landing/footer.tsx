@@ -4,7 +4,7 @@ import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { Dumbbell, Code2, Sparkles, Users } from "lucide-react";
+import { Dumbbell, Code2, Sparkles, Users, Building2 } from "lucide-react";
 import { PublicLanguageSwitch } from "./public-language-switch";
 
 export function Footer() {
@@ -16,6 +16,7 @@ export function Footer() {
   const isSimplePage = pathname === '/lite';
   const isFeaturesPage = pathname === '/features';
   const isTrainersPage = pathname === '/for-trainers';
+  const isGymsPage = pathname === '/for-gyms';
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12 px-4">
@@ -134,7 +135,7 @@ export function Footer() {
             )}
 
             {/* Show Personal Trainers card on main, pro, simple and features pages */}
-            {(isMainPage || isProPage || isSimplePage || isFeaturesPage) && !isTrainersPage && (
+            {(isMainPage || isProPage || isSimplePage || isFeaturesPage || isGymsPage) && !isTrainersPage && (
               <Link
                 href="/for-trainers"
                 className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
@@ -147,6 +148,26 @@ export function Footer() {
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {t('idealFor.trainers.description')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )}
+
+            {/* Show Gym Owners card on main, pro, simple, features and trainers pages */}
+            {(isMainPage || isProPage || isSimplePage || isFeaturesPage || isTrainersPage) && !isGymsPage && (
+              <Link
+                href="/for-gyms"
+                className="group p-4 rounded-lg border border-border hover:border-primary-400 dark:hover:border-primary-600 transition-colors bg-background"
+              >
+                <div className="flex items-start gap-3">
+                  <Building2 className="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {t('idealFor.gyms.title')}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('idealFor.gyms.description')}
                     </p>
                   </div>
                 </div>
