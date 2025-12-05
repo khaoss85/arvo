@@ -1,13 +1,16 @@
 "use client";
 
 import * as React from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Sparkles, Zap, Check, Users } from "lucide-react";
+import { Sparkles, Zap, Check, Users, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAppMode } from "@/lib/hooks/useAppMode";
+import { useUserRole } from "@/lib/hooks/useUserRole";
 import { Card } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import type { AppMode } from "@/lib/stores/app-mode.store";
 
 interface AppModeToggleProps {
   className?: string;
@@ -16,9 +19,10 @@ interface AppModeToggleProps {
 export function AppModeToggle({ className }: AppModeToggleProps) {
   const t = useTranslations("simpleMode.settings");
   const { mode, isLoading, switchToMode } = useAppMode();
+  const { canAccessCoachMode, canAccessGymAdminMode, isLoading: isRoleLoading } = useUserRole();
   const router = useRouter();
 
-  const modes = [
+  const modes = useMemo(() => [
     {
       id: "simple" as const,
       name: t("trainingMode"),
@@ -47,12 +51,30 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",
       borderColor: "border-orange-500",
-      disabled: true,
-      badge: t("comingSoon"),
+      disabled: !canAccessCoachMode,
+      badge: canAccessCoachMode ? undefined : t("comingSoon"),
     },
-  ];
+    {
+      id: "gym-admin" as const,
+      name: t("gymAdminMode"),
+      description: t("gymAdminModeDescription"),
+      icon: Building2,
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500",
+      disabled: !canAccessGymAdminMode,
+      badge: canAccessGymAdminMode ? undefined : t("comingSoon"),
+      isExternal: true,
+    },
+  ], [t, canAccessCoachMode, canAccessGymAdminMode]);
 
-  const handleModeSelect = async (newMode: "simple" | "advanced") => {
+  const handleModeSelect = async (newMode: AppMode | "gym-admin") => {
+    // Gym admin is a separate section, not a mode switch
+    if (newMode === "gym-admin") {
+      router.push("/gym-admin");
+      return;
+    }
+
     if (newMode === mode) return;
 
     await switchToMode(newMode);
@@ -60,6 +82,8 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
     // Redirect to appropriate dashboard after mode switch
     if (newMode === "simple") {
       router.push("/simple");
+    } else if (newMode === "coach") {
+      router.push("/coach");
     } else {
       router.push("/dashboard");
     }
@@ -79,7 +103,7 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
             whileTap={!isDisabled ? { scale: 0.99 } : undefined}
           >
             <Card
-              onClick={() => !isDisabled && handleModeSelect(modeOption.id as "simple" | "advanced")}
+              onClick={() => !isDisabled && !isLoading && !isRoleLoading && handleModeSelect(modeOption.id)}
               className={cn(
                 "relative p-4 transition-all",
                 "border-2",
@@ -89,7 +113,7 @@ export function AppModeToggle({ className }: AppModeToggleProps) {
                 !isDisabled && isSelected
                   ? cn(modeOption.borderColor, modeOption.bgColor)
                   : !isDisabled && "border-transparent hover:border-gray-200 dark:hover:border-gray-700",
-                isLoading && "opacity-50 cursor-not-allowed"
+                (isLoading || isRoleLoading) && "opacity-50 cursor-not-allowed"
               )}
             >
               <div className="flex items-start gap-4">
