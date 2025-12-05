@@ -696,21 +696,145 @@ Make user safety and preferences your top priority.`
       || (vars?.sets?.range ? vars.sets.range[1] : null)
     const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
 
-    // Calculate required exercise count per muscle based on targetVolume and setsPerExercise
+    // === MUSCLE AGGREGATION LOGIC ===
+    // Aggregate small-volume sub-muscles to reduce exercise count
+    // This prevents workout explosion (12+ exercises) when split uses granular muscle names
+    const MUSCLE_AGGREGATION_MAP: Record<string, string> = {
+      'shoulders_front': 'shoulders',
+      'shoulders_side': 'shoulders',
+      'shoulders_rear': 'shoulders',
+      'chest_upper': 'chest',
+      'chest_lower': 'chest',
+      'triceps_long': 'triceps',
+      'triceps_lateral': 'triceps',
+      'triceps_medial': 'triceps',
+      'biceps_long': 'biceps',
+      'biceps_short': 'biceps',
+    }
+    const MIN_SETS_FOR_GRANULAR = 6 // Only keep granular muscle if it has ≥6 sets
+
+    // Dynamic max exercises based on approach and workout type
+    // Approach defines exercise count limits (e.g., Heavy Duty: 3-5, Kuba: 4-6)
+    const approachMaxExercises = approach.exerciseSelection?.exercisesPerWorkout?.max || 6
+
+    // Workout type adjustments (Full Body needs more exercises, Bro Split fewer)
+    const WORKOUT_TYPE_ADJUSTMENTS: Record<string, number> = {
+      'full_body': 8,   // Full body: more muscles, 1-2 exercises each
+      'chest': 5,       // Bro split single muscle: fewer exercises, more sets each
+      'back': 5,
+      'shoulders': 5,
+      'arms': 5,
+      'push': 6,        // PPL: moderate
+      'pull': 6,
+      'legs': 6,
+      'upper': 7,       // Upper/Lower: moderate-high
+      'lower': 6,
+    }
+
+    // Use the smaller of: approach max OR workout-type recommendation
+    const workoutTypeMax = WORKOUT_TYPE_ADJUSTMENTS[input.workoutType] || 6
+    const MAX_EXERCISES_PER_WORKOUT = Math.min(approachMaxExercises, workoutTypeMax)
+
+    console.log('[ExerciseSelector] Dynamic max exercises:', {
+      approachMax: approachMaxExercises,
+      workoutTypeMax,
+      finalMax: MAX_EXERCISES_PER_WORKOUT,
+      workoutType: input.workoutType,
+      approachName: approach.name
+    })
+
+    // Aggregate targetVolume if sub-muscles have < MIN_SETS_FOR_GRANULAR sets
+    let volumeForCalculation = input.targetVolume || {}
+    if (input.targetVolume) {
+      const aggregatedVolume: Record<string, number> = {}
+      for (const [muscle, sets] of Object.entries(input.targetVolume)) {
+        const numSets = typeof sets === 'number' ? sets : 0
+        if (numSets === 0) continue
+
+        // Check if this is a sub-muscle with low volume that should be aggregated
+        const parentMuscle = MUSCLE_AGGREGATION_MAP[muscle]
+        if (parentMuscle && numSets < MIN_SETS_FOR_GRANULAR) {
+          // Aggregate into parent muscle
+          aggregatedVolume[parentMuscle] = (aggregatedVolume[parentMuscle] || 0) + numSets
+          console.log(`[ExerciseSelector] Aggregating ${muscle} (${numSets} sets) into ${parentMuscle}`)
+        } else {
+          // Keep as-is (either not a sub-muscle, or has enough volume to warrant dedicated exercise)
+          aggregatedVolume[muscle] = (aggregatedVolume[muscle] || 0) + numSets
+        }
+      }
+      volumeForCalculation = aggregatedVolume
+
+      if (JSON.stringify(volumeForCalculation) !== JSON.stringify(input.targetVolume)) {
+        console.log('[ExerciseSelector] Aggregated targetVolume:', {
+          original: input.targetVolume,
+          aggregated: volumeForCalculation
+        })
+      }
+    }
+
+    // Calculate required exercise count per muscle based on (aggregated) targetVolume and setsPerExercise
     // This ensures AI knows HOW MANY exercises to generate, not just total sets
     const exerciseCountByMuscle: Record<string, number> = {}
-    if (input.targetVolume && maxSetsPerExercise) {
-      for (const [muscle, targetSets] of Object.entries(input.targetVolume)) {
+    if (Object.keys(volumeForCalculation).length > 0 && maxSetsPerExercise) {
+      for (const [muscle, targetSets] of Object.entries(volumeForCalculation)) {
         const sets = typeof targetSets === 'number' ? targetSets : 0
         if (sets > 0) {
           exerciseCountByMuscle[muscle] = Math.ceil(sets / maxSetsPerExercise)
         }
       }
       console.log('[ExerciseSelector] Calculated exercise count requirements:', {
-        targetVolume: input.targetVolume,
+        targetVolume: volumeForCalculation,
         setsPerExercise: maxSetsPerExercise,
         exerciseCountByMuscle
       })
+    }
+
+    // === ENFORCE MAX EXERCISES LIMIT + PRESERVE VOLUME ===
+    const totalExercisesRequired = Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)
+    const totalTargetSets = Object.values(volumeForCalculation).reduce((sum, sets) => sum + (sets as number), 0)
+    let effectiveSetsPerExercise = maxSetsPerExercise // Default from approach
+
+    // Calculate capacity with current constraints
+    const exercisesToUse = Math.min(totalExercisesRequired, MAX_EXERCISES_PER_WORKOUT)
+    const currentCapacity = exercisesToUse * maxSetsPerExercise
+
+    // FIX: Check if target volume exceeds capacity EVEN when exercises are within limit
+    if (totalTargetSets > currentCapacity) {
+      console.log('[ExerciseSelector] Volume adjustment needed:', {
+        totalTargetSets,
+        currentCapacity,
+        exercisesToUse,
+        originalSetsPerExercise: maxSetsPerExercise
+      })
+
+      // Calculate required sets per exercise to meet volume target
+      effectiveSetsPerExercise = Math.ceil(totalTargetSets / exercisesToUse)
+
+      // Cap at 4 sets max (reasonable for any approach while hitting volume)
+      effectiveSetsPerExercise = Math.min(effectiveSetsPerExercise, 4)
+
+      console.log('[ExerciseSelector] Increased sets per exercise:', {
+        newSetsPerExercise: effectiveSetsPerExercise,
+        newCapacity: exercisesToUse * effectiveSetsPerExercise,
+        targetAchievable: (exercisesToUse * effectiveSetsPerExercise) >= totalTargetSets * 0.8
+      })
+    }
+
+    // Handle case when too many exercises required - scale down
+    if (totalExercisesRequired > MAX_EXERCISES_PER_WORKOUT) {
+      console.log('[ExerciseSelector] WARNING: Too many exercises required, scaling down', {
+        totalRequired: totalExercisesRequired,
+        max: MAX_EXERCISES_PER_WORKOUT,
+        exerciseCountByMuscle: { ...exerciseCountByMuscle }
+      })
+
+      // Scale down exercise counts proportionally
+      const scaleFactor = MAX_EXERCISES_PER_WORKOUT / totalExercisesRequired
+      for (const muscle of Object.keys(exerciseCountByMuscle)) {
+        exerciseCountByMuscle[muscle] = Math.max(1, Math.round(exerciseCountByMuscle[muscle] * scaleFactor))
+      }
+
+      console.log('[ExerciseSelector] Scaled exercise counts:', exerciseCountByMuscle)
     }
 
     // Load user's recently used exercises for naming consistency
@@ -1170,40 +1294,51 @@ ${Object.entries(input.targetVolume).map(([muscle, sets]) => {
   return `✓ ${muscle}: ${setCount} sets (acceptable range: ${minSets}-${maxSets} sets)`
 }).join('\n')}
 
-${Object.keys(exerciseCountByMuscle).length > 0 ? `
-⚠️⚠️⚠️ CRITICAL VOLUME COMPLIANCE CHECK ⚠️⚠️⚠️
+${Object.keys(volumeForCalculation).length > 0 ? `
+=== 🎯 VOLUME PLANNING (AI-DRIVEN) ===
 
-=== 🔢 MANDATORY EXERCISE COUNT REQUIREMENTS ===
-
-The following exercise counts are MANDATORY - not suggestions!
-Your response WILL BE REJECTED if you don't meet these minimums:
-
-${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
-  `🎯 ${muscle}: ${count} exercise${count > 1 ? 's' : ''} MINIMUM (${input.targetVolume?.[muscle] || 0} sets ÷ ${maxSetsPerExercise} sets/ex = ${count})`
+You have the following TARGET VOLUMES from the split plan:
+${Object.entries(volumeForCalculation).map(([muscle, sets]) =>
+  `• ${muscle}: ${sets} sets`
 ).join('\n')}
 
-⚠️ THIS IS A HARD CONSTRAINT - NO EXCEPTIONS:
-- If a muscle needs 3 exercises, you MUST generate EXACTLY 3 different exercises targeting that muscle as PRIMARY
-- Each exercise MUST have ${maxSetsPerExercise} working sets (from approach methodology)
-- The math MUST work: exercises × sets/exercise = target volume
+TOTAL TARGET: ${Object.values(volumeForCalculation).reduce((sum, s) => sum + (s as number), 0)} sets
 
-Example for this workout:
-${Object.entries(exerciseCountByMuscle).slice(0, 2).map(([muscle, count]) => {
-  const targetSets = input.targetVolume?.[muscle] || 0
-  return `- ${muscle}: ${count} exercises × ${maxSetsPerExercise} sets = ${count * (maxSetsPerExercise || 2)} sets (target: ${targetSets})`
-}).join('\n')}
+VOLUME REQUIREMENTS:
+• Sets per exercise: ${effectiveSetsPerExercise} sets (REQUIRED - this is calculated to meet your volume targets)
+• Each exercise MUST have ${effectiveSetsPerExercise} working sets to reach the total target
+• Max exercises this workout: ${MAX_EXERCISES_PER_WORKOUT}
+• With ${MAX_EXERCISES_PER_WORKOUT} exercises × ${effectiveSetsPerExercise} sets = ${MAX_EXERCISES_PER_WORKOUT * effectiveSetsPerExercise} sets capacity
 
-🔒 BEFORE RESPONDING, YOU MUST VERIFY:
-□ Count your exercises for each muscle group listed above
-□ Each muscle meets the MINIMUM exercise count
-□ Total working sets = exercises × ${maxSetsPerExercise}
+YOUR TASK:
+Plan how to achieve the target volume for each muscle within the exercise limit.
+CRITICAL RULES:
+- Each exercise MUST have ${effectiveSetsPerExercise} working sets (not 2, not 3 - exactly ${effectiveSetsPerExercise})
+- Prioritize muscles with higher target volume
+- Use compound exercises to cover multiple muscles efficiently
+- Slightly under-hit secondary muscles (-20% acceptable) if needed to stay within limit
 
-❌ REJECTION CRITERIA (DO NOT SUBMIT IF ANY APPLY):
-- ANY muscle below minimum exercise count = REJECTED
-- Total volume < target volume = REJECTED
-- Missing a required muscle group entirely = REJECTED
+SMART VOLUME DISTRIBUTION:
+1. Compound exercises count toward ALL muscles they train
+   - Bench Press (${effectiveSetsPerExercise} sets) → chest: ${effectiveSetsPerExercise} sets + triceps: ~${Math.round(effectiveSetsPerExercise * 0.5)} sets (secondary)
+2. Order matters: heavy compounds first, isolations after
+3. High-volume muscles (>8 sets) may need 2-3 exercises × ${effectiveSetsPerExercise} sets each
+4. Low-volume muscles (<6 sets) can often share compound work
 
-FAILURE TO MEET EXERCISE COUNT = VOLUME UNDER-TARGET = REJECTION
+CONSTRAINTS:
+• Total exercises ≤ ${MAX_EXERCISES_PER_WORKOUT} (HARD LIMIT)
+• Each exercise = ${effectiveSetsPerExercise} working sets (MANDATORY)
+• Each muscle should reach ±20% of target volume
+• No muscle should be completely missed (at least 1 exercise hitting it)
+
+Example reasoning with ${effectiveSetsPerExercise} sets per exercise:
+"Chest target 10 sets → Bench ${effectiveSetsPerExercise} + Incline ${effectiveSetsPerExercise} + Flyes ${effectiveSetsPerExercise} = ${effectiveSetsPerExercise * 3} sets ✓
+ Shoulders target 8 sets → OHP ${effectiveSetsPerExercise} + Lateral Raise ${effectiveSetsPerExercise} + (compounds give ~${Math.round(effectiveSetsPerExercise * 0.5)}) = ${effectiveSetsPerExercise * 2 + Math.round(effectiveSetsPerExercise * 0.5)} sets ✓
+ Total: 5 exercises × ${effectiveSetsPerExercise} sets = ${5 * effectiveSetsPerExercise} sets ✓"
+
+🔒 VERIFICATION:
+Before finalizing, verify each muscle reaches ±20% of target.
+If over ${MAX_EXERCISES_PER_WORKOUT} exercises, combine or remove lowest-priority isolations.
 ` : ''}
 
 ${(() => {
@@ -1323,30 +1458,27 @@ ${input.sessionPrinciples.map(p => `- ${p}`).join('\n')}` : ''}
       * Middle sets (3-4): Intensity cues - "Visualize the muscle contracting hard"
       * Final sets: Power/explosive cues - "Imagine explosive power through the movement"`
 
-    // Pre-compute volume requirements summary for primacy effect (GPT-5.1 hybrid approach)
-    const volumeRequirementsSummary = Object.keys(exerciseCountByMuscle).length > 0
+    // Pre-compute volume requirements summary for primacy effect
+    const volumeRequirementsSummary = Object.keys(volumeForCalculation).length > 0
       ? `
-🚨🚨🚨 CRITICAL EXERCISE COUNT REQUIREMENTS - READ FIRST 🚨🚨🚨
+🎯 VOLUME TARGETS - PLAN YOUR DISTRIBUTION 🎯
 
-<critical_volume_requirements>
-<mandatory>TRUE</mandatory>
-
-YOU MUST GENERATE EXACTLY THESE EXERCISE COUNTS:
-${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
-  `• ${muscle}: ${count} exercise${count > 1 ? 's' : ''} (${input.targetVolume?.[muscle]} sets ÷ ${maxSetsPerExercise} sets/ex)`
+<volume_targets>
+TARGET VOLUMES (from split plan):
+${Object.entries(volumeForCalculation).map(([muscle, sets]) =>
+  `• ${muscle}: ${sets} sets`
 ).join('\n')}
 
-TOTAL EXERCISES NEEDED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
+TOTAL: ${Object.values(volumeForCalculation).reduce((sum, s) => sum + (s as number), 0)} sets
 
-<solution_completeness>
-- You MUST generate ALL exercises for EVERY muscle group listed
-- DO NOT be overly concise or stop early
-- Incomplete workouts will be REJECTED
-- Each exercise = ${maxSetsPerExercise} working sets
-</solution_completeness>
-</critical_volume_requirements>
+CONSTRAINTS:
+• Max ${MAX_EXERCISES_PER_WORKOUT} exercises (HARD LIMIT)
+• ${maxSetsPerExercise || 2}-${(maxSetsPerExercise || 2) + 2} sets per exercise (flexible)
+• Each muscle within ±20% of target
 
-🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+YOU DECIDE: How to distribute exercises to hit these volumes efficiently.
+Use compounds strategically - they count toward multiple muscles!
+</volume_targets>
 
 `
       : ''
@@ -1535,22 +1667,22 @@ FAILURE TO APPLY TECHNIQUES when approach supports them = INCOMPLETE WORKOUT
     <name>🎯 TARGET VOLUME & EXERCISE COUNT</name>
     <description>Defines WHAT muscles to train and HOW MANY exercises per muscle</description>
     <enforcement>
-      You MUST meet target volume for EACH muscle. Given ${maxSetsPerExercise || 'the approach'} sets/exercise:
+      You MUST meet target volume for EACH muscle. Given ${effectiveSetsPerExercise || 'the approach'} sets/exercise:
       - Calculate required exercises: targetVolume ÷ setsPerExercise = exercise count
       - Generate AT LEAST that many exercises per muscle as PRIMARY target
       - Total sets = exercises × setsPerExercise must match targetVolume (±20%)
     </enforcement>
-    ${Object.keys(exerciseCountByMuscle).length > 0 ? `
-    <exercise_count_requirements>
-${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
-  `      - ${muscle}: ${count} exercises (${input.targetVolume?.[muscle] || 0} sets ÷ ${maxSetsPerExercise} = ${count})`
+    ${Object.keys(volumeForCalculation).length > 0 ? `
+    <volume_targets>
+${Object.entries(volumeForCalculation).map(([muscle, sets]) =>
+  `      - ${muscle}: ${sets} sets target`
 ).join('\n')}
-    </exercise_count_requirements>
+    </volume_targets>
     ` : ''}
     ${input.sessionFocus ? `
     <required_muscles>${input.sessionFocus.join(', ')}</required_muscles>
     ` : ''}
-    <binding>This is CRITICAL - failure to meet exercise count = volume under-target = REJECTION</binding>
+    <binding>Plan your exercise distribution to reach these volumes within ${MAX_EXERCISES_PER_WORKOUT} exercises max.</binding>
   </priority_2>
 
   <priority_3 level="IMPORTANT" override="priority_4_and_below">
@@ -1581,12 +1713,12 @@ ${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
 <constraint_interaction_rules>
   <complementary_relationship>
     Approach methodology (Priority 1) and Target Volume (Priority 2) are COMPLEMENTARY, not conflicting:
-    - Priority 1 defines HOW MANY SETS per exercise (e.g., ${maxSetsPerExercise || 2} sets/exercise)
+    - Priority 1 defines HOW MANY SETS per exercise (e.g., ${effectiveSetsPerExercise || 2} sets/exercise)
     - Priority 2 defines TOTAL VOLUME per muscle (e.g., 8 sets for biceps)
     - Solution: ADJUST EXERCISE COUNT to satisfy both!
 
-    Example: biceps target = 8 sets, approach = ${maxSetsPerExercise || 2} sets/exercise
-    → Generate ${8 / (maxSetsPerExercise || 2)} biceps exercises × ${maxSetsPerExercise || 2} sets = 8 sets total ✓
+    Example: biceps target = 8 sets, approach = ${effectiveSetsPerExercise || 2} sets/exercise
+    → Generate ${8 / (effectiveSetsPerExercise || 2)} biceps exercises × ${effectiveSetsPerExercise || 2} sets = 8 sets total ✓
 
     NEVER violate Priority 1 by adding more sets per exercise.
     INSTEAD, add MORE EXERCISES to reach the volume target.
@@ -1893,11 +2025,11 @@ For EACH required muscle:
 **If ANY required muscle is missing → You MUST ADD an exercise before finalizing**
 ` : ''}
 
-${maxTotalSets || maxSetsPerExercise ? `
+${maxTotalSets || effectiveSetsPerExercise ? `
 **STEP 3: Approach Constraints Verification**
 
 ${maxTotalSets ? `Max total sets per workout: ${maxTotalSets}` : ''}
-${maxSetsPerExercise ? `Max sets per exercise: ${maxSetsPerExercise}` : ''}
+${effectiveSetsPerExercise ? `Sets per exercise: ${effectiveSetsPerExercise}` : ''}
 
 Calculate:
   → Total sets across ALL exercises = [sum all exercise sets]
@@ -1905,7 +2037,7 @@ Calculate:
 
 Check:
   ${maxTotalSets ? `→ Total ≤ ${maxTotalSets}? If NO → REDUCE sets or REMOVE exercises` : ''}
-  ${maxSetsPerExercise ? `→ All exercises ≤ ${maxSetsPerExercise} sets? If NO → REDUCE sets per exercise` : ''}
+  ${effectiveSetsPerExercise ? `→ All exercises ≈ ${effectiveSetsPerExercise} sets? If NO → ADJUST sets per exercise` : ''}
 
 **If constraints violated → You MUST REVISE before finalizing**
 ` : ''}
@@ -2053,19 +2185,19 @@ Required JSON structure:
 
 **REMINDER:** The "insightInfluencedChanges" array is MANDATORY. If you made no changes due to insights/memories, return an empty array [].
 
-${Object.keys(exerciseCountByMuscle).length > 0 ? `
+${Object.keys(volumeForCalculation).length > 0 ? `
 ═══════════════════════════════════════════════════════════════
 <validation_checklist>
-⚠️ FINAL CHECK BEFORE SUBMITTING - COUNT YOUR EXERCISES:
+⚠️ FINAL CHECK BEFORE SUBMITTING - VERIFY VOLUME COVERAGE:
 
-${Object.entries(exerciseCountByMuscle).map(([muscle, count]) =>
-  `□ ${muscle}: ___/${count} exercises (NEED ${count})`
+${Object.entries(volumeForCalculation).map(([muscle, sets]) =>
+  `□ ${muscle}: ___/${sets} sets (target: ${sets}, acceptable: ${Math.floor((sets as number) * 0.8)}-${Math.ceil((sets as number) * 1.2)})`
 ).join('\n')}
 
-TOTAL REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => sum + count, 0)}
-
-❌ If ANY muscle has fewer exercises than required → ADD MORE NOW
-❌ Incomplete responses will be REJECTED
+CONSTRAINTS:
+□ Total exercises ≤ ${MAX_EXERCISES_PER_WORKOUT}?
+□ Each muscle within ±20% of target?
+□ All muscles covered (at least by compound)?
 </validation_checklist>
 ═══════════════════════════════════════════════════════════════
 ` : ''}
@@ -2224,6 +2356,60 @@ TOTAL REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => su
     // This should never happen if validation passed, but defensive programming prevents crashes
     if (!result.exercises || !Array.isArray(result.exercises)) {
       throw new Error('[ExerciseSelector] Validation passed but exercises array is missing - this indicates a serious bug in the validation logic')
+    }
+
+    // 📊 POST-GENERATION VOLUME VALIDATION (Logging only, no retry)
+    // Helps diagnose if AI is hitting volume targets
+    if (Object.keys(volumeForCalculation).length > 0) {
+      const achievedVolume: Record<string, number> = {}
+
+      for (const ex of result.exercises) {
+        // Count primary muscles (full sets)
+        for (const muscle of ex.primaryMuscles || []) {
+          achievedVolume[muscle] = (achievedVolume[muscle] || 0) + (ex.sets || 0)
+        }
+        // Count secondary muscles (half credit)
+        for (const muscle of ex.secondaryMuscles || []) {
+          achievedVolume[muscle] = (achievedVolume[muscle] || 0) + ((ex.sets || 0) * 0.5)
+        }
+      }
+
+      // Check each target muscle
+      const volumeReport: Array<{ muscle: string; target: number; achieved: number; percentage: number; status: string }> = []
+      let hasShortfall = false
+
+      for (const [muscle, target] of Object.entries(volumeForCalculation)) {
+        const achieved = Math.round((achievedVolume[muscle] || 0) * 10) / 10
+        const percentage = Math.round((achieved / (target as number)) * 100)
+        const status = percentage >= 80 ? '✅' : percentage >= 60 ? '⚠️' : '❌'
+
+        if (percentage < 80) hasShortfall = true
+
+        volumeReport.push({
+          muscle,
+          target: target as number,
+          achieved,
+          percentage,
+          status
+        })
+      }
+
+      // Log summary
+      const totalTargetSets = Object.values(volumeForCalculation).reduce((sum, s) => sum + (s as number), 0)
+      const totalAchievedSets = Object.values(achievedVolume).reduce((sum, s) => sum + s, 0)
+
+      console.log('[ExerciseSelector] 📊 Volume validation:', {
+        totalTarget: totalTargetSets,
+        totalAchieved: Math.round(totalAchievedSets * 10) / 10,
+        overallPercentage: Math.round((totalAchievedSets / totalTargetSets) * 100),
+        exercisesGenerated: result.exercises.length,
+        setsPerExerciseUsed: effectiveSetsPerExercise,
+        report: volumeReport
+      })
+
+      if (hasShortfall) {
+        console.warn('[ExerciseSelector] ⚠️ Volume shortfall detected - some muscles under target')
+      }
     }
 
     // Populate animation URLs for each exercise using AnimationService (async)
@@ -2427,635 +2613,6 @@ TOTAL REQUIRED: ${Object.values(exerciseCountByMuscle).reduce((sum, count) => su
     }
 
     return normalized
-  }
-
-  /**
-   * Validate exercise selection against all constraints and requirements
-   * Returns structured feedback for AI retry mechanism
-   * @private
-   */
-  private async validateExerciseSelection(
-    result: ExerciseSelectionOutput,
-    input: ExerciseSelectionInput,
-    approach: any,
-    targetLanguage: Locale = 'en'
-  ): Promise<{ valid: boolean; feedback: string }> {
-    // ✅ GUARD: Check if exercises array exists before validation
-    if (!result || !result.exercises || !Array.isArray(result.exercises)) {
-      return {
-        valid: false,
-        feedback: `**CRITICAL ERROR: Missing or invalid 'exercises' array**\n` +
-                  `- Expected: Array of exercise objects\n` +
-                  `- Received: ${result ? (result.exercises ? typeof result.exercises : 'undefined') : 'null result'}\n` +
-                  `- FIX: Your JSON response MUST include an "exercises" array with at least 1 exercise\n` +
-                  `- Example structure: { "exercises": [{ "name": "...", "sets": 3, ... }], "workoutRationale": "..." }`
-      }
-    }
-
-    // Debug: Log what AI actually generated
-    console.log('🔍 [VALIDATOR] AI generated exercises (before normalization):', JSON.stringify(result.exercises.map(ex => ({
-      name: ex.name,
-      sets: ex.sets,
-      primaryMuscles: ex.primaryMuscles,
-      secondaryMuscles: ex.secondaryMuscles
-    })), null, 2))
-
-    // ✨ NORMALIZE MUSCLE NAMES: Convert anatomical → canonical before validation
-    result.exercises = this.normalizeExerciseMuscles(result.exercises)
-
-    console.log('✅ [VALIDATOR] After normalization:', JSON.stringify(result.exercises.map(ex => ({
-      name: ex.name,
-      primaryMuscles: ex.primaryMuscles,
-      secondaryMuscles: ex.secondaryMuscles
-    })), null, 2))
-
-    const errors: string[] = []
-
-    // Validation 1: Total sets limit (approach constraint)
-    const totalSets = result.exercises.reduce((sum, ex) => sum + ex.sets, 0)
-    const vars = approach.variables as any
-    const maxTotalSets = vars?.sessionDuration?.totalSets?.[1]
-
-    if (maxTotalSets && totalSets > maxTotalSets) {
-      errors.push(
-        `**TOTAL SETS VIOLATION**\n` +
-        `- You generated: ${totalSets} total sets\n` +
-        `- Approach limit: ${maxTotalSets} total sets (${approach.name})\n` +
-        `- Exceeds by: ${totalSets - maxTotalSets} sets\n` +
-        `- FIX: Either REDUCE sets per exercise OR REMOVE ${Math.ceil((totalSets - maxTotalSets) / 3)} exercise(s)\n` +
-        `- Current: ${result.exercises.map(e => `${e.name} (${e.sets} sets)`).join(', ')}`
-      )
-    }
-
-    // Validation 2: Per-exercise sets limit
-    const maxSetsPerExercise = vars?.setsPerExercise?.working ||
-                               (vars?.sets?.range ? vars.sets.range[1] : null)
-
-    if (maxSetsPerExercise) {
-      const violations = result.exercises.filter(ex => ex.sets > maxSetsPerExercise)
-      if (violations.length > 0) {
-        errors.push(
-          `**PER-EXERCISE SETS VIOLATION**\n` +
-          `- Approach limit: ${maxSetsPerExercise} sets per exercise maximum\n` +
-          `- Violations (${violations.length} exercises):\n` +
-          violations.map(v => `  * ${v.name}: ${v.sets} sets (exceeds by ${v.sets - maxSetsPerExercise})`).join('\n') + '\n' +
-          `- FIX: REDUCE sets for these exercises to max ${maxSetsPerExercise} sets each`
-        )
-      }
-    }
-
-    // Validation 3: Session focus coverage (AI semantic validation)
-    if (input.sessionFocus && input.sessionFocus.length > 0) {
-      const coveredMuscles: string[] = []
-      result.exercises.forEach(ex => {
-        if (ex.primaryMuscles) coveredMuscles.push(...ex.primaryMuscles)
-        if (ex.secondaryMuscles) coveredMuscles.push(...ex.secondaryMuscles)
-      })
-
-      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
-
-      const validationPrompt = `You are an exercise physiology expert validating muscle group coverage.
-
-REFERENCE TAXONOMY (canonical muscle names):
-${JSON.stringify(MUSCLE_GROUPS, null, 2)}
-
-REQUIRED MUSCLE GROUPS TO TRAIN:
-${input.sessionFocus.map(key => `- ${key} (${MUSCLE_GROUPS[key as keyof typeof MUSCLE_GROUPS] || key})`).join('\n')}
-
-ACTUAL MUSCLES TRAINED (from generated exercises):
-${coveredMuscles.join(', ')}
-
-TASK: Determine if the actual muscles adequately cover ALL required muscle groups.
-
-RULES:
-- Consider anatomical equivalents (e.g., "latissimus dorsi" = "lats" = "back")
-- Specific muscles count toward general groups (e.g., "posterior deltoid" covers "rear_delts")
-- Accept plural/singular variants and synonyms
-- A muscle group is COVERED if ANY exercise targets it (primary or secondary)
-
-Return ONLY valid JSON (no markdown, no code blocks):
-{
-  "valid": true or false,
-  "missing": ["canonical_key1", "canonical_key2"],
-  "reasoning": "brief explanation (max 50 words)"
-}`
-
-      interface MuscleValidationResult {
-        valid: boolean
-        missing: string[]
-        reasoning: string
-      }
-
-      const validation = await this.complete<MuscleValidationResult>(validationPrompt, targetLanguage)
-
-      if (!validation.valid) {
-        errors.push(
-          `**SESSION FOCUS VIOLATION**\n` +
-          `- Required muscles: ${input.sessionFocus.join(', ')}\n` +
-          `- Missing coverage: ${validation.missing.join(', ')}\n` +
-          `- AI Analysis: ${validation.reasoning}\n` +
-          `- FIX: ADD at least one exercise targeting each missing muscle group`
-        )
-      }
-    }
-
-    // Validation 4: Target volume (±20% tolerance)
-    if (input.targetVolume && Object.keys(input.targetVolume).length > 0) {
-      // Helper: Infer specific muscle subdivision based on exercise name
-      // This handles cases where AI uses generic "shoulders" but exercise name reveals the specific head
-      const inferSpecificMuscleFromExercise = (exerciseName: string, genericMuscle: string): string => {
-        const nameLower = exerciseName.toLowerCase()
-
-        // If muscle is already specific (has underscore), keep it as-is
-        if (genericMuscle.includes('_')) {
-          return genericMuscle
-        }
-
-        // Shoulder subdivision inference
-        if (genericMuscle === 'shoulders' || genericMuscle === 'deltoid' || genericMuscle === 'deltoids') {
-          // Front deltoid patterns (vertical pressing, overhead movements)
-          if (nameLower.includes('press') || nameLower.includes('overhead') ||
-              nameLower.includes('military') || nameLower.includes('push press')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_front`)
-            return 'shoulders_front'
-          }
-
-          // Side deltoid patterns (lateral/abduction movements)
-          if (nameLower.includes('lateral') || nameLower.includes('side raise') ||
-              nameLower.includes('side delt') || nameLower.includes('abduction')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_side`)
-            return 'shoulders_side'
-          }
-
-          // Rear deltoid patterns (horizontal pulling, rear movements)
-          if (nameLower.includes('rear') || nameLower.includes('face pull') ||
-              nameLower.includes('reverse fly') || nameLower.includes('bent')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → shoulders_rear`)
-            return 'shoulders_rear'
-          }
-
-          // Default: if can't infer, keep generic (will be logged as warning later)
-          console.warn(`⚠️ [SMART MAPPING] Could not infer shoulder subdivision for "${exerciseName}", keeping generic "${genericMuscle}"`)
-        }
-
-        // Chest subdivision inference
-        if (genericMuscle === 'chest' || genericMuscle === 'pectorals') {
-          if (nameLower.includes('incline') || nameLower.includes('upper')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_upper`)
-            return 'chest_upper'
-          }
-          if (nameLower.includes('decline') || nameLower.includes('lower')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_lower`)
-            return 'chest_lower'
-          }
-          // Flat presses default to chest_lower (sternal emphasis in biomechanics)
-          if (nameLower.includes('bench press') || nameLower.includes('press') ||
-              nameLower.includes('fly') || nameLower.includes('flye')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → chest_lower (flat press)`)
-            return 'chest_lower'
-          }
-        }
-
-        // Triceps subdivision inference
-        if (genericMuscle === 'triceps' || genericMuscle === 'tricep') {
-          // Long head patterns (overhead movements emphasize long head via shoulder extension)
-          if (nameLower.includes('overhead') || nameLower.includes('french press') ||
-              nameLower.includes('skull crusher') || nameLower.includes('lying extension')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_long`)
-            return 'triceps_long'
-          }
-
-          // Lateral head patterns (pressing and pushdown movements)
-          if (nameLower.includes('pushdown') || nameLower.includes('press down') ||
-              nameLower.includes('kickback') || nameLower.includes('close grip')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_lateral`)
-            return 'triceps_lateral'
-          }
-
-          // Medial head patterns (reverse grip emphasizes medial head)
-          if (nameLower.includes('reverse grip') || nameLower.includes('underhand') ||
-              nameLower.includes('dip')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → triceps_medial`)
-            return 'triceps_medial'
-          }
-
-          // Default: if can't infer, keep generic (will be logged as warning later)
-          console.warn(`⚠️ [SMART MAPPING] Could not infer triceps subdivision for "${exerciseName}", keeping generic "${genericMuscle}"`)
-        }
-
-        // Back subdivision inference
-        if (genericMuscle === 'back' || genericMuscle === 'backs') {
-          // Lats (vertical pulling movements)
-          if (nameLower.includes('pull up') || nameLower.includes('pullup') ||
-              nameLower.includes('pulldown') || nameLower.includes('pull-up') ||
-              nameLower.includes('chin up') || nameLower.includes('chinup') ||
-              nameLower.includes('lat')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → lats`)
-            return 'lats'
-          }
-
-          // Lower back (hip hinge patterns, spinal extensors)
-          if (nameLower.includes('deadlift') || nameLower.includes('hyperextension') ||
-              nameLower.includes('good morning') || nameLower.includes('romanian') ||
-              nameLower.includes('back extension') || nameLower.includes('lumbar')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → lower_back`)
-            return 'lower_back'
-          }
-
-          // Upper back (horizontal pulling, rhomboids, mid-traps)
-          if (nameLower.includes('row') || nameLower.includes('shrug') ||
-              nameLower.includes('face pull') || nameLower.includes('rear delt') ||
-              nameLower.includes('reverse fly')) {
-            console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → upper_back`)
-            return 'upper_back'
-          }
-
-          // Default to upper_back for unknown back exercises
-          console.log(`🔍 [SMART MAPPING] "${exerciseName}" + generic "${genericMuscle}" → upper_back (default)`)
-          return 'upper_back'
-        }
-
-        return genericMuscle
-      }
-
-      const calculateMuscleVolume = (exercises: typeof result.exercises): Record<string, number> => {
-        const volume: Record<string, number> = {}
-        exercises.forEach(ex => {
-          ex.primaryMuscles?.forEach(muscle => {
-            const normalized = muscle.toLowerCase().trim()
-            // Apply smart mapping based on exercise name
-            const inferred = inferSpecificMuscleFromExercise(ex.name, normalized)
-            volume[inferred] = (volume[inferred] || 0) + (ex.sets || 0)
-          })
-          ex.secondaryMuscles?.forEach(muscle => {
-            const normalized = muscle.toLowerCase().trim()
-            // Apply smart mapping for secondary muscles too
-            const inferred = inferSpecificMuscleFromExercise(ex.name, normalized)
-            volume[inferred] = (volume[inferred] || 0) + (ex.sets || 0) * 0.5
-          })
-        })
-        return volume
-      }
-
-      const normalizeMuscleForVolume = (muscle: string): string => {
-        const normalized = muscle.toLowerCase().trim()
-
-        // STEP 1: Try exact match with original format (preserves underscores from canonical keys)
-        // This handles canonical muscle keys like "chest_lower", "chest_upper", etc.
-        if (ANATOMICAL_TO_CANONICAL[normalized]) {
-          return ANATOMICAL_TO_CANONICAL[normalized]
-        }
-
-        // STEP 2: Check with plural removed (e.g., "deltoids" → "deltoid" → "shoulders")
-        const withoutPlural = normalized.replace(/s$/, '')
-        if (ANATOMICAL_TO_CANONICAL[withoutPlural]) {
-          return ANATOMICAL_TO_CANONICAL[withoutPlural]
-        }
-
-        // STEP 3: Try with underscores replaced by spaces (handles anatomical variations)
-        // This catches variants like "lower chest", "upper chest" that AI might generate
-        const spacedNormalized = normalized.replace(/_/g, ' ')
-        if (spacedNormalized !== normalized && ANATOMICAL_TO_CANONICAL[spacedNormalized]) {
-          return ANATOMICAL_TO_CANONICAL[spacedNormalized]
-        }
-
-        // STEP 4: Check spaced version without plural
-        const spacedWithoutPlural = spacedNormalized.replace(/s$/, '')
-        if (spacedWithoutPlural !== spacedNormalized && ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]) {
-          return ANATOMICAL_TO_CANONICAL[spacedWithoutPlural]
-        }
-
-        // STEP 5: Intelligent fallback - pattern matching for common muscle group keywords
-        // This handles unknown variants, typos, or new AI-generated terms
-        // Use spacedNormalized for pattern matching (works with both underscore and space formats)
-        if (spacedNormalized.includes('back')) {
-          console.warn(`⚠️ [FALLBACK] Unknown back variant "${muscle}" → upper_back`, { normalized: spacedNormalized })
-          return 'upper_back'
-        }
-        if (spacedNormalized.includes('delt')) {
-          console.warn(`⚠️ [FALLBACK] Unknown deltoid variant "${muscle}" → shoulders`, { normalized: spacedNormalized })
-          return 'shoulders'
-        }
-        if (spacedNormalized.includes('pect')) {
-          console.warn(`⚠️ [FALLBACK] Unknown pectoral variant "${muscle}" → chest`, { normalized: spacedNormalized })
-          return 'chest'
-        }
-        if (spacedNormalized.includes('quad')) {
-          console.warn(`⚠️ [FALLBACK] Unknown quadriceps variant "${muscle}" → quads`, { normalized: spacedNormalized })
-          return 'quads'
-        }
-        if (spacedNormalized.includes('ham')) {
-          console.warn(`⚠️ [FALLBACK] Unknown hamstring variant "${muscle}" → hamstrings`, { normalized: spacedNormalized })
-          return 'hamstrings'
-        }
-        if (spacedNormalized.includes('glut')) {
-          console.warn(`⚠️ [FALLBACK] Unknown glute variant "${muscle}" → glutes`, { normalized: spacedNormalized })
-          return 'glutes'
-        }
-        if (spacedNormalized.includes('calf') || spacedNormalized.includes('calv')) {
-          console.warn(`⚠️ [FALLBACK] Unknown calf variant "${muscle}" → calves`, { normalized: spacedNormalized })
-          return 'calves'
-        }
-        if (spacedNormalized.includes('tricep')) {
-          console.warn(`⚠️ [FALLBACK] Unknown tricep variant "${muscle}" → triceps`, { normalized: spacedNormalized })
-          return 'triceps'
-        }
-        if (spacedNormalized.includes('bicep')) {
-          console.warn(`⚠️ [FALLBACK] Unknown bicep variant "${muscle}" → biceps`, { normalized: spacedNormalized })
-          return 'biceps'
-        }
-        if (spacedNormalized.includes('lat')) {
-          console.warn(`⚠️ [FALLBACK] Unknown lat variant "${muscle}" → lats`, { normalized: spacedNormalized })
-          return 'lats'
-        }
-        if (spacedNormalized.includes('trap')) {
-          console.warn(`⚠️ [FALLBACK] Unknown trap variant "${muscle}" → traps`, { normalized: spacedNormalized })
-          return 'traps'
-        }
-        if (spacedNormalized.includes('ab') || spacedNormalized.includes('abdominal')) {
-          console.warn(`⚠️ [FALLBACK] Unknown abs variant "${muscle}" → abs`, { normalized: spacedNormalized })
-          return 'abs'
-        }
-        if (spacedNormalized.includes('oblique')) {
-          console.warn(`⚠️ [FALLBACK] Unknown oblique variant "${muscle}" → obliques`, { normalized: spacedNormalized })
-          return 'obliques'
-        }
-
-        // Last resort: unknown muscle - log for monitoring and return as-is
-        console.warn('⚠️ [EXERCISE_SELECTOR] Unknown muscle name encountered (no fallback matched):', {
-          original: muscle,
-          normalized: normalized,
-          spacedNormalized: spacedNormalized,
-          withoutPlural: withoutPlural,
-          returning: spacedWithoutPlural,
-          timestamp: new Date().toISOString(),
-          hint: 'Consider adding to ANATOMICAL_TO_CANONICAL mapping if this is an anatomical name'
-        })
-
-        return spacedWithoutPlural
-      }
-
-      const actualVolume = calculateMuscleVolume(result.exercises)
-      const { MUSCLE_GROUPS } = await import('@/lib/services/muscle-groups.service')
-
-      // 🔍 DIAGNOSTIC LOGGING: Pre-validation volume analysis
-      console.log('\n' + '='.repeat(80))
-      console.log('📊 [VOLUME DIAGNOSTIC] Pre-Validation Analysis')
-      console.log('='.repeat(80))
-
-      // Log exercise-by-exercise breakdown
-      console.log('\n🏋️ EXERCISE CONTRIBUTIONS:')
-      result.exercises.forEach((ex, idx) => {
-        console.log(`\n  ${idx + 1}. ${ex.name} (${ex.sets} sets)`)
-        console.log(`     Primary: ${ex.primaryMuscles?.join(', ') || 'none'}`)
-        console.log(`     Secondary: ${ex.secondaryMuscles?.join(', ') || 'none'}`)
-        console.log(`     Volume contribution:`)
-        ex.primaryMuscles?.forEach(m => {
-          console.log(`       → ${m}: +${ex.sets} sets (primary 1.0x)`)
-        })
-        ex.secondaryMuscles?.forEach(m => {
-          console.log(`       → ${m}: +${(ex.sets * 0.5).toFixed(1)} sets (secondary 0.5x)`)
-        })
-      })
-
-      // Log target vs actual comparison table
-      console.log('\n📋 TARGET vs ACTUAL COMPARISON:')
-      console.log('─'.repeat(80))
-      console.log(String('MUSCLE').padEnd(25) +
-                  String('TARGET').padEnd(12) +
-                  String('ACTUAL').padEnd(12) +
-                  String('RANGE').padEnd(15) +
-                  String('STATUS'))
-      console.log('─'.repeat(80))
-
-      const targetTolerance = 0.20
-      const diagnosticResults: Array<{
-        muscle: string
-        target: number
-        actual: number
-        min: number
-        max: number
-        status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' | 'MISSING_REQUIRED'
-        delta: number
-      }> = []
-
-      // Pre-calculate all results for sorting
-      for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
-        const normalizedTarget = normalizeMuscleForVolume(muscleKey)
-        let actualSets = 0
-
-        for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
-          const normalizedActual = normalizeMuscleForVolume(actualMuscle)
-          // Use exact match instead of .includes() to avoid false positives
-          // (e.g., "chest_lower".includes("chest") = true would incorrectly match)
-          if (normalizedActual === normalizedTarget) {
-            actualSets += sets
-          }
-        }
-
-        const minAllowed = Math.round(targetSets * (1 - targetTolerance))
-        const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
-
-        let status: 'PASS' | 'UNDER' | 'OVER' | 'ZERO_VIOLATION' | 'MISSING_REQUIRED' = 'PASS'
-        if (targetSets === 0 && actualSets > 0) {
-          status = 'ZERO_VIOLATION'
-        } else if (targetSets > 0 && actualSets === 0) {
-          // CRITICAL: Required muscle group has ZERO volume - this is a critical failure
-          status = 'MISSING_REQUIRED'
-        } else if (actualSets < minAllowed) {
-          status = 'UNDER'
-        } else if (actualSets > maxAllowed) {
-          status = 'OVER'
-        }
-
-        diagnosticResults.push({
-          muscle: muscleKey,
-          target: targetSets,
-          actual: actualSets,
-          min: minAllowed,
-          max: maxAllowed,
-          status,
-          delta: actualSets - targetSets
-        })
-      }
-
-      // Sort: violations first, then by absolute delta
-      diagnosticResults.sort((a, b) => {
-        if (a.status !== 'PASS' && b.status === 'PASS') return -1
-        if (a.status === 'PASS' && b.status !== 'PASS') return 1
-        return Math.abs(b.delta) - Math.abs(a.delta)
-      })
-
-      // Display results
-      diagnosticResults.forEach(result => {
-        const statusIcon = result.status === 'PASS' ? '✅' :
-                          result.status === 'ZERO_VIOLATION' ? '🚫' :
-                          result.status === 'MISSING_REQUIRED' ? '❌' :
-                          result.status === 'UNDER' ? '⬇️' :
-                          '⬆️'
-        const statusText = result.status === 'PASS' ? 'PASS' :
-                          result.status === 'ZERO_VIOLATION' ? 'ZERO VIOLATED' :
-                          result.status === 'MISSING_REQUIRED' ? 'MISSING (0 sets!)' :
-                          result.status === 'UNDER' ? `UNDER (${result.delta.toFixed(1)})` :
-                          `OVER (+${result.delta.toFixed(1)})`
-
-        console.log(
-          statusIcon + ' ' + String(result.muscle).padEnd(23) +
-          String(result.target).padEnd(12) +
-          String(result.actual.toFixed(1)).padEnd(12) +
-          String(`${result.min}-${result.max}`).padEnd(15) +
-          statusText
-        )
-      })
-
-      console.log('─'.repeat(80))
-      const passCount = diagnosticResults.filter(r => r.status === 'PASS').length
-      const totalCount = diagnosticResults.length
-      console.log(`\n📈 SUMMARY: ${passCount}/${totalCount} muscles within tolerance`)
-
-      // Show unknown muscles (not in targets)
-      const unknownMuscles = Object.keys(actualVolume).filter(muscle => {
-        if (!input.targetVolume) return false
-        const normalizedActual = normalizeMuscleForVolume(muscle)
-        return !Object.keys(input.targetVolume).some(targetKey => {
-          const normalizedTarget = normalizeMuscleForVolume(targetKey)
-          return normalizedActual.includes(normalizedTarget) || normalizedTarget.includes(normalizedActual)
-        })
-      })
-
-      if (unknownMuscles.length > 0) {
-        console.log(`\n⚠️  UNEXPECTED MUSCLES (not in targets):`)
-        unknownMuscles.forEach(muscle => {
-          console.log(`   - ${muscle}: ${actualVolume[muscle].toFixed(1)} sets`)
-        })
-      }
-
-      console.log('='.repeat(80) + '\n')
-
-      const violations: Array<{
-        muscle: string
-        target: number
-        actual: number
-        direct: number
-        indirect: number
-        breakdown: Array<{exerciseName: string; contribution: number; type: 'primary' | 'secondary'}>
-        suggestion: string
-      }> = []
-
-      for (const [muscleKey, targetSets] of Object.entries(input.targetVolume)) {
-        const muscleName = MUSCLE_GROUPS[muscleKey as keyof typeof MUSCLE_GROUPS] || muscleKey
-        const normalizedTarget = normalizeMuscleForVolume(muscleKey)
-        let actualSets = 0
-
-        for (const [actualMuscle, sets] of Object.entries(actualVolume)) {
-          const normalizedActual = normalizeMuscleForVolume(actualMuscle)
-          // Use exact match instead of .includes() to avoid false positives
-          // (e.g., "chest_lower".includes("chest") = true would incorrectly match)
-          if (normalizedActual === normalizedTarget) {
-            actualSets += sets
-          }
-        }
-
-        const minAllowed = Math.round(targetSets * (1 - targetTolerance))
-        const maxAllowed = Math.round(targetSets * (1 + targetTolerance))
-
-        if (actualSets < minAllowed || actualSets > maxAllowed || (targetSets > 0 && actualSets === 0)) {
-          // Calculate direct vs indirect volume breakdown
-          let directVolume = 0
-          let indirectVolume = 0
-          const breakdown: Array<{exerciseName: string; contribution: number; type: 'primary' | 'secondary'}> = []
-
-          result.exercises.forEach(ex => {
-            const isPrimary = ex.primaryMuscles?.some(m => {
-              const normalized = normalizeMuscleForVolume(m)
-              return normalized === normalizedTarget
-            })
-            const isSecondary = ex.secondaryMuscles?.some(m => {
-              const normalized = normalizeMuscleForVolume(m)
-              return normalized === normalizedTarget
-            })
-
-            if (isPrimary) {
-              directVolume += ex.sets || 0
-              breakdown.push({
-                exerciseName: ex.name,
-                contribution: ex.sets || 0,
-                type: 'primary'
-              })
-            } else if (isSecondary) {
-              const contribution = (ex.sets || 0) * 0.5
-              indirectVolume += contribution
-              breakdown.push({
-                exerciseName: ex.name,
-                contribution: contribution,
-                type: 'secondary'
-              })
-            }
-          })
-
-          // Generate actionable suggestion based on direct/indirect split
-          let suggestion = ''
-          if (targetSets > 0 && actualSets === 0) {
-            // CRITICAL: Missing required muscle entirely
-            suggestion = `❌ CRITICAL: NO exercises targeting ${muscleKey}! You MUST add at least ${minAllowed} sets. CHECK: Are you using the correct muscle key name "${muscleKey}" (not generic synonyms)?`
-          } else if (actualSets < minAllowed) {
-            suggestion = `ADD ${(minAllowed - actualSets).toFixed(0)} more sets for ${muscleKey} (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect)`
-          } else {
-            // Over target
-            if (directVolume === 0) {
-              // Only indirect volume - reduce compound exercises or accept being over
-              suggestion = `Volume comes entirely from INDIRECT work (${indirectVolume.toFixed(1)} sets). Options: (A) Reduce compound exercise sets, OR (B) Accept being over target (within tolerance)`
-            } else if (indirectVolume > directVolume) {
-              // More indirect than direct - prioritize removing direct work
-              suggestion = `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from DIRECT ${muscleKey} work (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect). Keep indirect from compounds, reduce isolation.`
-            } else {
-              // More direct than indirect - standard reduction
-              suggestion = `REMOVE ${(actualSets - maxAllowed).toFixed(0)} sets from ${muscleKey} (currently ${directVolume.toFixed(1)} direct + ${indirectVolume.toFixed(1)} indirect)`
-            }
-          }
-
-          violations.push({
-            muscle: `${muscleKey} (${muscleName})`,
-            target: targetSets,
-            actual: actualSets,
-            direct: directVolume,
-            indirect: indirectVolume,
-            breakdown,
-            suggestion
-          })
-        }
-      }
-
-      if (violations.length > 0) {
-        errors.push(
-          `**TARGET VOLUME VIOLATION** (±20% tolerance)\n` +
-          `- Violations (${violations.length} muscle groups):\n\n` +
-          violations.map(v => {
-            let msg = `  * ${v.muscle}: target ${v.target} sets, got ${v.actual.toFixed(1)} sets (${v.direct.toFixed(1)} direct + ${v.indirect.toFixed(1)} indirect)\n`
-
-            // Add breakdown by exercise
-            if (v.breakdown.length > 0) {
-              msg += `    Volume breakdown:\n`
-              v.breakdown.forEach(b => {
-                const label = b.type === 'primary' ? 'direct' : 'indirect'
-                msg += `      - ${b.exerciseName}: +${b.contribution.toFixed(1)} sets (${label})\n`
-              })
-            }
-
-            msg += `    FIX: ${v.suggestion}`
-            return msg
-          }).join('\n\n')
-        )
-      }
-    }
-
-    // Return validation result
-    return {
-      valid: errors.length === 0,
-      feedback: errors.length > 0
-        ? `❌ VALIDATION FAILED - ${errors.length} ERROR(S) FOUND:\n\n${errors.map((e, i) => `${i + 1}. ${e}`).join('\n\n')}`
-        : ''
-    }
   }
 
   /**
