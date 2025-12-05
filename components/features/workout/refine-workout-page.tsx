@@ -27,7 +27,7 @@ import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 import { SplitReferenceCard } from './split-reference-card'
 import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
-import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
+import { MuscleWikiService, type LegacyExercise } from '@/lib/services/musclewiki.service'
 import { ExerciseHistoryModal } from './exercise-history-modal'
 import { getProgressiveTargetAction } from '@/app/actions/exercise-history-actions'
 import { TechniqueIndicator } from './technique-indicator'
@@ -151,7 +151,7 @@ export function RefineWorkoutPage({
 
   // Library search state
   const [librarySearchQuery, setLibrarySearchQuery] = useState<Map<number, string>>(new Map())
-  const [libraryResults, setLibraryResults] = useState<Map<number, ExerciseDBExercise[]>>(new Map())
+  const [libraryResults, setLibraryResults] = useState<Map<number, LegacyExercise[]>>(new Map())
   const [isSearchingLibrary, setIsSearchingLibrary] = useState<Map<number, boolean>>(new Map())
 
   // Library filter state
@@ -297,7 +297,7 @@ export function RefineWorkoutPage({
   // Load filter options for library search
   React.useEffect(() => {
     if (!filtersLoaded) {
-      ExerciseDBService.getFilterOptions().then(options => {
+      MuscleWikiService.getFilterOptions().then(options => {
         setFilterOptions(options)
         setFiltersLoaded(true)
       }).catch(err => {
@@ -425,7 +425,7 @@ export function RefineWorkoutPage({
     setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, true))
 
     try {
-      const results = await ExerciseDBService.searchExercises(
+      const results = await MuscleWikiService.searchExercisesLegacy(
         query,
         20,
         {
@@ -480,7 +480,7 @@ export function RefineWorkoutPage({
     setIsSearchingLibrary(new Map(isSearchingLibrary).set(index, true))
 
     try {
-      const results = await ExerciseDBService.searchExercises(
+      const results = await MuscleWikiService.searchExercisesLegacy(
         query,
         20,
         {
@@ -498,7 +498,7 @@ export function RefineWorkoutPage({
   }
 
   // Handle library exercise selection (direct swap without AI validation)
-  const handleLibrarySelect = async (index: number, libraryExercise: ExerciseDBExercise) => {
+  const handleLibrarySelect = async (index: number, libraryExercise: LegacyExercise) => {
     if (!workout) return
 
     const currentExercise = exercises[index]

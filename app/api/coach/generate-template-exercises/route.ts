@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { isCoach } from "@/lib/utils/auth.server";
 import { BaseAgent } from "@/lib/agents/base.agent";
-import { ExerciseDBService } from "@/lib/services/exercisedb.service";
+import { MuscleWikiService } from "@/lib/services/musclewiki.service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -241,14 +241,11 @@ export async function POST(request: NextRequest) {
       targetLanguage
     );
 
-    // Initialize ExerciseDB cache for animation URLs
-    await ExerciseDBService.initializeCache();
-
     // Enrich exercises with animation URLs and standardize format
     const enrichedExercises = await Promise.all(
       aiResult.exercises.map(async (ex) => {
-        // Try to get animation URL from ExerciseDB
-        const gifUrl = await ExerciseDBService.getGifUrl(ex.name);
+        // Try to get animation URL from MuscleWiki
+        const gifUrl = await MuscleWikiService.getGifUrl(ex.name);
 
         return {
           name: ex.name,

@@ -1494,6 +1494,19 @@
         "notAvailable": "Animazione non disponibile",
         "loadingFailed": "Impossibile caricare l'animazione"
       },
+      "exerciseVideo": {
+        "notAvailable": "Video non disponibile",
+        "loadingFailed": "Impossibile caricare il video",
+        "angles": {
+          "front": "Frontale",
+          "back": "Posteriore",
+          "side": "Laterale"
+        },
+        "gender": {
+          "male": "Uomo",
+          "female": "Donna"
+        }
+      },
       "exerciseAnimationModal": {
         "exerciseVisualization": "Visualizzazione esercizio",
         "closeAriaLabel": "Chiudi",
@@ -1600,7 +1613,7 @@
           "hint": "Inserisci il nome dell'esercizio e valida con AI"
         },
         "library": {
-          "searchPlaceholder": "Cerca esercizi in ExerciseDB...",
+          "searchPlaceholder": "Cerca esercizi...",
           "hint": "Digita almeno 2 caratteri per cercare",
           "noResults": "Nessun esercizio trovato"
         }
@@ -6534,14 +6547,83 @@
       }
     }
   },
+  "bookings": {
+    "title": "Le mie sessioni",
+    "subtitle": "I tuoi prossimi allenamenti",
+    "empty": {
+      "title": "Nessuna sessione programmata",
+      "description": "Il tuo coach pianificherà le sessioni per te, oppure chiedigli di impostare il tuo calendario di allenamento."
+    },
+    "upcoming": "Prossime",
+    "past": "Passate",
+    "status": {
+      "confirmed": "Confermata",
+      "cancelled": "Cancellata",
+      "completed": "Completata",
+      "noShow": "Assente"
+    },
+    "card": {
+      "with": "con",
+      "at": "alle",
+      "in": "tra",
+      "today": "Oggi",
+      "tomorrow": "Domani",
+      "hoursLeft": "{hours}h rimaste",
+      "minutesLeft": "{minutes}m rimasti",
+      "daysLeft": "{days} giorni",
+      "package": "Pacchetto",
+      "sessionsRemaining": "{count} sessioni rimaste"
+    },
+    "details": {
+      "title": "Dettagli sessione",
+      "date": "Data",
+      "time": "Orario",
+      "duration": "Durata",
+      "coach": "Coach",
+      "notes": "Note",
+      "coachNotes": "Note del coach",
+      "cancel": "Annulla sessione",
+      "cancelConfirm": "Sei sicuro di voler annullare questa sessione?",
+      "cancelReason": "Motivo (opzionale)",
+      "cancelButton": "Sì, annulla",
+      "cancelled": "Sessione annullata con successo"
+    },
+    "countdown": {
+      "startsIn": "Inizia tra",
+      "hours": "ore",
+      "minutes": "min"
+    }
+  },
   "coach": {
     "nav": {
       "dashboard": "Dashboard",
+      "calendar": "Calendario",
       "templates": "Template",
       "workouts": "Workout",
       "splits": "Programmi",
       "library": "Libreria",
       "invite": "Invita"
+    },
+    "calendar": {
+      "title": "Calendario",
+      "locale": "it",
+      "today": "Oggi",
+      "copyLastWeek": "Copia settimana scorsa",
+      "available": "Disponibile",
+      "booked": "Prenotato",
+      "doubleClickToToggle": "Doppio click per cambiare disponibilità",
+      "bookingDetails": "Dettagli Prenotazione",
+      "newBooking": "Nuova Prenotazione",
+      "selectClient": "Seleziona Cliente",
+      "chooseClient": "Scegli un cliente...",
+      "sessionsLeft": "sessioni rimanenti",
+      "notes": "Note",
+      "optional": "opzionale",
+      "notesPlaceholder": "Aggiungi note per questa sessione...",
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "book": "Prenota",
+      "aiPlaceholder": "Chiedi all'AI: 'prenota Marco martedì 18', 'quando sono libero?'..."
     },
     "library": {
       "title": "Libreria",

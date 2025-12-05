@@ -83,8 +83,8 @@ EMAIL_FROM_DOMAIN=arvo.guru
 OPENAI_API_KEY=[your-openai-key]
 OPENAI_MODEL=gpt-5.1
 
-# ExerciseDB
-NEXT_PUBLIC_EXERCISEDB_API_URL=https://exercisedb-api-wheat-one.vercel.app
+# MuscleWiki (Exercise Animations)
+NEXT_PUBLIC_MUSCLEWIKI_API_KEY=[your-musclewiki-rapidapi-key]
 
 # Inngest (Background Jobs)
 INNGEST_EVENT_KEY=[your-inngest-event-key]

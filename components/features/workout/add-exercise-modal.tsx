@@ -5,7 +5,7 @@ import { X, Search, Dumbbell, Target, Sparkles, CheckCircle, AlertCircle, XCircl
 import { Button } from '@/components/ui/button'
 import { suggestExerciseAdditionAction, validateExerciseAdditionAction, extractEquipmentNameFromImageAction } from '@/app/actions/ai-actions'
 import { PhotoUploader } from '@/components/ui/photo-uploader'
-import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
+import { MuscleWikiService, type LegacyExercise } from '@/lib/services/musclewiki.service'
 import type { ExerciseSuggestionInput } from '@/lib/agents/exercise-suggester.agent'
 import type { ExerciseAdditionInput, ExerciseAdditionOutput } from '@/lib/agents/exercise-addition-validator.agent'
 import { ExerciseValidationModal } from './exercise-validation-modal'
@@ -108,9 +108,9 @@ export function AddExerciseModal({
   const [textValidationResult, setTextValidationResult] = useState<ExerciseAdditionOutput | null>(null)
   const [isValidatingText, setIsValidatingText] = useState(false)
 
-  // Library search state (ExerciseDB)
+  // Library search state (MuscleWiki)
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
-  const [libraryResults, setLibraryResults] = useState<ExerciseDBExercise[]>([])
+  const [libraryResults, setLibraryResults] = useState<LegacyExercise[]>([])
   const [isSearchingLibrary, setIsSearchingLibrary] = useState(false)
 
   // Toast notifications
@@ -312,7 +312,7 @@ export function AddExerciseModal({
 
     setIsSearchingLibrary(true)
     try {
-      const results = await ExerciseDBService.searchExercises(query, 15)
+      const results = await MuscleWikiService.searchExercisesLegacy(query, 15)
       setLibraryResults(results)
     } catch (err) {
       console.error('Library search failed:', err)
@@ -323,7 +323,7 @@ export function AddExerciseModal({
   }
 
   // Library exercise selection
-  const handleLibrarySelect = (libraryExercise: ExerciseDBExercise) => {
+  const handleLibrarySelect = (libraryExercise: LegacyExercise) => {
     const exercise: Exercise = {
       id: libraryExercise.id,
       name: libraryExercise.name,

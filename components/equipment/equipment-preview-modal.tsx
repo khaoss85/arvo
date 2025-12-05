@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { getRepresentativeExercises, type ExerciseExample } from '@/lib/constants/equipment-exercise-mapping'
-import { ExerciseDBService } from '@/lib/services/exercisedb.service'
+import { MuscleWikiService } from '@/lib/services/musclewiki.service'
 import { ExerciseAnimation } from '@/components/features/workout/exercise-animation'
 
 interface EquipmentPreviewModalProps {
@@ -45,7 +45,7 @@ export function EquipmentPreviewModal({
       try {
         // Fetch all GIFs in parallel
         const gifPromises = exerciseMapping.exercises.map(async (exercise) => {
-          const gifUrl = await ExerciseDBService.getGifUrl(exercise.name)
+          const gifUrl = await MuscleWikiService.getGifUrl(exercise.name)
           return {
             ...exercise,
             gifUrl,

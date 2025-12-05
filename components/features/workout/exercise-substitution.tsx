@@ -14,7 +14,7 @@ import { CheckCircle, AlertCircle, XCircle, Loader2, Sparkles, PlayCircle, Type,
 import { ExerciseAnimationModal } from './exercise-animation-modal'
 import { memoryService } from '@/lib/services/memory.service'
 import { AnimationService } from '@/lib/services/animation.service'
-import { ExerciseDBService, type ExerciseDBExercise } from '@/lib/services/exercisedb.service'
+import { MuscleWikiService, type LegacyExercise } from '@/lib/services/musclewiki.service'
 
 /**
  * Extract equipment variant from exercise name
@@ -204,7 +204,7 @@ export function ExerciseSubstitution({
 
   // Library search state
   const [librarySearchQuery, setLibrarySearchQuery] = useState('')
-  const [libraryResults, setLibraryResults] = useState<ExerciseDBExercise[]>([])
+  const [libraryResults, setLibraryResults] = useState<LegacyExercise[]>([])
   const [isSearchingLibrary, setIsSearchingLibrary] = useState(false)
 
   // Library filter state
@@ -478,7 +478,7 @@ export function ExerciseSubstitution({
   // Load filter options when library mode is first accessed
   useEffect(() => {
     if (inputMode === 'library' && !filtersLoaded) {
-      ExerciseDBService.getFilterOptions().then(options => {
+      MuscleWikiService.getFilterOptions().then(options => {
         setFilterOptions(options)
         setFiltersLoaded(true)
       }).catch(err => {
@@ -504,7 +504,7 @@ export function ExerciseSubstitution({
     setIsSearchingLibrary(true)
     const debounceTimer = setTimeout(async () => {
       try {
-        const results = await ExerciseDBService.searchExercises(
+        const results = await MuscleWikiService.searchExercisesLegacy(
           librarySearchQuery,
           20,
           {
@@ -525,7 +525,7 @@ export function ExerciseSubstitution({
   }, [librarySearchQuery, inputMode, selectedBodyParts, selectedEquipments])
 
   // Handle library exercise selection (skip AI validation)
-  const handleLibrarySelect = async (exercise: ExerciseDBExercise) => {
+  const handleLibrarySelect = async (exercise: LegacyExercise) => {
     try {
       // Extract muscle groups from current exercise
       const currentExerciseMuscles = extractMuscleGroups(currentExercise.exerciseName)

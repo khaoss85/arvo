@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils/cn";
 import { ExercisePickerModal } from "./exercise-picker-modal";
 import { ExerciseConfigRow, type ExerciseConfig } from "./exercise-config-row";
 import { ExerciseAnimationModal } from "@/components/features/workout/exercise-animation-modal";
-import type { ExerciseDBExercise } from "@/lib/services/exercisedb.service";
+import type { LegacyExercise } from "@/lib/services/musclewiki.service";
 import type { UserProfile } from "@/lib/types/schemas";
 
 interface CustomWorkoutBuilderProps {
@@ -56,13 +56,13 @@ export function CustomWorkoutBuilder({
 
   // UI state
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [animationExercise, setAnimationExercise] = useState<ExerciseDBExercise | null>(null);
+  const [animationExercise, setAnimationExercise] = useState<LegacyExercise | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
 
   // Add exercise from picker
-  const handleAddExercise = useCallback((exercise: ExerciseDBExercise) => {
+  const handleAddExercise = useCallback((exercise: LegacyExercise) => {
     const newConfig: ExerciseConfig = {
       id: crypto.randomUUID(),
       exercise,

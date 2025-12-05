@@ -1492,6 +1492,19 @@
         "notAvailable": "Animation not available",
         "loadingFailed": "Failed to load animation"
       },
+      "exerciseVideo": {
+        "notAvailable": "Video not available",
+        "loadingFailed": "Failed to load video",
+        "angles": {
+          "front": "Front",
+          "back": "Back",
+          "side": "Side"
+        },
+        "gender": {
+          "male": "Male",
+          "female": "Female"
+        }
+      },
       "exerciseAnimationModal": {
         "exerciseVisualization": "Exercise visualization",
         "closeAriaLabel": "Close",
@@ -1598,7 +1611,7 @@
           "hint": "Enter exercise name and validate with AI"
         },
         "library": {
-          "searchPlaceholder": "Search exercises in ExerciseDB...",
+          "searchPlaceholder": "Search exercises...",
           "hint": "Type at least 2 characters to search",
           "noResults": "No exercises found"
         }
@@ -6509,14 +6522,83 @@
       }
     }
   },
+  "bookings": {
+    "title": "My Sessions",
+    "subtitle": "Your upcoming training sessions",
+    "empty": {
+      "title": "No sessions scheduled",
+      "description": "Your coach will schedule sessions for you, or ask them to set up your training calendar."
+    },
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "status": {
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "noShow": "No Show"
+    },
+    "card": {
+      "with": "with",
+      "at": "at",
+      "in": "in",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "hoursLeft": "{hours}h left",
+      "minutesLeft": "{minutes}m left",
+      "daysLeft": "{days} days",
+      "package": "Package",
+      "sessionsRemaining": "{count} sessions left"
+    },
+    "details": {
+      "title": "Session Details",
+      "date": "Date",
+      "time": "Time",
+      "duration": "Duration",
+      "coach": "Coach",
+      "notes": "Notes",
+      "coachNotes": "Coach Notes",
+      "cancel": "Cancel Session",
+      "cancelConfirm": "Are you sure you want to cancel this session?",
+      "cancelReason": "Reason (optional)",
+      "cancelButton": "Yes, Cancel",
+      "cancelled": "Session cancelled successfully"
+    },
+    "countdown": {
+      "startsIn": "Starts in",
+      "hours": "hours",
+      "minutes": "min"
+    }
+  },
   "coach": {
     "nav": {
       "dashboard": "Dashboard",
+      "calendar": "Calendar",
       "templates": "Templates",
       "workouts": "Workouts",
       "splits": "Programs",
       "library": "Library",
       "invite": "Invite"
+    },
+    "calendar": {
+      "title": "Calendar",
+      "locale": "en",
+      "today": "Today",
+      "copyLastWeek": "Copy last week",
+      "available": "Available",
+      "booked": "Booked",
+      "doubleClickToToggle": "Double-click to toggle availability",
+      "bookingDetails": "Booking Details",
+      "newBooking": "New Booking",
+      "selectClient": "Select Client",
+      "chooseClient": "Choose a client...",
+      "sessionsLeft": "sessions left",
+      "notes": "Notes",
+      "optional": "optional",
+      "notesPlaceholder": "Add notes for this session...",
+      "cancel": "Cancel",
+      "close": "Close",
+      "book": "Book",
+      "aiPlaceholder": "Ask AI: 'book Marco Tuesday 6pm', 'when am I free?'..."
     },
     "library": {
       "title": "Library",

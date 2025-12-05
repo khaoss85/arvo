@@ -1,11 +1,11 @@
 /**
  * Equipment to Representative Exercises Mapping
  * Maps each equipment ID to 2-3 popular exercises that demonstrate its use
- * Exercise names are matched against ExerciseDB for GIF animations
+ * Exercise names are matched against MuscleWiki for video animations
  */
 
 export interface ExerciseExample {
-  name: string // Exercise name to search in ExerciseDB
+  name: string // Exercise name to search in MuscleWiki
   description: string // Short description of the exercise
 }
 

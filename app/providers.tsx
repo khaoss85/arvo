@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useLocaleStore } from "@/lib/stores/locale.store";
-import { ExerciseDBService } from "@/lib/services/exercisedb.service";
+// Exercise animations now use lazy loading - no upfront initialization needed
 import { Toaster } from "@/components/ui/toast";
 import { HtmlLangWrapper } from "@/components/html-lang-wrapper";
 import { GymBrandingProvider } from "@/components/providers/gym-branding-provider";
@@ -72,12 +72,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [setUser, setLoading]);
 
-  // Pre-initialize ExerciseDB cache on app load
-  useEffect(() => {
-    ExerciseDBService.initializeCache().catch((err) => {
-      console.error('[App] Failed to initialize ExerciseDB cache:', err);
-    });
-  }, []);
+  // Exercise animations use lazy loading with database caching
+  // No upfront initialization needed - exercises are fetched on-demand
 
   // Don't render until both Zustand has hydrated and locale is initialized
   // This prevents hydration mismatches and ensures translations load correctly

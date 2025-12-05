@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import { GripVertical, Trash2, PlayCircle, Zap, X, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import type { ExerciseDBExercise } from "@/lib/services/exercisedb.service";
+import type { LegacyExercise } from "@/lib/services/musclewiki.service";
 import type { TechniqueType, TechniqueConfig } from "@/lib/types/advanced-techniques";
 
 export interface ExerciseConfig {
   id: string;
-  exercise: ExerciseDBExercise;
+  exercise: LegacyExercise;
   sets: number;
   reps: string; // Can be "8-12" or "10"
   weight: number | null;
@@ -27,7 +27,7 @@ interface ExerciseConfigRowProps {
   index: number;
   onChange: (id: string, updates: Partial<ExerciseConfig>) => void;
   onRemove: (id: string) => void;
-  onShowAnimation?: (exercise: ExerciseDBExercise) => void;
+  onShowAnimation?: (exercise: LegacyExercise) => void;
   onAddTechnique?: (exerciseId: string) => void;
   onGenerateNotes?: (exerciseId: string) => void;
   showTechniqueButton?: boolean;

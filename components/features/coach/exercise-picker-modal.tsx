@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { X, Search, Loader2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { ExerciseDBService, type ExerciseDBExercise } from "@/lib/services/exercisedb.service";
+import { MuscleWikiService, type LegacyExercise } from "@/lib/services/musclewiki.service";
 
 interface ExercisePickerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelect: (exercise: ExerciseDBExercise) => void;
+  onSelect: (exercise: LegacyExercise) => void;
   excludeExercises?: string[]; // Exercise names already in workout
 }
 
@@ -22,7 +22,7 @@ export function ExercisePickerModal({
   const t = useTranslations("coach.customBuilder");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [results, setResults] = useState<ExerciseDBExercise[]>([]);
+  const [results, setResults] = useState<LegacyExercise[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Filter state
@@ -47,7 +47,7 @@ export function ExercisePickerModal({
   // Load filter options
   useEffect(() => {
     if (isOpen && !filtersLoaded) {
-      ExerciseDBService.getFilterOptions().then((options) => {
+      MuscleWikiService.getFilterOptions().then((options) => {
         setFilterOptions(options);
         setFiltersLoaded(true);
       });
@@ -68,7 +68,7 @@ export function ExercisePickerModal({
     setIsSearching(true);
     const timer = setTimeout(async () => {
       try {
-        const searchResults = await ExerciseDBService.searchExercises(
+        const searchResults = await MuscleWikiService.searchExercisesLegacy(
           searchQuery,
           30,
           {
@@ -111,7 +111,7 @@ export function ExercisePickerModal({
 
   if (!isOpen) return null;
 
-  const handleSelect = (exercise: ExerciseDBExercise) => {
+  const handleSelect = (exercise: LegacyExercise) => {
     onSelect(exercise);
     onClose();
   };
