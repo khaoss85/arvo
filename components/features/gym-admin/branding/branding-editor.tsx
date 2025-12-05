@@ -12,6 +12,8 @@ import { GymBrandingService } from "@/lib/services/gym-branding.service";
 import type { GymBranding } from "@/lib/types/gym.types";
 import { parseHSL, formatHSL, hslToHex, hexToHSL } from "@/lib/utils/color-scale";
 import { useToast } from "@/lib/hooks/use-toast";
+import { AiBrandingSection } from "./ai-branding-section";
+import type { ExtractedBranding } from "@/lib/types/branding-extraction.types";
 
 interface BrandingEditorProps {
   gymId: string;
@@ -166,6 +168,56 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
     }
   };
 
+  // Handle apply extracted branding from AI
+  const handleApplyExtractedBranding = useCallback((extracted: Partial<ExtractedBranding>) => {
+    console.log("[BrandingEditor] Applying extracted branding:", extracted);
+
+    // Apply colors (convert HSL to hex for form state)
+    if (extracted.primary_color) {
+      const hsl = parseHSL(extracted.primary_color);
+      console.log("[BrandingEditor] Primary color:", { input: extracted.primary_color, parsed: hsl });
+      if (hsl) {
+        const hex = hslToHex(hsl.h, hsl.s, hsl.l);
+        console.log("[BrandingEditor] Setting primary to hex:", hex);
+        setPrimaryColor(hex);
+      }
+    }
+    if (extracted.secondary_color) {
+      const hsl = parseHSL(extracted.secondary_color);
+      console.log("[BrandingEditor] Secondary color:", { input: extracted.secondary_color, parsed: hsl });
+      if (hsl) {
+        const hex = hslToHex(hsl.h, hsl.s, hsl.l);
+        console.log("[BrandingEditor] Setting secondary to hex:", hex);
+        setSecondaryColor(hex);
+      }
+    }
+    if (extracted.accent_color) {
+      const hsl = parseHSL(extracted.accent_color);
+      console.log("[BrandingEditor] Accent color:", { input: extracted.accent_color, parsed: hsl });
+      if (hsl) {
+        const hex = hslToHex(hsl.h, hsl.s, hsl.l);
+        console.log("[BrandingEditor] Setting accent to hex:", hex);
+        setAccentColor(hex);
+      }
+    }
+
+    // Apply texts
+    if (extracted.tagline) {
+      console.log("[BrandingEditor] Setting tagline:", extracted.tagline);
+      setTagline(extracted.tagline);
+    }
+    if (extracted.welcome_message) {
+      console.log("[BrandingEditor] Setting welcome_message:", extracted.welcome_message);
+      setWelcomeMessage(extracted.welcome_message);
+    }
+
+    // Apply font
+    if (extracted.font_family) {
+      console.log("[BrandingEditor] Setting font_family:", extracted.font_family);
+      setFontFamily(extracted.font_family);
+    }
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -176,6 +228,9 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
 
   return (
     <div className="space-y-6">
+      {/* AI Branding Section */}
+      <AiBrandingSection onApply={handleApplyExtractedBranding} />
+
       {/* Logo Section */}
       <Card>
         <CardHeader>

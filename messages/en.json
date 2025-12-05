@@ -5697,8 +5697,8 @@
       }
     },
     "checkRoomSection": {
-      "title": "Check Room: Visual Progress Tracking",
-      "description": "Document your transformation with consistent progress photos, weight, and body measurements",
+      "cardTitle": "Check Room: Visual Progress Tracking",
+      "cardDescription": "Document your transformation with consistent progress photos, weight, and body measurements",
       "benefit1": {
         "title": "4-Angle Photos",
         "description": "Front, sides, back for complete view"

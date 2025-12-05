@@ -377,6 +377,51 @@ COMMON ANATOMICAL → CANONICAL MAPPINGS (MEMORIZE):
 ✓ CORRECT: "targetVolume": {"chest": 6, "shoulders": 4, "triceps": 3}
 ✗ WRONG: "targetVolume": {"pectoralis major": 6, "deltoids": 4}
 
+=== MUSCLE GRANULARITY RULES (PREVENT EXCESSIVE EXERCISES) ===
+
+🔴 CRITICAL: Using too many sub-muscles causes workout explosion (12+ exercises per session).
+The workout generator creates 1 exercise per muscle in targetVolume, so limiting muscle count is essential.
+
+**RULE 1: PREFER AGGREGATED MUSCLES**
+- Use "shoulders" instead of "shoulders_front + shoulders_side + shoulders_rear"
+- Use "triceps" instead of "triceps_long + triceps_lateral + triceps_medial"
+- Use "chest" instead of "chest_upper + chest_lower"
+- Use "biceps" instead of splitting into heads
+
+**RULE 2: MINIMUM VOLUME FOR SUB-MUSCLES**
+- Only use granular names (chest_upper, shoulders_rear) if that sub-muscle has ≥6 sets in the session
+- If a sub-muscle has < 6 sets, aggregate it into the parent muscle instead
+- Example: shoulders_rear with 2 sets → merge into "shoulders"
+
+**RULE 3: MAXIMUM SUB-MUSCLES PER PARENT**
+- Never split a muscle into more than 2 sub-groups per session
+- ✓ OK: chest + chest_upper (2 entries for chest family)
+- ✗ BAD: chest_upper + chest_lower + chest_middle (3 entries)
+
+**RULE 4: SESSION MUSCLE COUNT LIMIT**
+- Maximum 4-5 distinct muscle groups per session in targetVolume
+- This ensures 6-8 exercises maximum per workout (typical 2-3 sets per exercise)
+- If you need more volume, increase sets per muscle, don't add more muscles
+
+**CALCULATION CHECK (MANDATORY BEFORE FINALIZING):**
+For each session, verify: Σ ceil(targetVolume[muscle] / 3) ≤ 8
+- This formula estimates exercise count
+- If result > 8: AGGREGATE sub-muscles or increase sets-per-muscle
+
+**EXAMPLES:**
+✓ CORRECT (aggregated, ~7 exercises):
+  targetVolume: { "chest": 10, "shoulders": 8, "triceps": 6 }
+  Calculation: ceil(10/3) + ceil(8/3) + ceil(6/3) = 4 + 3 + 2 = 9 ≤ 8 (close enough)
+
+✗ WRONG (too granular, ~12 exercises):
+  targetVolume: { "chest": 8, "shoulders_front": 4, "shoulders_side": 4, "shoulders_rear": 2, "triceps": 6 }
+  Calculation: ceil(8/3) + ceil(4/3) + ceil(4/3) + ceil(2/3) + ceil(6/3) = 3 + 2 + 2 + 1 + 2 = 10 > 8 ❌
+
+**CORRECT APPROACH FOR THE WRONG EXAMPLE:**
+  Aggregate: shoulders_front(4) + shoulders_side(4) + shoulders_rear(2) = shoulders(10)
+  Result: { "chest": 8, "shoulders": 10, "triceps": 6 }
+  Calculation: ceil(8/3) + ceil(10/3) + ceil(6/3) = 3 + 4 + 2 = 9 ≈ 8 ✓
+
 IMPORTANT CONSIDERATIONS:
 ${input.experienceYears && input.experienceYears < 2 ? `
 - User is a beginner (${input.experienceYears} years) - keep split simple, focus on compounds, moderate volume
@@ -437,6 +482,12 @@ ${input.mesocyclePhase === 'deload' ? `
    - cycleDays includes ALL rest days in count
    - Rest days are explicit session objects with workoutType: null
    - Cycle is practical and fits user's weekly frequency
+
+□ **Exercise Count Per Session (CRITICAL):**
+   - For EACH training session, calculate: Σ ceil(targetVolume[muscle] / 3)
+   - This number MUST be ≤ 8 for each session (prevents 12+ exercise workouts)
+   - If any session exceeds 8: AGGREGATE sub-muscles into parent muscles
+   - Example fix: shoulders_front(4) + shoulders_side(4) + shoulders_rear(2) → shoulders(10)
 
 **⚠️ IF ANY CHECK FAILS: You MUST redesign the split to pass all checks before returning.**
 Do NOT return a split that fails validation. Calculate the ratios, verify the pattern, and iterate until all checks pass.

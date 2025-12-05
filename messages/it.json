@@ -5722,8 +5722,8 @@
       }
     },
     "checkRoomSection": {
-      "title": "Check Room: Tracciamento Visivo Progressi",
-      "description": "Documenta la tua trasformazione con foto dei progressi consistenti, peso e misure corporee",
+      "cardTitle": "Check Room: Tracciamento Visivo Progressi",
+      "cardDescription": "Documenta la tua trasformazione con foto dei progressi consistenti, peso e misure corporee",
       "benefit1": {
         "title": "Foto da 4 Angolazioni",
         "description": "Frontale, laterali, retro per vista completa"

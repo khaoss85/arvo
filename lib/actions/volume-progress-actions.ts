@@ -35,7 +35,28 @@ export async function getVolumeProgressAction(userId: string) {
     }
 
     // Get volume distribution (target totals for the cycle)
-    const volumeDistribution = splitPlan.volume_distribution as Record<string, number>
+    const rawVolumeDistribution = splitPlan.volume_distribution as Record<string, number>
+
+    // Aggregate granular muscles into parent muscles for consistent display
+    // This ensures UI shows "shoulders: 18" instead of "shoulders_rear: 4, shoulders_side: 8, shoulders_front: 6"
+    const MUSCLE_AGGREGATION_MAP: Record<string, string> = {
+      'shoulders_front': 'shoulders',
+      'shoulders_side': 'shoulders',
+      'shoulders_rear': 'shoulders',
+      'chest_upper': 'chest',
+      'chest_lower': 'chest',
+      'triceps_long': 'triceps',
+      'triceps_lateral': 'triceps',
+      'triceps_medial': 'triceps',
+      'biceps_long': 'biceps',
+      'biceps_short': 'biceps',
+    }
+
+    const volumeDistribution: Record<string, number> = {}
+    for (const [muscle, sets] of Object.entries(rawVolumeDistribution)) {
+      const parentMuscle = MUSCLE_AGGREGATION_MAP[muscle] || muscle
+      volumeDistribution[parentMuscle] = (volumeDistribution[parentMuscle] || 0) + sets
+    }
 
     // Get all completed workouts for current split cycle
     const { data: completedWorkouts, error: workoutsError } = await supabase
