@@ -305,6 +305,9 @@ export function generateWorkoutName(
     shoulders: 'Spalle',
     arms: 'Braccia',
     rest: 'Riposo',
+    chest_back: 'Petto & Schiena',
+    shoulders_arms: 'Spalle & Braccia',
+    custom: 'Custom',
   }
 
   const baseName = typeNames[workoutType] || 'Allenamento'
@@ -389,6 +392,9 @@ export function getWorkoutTypeColor(workoutType: WorkoutType): string {
     shoulders: 'orange',
     arms: 'purple',
     rest: 'gray',
+    chest_back: 'indigo',
+    shoulders_arms: 'teal',
+    custom: 'slate',
   }
 
   return colors[workoutType] || 'gray'
@@ -410,6 +416,9 @@ export function getWorkoutTypeIcon(workoutType: WorkoutType): string {
     shoulders: '💥',
     arms: '💪',
     rest: '😴',
+    chest_back: '🎯',
+    shoulders_arms: '🏆',
+    custom: '⚙️',
   }
 
   return icons[workoutType] || '💪'

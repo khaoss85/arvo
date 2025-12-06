@@ -379,10 +379,20 @@ export class MuscleWikiService {
         }
 
         // Find best match among muscle-filtered results
-        const bestMatch = this.findBestMatchForMuscleSearch(exerciseName, exercises)
+        let bestMatch = this.findBestMatchForMuscleSearch(exerciseName, exercises)
         if (!bestMatch) {
           console.log(`[MuscleWiki] No good match among ${exercises.length} "${apiMuscle}" exercises`)
           continue
+        }
+
+        // Fetch full exercise details if videos are missing (search endpoint returns partial data)
+        if (!bestMatch.videos || bestMatch.videos.length === 0) {
+          console.log(`[MuscleWiki] Fetching full details for "${bestMatch.name}" (ID: ${bestMatch.id}) to get videos`)
+          const fullExercise = await this.getExerciseById(bestMatch.id)
+          if (fullExercise && fullExercise.videos && fullExercise.videos.length > 0) {
+            bestMatch = fullExercise
+            console.log(`[MuscleWiki] Got ${fullExercise.videos.length} videos for "${bestMatch.name}"`)
+          }
         }
 
         // Save to caches
@@ -705,6 +715,15 @@ export class MuscleWikiService {
       if (!response.ok) return null
 
       const exercise: MuscleWikiExercise = await response.json()
+
+      // Debug: log raw video format from API
+      console.log(`[MuscleWiki] Raw API response for exercise "${exercise.name}":`, {
+        hasVideos: !!exercise.videos,
+        videosLength: exercise.videos?.length,
+        videosType: typeof exercise.videos,
+        firstVideo: exercise.videos?.[0],
+        videoKeys: exercise.videos?.[0] ? Object.keys(exercise.videos[0]) : []
+      })
 
       // Cache it
       const normalizedName = this.normalizeName(exercise.name)

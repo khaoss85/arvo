@@ -123,4 +123,7 @@ export const BRO_SPLIT_VARIATION_PATTERN: Record<WorkoutType, { A: string; B: st
   lower: { A: 'Compound', B: 'Isolation' },
   full_body: { A: 'Compound', B: 'Isolation' },
   rest: { A: 'Rest Day', B: 'Rest Day' },
+  chest_back: { A: 'Chest Focus', B: 'Back Focus' },
+  shoulders_arms: { A: 'Shoulders Focus', B: 'Arms Focus' },
+  custom: { A: 'Custom A', B: 'Custom B' },
 }

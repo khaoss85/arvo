@@ -133,7 +133,7 @@ export const splitPlanSchema = z.object({
   id: z.string().uuid(),
   user_id: z.string().uuid(),
   approach_id: z.string().uuid().nullable(),
-  split_type: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom', 'bro_split', 'weak_point_focus']),
+  split_type: z.enum(['push_pull_legs', 'upper_lower', 'full_body', 'custom', 'bro_split', 'weak_point_focus', 'arnold_split', 'push_pull', 'hybrid']),
   cycle_days: z.number().int().min(1), // e.g., 8 for Kuba's 3 on 1 off cycle
   sessions: z.array(z.record(z.string(), z.unknown())), // Array of SessionDefinition objects
   frequency_map: z.record(z.string(), z.number()), // muscle group -> frequency per week
@@ -271,7 +271,7 @@ export const workoutSchema = z.object({
   total_volume: z.number().min(0).nullable(),
   total_sets: z.number().int().min(0).nullable(),
   notes: z.string().nullable(),
-  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest']).nullable(),
+  workout_type: z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest', 'chest_back', 'shoulders_arms', 'custom']).nullable(),
   workout_name: z.string().nullable(),
   target_muscle_groups: z.array(z.string()).nullable(),
   split_type: z.string().nullable(),
@@ -450,7 +450,7 @@ export const workoutTemplateSchema = z.object({
   coach_id: z.string().uuid(),
   name: z.string().min(1, "Template name is required"),
   description: z.string().nullable(),
-  workout_type: z.array(z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms'])).nullable(),
+  workout_type: z.array(z.enum(['push', 'pull', 'legs', 'upper', 'lower', 'full_body', 'chest', 'back', 'shoulders', 'arms', 'rest', 'chest_back', 'shoulders_arms', 'custom'])).nullable(),
   exercises: z.array(z.record(z.string(), z.unknown())),
   target_muscle_groups: z.array(z.string()).nullable(),
   tags: z.array(z.string()).nullable(),

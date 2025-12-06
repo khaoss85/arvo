@@ -169,11 +169,6 @@ async function generateWorkoutWithServerClient(
 
   const workoutType = getNextWorkoutType(lastWorkoutType, preferredSplit)
 
-  // Defensive check: ensure this is not a REST day
-  if (workoutType === 'rest') {
-    throw new Error('Cannot generate exercises for a REST day')
-  }
-
   // Merge standard equipment with custom equipment
   const customEquipment = (profile.custom_equipment as Array<{ id: string; name: string; exampleExercises: string[] }>) || []
   const customEquipmentIds = customEquipment.map(eq => eq.id)

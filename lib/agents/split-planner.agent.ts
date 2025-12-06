@@ -23,7 +23,7 @@ export interface CycleComparisonData {
 export interface SplitPlannerInput {
   userId: string
   approachId: string
-  splitType: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus'
+  splitType: 'push_pull_legs' | 'upper_lower' | 'full_body' | 'custom' | 'bro_split' | 'weak_point_focus' | 'arnold_split' | 'push_pull' | 'hybrid'
   weeklyFrequency: number // How many days per week user can train
   weakPoints: string[]
   equipmentAvailable: string[]
