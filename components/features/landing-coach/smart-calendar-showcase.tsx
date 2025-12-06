@@ -2,52 +2,53 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { MessageSquare, Calendar, Bell, Package, AlertCircle, MapPin, CalendarX2, UserX } from "lucide-react";
+import {
+  CalendarX2,
+  Ban,
+  MapPin,
+  Package,
+  AlertTriangle,
+  BarChart3,
+  Calendar,
+  Clock,
+  Users,
+  Bell
+} from "lucide-react";
 import { useTranslations } from 'next-intl';
 
-export function BookingShowcase() {
-  const t = useTranslations('landing.forGyms.booking');
+export function SmartCalendarShowcase() {
+  const t = useTranslations('landing.forTrainers.smartCalendar');
 
   const features = [
     {
-      icon: MessageSquare,
-      titleKey: 'naturalLanguage',
+      icon: CalendarX2,
+      titleKey: 'antiBuchi',
       color: 'from-violet-500 to-purple-500'
     },
     {
-      icon: Calendar,
-      titleKey: 'autoScheduling',
-      color: 'from-blue-500 to-cyan-500'
-    },
-    {
-      icon: Bell,
-      titleKey: 'confirmations',
-      color: 'from-green-500 to-emerald-500'
-    },
-    {
-      icon: AlertCircle,
-      titleKey: 'reminders',
-      color: 'from-amber-500 to-orange-500'
-    },
-    {
-      icon: Package,
-      titleKey: 'packageAlerts',
-      color: 'from-rose-500 to-pink-500'
+      icon: Ban,
+      titleKey: 'personalBlocks',
+      color: 'from-rose-500 to-red-500'
     },
     {
       icon: MapPin,
       titleKey: 'multiLocation',
-      color: 'from-indigo-500 to-violet-500'
+      color: 'from-blue-500 to-cyan-500'
     },
     {
-      icon: CalendarX2,
-      titleKey: 'gapOptimization',
-      color: 'from-teal-500 to-cyan-500'
+      icon: Package,
+      titleKey: 'packages',
+      color: 'from-green-500 to-emerald-500'
     },
     {
-      icon: UserX,
-      titleKey: 'churnPrevention',
-      color: 'from-red-500 to-rose-500'
+      icon: AlertTriangle,
+      titleKey: 'churnAlert',
+      color: 'from-amber-500 to-orange-500'
+    },
+    {
+      icon: BarChart3,
+      titleKey: 'workload',
+      color: 'from-indigo-500 to-blue-500'
     },
   ];
 
@@ -63,13 +64,16 @@ export function BookingShowcase() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium mb-6">
             <Calendar className="w-4 h-4" />
-            AI-Native Booking
+            AI-Native Calendar
           </div>
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
             {t('title')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('subtitle')}
+          </p>
+          <p className="text-sm text-muted-foreground/70 mt-3 max-w-3xl mx-auto">
+            {t('description')}
           </p>
         </motion.div>
 
@@ -86,33 +90,33 @@ export function BookingShowcase() {
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 text-center">
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center mb-2">
-                    <MessageSquare className="w-6 h-6 text-primary-600" />
+                    <Clock className="w-6 h-6 text-primary-600" />
                   </div>
-                  <span className="text-sm font-medium">&ldquo;Book Marco Tuesday 6pm&rdquo;</span>
+                  <span className="text-sm font-medium">{t('flow.step1')}</span>
                 </div>
                 <div className="hidden md:block text-2xl text-primary-400">&rarr;</div>
                 <div className="block md:hidden text-2xl text-primary-400">&darr;</div>
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center mb-2">
-                    <Calendar className="w-6 h-6 text-blue-600" />
+                    <CalendarX2 className="w-6 h-6 text-violet-600" />
                   </div>
-                  <span className="text-sm font-medium">AI Schedules</span>
+                  <span className="text-sm font-medium">{t('flow.step2')}</span>
                 </div>
                 <div className="hidden md:block text-2xl text-primary-400">&rarr;</div>
                 <div className="block md:hidden text-2xl text-primary-400">&darr;</div>
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center mb-2">
-                    <Bell className="w-6 h-6 text-green-600" />
+                    <Users className="w-6 h-6 text-green-600" />
                   </div>
-                  <span className="text-sm font-medium">Client Notified</span>
+                  <span className="text-sm font-medium">{t('flow.step3')}</span>
                 </div>
                 <div className="hidden md:block text-2xl text-primary-400">&rarr;</div>
                 <div className="block md:hidden text-2xl text-primary-400">&darr;</div>
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-md flex items-center justify-center mb-2">
-                    <AlertCircle className="w-6 h-6 text-amber-600" />
+                    <Bell className="w-6 h-6 text-amber-600" />
                   </div>
-                  <span className="text-sm font-medium">Auto Reminders</span>
+                  <span className="text-sm font-medium">{t('flow.step4')}</span>
                 </div>
               </div>
             </CardContent>
@@ -150,12 +154,13 @@ export function BookingShowcase() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: 0.8 }}
+            transition={{ duration: 0.4, delay: 0.6 }}
+            className="md:col-span-2 lg:col-span-1"
           >
             <Card className="h-full bg-gradient-to-br from-primary-500 to-primary-700 text-white">
               <CardContent className="p-6 flex flex-col justify-center h-full">
-                <div className="text-4xl font-bold mb-2">~1s</div>
-                <p className="text-primary-100">AI response time for instant booking</p>
+                <div className="text-5xl font-bold mb-2">{t('highlight.value')}</div>
+                <p className="text-primary-100">{t('highlight.label')}</p>
               </CardContent>
             </Card>
           </motion.div>

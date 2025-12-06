@@ -234,7 +234,8 @@
       "undo": "Undo",
       "undoing": "Undoing...",
       "confirmUndo": "Are you sure you want to undo the last modification?",
-      "undoSuccess": "Modification undone successfully"
+      "undoSuccess": "Modification undone successfully",
+      "fromCoach": "From Coach"
     },
     "splitCustomization": {
       "title": "Customize Split",
@@ -1692,6 +1693,9 @@
           "exercisesSubstituted": "{count, plural, one {{count} exercise substituted} other {{count} exercises substituted}}",
           "reason": "Reason: {reason}"
         },
+        "coachFeedback": {
+          "title": "Coach Feedback"
+        },
         "buttons": {
           "viewProgress": "View Progress"
         }
@@ -2475,9 +2479,26 @@
       "connectedTo": "Connected to",
       "connectedDescription": "Your coach can view your progress and assign personalized workouts",
       "disconnect": "Disconnect",
-      "confirmDisconnect": "Are you sure you want to disconnect from your coach? You can reconnect later with the same code.",
+      "confirmDisconnect": "Disconnect",
       "success": "Successfully connected with your coach!",
-      "instructions": "Ask your coach for their invite code to get connected"
+      "instructions": "Ask your coach for their invite code to get connected",
+      "cancel": "Cancel",
+      "disconnectTitle": "Disconnect from Coach",
+      "disconnectDescription": "What do you want to do with your training plan?",
+      "keepCurrentPlan": "Continue with current plan",
+      "keepCurrentPlanDescription": "Keep training with the plan your coach assigned you",
+      "restorePreviousPlan": "Restore previous plan",
+      "restorePreviousPlanDescription": "Go back to your {splitType} plan from before",
+      "noPreviousPlan": "No previous plan to restore",
+      "autonomy": {
+        "title": "Autonomy Level",
+        "minimal": "Guided",
+        "minimalDesc": "Your coach manages your training plan",
+        "standard": "Collaborative",
+        "standardDesc": "You can suggest changes for coach approval",
+        "full": "Independent",
+        "fullDesc": "Full freedom with coach input when needed"
+      }
     },
     "trainingMax": {
       "title": "Training Maxes",
@@ -4487,7 +4508,60 @@
           "maxClients": {
             "question": "Is there a client limit?",
             "answer": "The Coach plan supports up to 50 active clients. Need more? Contact us for enterprise solutions."
+          },
+          "smartCalendarHow": {
+            "question": "How does the smart calendar work?",
+            "answer": "Set your availability once, and AI handles the rest. It automatically fills schedule gaps, suggests session moves to create free blocks, and sends reminders. You always approve - AI only suggests."
+          },
+          "multiLocationSessions": {
+            "question": "Can I manage online and in-person sessions?",
+            "answer": "Yes. The calendar supports multi-location sessions: in-person gym sessions, online calls, and group classes. AI coordinates everything without conflicts."
+          },
+          "churnPrevention": {
+            "question": "How does churn prevention work?",
+            "answer": "AI monitors booking patterns and alerts you about inactive clients or frequent cancellations. You get suggested check-in actions to retain clients before they leave."
           }
+        }
+      },
+      "smartCalendar": {
+        "title": "AI-Powered Smart Calendar",
+        "subtitle": "Manage bookings, packages, and schedule - AI does the heavy lifting",
+        "description": "Beyond managing bookings and packages, the AI-assisted coach can fill gaps automatically, handle cancellations and waitlists, suggest package upgrades, prevent churn, and coordinate in-person, online, and group sessions seamlessly.",
+        "features": {
+          "antiBuchi": {
+            "title": "Gap Optimization",
+            "description": "AI automatically fills schedule gaps, suggests session moves to create free blocks"
+          },
+          "personalBlocks": {
+            "title": "Personal Blocks",
+            "description": "Set no-session periods with smart conflict management and client notifications"
+          },
+          "multiLocation": {
+            "title": "Multi-Location",
+            "description": "Coordinate 1:1 gym sessions, online calls, and group classes without conflicts"
+          },
+          "packages": {
+            "title": "Smart Packages",
+            "description": "\"How many sessions left?\" Auto expiry reminders, suggested upgrades based on booking patterns"
+          },
+          "churnAlert": {
+            "title": "Churn Alerts",
+            "description": "Inactive clients, frequent cancellations - get alerts with suggested check-in actions"
+          },
+          "workload": {
+            "title": "Workload Balance",
+            "description": "AI signals overbooked or empty days, suggests where to open or close slots"
+          }
+        },
+        "flow": {
+          "step1": "Coach sets availability",
+          "step2": "AI optimizes schedule",
+          "step3": "Clients book easily",
+          "step4": "Smart reminders sent"
+        },
+        "highlight": {
+          "value": "0",
+          "label": "schedule gaps with AI optimization"
         }
       },
       "cta": {
@@ -4579,6 +4653,18 @@
           "packageAlerts": {
             "title": "Package Alerts",
             "description": "Automatic notifications when sessions are running low or expiring"
+          },
+          "multiLocation": {
+            "title": "Multi-Location Sessions",
+            "description": "In-person gym sessions, online calls, group classes - all coordinated without conflicts"
+          },
+          "gapOptimization": {
+            "title": "Gap Optimization",
+            "description": "AI fills schedule gaps automatically, suggests session moves to maximize coach efficiency"
+          },
+          "churnPrevention": {
+            "title": "Churn Prevention",
+            "description": "Inactive members, frequent cancellations - get alerts with suggested retention actions"
           }
         }
       },
@@ -5918,7 +6004,8 @@
       "report": "Report",
       "progress": "Progress",
       "check": "Check",
-      "settings": "Settings"
+      "settings": "Settings",
+      "bookings": "Bookings"
     },
     "dashboard": {
       "greeting": "Hi",
@@ -6011,7 +6098,8 @@
       "firstDayComplete": "You completed the first day!",
       "keepGoing": "Keep going to build your consistency",
       "backToHome": "Back to Home",
-      "skipped": "skipped"
+      "skipped": "skipped",
+      "coachFeedback": "Coach Feedback"
     },
     "report": {
       "title": "Your Progress",
@@ -6662,7 +6750,126 @@
       "partOfRecurringSeries": "Part of a recurring series",
       "cancelThisOnly": "Cancel this only",
       "cancelThisAndFollowing": "Cancel this and following",
-      "cancelEntireSeries": "Cancel entire series"
+      "cancelEntireSeries": "Cancel entire series",
+      "creating": "Creating...",
+      "blocks": {
+        "createBlock": "Create Block",
+        "manageBlocks": "Manage Blocks",
+        "blockType": "Block Type",
+        "types": {
+          "competition": "Competition",
+          "travel": "Travel",
+          "study": "Study",
+          "personal": "Personal",
+          "custom": "Other"
+        },
+        "customReason": "Reason",
+        "customReasonPlaceholder": "Specify reason...",
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "fullDay": "Full day",
+        "notes": "Notes",
+        "notesPlaceholder": "Add optional notes...",
+        "checkingConflicts": "Checking conflicts...",
+        "conflictsFound": "{count, plural, =1 {1 session in conflict} other {# sessions in conflict}}",
+        "conflictsDescription": "Manually handle sessions before or after creating the block.",
+        "moreConflicts": "more conflicts"
+      },
+      "optimization": {
+        "suggestionsTitle": "Calendar Optimizations",
+        "description": "AI suggestions to consolidate bookings and create free blocks.",
+        "noSuggestions": "No suggestions available",
+        "generating": "Generating suggestions...",
+        "analyze": "Analyze Calendar",
+        "regenerate": "Regenerate Suggestions",
+        "accept": "Accept",
+        "reject": "Reject",
+        "benefitScore": "Benefit: {score}%",
+        "highBenefit": "High benefit",
+        "mediumBenefit": "Medium benefit",
+        "lowBenefit": "Low benefit",
+        "clientPreference": "Client preference",
+        "createsBlock": "Creates free block of {minutes} min"
+      },
+      "location": {
+        "all": "All",
+        "inPerson": "In Person",
+        "online": "Online",
+        "atGym": "At gym",
+        "virtualSession": "Virtual session",
+        "meetingUrl": "Meeting link",
+        "enterMeetingUrl": "Enter meeting link...",
+        "sessionType": "Session Type"
+      },
+      "cancellation": {
+        "policy": "Cancellation Policy",
+        "freeWindow": "Free cancellation window",
+        "hours": "hours",
+        "latePenalty": "Late cancellation penalty",
+        "chargeSession": "Deduct session from package",
+        "noCharge": "No penalty",
+        "warning": "You are cancelling within {hours}h of the session",
+        "sessionWillBeCharged": "The session will be deducted from your package",
+        "freeCancel": "You can cancel for free",
+        "lateCancel": "Late Cancellation",
+        "confirmTitle": "Confirm Cancellation",
+        "confirmDescription": "This session is scheduled in {hours}h.",
+        "policyNote": "Coach policy allows free cancellation up to {policyHours}h before.",
+        "reason": "Reason (optional)",
+        "reasonPlaceholder": "Why are you cancelling?",
+        "confirmButton": "Confirm Cancellation",
+        "cancelledByCoach": "Cancelled by coach",
+        "cancelledByClient": "Cancelled by client"
+      },
+      "noShow": {
+        "alert": "No-Show Alert",
+        "alerts": "No-Show Alerts",
+        "stats": "Absence statistics",
+        "rate": "Absence rate",
+        "threshold": "Alert threshold",
+        "acknowledge": "Acknowledge",
+        "acknowledged": "Acknowledged",
+        "clientMissed": "{name} missed {count}/{total} sessions",
+        "pendingAlerts": "Pending alerts",
+        "noAlerts": "No alerts",
+        "markAsNoShow": "Mark as no-show",
+        "notes": "Notes",
+        "notesPlaceholder": "Add notes about this client...",
+        "severity": {
+          "warning": "Warning",
+          "high": "High",
+          "critical": "Critical"
+        }
+      },
+      "waitlist": {
+        "title": "Waitlist",
+        "join": "Join",
+        "leave": "Leave waitlist",
+        "position": "Position",
+        "preferences": "Preferences",
+        "preferredDays": "Preferred days",
+        "timeRange": "Time range",
+        "anyDay": "Any day",
+        "anyTime": "Any time",
+        "urgency": "Urgency",
+        "notify": "Notify",
+        "slotAvailable": "Slot available!",
+        "respondBy": "Respond by",
+        "accept": "Accept",
+        "decline": "Decline",
+        "offerExpired": "Offer expired",
+        "alreadyOnWaitlist": "Already on waitlist",
+        "addedToWaitlist": "Added to waitlist",
+        "daysWaiting": "{days} days waiting",
+        "priorityScore": "Priority: {score}/100",
+        "hasActivePackage": "Active package",
+        "noActivePackage": "No package",
+        "empty": "No one on waitlist",
+        "selectCandidate": "Select candidate",
+        "offerSlot": "Offer slot"
+      }
     },
     "packages": {
       "title": "Packages",

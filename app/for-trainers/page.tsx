@@ -5,6 +5,7 @@ import { HeroSectionCoach } from "@/components/features/landing-coach/hero-secti
 import { PainPointSection } from "@/components/features/landing-coach/pain-point-section";
 import { AIGenerationShowcase } from "@/components/features/landing-coach/ai-generation-showcase";
 import { ClientDashboardPreview } from "@/components/features/landing-coach/client-dashboard-preview";
+import { SmartCalendarShowcase } from "@/components/features/landing-coach/smart-calendar-showcase";
 import { ProgressMonitoringSection } from "@/components/features/landing-coach/progress-monitoring-section";
 import { InterfaceModesSection } from "@/components/features/landing-coach/interface-modes-section";
 import { CoachComparison } from "@/components/features/landing-coach/coach-comparison";
@@ -38,6 +39,18 @@ const coachFAQs = [
   {
     question: "Is there a client limit?",
     answer: "The Coach plan supports up to 50 active clients. Need more? Contact us for enterprise solutions.",
+  },
+  {
+    question: "How does the smart calendar work?",
+    answer: "Set your availability once, and AI handles the rest. It automatically fills schedule gaps, suggests session moves to create free blocks, and sends reminders. You always approve - AI only suggests.",
+  },
+  {
+    question: "Can I manage online and in-person sessions?",
+    answer: "Yes. The calendar supports multi-location sessions: in-person gym sessions, online calls, and group classes. AI coordinates everything without conflicts.",
+  },
+  {
+    question: "How does churn prevention work?",
+    answer: "AI monitors booking patterns and alerts you about inactive clients or frequent cancellations. You get suggested check-in actions to retain clients before they leave.",
   },
 ];
 
@@ -96,6 +109,7 @@ export default async function ForTrainersPage() {
         <PainPointSection />
         <AIGenerationShowcase />
         <ClientDashboardPreview />
+        <SmartCalendarShowcase />
         <ProgressMonitoringSection />
         <InterfaceModesSection />
         <CoachComparison />
