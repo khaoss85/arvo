@@ -52,6 +52,12 @@ export interface BookingContext {
     status: string
     locationType?: SessionLocationType
   }>
+  // Phase-aware booking
+  clientCaloricPhase?: 'bulk' | 'cut' | 'maintenance' | null
+  recommendedFrequency?: {
+    sessionsPerWeek: number
+    rationale: string
+  }
 }
 
 export interface ClientWithBookingInfo {
@@ -73,6 +79,40 @@ export interface ClientWithBookingInfo {
 // =====================================================
 
 export class BookingService {
+  // =====================================================
+  // Phase-Aware Booking Utilities
+  // =====================================================
+
+  /**
+   * Get recommended training frequency based on client's caloric phase
+   * - Cut: 4 sessions/week (higher frequency to preserve muscle during deficit)
+   * - Bulk: 3 sessions/week (moderate frequency for recovery and growth)
+   * - Maintenance: 3 sessions/week (standard frequency)
+   */
+  static getRecommendedFrequency(caloricPhase: string | null | undefined): {
+    sessionsPerWeek: number
+    rationale: string
+  } {
+    switch (caloricPhase) {
+      case 'cut':
+        return {
+          sessionsPerWeek: 4,
+          rationale: 'Alta frequenza per preservare massa muscolare durante il deficit calorico'
+        }
+      case 'bulk':
+        return {
+          sessionsPerWeek: 3,
+          rationale: 'Frequenza moderata per massimizzare recupero e crescita muscolare'
+        }
+      case 'maintenance':
+      default:
+        return {
+          sessionsPerWeek: 3,
+          rationale: 'Frequenza standard per mantenimento della forma fisica'
+        }
+    }
+  }
+
   // =====================================================
   // Availability Management
   // =====================================================
@@ -758,6 +798,8 @@ export class BookingService {
     // Build client preferences if clientId provided
     let clientPreferences: BookingContext['clientPreferences']
     let packageInfo: BookingContext['package']
+    let clientCaloricPhase: BookingContext['clientCaloricPhase']
+    let recommendedFrequency: BookingContext['recommendedFrequency']
 
     if (clientId) {
       // Get client's booking history for pattern detection
@@ -811,6 +853,18 @@ export class BookingService {
           sessionsRemaining: activePackage.total_sessions - (activePackage.sessions_used || 0)
         }
       }
+
+      // Get client's caloric phase for phase-aware booking suggestions
+      const { data: clientProfile } = await supabase
+        .from('user_profiles')
+        .select('caloric_phase')
+        .eq('user_id', clientId)
+        .single()
+
+      if (clientProfile?.caloric_phase) {
+        clientCaloricPhase = clientProfile.caloric_phase as 'bulk' | 'cut' | 'maintenance'
+        recommendedFrequency = this.getRecommendedFrequency(clientCaloricPhase)
+      }
     }
 
     return {
@@ -819,7 +873,9 @@ export class BookingService {
       availableSlots,
       clientPreferences,
       package: packageInfo,
-      existingBookings
+      existingBookings,
+      clientCaloricPhase,
+      recommendedFrequency
     }
   }
 

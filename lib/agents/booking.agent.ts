@@ -201,6 +201,14 @@ ${context.package ? `
 - Remaining: ${context.package.sessionsRemaining}
 ` : ''}
 
+${context.clientCaloricPhase ? `
+## Training Phase Guidance
+- Current phase: ${context.clientCaloricPhase}
+- Recommended frequency: ${context.recommendedFrequency?.sessionsPerWeek} sessions/week
+- Rationale: ${context.recommendedFrequency?.rationale}
+Consider this phase when suggesting booking frequency.
+` : ''}
+
 ## Task
 Parse the user command and respond with the appropriate action.
 - For "book": extract client, date, time → return confirmation object
@@ -254,6 +262,14 @@ ${context.package ? `
 - Sessions per week: ${context.package.sessionsPerWeek}
 - Remaining sessions: ${context.package.sessionsRemaining}
 ` : 'No active package'}
+
+${context.clientCaloricPhase ? `
+## Training Phase Guidance
+- Current phase: ${context.clientCaloricPhase}
+- Recommended frequency: ${context.recommendedFrequency?.sessionsPerWeek} sessions/week
+- Rationale: ${context.recommendedFrequency?.rationale}
+Prioritize this recommended frequency when suggesting slots.
+` : ''}
 
 ## Existing Bookings (avoid conflicts)
 ${context.existingBookings.map(b => `- ${b.date} ${b.startTime}`).join('\n') || 'None'}

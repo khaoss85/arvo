@@ -721,8 +721,8 @@ export class MuscleWikiService {
         hasVideos: !!exercise.videos,
         videosLength: exercise.videos?.length,
         videosType: typeof exercise.videos,
-        firstVideo: exercise.videos?.[0],
-        videoKeys: exercise.videos?.[0] ? Object.keys(exercise.videos[0]) : []
+        videoKeys: exercise.videos?.[0] ? Object.keys(exercise.videos[0]) : [],
+        firstVideoFull: JSON.stringify(exercise.videos?.[0])
       })
 
       // Cache it
