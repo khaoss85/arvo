@@ -420,6 +420,18 @@ export const insertCoachClientRelationshipSchema = coachClientRelationshipSchema
 
 export const updateCoachClientRelationshipSchema = insertCoachClientRelationshipSchema.partial();
 
+// Coach Client Notes Schema
+export const coachClientNoteSchema = z.object({
+  id: z.string().uuid(),
+  relationship_id: z.string().uuid(),
+  content: z.string().min(1, "Content is required"),
+  is_shared: z.boolean().default(false),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export type CoachClientNote = z.infer<typeof coachClientNoteSchema>;
+
 // Workout Template Schema
 export const workoutTemplateSchema = z.object({
   id: z.string().uuid(),
@@ -584,3 +596,212 @@ export type UpdateSplitPlanTemplate = z.infer<typeof updateSplitPlanTemplateSche
 export type CoachSplitPlanAssignment = z.infer<typeof coachSplitPlanAssignmentSchema>;
 export type InsertCoachSplitPlanAssignment = z.infer<typeof insertCoachSplitPlanAssignmentSchema>;
 export type UpdateCoachSplitPlanAssignment = z.infer<typeof updateCoachSplitPlanAssignmentSchema>;
+
+// =====================================================
+// Booking System Schemas
+// =====================================================
+
+// Booking Status
+export const bookingStatusSchema = z.enum(['confirmed', 'cancelled', 'completed', 'no_show']);
+export type BookingStatus = z.infer<typeof bookingStatusSchema>;
+
+// Booking Package Status
+export const bookingPackageStatusSchema = z.enum(['active', 'completed', 'expired', 'cancelled']);
+export type BookingPackageStatus = z.infer<typeof bookingPackageStatusSchema>;
+
+// Notification Type
+export const bookingNotificationTypeSchema = z.enum([
+  'booking_confirmed',
+  'booking_cancelled',
+  'booking_rescheduled',
+  'reminder_24h',
+  'reminder_1h',
+  'package_low',
+  'package_expired'
+]);
+export type BookingNotificationType = z.infer<typeof bookingNotificationTypeSchema>;
+
+// Notification Channel
+export const notificationChannelSchema = z.enum(['in_app', 'email']);
+export type NotificationChannel = z.infer<typeof notificationChannelSchema>;
+
+// Notification Status
+export const notificationStatusSchema = z.enum(['pending', 'sent', 'failed']);
+export type NotificationStatus = z.infer<typeof notificationStatusSchema>;
+
+// Recurring Pattern Frequency
+export const recurringFrequencySchema = z.enum(['weekly', 'biweekly']);
+export type RecurringFrequency = z.infer<typeof recurringFrequencySchema>;
+
+// Recurring Pattern End Type
+export const recurringEndTypeSchema = z.enum(['count', 'date']);
+export type RecurringEndType = z.infer<typeof recurringEndTypeSchema>;
+
+// Recurring Pattern Source Type
+export const recurringSourceTypeSchema = z.enum(['manual', 'ai_package']);
+export type RecurringSourceType = z.infer<typeof recurringSourceTypeSchema>;
+
+// Recurring Pattern Schema
+export const recurringPatternSchema = z.object({
+  frequency: recurringFrequencySchema,
+  endType: recurringEndTypeSchema,
+  endValue: z.union([z.number().int().min(1).max(52), z.string()]), // count or "YYYY-MM-DD"
+  sourceType: recurringSourceTypeSchema,
+  packageId: z.string().uuid().optional(),
+  dayOfWeek: z.array(z.number().int().min(0).max(6)), // 0=Sun, 1=Mon, etc.
+  timeSlot: z.string().regex(/^\d{2}:\d{2}$/), // "HH:MM"
+  createdAt: z.string().datetime().optional()
+});
+export type RecurringPattern = z.infer<typeof recurringPatternSchema>;
+
+// AI Slot Suggestion Schema (for package-based recurring)
+export const aiSlotSuggestionSchema = z.object({
+  dayOfWeek: z.number().int().min(0).max(6),
+  dayName: z.string().optional(),
+  time: z.string(),
+  confidence: z.number().min(0).max(100),
+  reason: z.string().optional()
+});
+export type AISlotSuggestion = z.infer<typeof aiSlotSuggestionSchema>;
+
+// Coach Availability Schema
+export const coachAvailabilitySchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  date: z.string(), // DATE format YYYY-MM-DD
+  start_time: z.string(), // TIME format HH:MM:SS
+  end_time: z.string(), // TIME format HH:MM:SS
+  is_available: z.boolean().default(true),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachAvailabilitySchema = coachAvailabilitySchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCoachAvailabilitySchema = insertCoachAvailabilitySchema.partial();
+
+// Booking Package Schema
+export const bookingPackageSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  name: z.string().min(1, "Package name is required"),
+  total_sessions: z.number().int().min(1),
+  sessions_per_week: z.number().int().min(1).default(1),
+  sessions_used: z.number().int().min(0).default(0),
+  start_date: z.string(), // DATE format
+  end_date: z.string().nullable(),
+  status: bookingPackageStatusSchema.default('active'),
+  // AI recurring suggestions
+  ai_suggested_slots: z.array(aiSlotSuggestionSchema).nullable(),
+  slots_confirmed: z.boolean().default(false),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertBookingPackageSchema = bookingPackageSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  sessions_used: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+  sessions_used: z.number().int().min(0).optional(),
+});
+
+export const updateBookingPackageSchema = insertBookingPackageSchema.partial();
+
+// Booking Schema
+export const bookingSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  scheduled_date: z.string(), // DATE format YYYY-MM-DD
+  start_time: z.string(), // TIME format HH:MM:SS
+  end_time: z.string(), // TIME format HH:MM:SS
+  duration_minutes: z.number().int().min(15).default(60),
+  status: bookingStatusSchema.default('confirmed'),
+  package_id: z.string().uuid().nullable(),
+  ai_scheduled: z.boolean().default(false),
+  ai_suggestion_accepted: z.boolean().nullable(),
+  // Recurring booking fields
+  recurring_series_id: z.string().uuid().nullable(),
+  recurring_pattern: recurringPatternSchema.nullable(),
+  occurrence_index: z.number().int().min(1).nullable(),
+  coach_notes: z.string().nullable(),
+  client_notes: z.string().nullable(),
+  cancellation_reason: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+  cancelled_at: z.string().datetime().nullable(),
+  completed_at: z.string().datetime().nullable(),
+});
+
+export const insertBookingSchema = bookingSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  cancelled_at: true,
+  completed_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+  cancelled_at: z.string().datetime().optional(),
+  completed_at: z.string().datetime().optional(),
+});
+
+export const updateBookingSchema = insertBookingSchema.partial();
+
+// Booking Notification Schema
+export const bookingNotificationSchema = z.object({
+  id: z.string().uuid(),
+  booking_id: z.string().uuid(),
+  recipient_id: z.string().uuid(),
+  notification_type: bookingNotificationTypeSchema,
+  channel: notificationChannelSchema,
+  scheduled_for: z.string().datetime(),
+  sent_at: z.string().datetime().nullable(),
+  status: notificationStatusSchema.default('pending'),
+  metadata: z.record(z.string(), z.unknown()).nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertBookingNotificationSchema = bookingNotificationSchema.omit({
+  id: true,
+  created_at: true,
+  sent_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  sent_at: z.string().datetime().optional(),
+});
+
+export const updateBookingNotificationSchema = insertBookingNotificationSchema.partial();
+
+// Booking System Type Exports
+export type CoachAvailability = z.infer<typeof coachAvailabilitySchema>;
+export type InsertCoachAvailability = z.infer<typeof insertCoachAvailabilitySchema>;
+export type UpdateCoachAvailability = z.infer<typeof updateCoachAvailabilitySchema>;
+
+export type BookingPackage = z.infer<typeof bookingPackageSchema>;
+export type InsertBookingPackage = z.infer<typeof insertBookingPackageSchema>;
+export type UpdateBookingPackage = z.infer<typeof updateBookingPackageSchema>;
+
+export type Booking = z.infer<typeof bookingSchema>;
+export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export type UpdateBooking = z.infer<typeof updateBookingSchema>;
+
+export type BookingNotification = z.infer<typeof bookingNotificationSchema>;
+export type InsertBookingNotification = z.infer<typeof insertBookingNotificationSchema>;
+export type UpdateBookingNotification = z.infer<typeof updateBookingNotificationSchema>;

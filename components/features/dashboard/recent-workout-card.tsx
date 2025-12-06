@@ -6,7 +6,7 @@ import type { Workout } from '@/lib/types/schemas'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import { getRelativeTime, formatDuration } from '@/lib/utils/date-helpers'
 import { cn } from '@/lib/utils/cn'
-import { Clock, Weight, Layers } from 'lucide-react'
+import { Clock, Weight, Layers, User } from 'lucide-react'
 
 interface RecentWorkoutCardProps {
   workout: Workout
@@ -81,19 +81,27 @@ export function RecentWorkoutCard({ workout, className }: RecentWorkoutCardProps
             <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
               {workoutName}
             </h3>
-            {workout.workout_type && (
-              <span
-                className={cn(
-                  'inline-block text-xs font-medium px-2 py-0.5 rounded mt-1',
-                  typeColors.bg,
-                  typeColors.text,
-                  'border',
-                  typeColors.border
-                )}
-              >
-                {t(workout.workout_type)}
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              {workout.workout_type && (
+                <span
+                  className={cn(
+                    'inline-block text-xs font-medium px-2 py-0.5 rounded',
+                    typeColors.bg,
+                    typeColors.text,
+                    'border',
+                    typeColors.border
+                  )}
+                >
+                  {t(workout.workout_type)}
+                </span>
+              )}
+              {workout.assigned_by_coach_id && (
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-300 dark:border-orange-700">
+                  <User className="w-3 h-3" />
+                  {t('coachBadge')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <time className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">

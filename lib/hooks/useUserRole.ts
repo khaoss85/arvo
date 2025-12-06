@@ -50,7 +50,7 @@ export function useUserRole() {
     isAdmin: role === "admin",
     isCoach: role === "coach",
     isGymOwner: role === "gym_owner",
-    canAccessCoachMode: role === "coach" || role === "gym_owner" || role === "admin",
+    canAccessCoachMode: true,
     canAccessGymAdminMode: role === "gym_owner" || role === "admin",
   };
 }

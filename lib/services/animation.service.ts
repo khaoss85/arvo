@@ -128,6 +128,7 @@ export class AnimationService {
    * Example: ("bench-press", "barbell") -> "barbell bench press"
    * Example: ("back squat", "Barbell, Squat Rack") -> "barbell back squat"
    * Example: ("Cable Pec Fly", "Cable") -> "cable pec fly" (no duplication)
+   * Example: ("seated calf raise", "seated calf raise machine") -> "seated calf raise" (no duplication)
    */
   private static buildCanonicalName(pattern: string, equipment: string): string {
     // Clean up pattern and equipment
@@ -143,6 +144,21 @@ export class AnimationService {
       .replace(/^(incline|decline|flat|adjustable)\s+/i, '')
 
     const cleanEquipment = primaryEquipment.replace(/-/g, ' ').trim().toLowerCase()
+
+    // Skip if equipment is empty after cleaning
+    if (!cleanEquipment) {
+      return cleanPattern
+    }
+
+    // Check if equipment equals pattern (avoid duplication like "seated calf raise seated calf raise")
+    if (cleanEquipment === cleanPattern) {
+      return cleanPattern
+    }
+
+    // Check if pattern already contains the equipment anywhere
+    if (cleanPattern.includes(cleanEquipment)) {
+      return cleanPattern
+    }
 
     // Check if equipment is already at the start of the pattern
     if (cleanPattern.startsWith(cleanEquipment + ' ')) {

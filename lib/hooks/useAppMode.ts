@@ -29,9 +29,9 @@ export function useAppMode() {
     setLoading(true);
 
     try {
-      // For coach mode, we don't persist to user_profiles.app_mode
-      // since it's a separate role-based mode
+      // For coach mode, promote user to coach role and create profile if needed
       if (newMode === "coach") {
+        await fetch("/api/user/promote-to-coach", { method: "POST" });
         setMode(newMode);
       } else {
         const result = await updateAppModeAction(newMode);

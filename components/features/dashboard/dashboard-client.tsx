@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { SplitCycleTimeline } from "./split-cycle-timeline"
 import { ActivityFeed } from "./activity-feed"
 import { CheckRoomCard } from "./check-room-card"
+import { CoachNotesSection } from "./coach-notes-section"
 import { CycleCompletionModal } from "./cycle-completion-modal"
 import { SplitSelectionDialog } from "./split-selection-dialog"
 import { SplitAdaptationProgress } from "./split-adaptation-progress"
@@ -187,6 +188,9 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
         <div className="mb-8">
           <SplitCycleTimeline userId={user.id} volumeProgress={volumeProgress} />
         </div>
+
+        {/* Coach Notes - only shows if user has coach with shared notes */}
+        <CoachNotesSection className="mb-8" />
 
         <section aria-labelledby="recent-activity-heading">
           <div className="flex items-center justify-between mb-4">

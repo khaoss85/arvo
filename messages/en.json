@@ -144,7 +144,11 @@
         "3": "Okay",
         "4": "Great",
         "5": "Incredible"
-      }
+      },
+      "coachBadge": "Coach"
+    },
+    "coachNotes": {
+      "title": "Notes from your Coach"
     },
     "adaptation": {
       "title": "Adapting Split Plan",
@@ -6646,7 +6650,19 @@
       "cancel": "Cancel",
       "close": "Close",
       "book": "Book",
-      "aiPlaceholder": "Ask AI: 'book Marco Tuesday 6pm', 'when am I free?'..."
+      "bookSeries": "Book Series",
+      "aiPlaceholder": "Ask AI: 'book Marco Tuesday 6pm', 'when am I free?'...",
+      "repeats": "Repeats",
+      "weekly": "Every week",
+      "biweekly": "Every 2 weeks",
+      "after": "After",
+      "until": "Until",
+      "occurrences": "times",
+      "previewSlots": "Preview slots",
+      "partOfRecurringSeries": "Part of a recurring series",
+      "cancelThisOnly": "Cancel this only",
+      "cancelThisAndFollowing": "Cancel this and following",
+      "cancelEntireSeries": "Cancel entire series"
     },
     "packages": {
       "title": "Packages",
@@ -6661,7 +6677,14 @@
       "endDate": "End Date",
       "used": "used",
       "remaining": "remaining",
-      "renew": "Renew"
+      "renew": "Renew",
+      "aiSlotSuggestion": "AI Suggestion",
+      "aiWillSuggestOptimalSlots": "AI will suggest optimal slots for {count} sessions/week",
+      "getSuggestions": "Get Suggestions",
+      "confirmAndCreate": "Confirm and Create Bookings",
+      "savePackageOnly": "Save Package Only",
+      "suggestedSlots": "Suggested Slots",
+      "confidence": "confidence"
     },
     "recap": {
       "today": "Today",
@@ -6764,7 +6787,17 @@
       "shareWithClient": "Share with client",
       "makePrivate": "Make private",
       "shared": "Shared",
-      "private": "Private"
+      "private": "Private",
+      "bookings": "Bookings",
+      "noBookings": "No bookings yet",
+      "noBookingsDescription": "This client has no scheduled sessions",
+      "upcomingBookings": "Upcoming",
+      "pastBookings": "Past",
+      "allBookings": "All",
+      "activePackages": "Active Packages",
+      "noPackages": "No packages",
+      "sessionsRemaining": "{count} sessions remaining",
+      "packageExpires": "Expires {date}"
     },
     "assignment": {
       "title": "Assign Workout",

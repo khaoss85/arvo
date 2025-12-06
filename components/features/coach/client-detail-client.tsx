@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import {
@@ -16,15 +16,22 @@ import {
   XCircle,
   MoreVertical,
   Eye,
+  Pencil,
+  Trash2,
+  StickyNote,
+  Lock,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { ProgressChecksGallery } from "@/components/features/progress-checks/progress-checks-gallery";
+import { ClientBookingsTab } from "@/components/features/coach/client-bookings-tab";
 import type {
   UserProfile,
   CoachClientRelationship,
   Workout,
   CoachWorkoutAssignment,
   CoachProfile,
+  CoachClientNote,
 } from "@/lib/types/schemas";
 
 interface ClientDetailClientProps {
@@ -37,7 +44,7 @@ interface ClientDetailClientProps {
   coachProfile: CoachProfile | null;
 }
 
-type TabId = "overview" | "workouts" | "progress";
+type TabId = "overview" | "workouts" | "progress" | "bookings";
 
 export function ClientDetailClient({
   coachId,
@@ -56,6 +63,7 @@ export function ClientDetailClient({
     { id: "overview", label: t("overview"), icon: User },
     { id: "workouts", label: t("workouts"), icon: Dumbbell },
     { id: "progress", label: t("progress"), icon: TrendingUp },
+    { id: "bookings", label: t("bookings"), icon: Calendar },
   ];
 
   // Calculate stats
@@ -136,6 +144,7 @@ export function ClientDetailClient({
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {activeTab === "overview" && (
           <OverviewTab
+            clientId={clientId}
             clientProfile={clientProfile}
             relationship={relationship}
             completedWorkouts={completedWorkouts}
@@ -158,13 +167,38 @@ export function ClientDetailClient({
         {activeTab === "progress" && (
           <ProgressTab clientId={clientId} workouts={workouts} t={t} />
         )}
+
+        {activeTab === "bookings" && (
+          <ClientBookingsTab
+            coachId={coachId}
+            clientId={clientId}
+            clientName={clientProfile.first_name || "Client"}
+          />
+        )}
       </div>
     </div>
   );
 }
 
+// Helper function to get relative time
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
 // Overview Tab
 function OverviewTab({
+  clientId,
   clientProfile,
   relationship,
   completedWorkouts,
@@ -172,6 +206,7 @@ function OverviewTab({
   autonomyLabels,
   t,
 }: {
+  clientId: string;
   clientProfile: UserProfile;
   relationship: CoachClientRelationship;
   completedWorkouts: number;
@@ -179,6 +214,133 @@ function OverviewTab({
   autonomyLabels: Record<string, string>;
   t: (key: string, values?: Record<string, any>) => string;
 }) {
+  const [notes, setNotes] = useState<CoachClientNote[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newNoteContent, setNewNoteContent] = useState("");
+  const [newNoteShared, setNewNoteShared] = useState(false);
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Fetch notes
+  const fetchNotes = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/coach/clients/${clientId}/notes`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotes(data.notes || []);
+      }
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [clientId]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
+  // Create note
+  const handleAddNote = async () => {
+    if (!newNoteContent.trim()) return;
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(`/api/coach/clients/${clientId}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newNoteContent.trim(), isShared: newNoteShared }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotes((prev) => [data.note, ...prev]);
+        setNewNoteContent("");
+        setNewNoteShared(false);
+        setIsAddingNote(false);
+      }
+    } catch (error) {
+      console.error("Error adding note:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Update note
+  const handleUpdateNote = async (noteId: string) => {
+    if (!editingContent.trim()) return;
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(`/api/coach/clients/${clientId}/notes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId, content: editingContent.trim() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotes((prev) =>
+          prev.map((n) => (n.id === noteId ? data.note : n))
+        );
+        setEditingNoteId(null);
+        setEditingContent("");
+      }
+    } catch (error) {
+      console.error("Error updating note:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Delete note
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const response = await fetch(`/api/coach/clients/${clientId}/notes`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId }),
+      });
+
+      if (response.ok) {
+        setNotes((prev) => prev.filter((n) => n.id !== noteId));
+      }
+    } catch (error) {
+      console.error("Error deleting note:", error);
+    }
+    setOpenMenuId(null);
+  };
+
+  // Toggle note visibility
+  const handleToggleVisibility = async (note: CoachClientNote) => {
+    try {
+      const response = await fetch(`/api/coach/clients/${clientId}/notes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId: note.id, isShared: !note.is_shared }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setNotes((prev) =>
+          prev.map((n) => (n.id === note.id ? data.note : n))
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling visibility:", error);
+    }
+    setOpenMenuId(null);
+  };
+
+  const startEditing = (note: CoachClientNote) => {
+    setEditingNoteId(note.id);
+    setEditingContent(note.content);
+    setOpenMenuId(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -228,14 +390,211 @@ function OverviewTab({
         </div>
       </div>
 
-      {/* Coach Notes */}
+      {/* Coach Notes - Card List */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          {t("notes")}
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          {relationship.notes || t("noNotes")}
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t("notes")}
+          </h3>
+          {!isAddingNote && (
+            <button
+              onClick={() => setIsAddingNote(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addNote") || "Add Note"}
+            </button>
+          )}
+        </div>
+
+        {/* Add Note Form */}
+        {isAddingNote && (
+          <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <textarea
+              value={newNoteContent}
+              onChange={(e) => setNewNoteContent(e.target.value)}
+              placeholder={t("notesPlaceholder") || "Add notes about this client..."}
+              className="w-full h-24 px-3 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              autoFocus
+            />
+            <div className="flex items-center justify-between mt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newNoteShared}
+                  onChange={(e) => setNewNoteShared(e.target.checked)}
+                  className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                  <Users className="w-4 h-4" />
+                  {t("shareWithClient") || "Share with client"}
+                </span>
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setIsAddingNote(false);
+                    setNewNoteContent("");
+                    setNewNoteShared(false);
+                  }}
+                  className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  {t("cancel") || "Cancel"}
+                </button>
+                <button
+                  onClick={handleAddNote}
+                  disabled={isSaving || !newNoteContent.trim()}
+                  className={cn(
+                    "px-3 py-1.5 text-sm font-medium rounded-lg transition-colors",
+                    newNoteContent.trim()
+                      ? "bg-orange-500 hover:bg-orange-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
+                  )}
+                >
+                  {isSaving ? (t("saving") || "Saving...") : (t("saveNotes") || "Save")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notes List */}
+        {isLoading ? (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            {t("loading") || "Loading..."}
+          </div>
+        ) : notes.length === 0 ? (
+          <div className="text-center py-8">
+            <StickyNote className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400">
+              {t("noNotes")}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {notes.map((note) => (
+              <div
+                key={note.id}
+                className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700"
+              >
+                {editingNoteId === note.id ? (
+                  // Edit mode
+                  <div>
+                    <textarea
+                      value={editingContent}
+                      onChange={(e) => setEditingContent(e.target.value)}
+                      className="w-full h-24 px-3 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      autoFocus
+                    />
+                    <div className="flex justify-end gap-2 mt-3">
+                      <button
+                        onClick={() => {
+                          setEditingNoteId(null);
+                          setEditingContent("");
+                        }}
+                        className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        {t("cancel") || "Cancel"}
+                      </button>
+                      <button
+                        onClick={() => handleUpdateNote(note.id)}
+                        disabled={isSaving || !editingContent.trim()}
+                        className="px-3 py-1.5 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? (t("saving") || "Saving...") : (t("save") || "Save")}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // View mode
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                        {note.content}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          {getRelativeTime(note.created_at || "")}
+                          {note.updated_at && note.updated_at !== note.created_at && (
+                            <span className="ml-2">({t("edited") || "edited"})</span>
+                          )}
+                        </p>
+                        <span
+                          className={cn(
+                            "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+                            note.is_shared
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400"
+                          )}
+                        >
+                          {note.is_shared ? (
+                            <>
+                              <Users className="w-3 h-3" />
+                              {t("shared") || "Shared"}
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-3 h-3" />
+                              {t("private") || "Private"}
+                            </>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === note.id ? null : note.id)}
+                        className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <MoreVertical className="w-4 h-4 text-gray-400" />
+                      </button>
+                      {openMenuId === note.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+                          <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
+                            <button
+                              onClick={() => startEditing(note)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              <Pencil className="w-4 h-4" />
+                              {t("edit") || "Edit"}
+                            </button>
+                            <button
+                              onClick={() => handleToggleVisibility(note)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              {note.is_shared ? (
+                                <>
+                                  <Lock className="w-4 h-4" />
+                                  {t("makePrivate") || "Make private"}
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="w-4 h-4" />
+                                  {t("shareWithClient") || "Share with client"}
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              {t("delete") || "Delete"}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

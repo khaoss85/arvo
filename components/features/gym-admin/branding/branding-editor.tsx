@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Upload, X, Check, Loader2 } from "lucide-react";
+import { Upload, X, Check, Loader2, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { GymService } from "@/lib/services/gym.service";
 import { GymBrandingService } from "@/lib/services/gym-branding.service";
 import type { GymBranding } from "@/lib/types/gym.types";
@@ -23,6 +31,8 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
   const [branding, setBranding] = useState<GymBranding | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -226,6 +236,37 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
       setFontFamily(extracted.font_family);
     }
   }, []);
+
+  // Handle reset branding
+  const handleReset = async () => {
+    setShowResetDialog(false);
+    setIsResetting(true);
+    try {
+      const resetBranding = await GymBrandingService.resetBranding(gymId);
+      setBranding(resetBranding);
+
+      // Reset form state to defaults
+      setPrimaryColor("#3b82f6");
+      setSecondaryColor("#94a3b8");
+      setAccentColor("#22c55e");
+      setWelcomeMessage("");
+      setTagline("");
+      setFontFamily("");
+
+      toast({
+        title: "Branding resettato",
+        description: "Tutti i valori sono stati ripristinati ai default",
+      });
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Impossibile resettare il branding",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -477,9 +518,23 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
         </CardContent>
       </Card>
 
-      {/* Save Button */}
-      <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isSaving}>
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3">
+        <Button variant="outline" disabled={isResetting || isSaving} onClick={() => setShowResetDialog(true)}>
+          {isResetting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Reset...
+            </>
+          ) : (
+            <>
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
+            </>
+          )}
+        </Button>
+
+        <Button onClick={handleSave} disabled={isSaving || isResetting}>
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -493,6 +548,27 @@ export function BrandingEditor({ gymId }: BrandingEditorProps) {
           )}
         </Button>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resettare il branding?</DialogTitle>
+            <DialogDescription>
+              Questa azione ripristinerà tutti i colori e testi ai valori default
+              ed eliminerà i loghi e la favicon caricati. L&apos;operazione non può essere annullata.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Annulla
+            </Button>
+            <Button variant="destructive" onClick={handleReset}>
+              Resetta tutto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

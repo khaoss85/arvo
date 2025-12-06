@@ -49,6 +49,169 @@ export type Database = {
           },
         ]
       }
+      booking_notifications: {
+        Row: {
+          booking_id: string
+          channel: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          recipient_id: string
+          scheduled_for: string
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          booking_id: string
+          channel: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          recipient_id: string
+          scheduled_for: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          booking_id?: string
+          channel?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          recipient_id?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_packages: {
+        Row: {
+          client_id: string
+          coach_id: string
+          created_at: string | null
+          end_date: string | null
+          id: string
+          name: string
+          sessions_per_week: number | null
+          sessions_used: number | null
+          start_date: string
+          status: string | null
+          total_sessions: number
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          coach_id: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          sessions_per_week?: number | null
+          sessions_used?: number | null
+          start_date: string
+          status?: string | null
+          total_sessions: number
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          coach_id?: string
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          sessions_per_week?: number | null
+          sessions_used?: number | null
+          start_date?: string
+          status?: string | null
+          total_sessions?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          ai_scheduled: boolean | null
+          ai_suggestion_accepted: boolean | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          client_id: string
+          client_notes: string | null
+          coach_id: string
+          coach_notes: string | null
+          completed_at: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          end_time: string
+          id: string
+          package_id: string | null
+          scheduled_date: string
+          start_time: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_scheduled?: boolean | null
+          ai_suggestion_accepted?: boolean | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id: string
+          client_notes?: string | null
+          coach_id: string
+          coach_notes?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          end_time: string
+          id?: string
+          package_id?: string | null
+          scheduled_date: string
+          start_time: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_scheduled?: boolean | null
+          ai_suggestion_accepted?: boolean | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          client_id?: string
+          client_notes?: string | null
+          coach_id?: string
+          coach_notes?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          end_time?: string
+          id?: string
+          package_id?: string | null
+          scheduled_date?: string
+          start_time?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "booking_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caloric_phase_history: {
         Row: {
           avg_weight_change: number | null
@@ -93,6 +256,71 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      coach_availability: {
+        Row: {
+          coach_id: string
+          created_at: string | null
+          date: string
+          end_time: string
+          id: string
+          is_available: boolean | null
+          start_time: string
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string | null
+          date: string
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          start_time: string
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string | null
+          date?: string
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      coach_client_notes: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          relationship_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          relationship_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          relationship_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_client_notes_relationship_id_fkey"
+            columns: ["relationship_id"]
+            isOneToOne: false
+            referencedRelation: "coach_client_relationships"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       coach_client_relationships: {
         Row: {
@@ -751,6 +979,60 @@ export type Database = {
           trial_ends_at?: string | null
           updated_at?: string | null
           website?: string | null
+        }
+        Relationships: []
+      }
+      musclewiki_exercise_cache: {
+        Row: {
+          access_count: number | null
+          category: string | null
+          created_at: string | null
+          difficulty: string | null
+          fetched_at: string | null
+          force: string | null
+          grips: string[] | null
+          id: string
+          mechanic: string | null
+          musclewiki_id: number | null
+          name: string
+          name_normalized: string
+          primary_muscles: string[] | null
+          steps: string[] | null
+          videos: Json
+        }
+        Insert: {
+          access_count?: number | null
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          fetched_at?: string | null
+          force?: string | null
+          grips?: string[] | null
+          id?: string
+          mechanic?: string | null
+          musclewiki_id?: number | null
+          name: string
+          name_normalized: string
+          primary_muscles?: string[] | null
+          steps?: string[] | null
+          videos?: Json
+        }
+        Update: {
+          access_count?: number | null
+          category?: string | null
+          created_at?: string | null
+          difficulty?: string | null
+          fetched_at?: string | null
+          force?: string | null
+          grips?: string[] | null
+          id?: string
+          mechanic?: string | null
+          musclewiki_id?: number | null
+          name?: string
+          name_normalized?: string
+          primary_muscles?: string[] | null
+          steps?: string[] | null
+          videos?: Json
         }
         Relationships: []
       }
@@ -2046,6 +2328,36 @@ export type Database = {
           title: string
         }[]
       }
+      get_client_upcoming_bookings: {
+        Args: { p_client_id: string; p_limit?: number }
+        Returns: {
+          coach_id: string
+          coach_name: string
+          days_until: number
+          duration_minutes: number
+          end_time: string
+          id: string
+          package_name: string
+          scheduled_date: string
+          start_time: string
+          status: string
+        }[]
+      }
+      get_coach_bookings: {
+        Args: { p_coach_id: string; p_end_date: string; p_start_date: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          coach_notes: string
+          duration_minutes: number
+          end_time: string
+          id: string
+          package_name: string
+          scheduled_date: string
+          start_time: string
+          status: string
+        }[]
+      }
       get_gym_branding_by_slug: {
         Args: { p_slug: string }
         Returns: {
@@ -2222,6 +2534,15 @@ export type Database = {
       }
       is_member_of_staff_gym: {
         Args: { p_member_user_id: string; p_staff_user_id?: string }
+        Returns: boolean
+      }
+      is_slot_available: {
+        Args: {
+          p_coach_id: string
+          p_date: string
+          p_end_time: string
+          p_start_time: string
+        }
         Returns: boolean
       }
       refresh_all_queue_positions: { Args: never; Returns: undefined }

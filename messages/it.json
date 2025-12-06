@@ -144,7 +144,11 @@
         "3": "Ok",
         "4": "Bene",
         "5": "Incredibile"
-      }
+      },
+      "coachBadge": "Coach"
+    },
+    "coachNotes": {
+      "title": "Note dal tuo Coach"
     },
     "adaptation": {
       "title": "Adattamento Piano Split",
@@ -6671,7 +6675,19 @@
       "cancel": "Annulla",
       "close": "Chiudi",
       "book": "Prenota",
-      "aiPlaceholder": "Chiedi all'AI: 'prenota Marco martedì 18', 'quando sono libero?'..."
+      "bookSeries": "Prenota Serie",
+      "aiPlaceholder": "Chiedi all'AI: 'prenota Marco martedì 18', 'quando sono libero?'...",
+      "repeats": "Si ripete",
+      "weekly": "Ogni settimana",
+      "biweekly": "Ogni 2 settimane",
+      "after": "Dopo",
+      "until": "Fino a",
+      "occurrences": "volte",
+      "previewSlots": "Anteprima slot",
+      "partOfRecurringSeries": "Fa parte di una serie ricorrente",
+      "cancelThisOnly": "Annulla solo questa",
+      "cancelThisAndFollowing": "Annulla questa e successive",
+      "cancelEntireSeries": "Annulla tutta la serie"
     },
     "packages": {
       "title": "Pacchetti",
@@ -6686,7 +6702,14 @@
       "endDate": "Data Fine",
       "used": "usate",
       "remaining": "rimanenti",
-      "renew": "Rinnova"
+      "renew": "Rinnova",
+      "aiSlotSuggestion": "Suggerimento AI",
+      "aiWillSuggestOptimalSlots": "L'AI suggerirà gli slot ottimali per {count} sessioni/settimana",
+      "getSuggestions": "Ottieni Suggerimenti",
+      "confirmAndCreate": "Conferma e Crea Prenotazioni",
+      "savePackageOnly": "Salva Solo Pacchetto",
+      "suggestedSlots": "Slot Suggeriti",
+      "confidence": "confidenza"
     },
     "recap": {
       "today": "Oggi",
@@ -6789,7 +6812,17 @@
       "shareWithClient": "Condividi con cliente",
       "makePrivate": "Rendi privata",
       "shared": "Condivisa",
-      "private": "Privata"
+      "private": "Privata",
+      "bookings": "Prenotazioni",
+      "noBookings": "Nessuna prenotazione",
+      "noBookingsDescription": "Questo cliente non ha sessioni programmate",
+      "upcomingBookings": "Prossime",
+      "pastBookings": "Passate",
+      "allBookings": "Tutte",
+      "activePackages": "Pacchetti Attivi",
+      "noPackages": "Nessun pacchetto",
+      "sessionsRemaining": "{count} sessioni rimanenti",
+      "packageExpires": "Scade il {date}"
     },
     "assignment": {
       "title": "Assegna Workout",

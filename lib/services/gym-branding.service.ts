@@ -440,6 +440,85 @@ export class GymBrandingService {
   }
 
   // =====================================================
+  // Reset Branding
+  // =====================================================
+
+  /**
+   * Default branding values
+   */
+  static readonly DEFAULT_BRANDING = {
+    primary_color: "221 83% 53%",
+    secondary_color: "210 40% 96%",
+    accent_color: "142 76% 36%",
+    welcome_message: { en: "Welcome!", it: "Benvenuto!" },
+    tagline: null,
+    font_family: null,
+    font_heading: null,
+    logo_url: null,
+    logo_dark_url: null,
+    favicon_url: null,
+    splash_image_url: null,
+  };
+
+  /**
+   * Reset branding to defaults and delete all uploaded files
+   */
+  static async resetBranding(gymId: string): Promise<GymBranding> {
+    const supabase = getSupabaseBrowserClient();
+
+    // Get current branding to find files to delete
+    const { data: currentBranding } = await supabase
+      .from("gym_branding")
+      .select("logo_url, logo_dark_url, favicon_url, splash_image_url")
+      .eq("gym_id", gymId)
+      .single();
+
+    // Collect files to delete from storage
+    const filesToDelete: string[] = [];
+
+    if (currentBranding) {
+      const urls = [
+        currentBranding.logo_url,
+        currentBranding.logo_dark_url,
+        currentBranding.favicon_url,
+        currentBranding.splash_image_url,
+      ];
+
+      for (const url of urls) {
+        if (url) {
+          try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split("/");
+            const filePath = pathParts.slice(-2).join("/");
+            filesToDelete.push(filePath);
+          } catch {
+            // Invalid URL, skip
+          }
+        }
+      }
+    }
+
+    // Delete files from storage
+    if (filesToDelete.length > 0) {
+      await supabase.storage.from(BUCKET_NAME).remove(filesToDelete);
+    }
+
+    // Reset database to defaults
+    const { data, error } = await supabase
+      .from("gym_branding")
+      .update(this.DEFAULT_BRANDING)
+      .eq("gym_id", gymId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to reset branding: ${error.message}`);
+    }
+
+    return data as GymBranding;
+  }
+
+  // =====================================================
   // Branding Preview
   // =====================================================
 

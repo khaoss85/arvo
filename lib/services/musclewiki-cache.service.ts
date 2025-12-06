@@ -67,7 +67,7 @@ export class MuscleWikiCacheService {
       }
 
       // Check if stale
-      if (this.isStale(data.fetched_at)) {
+      if (!data.fetched_at || this.isStale(data.fetched_at)) {
         console.log(`[MuscleWikiCache] Cache stale for "${exerciseName}", needs refresh`)
         return null // Return null to trigger API fetch
       }
@@ -75,7 +75,7 @@ export class MuscleWikiCacheService {
       // Increment access count in background (fire and forget)
       this.incrementAccessCount(data.id).catch(() => {})
 
-      return data as CachedExercise
+      return data as unknown as CachedExercise
     } catch (error) {
       console.error('[MuscleWikiCache] Error fetching from database:', error)
       return null
@@ -108,8 +108,8 @@ export class MuscleWikiCacheService {
 
       for (const exercise of data) {
         // Skip stale entries
-        if (!this.isStale(exercise.fetched_at)) {
-          result.set(exercise.name_normalized, exercise as CachedExercise)
+        if (exercise.fetched_at && !this.isStale(exercise.fetched_at)) {
+          result.set(exercise.name_normalized, exercise as unknown as CachedExercise)
         }
       }
 
@@ -144,7 +144,7 @@ export class MuscleWikiCacheService {
         access_count: 1,
       }
 
-      const { error } = await supabase.from('musclewiki_exercise_cache').upsert(cacheEntry, {
+      const { error } = await supabase.from('musclewiki_exercise_cache').upsert(cacheEntry as any, {
         onConflict: 'name_normalized',
         ignoreDuplicates: false,
       })
@@ -184,7 +184,7 @@ export class MuscleWikiCacheService {
         access_count: 1,
       }))
 
-      const { error } = await supabase.from('musclewiki_exercise_cache').upsert(cacheEntries, {
+      const { error } = await supabase.from('musclewiki_exercise_cache').upsert(cacheEntries as any, {
         onConflict: 'name_normalized',
         ignoreDuplicates: false,
       })
@@ -206,7 +206,19 @@ export class MuscleWikiCacheService {
     try {
       const supabase = getSupabaseBrowserClient()
 
-      await supabase.rpc('increment_musclewiki_access_count', { row_id: id })
+      // Use simple update instead of RPC for compatibility
+      const { data } = await supabase
+        .from('musclewiki_exercise_cache')
+        .select('access_count')
+        .eq('id', id)
+        .single()
+
+      if (data) {
+        await supabase
+          .from('musclewiki_exercise_cache')
+          .update({ access_count: (data.access_count || 0) + 1 })
+          .eq('id', id)
+      }
     } catch {
       // Silently fail - this is non-critical
     }
@@ -256,7 +268,7 @@ export class MuscleWikiCacheService {
       return {
         totalCached: totalCached || 0,
         staleCount: 0, // Would need separate query
-        mostAccessed: (mostAccessed || []).map((e) => ({ name: e.name, count: e.access_count })),
+        mostAccessed: (mostAccessed || []).map((e) => ({ name: e.name, count: e.access_count || 0 })),
       }
     } catch {
       return { totalCached: 0, staleCount: 0, mostAccessed: [] }

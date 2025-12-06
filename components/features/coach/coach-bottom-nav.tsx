@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Library, UserPlus } from "lucide-react";
+import { LayoutDashboard, Calendar, Library, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export function CoachBottomNav() {
@@ -12,6 +12,7 @@ export function CoachBottomNav() {
 
   const navigation = [
     { href: "/coach", label: t("dashboard"), icon: LayoutDashboard },
+    { href: "/coach/calendar", label: t("calendar"), icon: Calendar },
     { href: "/coach/library", label: t("library"), icon: Library },
     { href: "/coach/invite", label: t("invite"), icon: UserPlus },
   ];

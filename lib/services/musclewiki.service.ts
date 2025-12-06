@@ -10,7 +10,7 @@
  * 4. Save to database for cross-user benefit
  */
 
-import { MuscleWikiCacheService, type CachedExercise } from './musclewiki-cache.service'
+import { MuscleWikiCacheService } from './musclewiki-cache.service'
 
 export type VideoAngle = 'front' | 'back' | 'side'
 export type VideoGender = 'male' | 'female'
@@ -74,6 +74,10 @@ export class MuscleWikiService {
   // Track in-flight requests to prevent duplicate API calls
   private static pendingRequests: Map<string, Promise<MuscleWikiExercise | null>> = new Map()
 
+  // Rate limiting for API calls
+  private static lastApiCallTime = 0
+  private static readonly MIN_API_INTERVAL_MS = 200 // 200ms between API calls (5 req/sec max)
+
   /**
    * Get RapidAPI headers for authentication
    */
@@ -86,6 +90,20 @@ export class MuscleWikiService {
       'X-RapidAPI-Key': apiKey || '',
       'X-RapidAPI-Host': 'musclewiki-api.p.rapidapi.com',
     }
+  }
+
+  /**
+   * Wait for rate limit before making API call
+   */
+  private static async waitForRateLimit(): Promise<void> {
+    const now = Date.now()
+    const timeSinceLastCall = now - this.lastApiCallTime
+    if (timeSinceLastCall < this.MIN_API_INTERVAL_MS) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, this.MIN_API_INTERVAL_MS - timeSinceLastCall)
+      )
+    }
+    this.lastApiCallTime = Date.now()
   }
 
   /**
@@ -152,6 +170,9 @@ export class MuscleWikiService {
     console.log(`[MuscleWiki] Fetching from API: "${exerciseName}"`)
 
     try {
+      // Wait for rate limit before making API call
+      await this.waitForRateLimit()
+
       // Use search endpoint to find exercise by name
       const searchUrl = `${this.API_BASE}/search?q=${encodeURIComponent(exerciseName)}&limit=5`
       const response = await fetch(searchUrl, { headers: this.getHeaders() })
@@ -318,6 +339,9 @@ export class MuscleWikiService {
         params.set('force', filters.force[0])
       }
 
+      // Wait for rate limit before making API call
+      await this.waitForRateLimit()
+
       const response = await fetch(`${this.API_BASE}/search?${params}`, {
         headers: this.getHeaders(),
       })
@@ -411,6 +435,7 @@ export class MuscleWikiService {
    */
   static async getExerciseById(id: number): Promise<MuscleWikiExercise | null> {
     try {
+      await this.waitForRateLimit()
       const response = await fetch(`${this.API_BASE}/exercises/${id}`, {
         headers: this.getHeaders(),
       })
@@ -435,6 +460,7 @@ export class MuscleWikiService {
    */
   static async getMuscleGroups(): Promise<string[]> {
     try {
+      await this.waitForRateLimit()
       const response = await fetch(`${this.API_BASE}/muscles`, {
         headers: this.getHeaders(),
       })
@@ -451,6 +477,7 @@ export class MuscleWikiService {
    */
   static async getEquipmentCategories(): Promise<string[]> {
     try {
+      await this.waitForRateLimit()
       const response = await fetch(`${this.API_BASE}/categories`, {
         headers: this.getHeaders(),
       })
