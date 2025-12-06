@@ -3,21 +3,24 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
-import { ExerciseAnimation } from './exercise-animation'
+import { ExerciseVideo, ExerciseAnimation } from './exercise-video'
 import { useEffect } from 'react'
+import type { MuscleWikiVideo } from '@/lib/services/musclewiki.service'
 
 interface ExerciseAnimationModalProps {
   isOpen: boolean
   onClose: () => void
   exerciseName: string
   animationUrl: string | null
+  videos?: MuscleWikiVideo[] | null
 }
 
 export function ExerciseAnimationModal({
   isOpen,
   onClose,
   exerciseName,
-  animationUrl
+  animationUrl,
+  videos
 }: ExerciseAnimationModalProps) {
   const t = useTranslations('workout.components.exerciseAnimationModal')
   // Lock body scroll when modal is open
@@ -90,7 +93,14 @@ export function ExerciseAnimationModal({
             {/* Content */}
             <div className="overflow-y-auto" style={{ maxHeight: 'calc(85vh - 80px)' }}>
               <div className="p-6">
-                {animationUrl ? (
+                {videos && videos.length > 0 ? (
+                  <ExerciseVideo
+                    videos={videos}
+                    exerciseName={exerciseName}
+                    className="mx-auto"
+                    showControls={true}
+                  />
+                ) : animationUrl ? (
                   <ExerciseAnimation
                     animationUrl={animationUrl}
                     exerciseName={exerciseName}

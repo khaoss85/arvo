@@ -27,7 +27,7 @@ import { validationCache } from '@/lib/utils/validation-cache'
 import { transformToExerciseExecution } from '@/lib/utils/exercise-transformer'
 import { SplitReferenceCard } from './split-reference-card'
 import { calculateMuscleGroupVolumes } from '@/lib/utils/workout-helpers'
-import { MuscleWikiService, type LegacyExercise } from '@/lib/services/musclewiki.service'
+import { MuscleWikiService, type LegacyExercise, type MuscleWikiVideo } from '@/lib/services/musclewiki.service'
 import { ExerciseHistoryModal } from './exercise-history-modal'
 import { getProgressiveTargetAction } from '@/app/actions/exercise-history-actions'
 import { TechniqueIndicator } from './technique-indicator'
@@ -55,6 +55,7 @@ interface Exercise {
     rationale: string
   }>
   animationUrl?: string
+  videos?: MuscleWikiVideo[]
   hasAnimation?: boolean
 
   // Advanced technique (Myo-Reps, Drop Set, etc.)
@@ -274,15 +275,16 @@ export function RefineWorkoutPage({
 
         const exercisesWithAnimations = await Promise.all(
           normalizedExercises.map(async (ex: Exercise) => {
-            const animationUrl = await AnimationService.getAnimationUrl({
+            const animationResult = await AnimationService.getAnimation({
               name: ex.name,
               canonicalPattern: ex.name,
               equipmentVariant: ex.equipmentVariant
             })
             return {
               ...ex,
-              animationUrl: animationUrl || undefined,
-              hasAnimation: !!animationUrl,
+              animationUrl: animationResult.url || undefined,
+              videos: animationResult.videos || undefined,
+              hasAnimation: !!animationResult.url,
               isUserAdded: false  // AI-generated exercises
             }
           })
@@ -1847,6 +1849,7 @@ export function RefineWorkoutPage({
           onClose={() => setAnimationModalOpen(null)}
           exerciseName={exercises[animationModalOpen].name}
           animationUrl={exercises[animationModalOpen].animationUrl || null}
+          videos={exercises[animationModalOpen].videos || null}
         />
       )}
 
