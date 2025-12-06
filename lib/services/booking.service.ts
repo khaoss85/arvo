@@ -13,7 +13,9 @@ import type {
   InsertBookingNotification,
   RecurringPattern,
   AISlotSuggestion,
+  SessionLocationType,
 } from '@/lib/types/schemas'
+import { PackageUpgradeService } from './package-upgrade.service'
 
 // =====================================================
 // Booking Context for AI Agent
@@ -26,11 +28,13 @@ export interface BookingContext {
     date: string
     startTime: string
     endTime: string
+    locationType: SessionLocationType
   }>
   clientPreferences?: {
     preferredDays?: string[]
     preferredTimeRange?: { start: string; end: string }
     lastBookings?: Array<{ dayOfWeek: string; time: string }>
+    preferredLocationType?: SessionLocationType
   }
   package?: {
     id: string
@@ -46,6 +50,7 @@ export interface BookingContext {
     clientId: string
     clientName?: string
     status: string
+    locationType?: SessionLocationType
   }>
 }
 
@@ -108,10 +113,16 @@ export class BookingService {
   ): Promise<CoachAvailability[]> {
     const supabase = await getSupabaseServerClient()
 
+    // Ensure location_type has a default value
+    const slotsWithDefaults = slots.map(slot => ({
+      ...slot,
+      location_type: slot.location_type || 'in_person'
+    }))
+
     const { data, error } = await supabase
       .from('coach_availability')
-      .upsert(slots as any[], {
-        onConflict: 'coach_id,date,start_time',
+      .upsert(slotsWithDefaults as any[], {
+        onConflict: 'coach_id,date,start_time,location_type',
         ignoreDuplicates: false
       })
       .select()
@@ -184,7 +195,8 @@ export class BookingService {
         date: newDate.toISOString().split('T')[0],
         start_time: slot.start_time,
         end_time: slot.end_time,
-        is_available: true
+        is_available: true,
+        location_type: slot.location_type || 'in_person'
       }
     })
 
@@ -339,13 +351,20 @@ export class BookingService {
   ): Promise<Booking> {
     const supabase = await getSupabaseServerClient()
 
-    // Check slot availability
+    // Ensure location_type has a default value
+    const bookingWithDefaults = {
+      ...booking,
+      location_type: booking.location_type || 'in_person'
+    }
+
+    // Check slot availability (includes block check and cross-location conflict check)
     const { data: isAvailable } = await supabase
       .rpc('is_slot_available', {
-        p_coach_id: booking.coach_id,
-        p_date: booking.scheduled_date,
-        p_start_time: booking.start_time,
-        p_end_time: booking.end_time
+        p_coach_id: bookingWithDefaults.coach_id,
+        p_date: bookingWithDefaults.scheduled_date,
+        p_start_time: bookingWithDefaults.start_time,
+        p_end_time: bookingWithDefaults.end_time,
+        p_location_type: bookingWithDefaults.location_type
       })
 
     if (!isAvailable) {
@@ -354,7 +373,7 @@ export class BookingService {
 
     const { data, error } = await supabase
       .from('bookings')
-      .insert(booking)
+      .insert(bookingWithDefaults)
       .select()
       .single()
 
@@ -364,8 +383,8 @@ export class BookingService {
     }
 
     // If linked to a package, increment sessions_used
-    if (booking.package_id) {
-      await this.usePackageSession(booking.package_id)
+    if (bookingWithDefaults.package_id) {
+      await this.usePackageSession(bookingWithDefaults.package_id)
     }
 
     return data as Booking
@@ -627,7 +646,8 @@ export class BookingService {
     }
 
     const newSessionsUsed = (pkg.sessions_used || 0) + 1
-    const status = newSessionsUsed >= pkg.total_sessions ? 'completed' : 'active'
+    const isCompleted = newSessionsUsed >= pkg.total_sessions
+    const status = isCompleted ? 'completed' : 'active'
 
     await supabase
       .from('booking_packages')
@@ -637,6 +657,16 @@ export class BookingService {
         updated_at: new Date().toISOString()
       })
       .eq('id', packageId)
+
+    // Check for upgrade suggestion when package is completed
+    if (isCompleted) {
+      try {
+        await PackageUpgradeService.checkForUpgradeSuggestion(packageId)
+      } catch (error) {
+        // Don't fail the booking if upgrade suggestion fails
+        console.error('Error checking for upgrade suggestion:', error)
+      }
+    }
   }
 
   /**
@@ -708,7 +738,8 @@ export class BookingService {
       .map(slot => ({
         date: slot.date,
         startTime: slot.start_time,
-        endTime: slot.end_time
+        endTime: slot.end_time,
+        locationType: (slot.location_type || 'in_person') as SessionLocationType
       }))
 
     // Build existing bookings context
@@ -1313,7 +1344,9 @@ export class BookingService {
         coach_notes: null,
         recurring_series_id: null,
         recurring_pattern: null,
-        occurrence_index: null
+        occurrence_index: null,
+        location_type: 'in_person',
+        meeting_url: null
       },
       pattern,
       skipConflicts: true

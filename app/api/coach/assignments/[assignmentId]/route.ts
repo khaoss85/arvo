@@ -61,6 +61,44 @@ export async function PATCH(
       );
     }
 
+    // Create in-app notification when client_notes is added/changed
+    if (client_notes && client_notes !== assignment.client_notes) {
+      try {
+        // Fetch workout name
+        const { data: workout } = await supabase
+          .from("workouts")
+          .select("workout_name")
+          .eq("id", assignment.workout_id)
+          .single();
+
+        // Fetch coach display name
+        const { data: coachProfile } = await supabase
+          .from("coach_profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+
+        // Create notification for client (booking_id and scheduled_for are nullable for non-booking notifications)
+        await supabase.from("booking_notifications").insert({
+          booking_id: null,
+          scheduled_for: null,
+          recipient_id: assignment.client_id,
+          notification_type: "coach_feedback",
+          channel: "in_app",
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          metadata: {
+            workoutId: assignment.workout_id,
+            workoutName: workout?.workout_name || "Workout",
+            coachName: coachProfile?.display_name || "Coach",
+          },
+        });
+      } catch (notifError) {
+        // Log but don't fail the main operation
+        console.error("[API] Error creating feedback notification:", notifError);
+      }
+    }
+
     return NextResponse.json({ assignment: updatedAssignment });
   } catch (error) {
     console.error("[API] Error in PATCH /api/coach/assignments/[id]:", error);

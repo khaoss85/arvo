@@ -281,6 +281,80 @@ export class BookingNotificationService {
     }
   }
 
+  /**
+   * Queue package expiration alert (with expiry date info)
+   */
+  static async queuePackageExpirationAlert(params: {
+    coachId: string
+    clientId: string
+    packageName: string
+    sessionsRemaining: number
+    daysUntilExpiry: number
+  }): Promise<void> {
+    const supabase = await getSupabaseServerClient()
+
+    const notification: InsertBookingNotification = {
+      booking_id: null,
+      recipient_id: params.clientId,
+      notification_type: 'package_expiring_soon',
+      channel: 'in_app',
+      scheduled_for: new Date().toISOString(),
+      status: 'pending',
+      metadata: {
+        coach_id: params.coachId,
+        package_name: params.packageName,
+        sessions_remaining: params.sessionsRemaining,
+        days_until_expiry: params.daysUntilExpiry
+      }
+    }
+
+    const { error } = await supabase
+      .from('booking_notifications')
+      .insert(notification as any)
+
+    if (error) {
+      console.error('Error queuing package expiration alert:', error)
+    }
+  }
+
+  /**
+   * Queue upgrade suggestion notification
+   */
+  static async queueUpgradeSuggestionNotification(params: {
+    coachId: string
+    clientId: string
+    packageName: string
+    suggestedSessions: number
+    currentSessions: number
+    daysToComplete: number
+  }): Promise<void> {
+    const supabase = await getSupabaseServerClient()
+
+    const notification: InsertBookingNotification = {
+      booking_id: null,
+      recipient_id: params.coachId, // Notify the coach
+      notification_type: 'package_upgrade_suggestion',
+      channel: 'in_app',
+      scheduled_for: new Date().toISOString(),
+      status: 'pending',
+      metadata: {
+        client_id: params.clientId,
+        package_name: params.packageName,
+        suggested_sessions: params.suggestedSessions,
+        current_sessions: params.currentSessions,
+        days_to_complete: params.daysToComplete
+      }
+    }
+
+    const { error } = await supabase
+      .from('booking_notifications')
+      .insert(notification as any)
+
+    if (error) {
+      console.error('Error queuing upgrade suggestion notification:', error)
+    }
+  }
+
   // =====================================================
   // Process Notifications
   // =====================================================

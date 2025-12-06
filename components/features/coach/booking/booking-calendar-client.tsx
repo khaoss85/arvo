@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
-import { format, addDays, startOfWeek, isSameDay, parseISO } from 'date-fns'
+import { format, addDays, startOfWeek, isSameDay, parseISO, differenceInHours } from 'date-fns'
 import { it, enUS } from 'date-fns/locale'
 import {
   ChevronLeft,
@@ -14,10 +14,21 @@ import {
   Clock,
   User,
   Send,
-  RefreshCw
+  RefreshCw,
+  Building2,
+  Video,
+  Ban,
+  AlertTriangle
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
-import type { CoachAvailability, Booking } from '@/lib/types/schemas'
+import type { CoachAvailability, Booking, CoachBlock, SessionLocationType, WaitlistCandidate } from '@/lib/types/schemas'
+import { BlockCreateModal } from './block-create-modal'
+import { OptimizationSuggestionsPanel } from './optimization-suggestions-panel'
+import { NoShowAlertBadge } from './no-show-alert-badge'
+import { WaitlistOfferModal } from './waitlist-offer-modal'
+import { getBlocksAction } from '@/app/actions/block-actions'
+import { getSuggestionCountAction } from '@/app/actions/calendar-optimization-actions'
+import { getCandidatesForCancelledSlotAction } from '@/app/actions/waitlist-actions'
 import type { ClientWithBookingInfo } from '@/lib/services/booking.service'
 import {
   getCoachAvailabilityAction,
@@ -98,6 +109,18 @@ export function BookingCalendarClient({
   const [aiSuggestions, setAiSuggestions] = useState<any[]>([])
   const [showSeriesCancelOptions, setShowSeriesCancelOptions] = useState(false)
 
+  // Smart Calendar state
+  const [locationFilter, setLocationFilter] = useState<'all' | SessionLocationType>('all')
+  const [blocks, setBlocks] = useState<CoachBlock[]>([])
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [showOptimizationPanel, setShowOptimizationPanel] = useState(false)
+  const [suggestionCount, setSuggestionCount] = useState(0)
+
+  // Waitlist and cancellation state
+  const [showWaitlistOfferModal, setShowWaitlistOfferModal] = useState(false)
+  const [waitlistCandidates, setWaitlistCandidates] = useState<WaitlistCandidate[]>([])
+  const [waitlistSlot, setWaitlistSlot] = useState<{ date: string; startTime: string; endTime: string } | null>(null)
+
   // Computed values
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i))
@@ -109,6 +132,24 @@ export function BookingCalendarClient({
   // =====================================================
   // Data Fetching
   // =====================================================
+
+  const loadBlocksAndSuggestions = useCallback(async () => {
+    try {
+      const [blocksResult, countResult] = await Promise.all([
+        getBlocksAction(coachId, startDateStr, endDateStr),
+        getSuggestionCountAction(coachId)
+      ])
+
+      if (blocksResult.blocks) {
+        setBlocks(blocksResult.blocks)
+      }
+      if (typeof countResult.count === 'number') {
+        setSuggestionCount(countResult.count)
+      }
+    } catch (err) {
+      console.error('Error loading blocks/suggestions:', err)
+    }
+  }, [coachId, startDateStr, endDateStr])
 
   const refreshData = useCallback(async () => {
     setIsLoading(true)
@@ -124,10 +165,18 @@ export function BookingCalendarClient({
       if (bookingsResult.success && bookingsResult.bookings) {
         setBookings(bookingsResult.bookings)
       }
+
+      // Also refresh blocks and suggestions
+      await loadBlocksAndSuggestions()
     } finally {
       setIsLoading(false)
     }
-  }, [coachId, startDateStr, endDateStr])
+  }, [coachId, startDateStr, endDateStr, loadBlocksAndSuggestions])
+
+  // Load blocks and suggestions on mount and when week changes
+  useEffect(() => {
+    loadBlocksAndSuggestions()
+  }, [loadBlocksAndSuggestions])
 
   // =====================================================
   // Navigation
@@ -181,6 +230,32 @@ export function BookingCalendarClient({
     return checkDate < today
   }
 
+  const isSlotBlocked = (date: Date, time: string): CoachBlock | undefined => {
+    const dateStr = format(date, 'yyyy-MM-dd')
+    return blocks.find(block => {
+      // Check if date is within block range
+      if (dateStr < block.start_date || dateStr > block.end_date) return false
+      // If block has specific times, check time overlap
+      if (block.start_time && block.end_time) {
+        const slotTime = time + ':00'
+        return slotTime >= block.start_time.slice(0, 5) && slotTime < block.end_time.slice(0, 5)
+      }
+      // Full-day block
+      return true
+    })
+  }
+
+  const getBlockTypeLabel = (blockType: string): string => {
+    const labels: Record<string, string> = {
+      competition: t('blocks.types.competition'),
+      travel: t('blocks.types.travel'),
+      study: t('blocks.types.study'),
+      personal: t('blocks.types.personal'),
+      custom: t('blocks.types.custom'),
+    }
+    return labels[blockType] || blockType
+  }
+
   // =====================================================
   // Actions
   // =====================================================
@@ -220,7 +295,8 @@ export function BookingCalendarClient({
           date: dateStr,
           start_time: `${time}:00`,
           end_time: endTime,
-          is_available: true
+          is_available: true,
+          location_type: 'in_person' as const
         }])
 
         if (result.success && result.availability) {
@@ -244,11 +320,31 @@ export function BookingCalendarClient({
     }
   }
 
-  const handleCancelBooking = async () => {
+  const handleCancelBooking = async (skipWaitlist = false) => {
     if (!selectedBooking) return
 
     setIsLoading(true)
     try {
+      // Check for waitlist candidates before cancelling (unless skipped)
+      if (!skipWaitlist) {
+        const candidatesResult = await getCandidatesForCancelledSlotAction(selectedBooking.id)
+        if (candidatesResult.candidates && candidatesResult.candidates.length > 0) {
+          // Parse end time (1 hour after start)
+          const [hours] = selectedBooking.start_time.split(':').map(Number)
+          const endTime = `${(hours + 1).toString().padStart(2, '0')}:00:00`
+
+          setWaitlistCandidates(candidatesResult.candidates)
+          setWaitlistSlot({
+            date: selectedBooking.scheduled_date,
+            startTime: selectedBooking.start_time,
+            endTime: endTime
+          })
+          setShowWaitlistOfferModal(true)
+          setIsLoading(false)
+          return // Don't cancel yet - let coach decide about waitlist
+        }
+      }
+
       const result = await cancelBookingAction(selectedBooking.id)
       if (result.success) {
         setBookings(prev => prev.filter(b => b.id !== selectedBooking.id))
@@ -258,6 +354,24 @@ export function BookingCalendarClient({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleWaitlistOfferSent = async () => {
+    // After offering to waitlist, proceed with cancellation
+    if (selectedBooking) {
+      await handleCancelBooking(true) // Skip waitlist check this time
+    }
+    setShowWaitlistOfferModal(false)
+    setWaitlistCandidates([])
+    setWaitlistSlot(null)
+  }
+
+  const handleSkipWaitlist = async () => {
+    // Close modal and proceed with cancellation
+    setShowWaitlistOfferModal(false)
+    setWaitlistCandidates([])
+    setWaitlistSlot(null)
+    await handleCancelBooking(true)
   }
 
   const handleCancelSeries = async (scope: 'single' | 'following' | 'all') => {
@@ -348,6 +462,33 @@ export function BookingCalendarClient({
             {t('title')}
           </h1>
           <div className="flex items-center gap-2">
+            {/* Add Block Button */}
+            <button
+              onClick={() => setShowBlockModal(true)}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+            >
+              <Ban className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('blocks.createBlock')}</span>
+            </button>
+
+            {/* Optimization Suggestions Badge */}
+            <button
+              onClick={() => setShowOptimizationPanel(true)}
+              className={cn(
+                "relative flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors",
+                suggestionCount > 0
+                  ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+              )}
+            >
+              <Sparkles className="h-4 w-4" />
+              {suggestionCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {suggestionCount}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={handleCopyLastWeek}
               disabled={isLoading}
@@ -367,6 +508,47 @@ export function BookingCalendarClient({
             >
               <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">AI</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Location Filter */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setLocationFilter('all')}
+              className={cn(
+                "px-3 py-1 text-xs rounded-md transition-colors",
+                locationFilter === 'all'
+                  ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                  : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              )}
+            >
+              {t('location.all')}
+            </button>
+            <button
+              onClick={() => setLocationFilter('in_person')}
+              className={cn(
+                "px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1",
+                locationFilter === 'in_person'
+                  ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                  : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              )}
+            >
+              <Building2 className="h-3 w-3" />
+              {t('location.inPerson')}
+            </button>
+            <button
+              onClick={() => setLocationFilter('online')}
+              className={cn(
+                "px-3 py-1 text-xs rounded-md transition-colors flex items-center gap-1",
+                locationFilter === 'online'
+                  ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                  : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
+              )}
+            >
+              <Video className="h-3 w-3" />
+              {t('location.online')}
             </button>
           </div>
         </div>
@@ -505,31 +687,66 @@ export function BookingCalendarClient({
               {weekDays.map((day) => {
                 const isAvail = isSlotAvailable(day, slot.time)
                 const booking = getBookingForSlot(day, slot.time)
+                const block = isSlotBlocked(day, slot.time)
                 const isPast = isPastSlot(day, slot.time)
                 const isSelected = selectedSlot?.date === format(day, 'yyyy-MM-dd') &&
                                    selectedSlot?.time === slot.time
 
+                // Filter by location type
+                const showBooking = booking && (
+                  locationFilter === 'all' ||
+                  booking.location_type === locationFilter
+                )
+
                 return (
                   <div
                     key={`${day.toISOString()}-${slot.time}`}
-                    onClick={() => !isPast && handleSlotClick(day, slot.time)}
-                    onDoubleClick={() => !isPast && !booking && handleToggleAvailability(day, slot.time)}
+                    onClick={() => !isPast && !block && handleSlotClick(day, slot.time)}
+                    onDoubleClick={() => !isPast && !booking && !block && handleToggleAvailability(day, slot.time)}
                     className={cn(
                       "h-10 border-l border-gray-100 dark:border-gray-800 cursor-pointer transition-colors",
                       isPast && "opacity-50 cursor-not-allowed",
-                      !isPast && !booking && !isAvail && "hover:bg-gray-50 dark:hover:bg-gray-800",
-                      isAvail && !booking && "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30",
-                      isSelected && "ring-2 ring-orange-500 ring-inset",
-                      booking && "bg-blue-100 dark:bg-blue-900/30"
+                      block && "cursor-not-allowed",
+                      !isPast && !booking && !block && !isAvail && "hover:bg-gray-50 dark:hover:bg-gray-800",
+                      isAvail && !booking && !block && "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30",
+                      isSelected && !block && "ring-2 ring-orange-500 ring-inset",
+                      showBooking && "bg-blue-100 dark:bg-blue-900/30",
+                      block && "bg-red-50 dark:bg-red-900/20"
                     )}
+                    style={block ? {
+                      backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(239,68,68,0.1) 5px, rgba(239,68,68,0.1) 10px)'
+                    } : undefined}
                   >
-                    {booking && (
+                    {/* Block Display */}
+                    {block && !booking && (
+                      <div className="h-full px-1 py-0.5 overflow-hidden">
+                        <div className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400">
+                          <Ban className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{getBlockTypeLabel(block.block_type)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Booking Display with Location Icon */}
+                    {showBooking && (
                       <div className="h-full px-1 py-0.5 overflow-hidden">
                         <div className="flex items-center gap-1 text-xs font-medium text-blue-800 dark:text-blue-200">
+                          {/* Location Icon */}
+                          {booking.location_type === 'online' ? (
+                            <Video className="w-3 h-3 flex-shrink-0 text-purple-500" />
+                          ) : (
+                            <Building2 className="w-3 h-3 flex-shrink-0 text-blue-500" />
+                          )}
                           <span className="truncate">{booking.client_name || 'Client'}</span>
                           {booking.recurring_series_id && (
                             <RefreshCw className="w-3 h-3 flex-shrink-0 text-blue-400" />
                           )}
+                          {/* No-Show Alert Badge */}
+                          <NoShowAlertBadge
+                            coachId={coachId}
+                            clientId={booking.client_id}
+                            size="sm"
+                          />
                         </div>
                       </div>
                     )}
@@ -542,7 +759,7 @@ export function BookingCalendarClient({
       </div>
 
       {/* Legend */}
-      <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-4 text-xs text-gray-500">
+      <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-2 flex flex-wrap items-center gap-4 text-xs text-gray-500">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-green-100 dark:bg-green-900/30 rounded" />
           <span>{t('available')}</span>
@@ -551,7 +768,19 @@ export function BookingCalendarClient({
           <div className="w-3 h-3 bg-blue-100 dark:bg-blue-900/30 rounded" />
           <span>{t('booked')}</span>
         </div>
-        <span className="text-gray-400">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 bg-red-100 dark:bg-red-900/30 rounded" />
+          <span>{t('blocked')}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Building2 className="w-3 h-3" />
+          <span>{t('location.inPerson')}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Video className="w-3 h-3" />
+          <span>{t('location.online')}</span>
+        </div>
+        <span className="text-gray-400 hidden sm:inline">
           {t('doubleClickToToggle')}
         </span>
       </div>
@@ -603,6 +832,28 @@ export function BookingCalendarClient({
                   </span>
                 </div>
               )}
+
+              {/* Late Cancellation Warning */}
+              {(() => {
+                const bookingDateTime = parseISO(`${selectedBooking.scheduled_date}T${selectedBooking.start_time}`)
+                const hoursUntil = differenceInHours(bookingDateTime, new Date())
+                if (hoursUntil > 0 && hoursUntil <= 24) {
+                  return (
+                    <div className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg">
+                      <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                          {t('lateCancellation')}
+                        </p>
+                        <p className="text-sm text-orange-800 dark:text-orange-200">
+                          {t('lateCancelWarning', { hours: hoursUntil })}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })()}
             </div>
 
             {/* Series Cancel Options */}
@@ -676,7 +927,7 @@ export function BookingCalendarClient({
           clients={clients}
           coachId={coachId}
           onClose={() => setSelectedSlot(null)}
-          onBook={async (clientId, notes) => {
+          onBook={async (clientId, notes, locationType, meetingUrl) => {
             setIsLoading(true)
             try {
               const [hours] = selectedSlot.time.split(':').map(Number)
@@ -698,7 +949,9 @@ export function BookingCalendarClient({
                 cancellation_reason: null,
                 recurring_series_id: null,
                 recurring_pattern: null,
-                occurrence_index: null
+                occurrence_index: null,
+                location_type: locationType || 'in_person',
+                meeting_url: meetingUrl || null
               })
 
               if (result.success && result.booking) {
@@ -713,7 +966,7 @@ export function BookingCalendarClient({
               setIsLoading(false)
             }
           }}
-          onBookRecurring={async (clientId, pattern, notes) => {
+          onBookRecurring={async (clientId, pattern, notes, locationType, meetingUrl) => {
             setIsLoading(true)
             try {
               const [hours] = selectedSlot.time.split(':').map(Number)
@@ -738,7 +991,9 @@ export function BookingCalendarClient({
                   cancellation_reason: null,
                   recurring_series_id: null,
                   recurring_pattern: null,
-                  occurrence_index: null
+                  occurrence_index: null,
+                  location_type: locationType || 'in_person',
+                  meeting_url: meetingUrl || null
                 },
                 {
                   frequency: pattern.frequency,
@@ -769,6 +1024,49 @@ export function BookingCalendarClient({
           locale={locale}
         />
       )}
+
+      {/* Block Create Modal */}
+      {showBlockModal && (
+        <BlockCreateModal
+          coachId={coachId}
+          initialDate={format(currentWeekStart, 'yyyy-MM-dd')}
+          onClose={() => setShowBlockModal(false)}
+          onCreated={() => {
+            setShowBlockModal(false)
+            refreshData()
+          }}
+          locale={locale}
+        />
+      )}
+
+      {/* Optimization Suggestions Panel */}
+      {showOptimizationPanel && (
+        <OptimizationSuggestionsPanel
+          coachId={coachId}
+          weekStartDate={startDateStr}
+          onClose={() => setShowOptimizationPanel(false)}
+          onApplied={() => {
+            refreshData()
+            loadBlocksAndSuggestions()
+          }}
+          locale={locale}
+        />
+      )}
+
+      {/* Waitlist Offer Modal */}
+      {showWaitlistOfferModal && waitlistSlot && (
+        <WaitlistOfferModal
+          isOpen={showWaitlistOfferModal}
+          onClose={() => {
+            setShowWaitlistOfferModal(false)
+            setWaitlistCandidates([])
+            setWaitlistSlot(null)
+          }}
+          slot={waitlistSlot}
+          candidates={waitlistCandidates}
+          onOfferSent={handleWaitlistOfferSent}
+        />
+      )}
     </div>
   )
 }
@@ -790,18 +1088,22 @@ function QuickBookModal({
   clients: ClientWithBookingInfo[]
   coachId: string
   onClose: () => void
-  onBook: (clientId: string, notes?: string) => Promise<void>
+  onBook: (clientId: string, notes?: string, locationType?: SessionLocationType, meetingUrl?: string) => Promise<void>
   onBookRecurring?: (clientId: string, pattern: {
     frequency: 'weekly' | 'biweekly'
     endType: 'count' | 'date'
     endValue: number | string
-  }, notes?: string) => Promise<void>
+  }, notes?: string, locationType?: SessionLocationType, meetingUrl?: string) => Promise<void>
   locale: typeof it | typeof enUS
 }) {
   const t = useTranslations('coach.calendar')
   const [selectedClient, setSelectedClient] = useState('')
   const [notes, setNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Location state
+  const [locationType, setLocationType] = useState<SessionLocationType>('in_person')
+  const [meetingUrl, setMeetingUrl] = useState('')
 
   // Recurring state
   const [isRecurring, setIsRecurring] = useState(false)
@@ -814,14 +1116,16 @@ function QuickBookModal({
     if (!selectedClient) return
     setIsLoading(true)
 
+    const url = locationType === 'online' && meetingUrl ? meetingUrl : undefined
+
     if (isRecurring && onBookRecurring) {
       await onBookRecurring(selectedClient, {
         frequency,
         endType,
         endValue: endType === 'count' ? endCount : endDate
-      }, notes)
+      }, notes, locationType, url)
     } else {
-      await onBook(selectedClient, notes)
+      await onBook(selectedClient, notes, locationType, url)
     }
 
     setIsLoading(false)
@@ -884,6 +1188,57 @@ function QuickBookModal({
               placeholder={t('notesPlaceholder')}
             />
           </div>
+
+          {/* Location Type Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('location.sessionType')}
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setLocationType('in_person')}
+                className={cn(
+                  "flex-1 px-3 py-2 text-sm rounded-lg border transition-colors flex items-center justify-center gap-2",
+                  locationType === 'in_person'
+                    ? "bg-blue-100 dark:bg-blue-900/30 border-blue-500 text-blue-700 dark:text-blue-300"
+                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                )}
+              >
+                <Building2 className="h-4 w-4" />
+                {t('location.inPerson')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationType('online')}
+                className={cn(
+                  "flex-1 px-3 py-2 text-sm rounded-lg border transition-colors flex items-center justify-center gap-2",
+                  locationType === 'online'
+                    ? "bg-purple-100 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-300"
+                    : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                )}
+              >
+                <Video className="h-4 w-4" />
+                {t('location.online')}
+              </button>
+            </div>
+          </div>
+
+          {/* Meeting URL (only for online) */}
+          {locationType === 'online' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('location.meetingUrl')} ({t('optional')})
+              </label>
+              <input
+                type="url"
+                value={meetingUrl}
+                onChange={(e) => setMeetingUrl(e.target.value)}
+                placeholder={t('location.enterMeetingUrl')}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+          )}
 
           {/* Recurring Toggle */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import ReactConfetti from "react-confetti";
-import { Flame, Dumbbell, TrendingUp, Home } from "lucide-react";
+import { Flame, Dumbbell, TrendingUp, Home, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useWorkoutExecutionStore } from "@/lib/stores/workout-execution.store";
@@ -17,6 +17,10 @@ interface WorkoutRecapProps {
   skippedExerciseCount?: number;
   totalSets: number;
   totalVolume: number;
+  coachFeedback?: {
+    coachNotes: string | null;
+    coachName: string | null;
+  } | null;
 }
 
 export function WorkoutRecap({
@@ -26,6 +30,7 @@ export function WorkoutRecap({
   skippedExerciseCount = 0,
   totalSets,
   totalVolume,
+  coachFeedback,
 }: WorkoutRecapProps) {
   const t = useTranslations("simpleMode.recap");
   const tWorkout = useTranslations("simpleMode.workout");
@@ -185,6 +190,33 @@ export function WorkoutRecap({
             </div>
           </Card>
         </motion.div>
+
+        {/* Coach Feedback */}
+        {coachFeedback?.coachNotes && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="w-full max-w-sm mt-4"
+          >
+            <Card className="bg-orange-950/30 border-orange-800 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <User className="h-5 w-5 text-orange-400" />
+                <span className="font-semibold text-orange-200">
+                  {t("coachFeedback")}
+                </span>
+                {coachFeedback.coachName && (
+                  <span className="text-sm text-orange-400">
+                    — {coachFeedback.coachName}
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-300 text-sm whitespace-pre-wrap">
+                {coachFeedback.coachNotes}
+              </p>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Motivational message */}
         <motion.p

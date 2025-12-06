@@ -17,6 +17,7 @@ import type { UserProfile } from "@/lib/types/schemas"
 import { getCycleComparisonAction, changeSplitPlanAction, getActiveSplitPlanAction, getAllSplitPlansAction } from "@/app/actions/split-actions"
 import { useTourStore } from "@/lib/stores/tour.store"
 import { OnboardingTour } from "./onboarding-tour"
+import { NotificationBell } from "@/components/features/notifications/notification-bell"
 
 interface DashboardClientProps {
   user: User
@@ -156,8 +157,11 @@ export function DashboardClient({ user, profile, volumeProgress }: DashboardClie
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-              {/* Prima riga su mobile: Mode Switch full width */}
-              <ModeQuickSwitch className="w-full sm:w-auto" />
+              {/* Prima riga su mobile: Notifications + Mode Switch */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
+                <NotificationBell />
+                <ModeQuickSwitch className="flex-1 sm:flex-none" />
+              </div>
 
               {/* Seconda riga su mobile: Settings + Progress */}
               <div className="flex gap-2 w-full sm:w-auto">

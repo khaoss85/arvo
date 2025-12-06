@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { format, addDays, startOfWeek, isToday, isTomorrow } from 'date-fns'
 import { it, enUS } from 'date-fns/locale'
-import { Calendar, Clock, ChevronLeft, ChevronRight, Check, Loader2 } from 'lucide-react'
+import { Calendar, Clock, ChevronLeft, ChevronRight, Check, Loader2, Users, Info } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -16,12 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { JoinWaitlistModal } from '@/components/features/client/booking/join-waitlist-modal'
 import {
   getCoachAvailabilityAction,
   getCoachBookingsAction,
   createBookingAction
 } from '@/app/actions/booking-actions'
-import type { CoachAvailability, Booking, InsertBooking } from '@/lib/types/schemas'
+import { getCancellationPolicyAction } from '@/app/actions/cancellation-policy-actions'
+import type { CoachAvailability, Booking, InsertBooking, CoachCancellationPolicy } from '@/lib/types/schemas'
 
 interface BookSessionModalProps {
   isOpen: boolean
@@ -59,6 +61,8 @@ export function BookSessionModal({
   const [isBooking, setIsBooking] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null)
   const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [showJoinWaitlist, setShowJoinWaitlist] = useState(false)
+  const [cancellationPolicy, setCancellationPolicy] = useState<CoachCancellationPolicy | null>(null)
 
   // Calculate week days
   const weekDays = useMemo(() => {
@@ -78,9 +82,10 @@ export function BookSessionModal({
     const endDate = format(addDays(currentWeekStart, 6), 'yyyy-MM-dd')
 
     try {
-      const [availResult, bookingsResult] = await Promise.all([
+      const [availResult, bookingsResult, policyResult] = await Promise.all([
         getCoachAvailabilityAction(coachId, startDate, endDate),
-        getCoachBookingsAction(coachId, startDate, endDate)
+        getCoachBookingsAction(coachId, startDate, endDate),
+        getCancellationPolicyAction(coachId)
       ])
 
       if (availResult.success && availResult.availability) {
@@ -88,6 +93,9 @@ export function BookSessionModal({
       }
       if (bookingsResult.success && bookingsResult.bookings) {
         setBookings(bookingsResult.bookings as Booking[])
+      }
+      if (policyResult.policy) {
+        setCancellationPolicy(policyResult.policy)
       }
     } finally {
       setIsLoading(false)
@@ -163,7 +171,9 @@ export function BookSessionModal({
         cancellation_reason: null,
         recurring_series_id: null,
         recurring_pattern: null,
-        occurrence_index: null
+        occurrence_index: null,
+        location_type: 'in_person',
+        meeting_url: null
       }
 
       const result = await createBookingAction(booking)
@@ -303,6 +313,14 @@ export function BookSessionModal({
                     <Calendar className="w-10 h-10 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-500">{t('noSlots')}</p>
                     <p className="text-sm text-gray-400 mt-1">{t('tryNextWeek')}</p>
+                    <Button
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => setShowJoinWaitlist(true)}
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {t('joinWaitlist')}
+                    </Button>
                   </div>
                 )}
               </div>
@@ -327,6 +345,16 @@ export function BookSessionModal({
               </Card>
             )}
 
+            {/* Cancellation Policy Info */}
+            {selectedSlot && cancellationPolicy && (
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {t('cancellationPolicy', { hours: cancellationPolicy.free_cancellation_hours })}
+                </p>
+              </div>
+            )}
+
             <DialogFooter>
               <Button variant="outline" onClick={handleClose}>
                 {tCommon('buttons.cancel')}
@@ -347,6 +375,17 @@ export function BookSessionModal({
           </>
         )}
       </DialogContent>
+
+      {/* Join Waitlist Modal */}
+      <JoinWaitlistModal
+        isOpen={showJoinWaitlist}
+        onClose={() => setShowJoinWaitlist(false)}
+        coachId={coachId}
+        onJoined={() => {
+          setShowJoinWaitlist(false)
+          handleClose()
+        }}
+      />
     </Dialog>
   )
 }

@@ -6731,7 +6731,9 @@
       "noSlots": "Nessuno slot disponibile",
       "tryNextWeek": "Prova a controllare la prossima settimana",
       "confirm": "Conferma",
-      "locale": "it"
+      "locale": "it",
+      "joinWaitlist": "Iscriviti alla Lista d'Attesa",
+      "cancellationPolicy": "Cancellazione gratuita fino a {hours}h prima della sessione"
     }
   },
   "coach": {
@@ -6773,6 +6775,8 @@
       "occurrences": "volte",
       "previewSlots": "Anteprima slot",
       "partOfRecurringSeries": "Fa parte di una serie ricorrente",
+      "lateCancellation": "Cancellazione Tardiva",
+      "lateCancelWarning": "Questa sessione è tra {hours}h. Al cliente potrebbe essere addebitata la sessione secondo la policy di cancellazione.",
       "cancelThisOnly": "Annulla solo questa",
       "cancelThisAndFollowing": "Annulla questa e successive",
       "cancelEntireSeries": "Annulla tutta la serie",
@@ -6893,7 +6897,18 @@
         "noActivePackage": "Nessun pacchetto",
         "empty": "Nessuno in lista d'attesa",
         "selectCandidate": "Seleziona candidato",
-        "offerSlot": "Offri slot"
+        "offerSlot": "Offri slot",
+        "sortByPriority": "Ordina per priorità",
+        "sortByWaiting": "Ordina per attesa",
+        "hasPackage": "Ha pacchetto",
+        "priority": "Priorità",
+        "remove": "Rimuovi",
+        "offerSent": "Offerta inviata",
+        "candidates": "Candidati",
+        "selectSlot": "Seleziona slot",
+        "slotDetails": "Dettagli slot",
+        "matchScore": "Punteggio match",
+        "expiresIn": "Scade tra {hours}h"
       }
     },
     "packages": {
@@ -7392,6 +7407,86 @@
       "showStructure": "Mostra struttura",
       "hideStructure": "Nascondi struttura",
       "dayPrefix": "G"
+    }
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "empty": "Nessuna notifica",
+    "markAllRead": "Segna tutte lette",
+    "close": "Chiudi",
+    "yourCoach": "Il tuo Coach",
+    "types": {
+      "notification": "Notifica",
+      "bookingConfirmed": "Prenotazione Confermata",
+      "reminder24h": "Promemoria: Sessione Domani",
+      "reminder1h": "Promemoria: Sessione tra 1 ora",
+      "bookingCancelled": "Prenotazione Cancellata",
+      "coachFeedback": "Feedback del Coach",
+      "waitlistSlotAvailable": "Slot Disponibile",
+      "noShowAlert": "Alert Assenza",
+      "lateCancellation": "Cancellazione Tardiva",
+      "waitlistOfferExpired": "Offerta Scaduta",
+      "packageLow": "Sessioni in Esaurimento",
+      "packageExpired": "Pacchetto Scaduto",
+      "bookingRescheduled": "Sessione Riprogrammata"
+    },
+    "bookingDetails": "Sessione con {coachName} il {date} alle {time}",
+    "feedbackDetails": "{coachName} ha lasciato feedback su {workoutName}",
+    "waitlistSlotDetails": "Uno slot si è liberato il {date} alle {time}",
+    "waitlistSlotGeneric": "Uno slot è ora disponibile!",
+    "noShowAlertDetails": "{clientName} ha saltato {count}/{total} sessioni",
+    "noShowAlertGeneric": "Un cliente ha un alto tasso di assenze",
+    "lateCancellationDetails": "{clientName} ha cancellato con solo {hours}h di preavviso",
+    "lateCancellationGeneric": "Una prenotazione è stata cancellata in ritardo",
+    "waitlistOfferExpiredDetails": "L'offerta della lista d'attesa è scaduta",
+    "packageLowDetails": "Solo {sessions} sessioni rimanenti in {package}",
+    "packageExpiredDetails": "Il pacchetto {package} è scaduto",
+    "rescheduledDetails": "Sessione riprogrammata per {date} alle {time}",
+    "rescheduledGeneric": "La tua sessione è stata riprogrammata"
+  },
+  "packages": {
+    "expiring": {
+      "title": "Pacchetti in Scadenza",
+      "expiresIn": "Scade tra {days} giorni",
+      "expiresToday": "Scade oggi",
+      "sessionsRemaining": "{count} sessioni rimanenti",
+      "noExpiring": "Nessun pacchetto in scadenza",
+      "contact": "Contatta",
+      "extend": "Estendi",
+      "expiresGroup": {
+        "today": "Scade Oggi",
+        "threeDays": "Scade tra 3 Giorni",
+        "sevenDays": "Scade tra 7 Giorni"
+      }
+    },
+    "upgrade": {
+      "title": "Suggerimenti Upgrade",
+      "completedFast": "Ha completato {sessions} sessioni in {days} giorni!",
+      "suggest": "Suggerisci pacchetto da {sessions} sessioni",
+      "suggestedSessions": "sessioni suggerite",
+      "dismiss": "Ignora",
+      "sendMessage": "Invia Messaggio",
+      "noPending": "Nessun suggerimento di upgrade",
+      "sent": "Inviato"
+    },
+    "shared": {
+      "title": "Pacchetto Condiviso",
+      "description": "Permetti a più persone di condividere questo pacchetto",
+      "isShared": "Questo è un pacchetto condiviso",
+      "sharedWith": "Condiviso con",
+      "addPerson": "Aggiungi persona",
+      "removePerson": "Rimuovi",
+      "maxUsers": "Utenti massimi",
+      "people": "persone",
+      "usageBreakdown": "Ripartizione utilizzo",
+      "selectClient": "Seleziona un cliente",
+      "noClientsAvailable": "Nessun cliente disponibile",
+      "slotsRemaining": "{current} di {max} posti utilizzati",
+      "primaryOwner": "Proprietario principale",
+      "owner": "Proprietario",
+      "sessions": "sessioni",
+      "sessionsRemaining": "Sessioni rimanenti",
+      "noUsageData": "Nessun dato di utilizzo"
     }
   }
 }

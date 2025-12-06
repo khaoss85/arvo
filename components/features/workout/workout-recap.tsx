@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { ArrowLeft, Calendar, Clock, Dumbbell, Heart, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock, Dumbbell, Heart, TrendingUp, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getWorkoutTypeIcon } from '@/lib/services/muscle-groups.service'
 import type { Workout } from '@/lib/types/schemas'
@@ -25,6 +25,10 @@ interface WorkoutRecapProps {
       reason: string | null
     }>
   }
+  coachFeedback?: {
+    coachNotes: string | null
+    coachName: string | null
+  } | null
 }
 
 // Mental readiness emoji mapping - labels will be translated
@@ -36,7 +40,7 @@ const MENTAL_READINESS_EMOJIS: Record<number, string> = {
   5: '🔥',
 }
 
-export function WorkoutRecap({ workout, totalVolume, userId, modifications }: WorkoutRecapProps) {
+export function WorkoutRecap({ workout, totalVolume, userId, modifications, coachFeedback }: WorkoutRecapProps) {
   const router = useRouter()
   const t = useTranslations('workout.components.workoutRecap')
   const tExecution = useTranslations('workout.execution.mentalReadiness')
@@ -219,6 +223,26 @@ export function WorkoutRecap({ workout, totalVolume, userId, modifications }: Wo
                 <p className="text-sm text-gray-500 dark:text-gray-400">{t('mentalState.readiness', { value: mentalReadiness })}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Coach Feedback */}
+        {coachFeedback?.coachNotes && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-6 border border-orange-200 dark:border-orange-800 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <User className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-100">
+                {t('coachFeedback.title')}
+              </h2>
+              {coachFeedback.coachName && (
+                <span className="text-sm text-orange-600 dark:text-orange-400">
+                  — {coachFeedback.coachName}
+                </span>
+              )}
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+              {coachFeedback.coachNotes}
+            </p>
           </div>
         )}
 

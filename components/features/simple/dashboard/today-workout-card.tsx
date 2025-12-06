@@ -143,6 +143,12 @@ export function TodayWorkoutCard({
         <div className="flex items-center gap-2">
           <span className="text-3xl">{workoutTypeIcon}</span>
           {getStatusBadge()}
+          {/* Coach badge - shown if workout was assigned by a coach */}
+          {preGeneratedWorkout?.assignedByCoachId && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
+              Coach
+            </span>
+          )}
         </div>
       </div>
 

@@ -21,22 +21,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get user's coach relationship
+    // Get user's coach relationship with autonomy level
     const { data: relationship, error: relError } = await supabase
       .from("coach_client_relationships")
-      .select("id, coach_id")
+      .select("id, coach_id, client_autonomy")
       .eq("client_id", user.id)
       .eq("status", "active")
       .single();
 
     if (relError || !relationship) {
-      return NextResponse.json({ notes: [], coachName: null });
+      return NextResponse.json({
+        notes: [],
+        coachName: null,
+        coachBio: null,
+        autonomyLevel: null
+      });
     }
 
-    // Get coach profile for display name
+    // Get coach profile with bio
     const { data: coachProfile } = await supabase
       .from("coach_profiles")
-      .select("display_name")
+      .select("display_name, bio")
       .eq("user_id", relationship.coach_id)
       .single();
 
@@ -59,6 +64,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       notes: notes || [],
       coachName: coachProfile?.display_name || "Coach",
+      coachBio: coachProfile?.bio || null,
+      autonomyLevel: relationship.client_autonomy || "standard",
     });
   } catch (error) {
     console.error("[CoachNotes] Error:", error);

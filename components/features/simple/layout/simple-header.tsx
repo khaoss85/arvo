@@ -7,6 +7,7 @@ import { Home, BarChart3, Camera, Settings } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { ModeQuickSwitch } from "@/components/ui/mode-quick-switch";
 import { Logo } from "@/components/ui/logo";
+import { NotificationBell } from "@/components/features/notifications/notification-bell";
 
 interface SimpleHeaderProps {
   userName?: string;
@@ -31,8 +32,11 @@ export function SimpleHeader({ userName }: SimpleHeaderProps) {
           <Logo size="sm" showTagline={false} showSubtitle={false} animated={false} />
         </Link>
 
-        {/* Mode Switch */}
-        <ModeQuickSwitch />
+        {/* Right side: Notifications + Mode Switch */}
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <ModeQuickSwitch />
+        </div>
       </div>
 
       {/* Bottom Navigation */}

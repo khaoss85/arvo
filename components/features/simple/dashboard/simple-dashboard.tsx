@@ -7,7 +7,8 @@ import type { User } from "@supabase/supabase-js";
 import type { UserProfile } from "@/lib/types/schemas";
 import type { TimelineDayData } from "@/lib/services/split-timeline.types";
 import { TodayWorkoutCard } from "./today-workout-card";
-import { BarChart3, Camera } from "lucide-react";
+import { CoachNotesSection } from "@/components/features/dashboard/coach-notes-section";
+import { BarChart3, Camera, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useTourStore } from "@/lib/stores/tour.store";
 import { OnboardingTour, SIMPLE_TOUR_STEPS } from "@/components/features/dashboard/onboarding-tour";
@@ -173,6 +174,9 @@ export function SimpleDashboard({
         )}
       </div>
 
+      {/* Coach Notes - Only shown if user has a coach with shared notes */}
+      <CoachNotesSection className="mt-6 max-w-sm mx-auto" />
+
       {/* Quick Actions */}
       <div data-tour="simple-actions" className="flex items-center justify-center gap-4 mt-8">
         <Link
@@ -198,6 +202,21 @@ export function SimpleDashboard({
             {tNav("progress")}
           </span>
         </Link>
+
+        {/* Bookings link - only shown if user has a coach */}
+        {profile.coach_id && (
+          <Link
+            href="/bookings"
+            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900/30">
+              <Calendar className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            </div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {tNav("bookings")}
+            </span>
+          </Link>
+        )}
       </div>
 
       {/* Onboarding Tour */}

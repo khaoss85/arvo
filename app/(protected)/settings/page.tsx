@@ -23,6 +23,7 @@ import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
 import { RestartTourSection } from "@/components/features/settings/restart-tour-section"
 import { CoachCodeInput } from "@/components/features/settings/coach-code-input"
 import { GymMembershipSection } from "@/components/features/settings/gym-membership-section"
+import { CancellationPolicySettings } from "@/components/features/coach/settings/cancellation-policy-settings"
 import { Card } from "@/components/ui/card"
 import type { SportGoal } from "@/lib/types/schemas"
 
@@ -138,6 +139,11 @@ export default async function SettingsPage() {
       {/* Gym Membership Section */}
       <section id="gym" className="scroll-mt-20">
         <GymMembershipSection />
+      </section>
+
+      {/* Cancellation Policy Section (Coach only) */}
+      <section id="cancellation-policy" className="scroll-mt-20">
+        <CancellationPolicySettings />
       </section>
 
       {/* Caloric Phase Section */}

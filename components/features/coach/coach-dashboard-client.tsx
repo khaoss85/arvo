@@ -20,6 +20,7 @@ import type {
   ClientWithProfile,
 } from "@/lib/services/coach.service";
 import type { CoachProfile } from "@/lib/types/schemas";
+import { ExpiringPackagesPanel, UpgradeSuggestionsPanel } from "./packages";
 
 interface CoachDashboardClientProps {
   user: User;
@@ -155,6 +156,12 @@ export function CoachDashboardClient({
             />
           </div>
         )}
+
+        {/* Package Alerts Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <ExpiringPackagesPanel />
+          <UpgradeSuggestionsPanel />
+        </div>
 
         {/* Clients Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">

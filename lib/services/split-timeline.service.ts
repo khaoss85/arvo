@@ -651,7 +651,8 @@ export class SplitTimelineService {
           id: preGeneratedWorkout.id,
           status: preGeneratedWorkout.status as 'draft' | 'ready',
           exercises: preGeneratedWorkout.exercises as any[] || [],
-          workoutName: preGeneratedWorkout.workout_name || 'Workout'
+          workoutName: preGeneratedWorkout.workout_name || 'Workout',
+          assignedByCoachId: preGeneratedWorkout.assigned_by_coach_id || null
         };
       } else if (hasInProgressWorkout && inProgressWorkout) {
         // In-progress workout should also be accessible
@@ -659,7 +660,8 @@ export class SplitTimelineService {
           id: inProgressWorkout.id,
           status: 'ready', // Show as ready since it's been started
           exercises: inProgressWorkout.exercises as any[] || [],
-          workoutName: inProgressWorkout.workout_name || 'Workout'
+          workoutName: inProgressWorkout.workout_name || 'Workout',
+          assignedByCoachId: inProgressWorkout.assigned_by_coach_id || null
         };
       }
 
@@ -762,7 +764,8 @@ export class SplitTimelineService {
           id: preGeneratedWorkout.id,
           status: preGeneratedWorkout.status as 'draft' | 'ready',
           exercises: preGeneratedWorkout.exercises as any[] || [],
-          workoutName: preGeneratedWorkout.workout_name || 'Workout'
+          workoutName: preGeneratedWorkout.workout_name || 'Workout',
+          assignedByCoachId: preGeneratedWorkout.assigned_by_coach_id || null
         };
       } else if (hasInProgressWorkout && inProgressWorkout) {
         // In-progress workout should also be accessible
@@ -770,7 +773,8 @@ export class SplitTimelineService {
           id: inProgressWorkout.id,
           status: 'ready', // Show as ready since it's been started
           exercises: inProgressWorkout.exercises as any[] || [],
-          workoutName: inProgressWorkout.workout_name || 'Workout'
+          workoutName: inProgressWorkout.workout_name || 'Workout',
+          assignedByCoachId: inProgressWorkout.assigned_by_coach_id || null
         };
       }
 

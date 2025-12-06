@@ -5,6 +5,7 @@ import { getUser } from "@/lib/utils/auth.server"
 import { getUserLanguage } from "@/lib/utils/get-user-language"
 import { getTranslations } from "next-intl/server"
 import { UserProfileService } from "@/lib/services/user-profile.service"
+import { CoachService } from "@/lib/services/coach.service"
 import { Card } from "@/components/ui/card"
 import { AppModeToggle } from "@/components/features/settings/app-mode-toggle"
 import { PersonalInfoEditor } from "@/components/features/settings/personal-info-editor"
@@ -12,6 +13,7 @@ import { ResetDataSection } from "@/components/features/settings/reset-data-sect
 import { DeleteAccountSection } from "@/components/features/settings/delete-account-section"
 import { LanguageSelector } from "@/components/features/settings/language-selector"
 import { RestartTourSection } from "@/components/features/settings/restart-tour-section"
+import { CoachCodeInput } from "@/components/features/settings/coach-code-input"
 
 export async function generateMetadata(): Promise<Metadata> {
   const user = await getUser()
@@ -45,6 +47,13 @@ export default async function SimpleSettingsPage() {
   // Redirect to full settings if user is in advanced mode
   if (profile.app_mode === 'advanced') {
     redirect('/settings')
+  }
+
+  // Get coach name if user has a coach
+  let coachName: string | null = null
+  if (profile.coach_id) {
+    const coachProfile = await CoachService.getProfileServer(profile.coach_id)
+    coachName = coachProfile?.display_name || null
   }
 
   // Get translations
@@ -87,6 +96,15 @@ export default async function SimpleSettingsPage() {
           <Card className="p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4">{t("preferences.title")}</h3>
             <LanguageSelector userId={user.id} />
+          </Card>
+
+          {/* Coach Connection Section */}
+          <Card className="p-4 sm:p-6">
+            <CoachCodeInput
+              userId={user.id}
+              currentCoachId={profile.coach_id ?? null}
+              currentCoachName={coachName}
+            />
           </Card>
 
           {/* Tour Section */}

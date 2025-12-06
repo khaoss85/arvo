@@ -273,6 +273,7 @@ export async function getNextWorkoutPreviewAction(userId: string) {
         cycleDay,
         totalCycleDays: splitPlan.cycle_days,
         splitType: splitPlan.split_type,
+        splitSource: splitPlan.source || 'self', // 'self' or 'coach'
         sessions: splitPlan.sessions as any[], // Include all sessions for customization dialog
       }
     }

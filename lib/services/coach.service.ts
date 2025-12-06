@@ -1664,4 +1664,48 @@ export class CoachService {
 
     return data as unknown as CoachSplitPlanAssignment[];
   }
+
+  /**
+   * Server-side: Get coach feedback for a specific workout
+   * Returns the client_notes from coach_workout_assignments if the workout was assigned by a coach
+   */
+  static async getWorkoutCoachFeedbackServer(
+    workoutId: string
+  ): Promise<{ coachNotes: string | null; coachName: string | null } | null> {
+    const { getSupabaseServerClient } = await import("@/lib/supabase/server");
+    const supabase = await getSupabaseServerClient();
+
+    // Get the workout assignment
+    const { data: assignment, error: assignmentError } = await supabase
+      .from("coach_workout_assignments")
+      .select("client_notes, coach_id")
+      .eq("workout_id", workoutId)
+      .maybeSingle();
+
+    if (assignmentError) {
+      console.error("[CoachService] Failed to fetch workout assignment:", assignmentError);
+      return null;
+    }
+
+    if (!assignment) {
+      return null;
+    }
+
+    // Get coach profile separately
+    let coachName: string | null = null;
+    if (assignment.coach_id) {
+      const { data: coachProfile } = await supabase
+        .from("coach_profiles")
+        .select("display_name")
+        .eq("user_id", assignment.coach_id)
+        .single();
+
+      coachName = coachProfile?.display_name || null;
+    }
+
+    return {
+      coachNotes: assignment.client_notes,
+      coachName,
+    };
+  }
 }

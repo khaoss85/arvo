@@ -120,6 +120,14 @@ export const insertUserProfileSchema = userProfileSchema;
 
 export const updateUserProfileSchema = userProfileSchema.partial().required({ user_id: true });
 
+// Split Plan Archived Reason
+export const splitPlanArchivedReasonSchema = z.enum(['coach_replaced', 'user_changed']);
+export type SplitPlanArchivedReason = z.infer<typeof splitPlanArchivedReasonSchema>;
+
+// Split Plan Source
+export const splitPlanSourceSchema = z.enum(['self', 'coach']);
+export type SplitPlanSource = z.infer<typeof splitPlanSourceSchema>;
+
 // Split Plans Schema
 export const splitPlanSchema = z.object({
   id: z.string().uuid(),
@@ -135,6 +143,10 @@ export const splitPlanSchema = z.object({
   specialization_volume_multiplier: z.number().min(1.0).max(3.0).nullable().optional(), // Volume multiplier (e.g., 1.5 = 50% more)
   ai_response_id: z.string().nullable().optional(), // OpenAI response ID for GPT-5 reasoning persistence
   active: z.boolean().nullable(),
+  // Archival fields for coach overlay functionality
+  archived_at: z.string().datetime().nullable().optional(), // When split was archived
+  archived_reason: splitPlanArchivedReasonSchema.nullable().optional(), // Why it was archived
+  source: splitPlanSourceSchema.default('self').optional(), // Who created this split: self or coach
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
 });
@@ -617,7 +629,12 @@ export const bookingNotificationTypeSchema = z.enum([
   'reminder_24h',
   'reminder_1h',
   'package_low',
-  'package_expired'
+  'package_expired',
+  // Cancellation & Waitlist notification types
+  'no_show_alert',
+  'waitlist_slot_available',
+  'waitlist_offer_expired',
+  'late_cancellation'
 ]);
 export type BookingNotificationType = z.infer<typeof bookingNotificationTypeSchema>;
 
@@ -664,6 +681,32 @@ export const aiSlotSuggestionSchema = z.object({
 });
 export type AISlotSuggestion = z.infer<typeof aiSlotSuggestionSchema>;
 
+// =====================================================
+// SMART CALENDAR TYPES
+// =====================================================
+
+// Session Location Type (Multi-location)
+export const sessionLocationTypeSchema = z.enum(['in_person', 'online']);
+export type SessionLocationType = z.infer<typeof sessionLocationTypeSchema>;
+
+// Coach Block Type
+export const coachBlockTypeSchema = z.enum([
+  'competition', 'travel', 'study', 'personal', 'custom'
+]);
+export type CoachBlockType = z.infer<typeof coachBlockTypeSchema>;
+
+// Optimization Suggestion Type
+export const optimizationSuggestionTypeSchema = z.enum([
+  'consolidate_gap', 'create_block', 'optimize_day'
+]);
+export type OptimizationSuggestionType = z.infer<typeof optimizationSuggestionTypeSchema>;
+
+// Optimization Suggestion Status
+export const optimizationSuggestionStatusSchema = z.enum([
+  'pending', 'accepted', 'rejected', 'applied', 'expired'
+]);
+export type OptimizationSuggestionStatus = z.infer<typeof optimizationSuggestionStatusSchema>;
+
 // Coach Availability Schema
 export const coachAvailabilitySchema = z.object({
   id: z.string().uuid(),
@@ -672,6 +715,7 @@ export const coachAvailabilitySchema = z.object({
   start_time: z.string(), // TIME format HH:MM:SS
   end_time: z.string(), // TIME format HH:MM:SS
   is_available: z.boolean().default(true),
+  location_type: sessionLocationTypeSchema.default('in_person'),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
 });
@@ -703,6 +747,10 @@ export const bookingPackageSchema = z.object({
   // AI recurring suggestions
   ai_suggested_slots: z.array(aiSlotSuggestionSchema).nullable(),
   slots_confirmed: z.boolean().default(false),
+  // Shared package fields
+  is_shared: z.boolean().default(false),
+  shared_with_client_ids: z.array(z.string().uuid()).default([]),
+  max_shared_users: z.number().int().min(1).max(10).default(1),
   created_at: z.string().datetime().nullable(),
   updated_at: z.string().datetime().nullable(),
 });
@@ -734,6 +782,9 @@ export const bookingSchema = z.object({
   package_id: z.string().uuid().nullable(),
   ai_scheduled: z.boolean().default(false),
   ai_suggestion_accepted: z.boolean().nullable(),
+  // Location for multi-location support
+  location_type: sessionLocationTypeSchema.default('in_person'),
+  meeting_url: z.string().url().nullable(),
   // Recurring booking fields
   recurring_series_id: z.string().uuid().nullable(),
   recurring_pattern: recurringPatternSchema.nullable(),
@@ -789,6 +840,93 @@ export const insertBookingNotificationSchema = bookingNotificationSchema.omit({
 
 export const updateBookingNotificationSchema = insertBookingNotificationSchema.partial();
 
+// Coach Block Schema (Personal blocks for unavailability)
+export const coachBlockSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  block_type: coachBlockTypeSchema,
+  custom_reason: z.string().nullable(),
+  start_date: z.string(), // DATE format YYYY-MM-DD
+  end_date: z.string(), // DATE format YYYY-MM-DD
+  start_time: z.string().nullable(), // TIME format HH:MM:SS - null = full day
+  end_time: z.string().nullable(), // TIME format HH:MM:SS - null = full day
+  notes: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachBlockSchema = coachBlockSchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCoachBlockSchema = insertCoachBlockSchema.partial();
+
+// Gap Details Schema (for optimization suggestions)
+export const gapDetailsSchema = z.object({
+  originalDate: z.string(),
+  originalStartTime: z.string(),
+  originalEndTime: z.string(),
+  gapBeforeMinutes: z.number().int().optional(),
+  gapAfterMinutes: z.number().int().optional(),
+  freedMinutes: z.number().int().optional(),
+  newBlockSize: z.number().int().optional(),
+});
+export type GapDetails = z.infer<typeof gapDetailsSchema>;
+
+// Calendar Optimization Suggestion Schema
+export const calendarOptimizationSuggestionSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  suggestion_type: optimizationSuggestionTypeSchema,
+  source_booking_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  // Proposed change
+  proposed_date: z.string(), // DATE format YYYY-MM-DD
+  proposed_start_time: z.string(), // TIME format HH:MM:SS
+  proposed_end_time: z.string(), // TIME format HH:MM:SS
+  // Gap analysis
+  gap_details: gapDetailsSchema.or(z.record(z.string(), z.unknown())),
+  reason_short: z.string().max(100),
+  reason_detailed: z.string().nullable(),
+  benefit_score: z.number().int().min(0).max(100),
+  client_preference_score: z.number().int().min(0).max(100).default(50),
+  // Status
+  status: optimizationSuggestionStatusSchema.default('pending'),
+  created_at: z.string().datetime().nullable(),
+  reviewed_at: z.string().datetime().nullable(),
+  expires_at: z.string().datetime(),
+});
+
+export const insertCalendarOptimizationSuggestionSchema = calendarOptimizationSuggestionSchema.omit({
+  id: true,
+  created_at: true,
+  reviewed_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  reviewed_at: z.string().datetime().optional(),
+});
+
+export const updateCalendarOptimizationSuggestionSchema = insertCalendarOptimizationSuggestionSchema.partial();
+
+// Block Conflict type (for UI)
+export const blockConflictSchema = z.object({
+  booking_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  client_name: z.string(),
+  scheduled_date: z.string(),
+  start_time: z.string(),
+  end_time: z.string(),
+  status: z.string(),
+});
+export type BlockConflict = z.infer<typeof blockConflictSchema>;
+
 // Booking System Type Exports
 export type CoachAvailability = z.infer<typeof coachAvailabilitySchema>;
 export type InsertCoachAvailability = z.infer<typeof insertCoachAvailabilitySchema>;
@@ -805,3 +943,248 @@ export type UpdateBooking = z.infer<typeof updateBookingSchema>;
 export type BookingNotification = z.infer<typeof bookingNotificationSchema>;
 export type InsertBookingNotification = z.infer<typeof insertBookingNotificationSchema>;
 export type UpdateBookingNotification = z.infer<typeof updateBookingNotificationSchema>;
+
+export type CoachBlock = z.infer<typeof coachBlockSchema>;
+export type InsertCoachBlock = z.infer<typeof insertCoachBlockSchema>;
+export type UpdateCoachBlock = z.infer<typeof updateCoachBlockSchema>;
+
+export type CalendarOptimizationSuggestion = z.infer<typeof calendarOptimizationSuggestionSchema>;
+export type InsertCalendarOptimizationSuggestion = z.infer<typeof insertCalendarOptimizationSuggestionSchema>;
+export type UpdateCalendarOptimizationSuggestion = z.infer<typeof updateCalendarOptimizationSuggestionSchema>;
+
+// =====================================================
+// Cancellation Policy Schemas
+// =====================================================
+
+export const coachCancellationPolicySchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  free_cancellation_hours: z.number().int().min(0).max(168).default(24),
+  late_cancel_charges_session: z.boolean().default(true),
+  late_cancel_refund_percentage: z.number().int().min(0).max(100).default(0),
+  policy_summary_en: z.string().nullable(),
+  policy_summary_it: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertCoachCancellationPolicySchema = coachCancellationPolicySchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateCoachCancellationPolicySchema = insertCoachCancellationPolicySchema.partial();
+
+export type CoachCancellationPolicy = z.infer<typeof coachCancellationPolicySchema>;
+export type InsertCoachCancellationPolicy = z.infer<typeof insertCoachCancellationPolicySchema>;
+export type UpdateCoachCancellationPolicy = z.infer<typeof updateCoachCancellationPolicySchema>;
+
+// Cancellation status check result
+export const cancellationStatusSchema = z.object({
+  isLate: z.boolean(),
+  hoursUntilBooking: z.number(),
+  willChargeSession: z.boolean(),
+  policyHours: z.number().int(),
+});
+export type CancellationStatus = z.infer<typeof cancellationStatusSchema>;
+
+// =====================================================
+// Booking Waitlist Schemas
+// =====================================================
+
+export const bookingWaitlistStatusSchema = z.enum(['active', 'notified', 'booked', 'expired', 'cancelled']);
+export type BookingWaitlistStatus = z.infer<typeof bookingWaitlistStatusSchema>;
+
+export const bookingWaitlistEntrySchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  preferred_days: z.array(z.number().int().min(0).max(6)).default([]),
+  preferred_time_start: z.string().nullable(), // TIME format HH:MM:SS
+  preferred_time_end: z.string().nullable(), // TIME format HH:MM:SS
+  urgency_level: z.number().int().min(0).max(100).default(50),
+  notes: z.string().nullable(),
+  package_id: z.string().uuid().nullable(),
+  ai_priority_score: z.number().int().min(0).max(100).default(50),
+  ai_score_reason: z.string().nullable(),
+  status: bookingWaitlistStatusSchema.default('active'),
+  notified_at: z.string().datetime().nullable(),
+  response_deadline: z.string().datetime().nullable(),
+  responded_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime().nullable(),
+  updated_at: z.string().datetime().nullable(),
+});
+
+export const insertBookingWaitlistEntrySchema = bookingWaitlistEntrySchema.omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+  ai_priority_score: true,
+  ai_score_reason: true,
+  notified_at: true,
+  response_deadline: true,
+  responded_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
+});
+
+export const updateBookingWaitlistEntrySchema = insertBookingWaitlistEntrySchema.partial();
+
+export type BookingWaitlistEntry = z.infer<typeof bookingWaitlistEntrySchema>;
+export type InsertBookingWaitlistEntry = z.infer<typeof insertBookingWaitlistEntrySchema>;
+export type UpdateBookingWaitlistEntry = z.infer<typeof updateBookingWaitlistEntrySchema>;
+
+// Waitlist candidate (returned from find_booking_waitlist_candidates)
+export const waitlistCandidateSchema = z.object({
+  id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  client_name: z.string(),
+  preferred_days: z.array(z.number().int()).nullable(),
+  preferred_time_start: z.string().nullable(),
+  preferred_time_end: z.string().nullable(),
+  urgency_level: z.number().int(),
+  ai_priority_score: z.number().int(),
+  has_active_package: z.boolean(),
+  days_waiting: z.number().int(),
+});
+export type WaitlistCandidate = z.infer<typeof waitlistCandidateSchema>;
+
+// =====================================================
+// No-Show Alert Schemas
+// =====================================================
+
+export const clientNoShowAlertSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  no_show_count: z.number().int().min(0),
+  session_count: z.number().int().min(1),
+  no_show_rate: z.number().min(0).max(100),
+  acknowledged_at: z.string().datetime().nullable(),
+  coach_notes: z.string().nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertClientNoShowAlertSchema = clientNoShowAlertSchema.omit({
+  id: true,
+  created_at: true,
+  acknowledged_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+});
+
+export const updateClientNoShowAlertSchema = z.object({
+  acknowledged_at: z.string().datetime().optional(),
+  coach_notes: z.string().optional(),
+});
+
+export type ClientNoShowAlert = z.infer<typeof clientNoShowAlertSchema>;
+export type InsertClientNoShowAlert = z.infer<typeof insertClientNoShowAlertSchema>;
+export type UpdateClientNoShowAlert = z.infer<typeof updateClientNoShowAlertSchema>;
+
+// No-show stats (returned from get_client_no_show_stats)
+export const noShowStatsSchema = z.object({
+  no_show_count: z.number().int(),
+  session_count: z.number().int(),
+  no_show_rate: z.number(),
+  exceeds_threshold: z.boolean(),
+});
+export type NoShowStats = z.infer<typeof noShowStatsSchema>;
+
+// Pending alert with client name (for UI)
+export const pendingNoShowAlertSchema = z.object({
+  alert_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  client_name: z.string(),
+  no_show_count: z.number().int(),
+  session_count: z.number().int(),
+  no_show_rate: z.number(),
+  alert_created_at: z.string().datetime(),
+});
+export type PendingNoShowAlert = z.infer<typeof pendingNoShowAlertSchema>;
+
+// =====================================================
+// Package Upgrade Suggestion Schemas
+// =====================================================
+
+export const packageUpgradeSuggestionStatusSchema = z.enum(['pending', 'sent', 'accepted', 'dismissed']);
+export type PackageUpgradeSuggestionStatus = z.infer<typeof packageUpgradeSuggestionStatusSchema>;
+
+export const packageUpgradeSuggestionReasonSchema = z.enum(['fast_usage', 'frequent_rebuy', 'high_attendance']);
+export type PackageUpgradeSuggestionReason = z.infer<typeof packageUpgradeSuggestionReasonSchema>;
+
+export const packageUpgradeSuggestionSchema = z.object({
+  id: z.string().uuid(),
+  coach_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  package_id: z.string().uuid(),
+  reason: packageUpgradeSuggestionReasonSchema,
+  suggested_sessions: z.number().int().min(1),
+  current_sessions: z.number().int().min(1),
+  days_to_complete: z.number().int().min(1),
+  status: packageUpgradeSuggestionStatusSchema.default('pending'),
+  sent_at: z.string().datetime().nullable(),
+  responded_at: z.string().datetime().nullable(),
+  created_at: z.string().datetime().nullable(),
+});
+
+export const insertPackageUpgradeSuggestionSchema = packageUpgradeSuggestionSchema.omit({
+  id: true,
+  created_at: true,
+  sent_at: true,
+  responded_at: true
+}).extend({
+  id: z.string().uuid().optional(),
+  created_at: z.string().datetime().optional(),
+});
+
+export const updatePackageUpgradeSuggestionSchema = z.object({
+  status: packageUpgradeSuggestionStatusSchema.optional(),
+  sent_at: z.string().datetime().optional(),
+  responded_at: z.string().datetime().optional(),
+});
+
+export type PackageUpgradeSuggestion = z.infer<typeof packageUpgradeSuggestionSchema>;
+export type InsertPackageUpgradeSuggestion = z.infer<typeof insertPackageUpgradeSuggestionSchema>;
+export type UpdatePackageUpgradeSuggestion = z.infer<typeof updatePackageUpgradeSuggestionSchema>;
+
+// =====================================================
+// Package Helper Types (for UI)
+// =====================================================
+
+// Expiring package (returned from get_expiring_packages)
+export const expiringPackageSchema = z.object({
+  package_id: z.string().uuid(),
+  client_id: z.string().uuid(),
+  client_name: z.string(),
+  package_name: z.string(),
+  end_date: z.string(), // DATE format
+  days_until_expiry: z.number().int(),
+  sessions_remaining: z.number().int(),
+  is_shared: z.boolean(),
+});
+export type ExpiringPackage = z.infer<typeof expiringPackageSchema>;
+
+// Upgrade suggestion with details (for dashboard UI)
+export const upgradeSuggestionWithDetailsSchema = packageUpgradeSuggestionSchema.extend({
+  client_name: z.string(),
+  package_name: z.string(),
+});
+export type UpgradeSuggestionWithDetails = z.infer<typeof upgradeSuggestionWithDetailsSchema>;
+
+// Shared package usage breakdown
+export const sharedPackageUsageSchema = z.object({
+  client_id: z.string().uuid(),
+  client_name: z.string(),
+  sessions_used: z.number().int(),
+  percentage: z.number(),
+});
+export type SharedPackageUsage = z.infer<typeof sharedPackageUsageSchema>;

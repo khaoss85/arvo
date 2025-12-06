@@ -51,38 +51,38 @@ export type Database = {
       }
       booking_notifications: {
         Row: {
-          booking_id: string
+          booking_id: string | null
           channel: string
           created_at: string | null
           id: string
           metadata: Json | null
           notification_type: string
           recipient_id: string
-          scheduled_for: string
+          scheduled_for: string | null
           sent_at: string | null
           status: string | null
         }
         Insert: {
-          booking_id: string
+          booking_id?: string | null
           channel: string
           created_at?: string | null
           id?: string
           metadata?: Json | null
           notification_type: string
           recipient_id: string
-          scheduled_for: string
+          scheduled_for?: string | null
           sent_at?: string | null
           status?: string | null
         }
         Update: {
-          booking_id?: string
+          booking_id?: string | null
           channel?: string
           created_at?: string | null
           id?: string
           metadata?: Json | null
           notification_type?: string
           recipient_id?: string
-          scheduled_for?: string
+          scheduled_for?: string | null
           sent_at?: string | null
           status?: string | null
         }
@@ -103,9 +103,12 @@ export type Database = {
           created_at: string | null
           end_date: string | null
           id: string
+          is_shared: boolean | null
+          max_shared_users: number | null
           name: string
           sessions_per_week: number | null
           sessions_used: number | null
+          shared_with_client_ids: string[] | null
           start_date: string
           status: string | null
           total_sessions: number
@@ -117,9 +120,12 @@ export type Database = {
           created_at?: string | null
           end_date?: string | null
           id?: string
+          is_shared?: boolean | null
+          max_shared_users?: number | null
           name: string
           sessions_per_week?: number | null
           sessions_used?: number | null
+          shared_with_client_ids?: string[] | null
           start_date: string
           status?: string | null
           total_sessions: number
@@ -131,15 +137,86 @@ export type Database = {
           created_at?: string | null
           end_date?: string | null
           id?: string
+          is_shared?: boolean | null
+          max_shared_users?: number | null
           name?: string
           sessions_per_week?: number | null
           sessions_used?: number | null
+          shared_with_client_ids?: string[] | null
           start_date?: string
           status?: string | null
           total_sessions?: number
           updated_at?: string | null
         }
         Relationships: []
+      }
+      booking_waitlist_entries: {
+        Row: {
+          ai_priority_score: number | null
+          ai_score_reason: string | null
+          client_id: string
+          coach_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          notified_at: string | null
+          package_id: string | null
+          preferred_days: number[]
+          preferred_time_end: string | null
+          preferred_time_start: string | null
+          responded_at: string | null
+          response_deadline: string | null
+          status: string
+          updated_at: string | null
+          urgency_level: number | null
+        }
+        Insert: {
+          ai_priority_score?: number | null
+          ai_score_reason?: string | null
+          client_id: string
+          coach_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          package_id?: string | null
+          preferred_days?: number[]
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          responded_at?: string | null
+          response_deadline?: string | null
+          status?: string
+          updated_at?: string | null
+          urgency_level?: number | null
+        }
+        Update: {
+          ai_priority_score?: number | null
+          ai_score_reason?: string | null
+          client_id?: string
+          coach_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          package_id?: string | null
+          preferred_days?: number[]
+          preferred_time_end?: string | null
+          preferred_time_start?: string | null
+          responded_at?: string | null
+          response_deadline?: string | null
+          status?: string
+          updated_at?: string | null
+          urgency_level?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_waitlist_entries_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "booking_packages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bookings: {
         Row: {
@@ -156,11 +233,16 @@ export type Database = {
           duration_minutes: number | null
           end_time: string
           id: string
+          location_type: Database["public"]["Enums"]["session_location_type"]
+          meeting_url: string | null
           package_id: string | null
           scheduled_date: string
+          session_charged_on_cancel: boolean | null
+          session_used_by_client_id: string | null
           start_time: string
           status: string
           updated_at: string | null
+          was_late_cancellation: boolean | null
         }
         Insert: {
           ai_scheduled?: boolean | null
@@ -176,11 +258,16 @@ export type Database = {
           duration_minutes?: number | null
           end_time: string
           id?: string
+          location_type?: Database["public"]["Enums"]["session_location_type"]
+          meeting_url?: string | null
           package_id?: string | null
           scheduled_date: string
+          session_charged_on_cancel?: boolean | null
+          session_used_by_client_id?: string | null
           start_time: string
           status?: string
           updated_at?: string | null
+          was_late_cancellation?: boolean | null
         }
         Update: {
           ai_scheduled?: boolean | null
@@ -196,11 +283,16 @@ export type Database = {
           duration_minutes?: number | null
           end_time?: string
           id?: string
+          location_type?: Database["public"]["Enums"]["session_location_type"]
+          meeting_url?: string | null
           package_id?: string | null
           scheduled_date?: string
+          session_charged_on_cancel?: boolean | null
+          session_used_by_client_id?: string | null
           start_time?: string
           status?: string
           updated_at?: string | null
+          was_late_cancellation?: boolean | null
         }
         Relationships: [
           {
@@ -208,6 +300,74 @@ export type Database = {
             columns: ["package_id"]
             isOneToOne: false
             referencedRelation: "booking_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_optimization_suggestions: {
+        Row: {
+          benefit_score: number | null
+          client_id: string
+          client_preference_score: number | null
+          coach_id: string
+          created_at: string | null
+          expires_at: string
+          gap_details: Json
+          id: string
+          proposed_date: string
+          proposed_end_time: string
+          proposed_start_time: string
+          reason_detailed: string | null
+          reason_short: string
+          reviewed_at: string | null
+          source_booking_id: string
+          status: string
+          suggestion_type: string
+        }
+        Insert: {
+          benefit_score?: number | null
+          client_id: string
+          client_preference_score?: number | null
+          coach_id: string
+          created_at?: string | null
+          expires_at: string
+          gap_details?: Json
+          id?: string
+          proposed_date: string
+          proposed_end_time: string
+          proposed_start_time: string
+          reason_detailed?: string | null
+          reason_short: string
+          reviewed_at?: string | null
+          source_booking_id: string
+          status?: string
+          suggestion_type: string
+        }
+        Update: {
+          benefit_score?: number | null
+          client_id?: string
+          client_preference_score?: number | null
+          coach_id?: string
+          created_at?: string | null
+          expires_at?: string
+          gap_details?: Json
+          id?: string
+          proposed_date?: string
+          proposed_end_time?: string
+          proposed_start_time?: string
+          reason_detailed?: string | null
+          reason_short?: string
+          reviewed_at?: string | null
+          source_booking_id?: string
+          status?: string
+          suggestion_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_optimization_suggestions_source_booking_id_fkey"
+            columns: ["source_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
         ]
@@ -257,6 +417,42 @@ export type Database = {
         }
         Relationships: []
       }
+      client_no_show_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          client_id: string
+          coach_id: string
+          coach_notes: string | null
+          created_at: string | null
+          id: string
+          no_show_count: number
+          no_show_rate: number
+          session_count: number
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          client_id: string
+          coach_id: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          no_show_count: number
+          no_show_rate: number
+          session_count: number
+        }
+        Update: {
+          acknowledged_at?: string | null
+          client_id?: string
+          coach_id?: string
+          coach_notes?: string | null
+          created_at?: string | null
+          id?: string
+          no_show_count?: number
+          no_show_rate?: number
+          session_count?: number
+        }
+        Relationships: []
+      }
       coach_availability: {
         Row: {
           coach_id: string
@@ -265,6 +461,7 @@ export type Database = {
           end_time: string
           id: string
           is_available: boolean | null
+          location_type: Database["public"]["Enums"]["session_location_type"]
           start_time: string
           updated_at: string | null
         }
@@ -275,6 +472,7 @@ export type Database = {
           end_time: string
           id?: string
           is_available?: boolean | null
+          location_type?: Database["public"]["Enums"]["session_location_type"]
           start_time: string
           updated_at?: string | null
         }
@@ -285,7 +483,86 @@ export type Database = {
           end_time?: string
           id?: string
           is_available?: boolean | null
+          location_type?: Database["public"]["Enums"]["session_location_type"]
           start_time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      coach_blocks: {
+        Row: {
+          block_type: string
+          coach_id: string
+          created_at: string | null
+          custom_reason: string | null
+          end_date: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_date: string
+          start_time: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          block_type: string
+          coach_id: string
+          created_at?: string | null
+          custom_reason?: string | null
+          end_date: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_date: string
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          block_type?: string
+          coach_id?: string
+          created_at?: string | null
+          custom_reason?: string | null
+          end_date?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_date?: string
+          start_time?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      coach_cancellation_policies: {
+        Row: {
+          coach_id: string
+          created_at: string | null
+          free_cancellation_hours: number
+          id: string
+          late_cancel_charges_session: boolean
+          late_cancel_refund_percentage: number | null
+          policy_summary_en: string | null
+          policy_summary_it: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string | null
+          free_cancellation_hours?: number
+          id?: string
+          late_cancel_charges_session?: boolean
+          late_cancel_refund_percentage?: number | null
+          policy_summary_en?: string | null
+          policy_summary_it?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string | null
+          free_cancellation_hours?: number
+          id?: string
+          late_cancel_charges_session?: boolean
+          late_cancel_refund_percentage?: number | null
+          policy_summary_en?: string | null
+          policy_summary_it?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -295,6 +572,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_shared: boolean | null
           relationship_id: string
           updated_at: string | null
         }
@@ -302,6 +580,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_shared?: boolean | null
           relationship_id: string
           updated_at?: string | null
         }
@@ -309,6 +588,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_shared?: boolean | null
           relationship_id?: string
           updated_at?: string | null
         }
@@ -1036,6 +1316,59 @@ export type Database = {
         }
         Relationships: []
       }
+      package_upgrade_suggestions: {
+        Row: {
+          client_id: string
+          coach_id: string
+          created_at: string | null
+          current_sessions: number
+          days_to_complete: number
+          id: string
+          package_id: string
+          reason: string
+          responded_at: string | null
+          sent_at: string | null
+          status: string
+          suggested_sessions: number
+        }
+        Insert: {
+          client_id: string
+          coach_id: string
+          created_at?: string | null
+          current_sessions: number
+          days_to_complete: number
+          id?: string
+          package_id: string
+          reason: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: string
+          suggested_sessions: number
+        }
+        Update: {
+          client_id?: string
+          coach_id?: string
+          created_at?: string | null
+          current_sessions?: number
+          days_to_complete?: number
+          id?: string
+          package_id?: string
+          reason?: string
+          responded_at?: string | null
+          sent_at?: string | null
+          status?: string
+          suggested_sessions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_upgrade_suggestions_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: true
+            referencedRelation: "booking_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       progress_checks: {
         Row: {
           created_at: string
@@ -1332,11 +1665,14 @@ export type Database = {
           active: boolean | null
           ai_response_id: string | null
           approach_id: string | null
+          archived_at: string | null
+          archived_reason: string | null
           created_at: string | null
           cycle_days: number
           frequency_map: Json
           id: string
           sessions: Json
+          source: string | null
           specialization_frequency: number | null
           specialization_muscle: string | null
           specialization_volume_multiplier: number | null
@@ -1349,11 +1685,14 @@ export type Database = {
           active?: boolean | null
           ai_response_id?: string | null
           approach_id?: string | null
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string | null
           cycle_days: number
           frequency_map: Json
           id?: string
           sessions: Json
+          source?: string | null
           specialization_frequency?: number | null
           specialization_muscle?: string | null
           specialization_volume_multiplier?: number | null
@@ -1366,11 +1705,14 @@ export type Database = {
           active?: boolean | null
           ai_response_id?: string | null
           approach_id?: string | null
+          archived_at?: string | null
+          archived_reason?: string | null
           created_at?: string | null
           cycle_days?: number
           frequency_map?: Json
           id?: string
           sessions?: Json
+          source?: string | null
           specialization_frequency?: number | null
           specialization_muscle?: string | null
           specialization_volume_multiplier?: number | null
@@ -2255,14 +2597,39 @@ export type Database = {
         Args: { p_boost_amount?: number; p_memory_id: string }
         Returns: undefined
       }
+      calculate_booking_waitlist_priority: {
+        Args: {
+          p_entry_id: string
+          p_slot_date: string
+          p_slot_start_time: string
+        }
+        Returns: number
+      }
       calculate_mesocycle_week: {
         Args: { check_date?: string; start_date: string }
         Returns: number
       }
       calculate_queue_position: { Args: { entry_id: string }; Returns: number }
+      can_client_use_package: {
+        Args: { p_client_id: string; p_package_id: string }
+        Returns: boolean
+      }
+      check_cancellation_status: {
+        Args: { p_booking_id: string }
+        Returns: {
+          hours_until_booking: number
+          is_late: boolean
+          policy_hours: number
+          will_charge_session: boolean
+        }[]
+      }
       check_email_already_sent: {
         Args: { p_event_type: string; p_hours_ago?: number; p_user_id: string }
         Returns: boolean
+      }
+      check_no_show_threshold: {
+        Args: { p_client_id: string; p_coach_id: string }
+        Returns: string
       }
       cleanup_expired_share_links: { Args: never; Returns: undefined }
       cleanup_old_generations: { Args: never; Returns: undefined }
@@ -2292,6 +2659,26 @@ export type Database = {
           p_primary_color?: string
         }
         Returns: string
+      }
+      find_booking_waitlist_candidates: {
+        Args: {
+          p_coach_id: string
+          p_date: string
+          p_end_time: string
+          p_start_time: string
+        }
+        Returns: {
+          ai_priority_score: number
+          client_id: string
+          client_name: string
+          days_waiting: number
+          has_active_package: boolean
+          id: string
+          preferred_days: number[]
+          preferred_time_end: string
+          preferred_time_start: string
+          urgency_level: number
+        }[]
       }
       generate_coach_invite_code: {
         Args: { coach_name: string }
@@ -2328,6 +2715,37 @@ export type Database = {
           title: string
         }[]
       }
+      get_block_conflicts: {
+        Args: {
+          p_coach_id: string
+          p_end_date: string
+          p_end_time?: string
+          p_start_date: string
+          p_start_time?: string
+        }
+        Returns: {
+          booking_id: string
+          client_id: string
+          client_name: string
+          end_time: string
+          scheduled_date: string
+          start_time: string
+          status: string
+        }[]
+      }
+      get_client_no_show_stats: {
+        Args: {
+          p_client_id: string
+          p_coach_id: string
+          p_sessions_to_analyze?: number
+        }
+        Returns: {
+          exceeds_threshold: boolean
+          no_show_count: number
+          no_show_rate: number
+          session_count: number
+        }[]
+      }
       get_client_upcoming_bookings: {
         Args: { p_client_id: string; p_limit?: number }
         Returns: {
@@ -2356,6 +2774,19 @@ export type Database = {
           scheduled_date: string
           start_time: string
           status: string
+        }[]
+      }
+      get_expiring_packages: {
+        Args: { p_coach_id: string; p_within_days?: number }
+        Returns: {
+          client_id: string
+          client_name: string
+          days_until_expiry: number
+          end_date: string
+          is_shared: boolean
+          package_id: string
+          package_name: string
+          sessions_remaining: number
         }[]
       }
       get_gym_branding_by_slug: {
@@ -2387,6 +2818,18 @@ export type Database = {
           split_plan_id: string
         }[]
       }
+      get_pending_no_show_alerts: {
+        Args: { p_coach_id: string }
+        Returns: {
+          alert_created_at: string
+          alert_id: string
+          client_id: string
+          client_name: string
+          no_show_count: number
+          no_show_rate: number
+          session_count: number
+        }[]
+      }
       get_recent_split_modifications: {
         Args: { p_limit?: number; p_user_id: string }
         Returns: {
@@ -2398,6 +2841,15 @@ export type Database = {
           split_plan_id: string
           user_override: boolean
           user_reason: string
+        }[]
+      }
+      get_shared_package_usage: {
+        Args: { p_package_id: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          percentage: number
+          sessions_used: number
         }[]
       }
       get_user_gym_context: {
@@ -2497,6 +2949,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_waitlist_for_cancelled_slot: {
+        Args: { p_booking_id: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          has_active_package: boolean
+          priority_score: number
+          waitlist_id: string
+        }[]
+      }
       gym_can_add_member: { Args: { p_gym_id: string }; Returns: boolean }
       gym_can_add_staff: { Args: { p_gym_id: string }; Returns: boolean }
       increment_share_view_count: {
@@ -2510,6 +2972,15 @@ export type Database = {
       increment_template_usage: {
         Args: { template_id: string }
         Returns: undefined
+      }
+      is_coach_blocked: {
+        Args: {
+          p_coach_id: string
+          p_date: string
+          p_end_time?: string
+          p_start_time?: string
+        }
+        Returns: boolean
       }
       is_current_user_admin: { Args: never; Returns: boolean }
       is_gym_member: {
@@ -2541,9 +3012,23 @@ export type Database = {
           p_coach_id: string
           p_date: string
           p_end_time: string
+          p_location_type?: Database["public"]["Enums"]["session_location_type"]
           p_start_time: string
         }
         Returns: boolean
+      }
+      process_booking_cancellation: {
+        Args: {
+          p_booking_id: string
+          p_cancelled_by?: string
+          p_reason?: string
+        }
+        Returns: {
+          booking_id: string
+          hours_before: number
+          session_charged: boolean
+          was_late: boolean
+        }[]
       }
       refresh_all_queue_positions: { Args: never; Returns: undefined }
       register_gym_member_by_code: {
@@ -2553,6 +3038,15 @@ export type Database = {
       register_gym_member_by_slug: {
         Args: { p_slug: string; p_user_id: string }
         Returns: string
+      }
+      should_suggest_upgrade: {
+        Args: { p_package_id: string }
+        Returns: {
+          days_to_complete: number
+          reason: string
+          should_suggest: boolean
+          suggested_sessions: number
+        }[]
       }
       update_insight_relevance_scores: { Args: never; Returns: undefined }
     }
@@ -2573,6 +3067,7 @@ export type Database = {
         | "other"
       email_frequency: "immediate" | "daily_digest" | "weekly_digest" | "none"
       generation_status: "pending" | "in_progress" | "completed" | "failed"
+      session_location_type: "in_person" | "online"
       split_type:
         | "push_pull_legs"
         | "upper_lower"
@@ -2738,6 +3233,7 @@ export const Constants = {
       ],
       email_frequency: ["immediate", "daily_digest", "weekly_digest", "none"],
       generation_status: ["pending", "in_progress", "completed", "failed"],
+      session_location_type: ["in_person", "online"],
       split_type: [
         "push_pull_legs",
         "upper_lower",

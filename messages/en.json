@@ -6706,7 +6706,9 @@
       "noSlots": "No available slots",
       "tryNextWeek": "Try checking next week",
       "confirm": "Confirm",
-      "locale": "en"
+      "locale": "en",
+      "joinWaitlist": "Join Waitlist",
+      "cancellationPolicy": "Free cancellation up to {hours}h before the session"
     }
   },
   "coach": {
@@ -6748,6 +6750,8 @@
       "occurrences": "times",
       "previewSlots": "Preview slots",
       "partOfRecurringSeries": "Part of a recurring series",
+      "lateCancellation": "Late Cancellation",
+      "lateCancelWarning": "This session is in {hours}h. The client may be charged per the cancellation policy.",
       "cancelThisOnly": "Cancel this only",
       "cancelThisAndFollowing": "Cancel this and following",
       "cancelEntireSeries": "Cancel entire series",
@@ -6868,7 +6872,18 @@
         "noActivePackage": "No package",
         "empty": "No one on waitlist",
         "selectCandidate": "Select candidate",
-        "offerSlot": "Offer slot"
+        "offerSlot": "Offer slot",
+        "sortByPriority": "Sort by priority",
+        "sortByWaiting": "Sort by waiting time",
+        "hasPackage": "Has package",
+        "priority": "Priority",
+        "remove": "Remove",
+        "offerSent": "Offer sent",
+        "candidates": "Candidates",
+        "selectSlot": "Select slot",
+        "slotDetails": "Slot details",
+        "matchScore": "Match score",
+        "expiresIn": "Expires in {hours}h"
       }
     },
     "packages": {
@@ -7368,6 +7383,86 @@
       "showStructure": "Show structure",
       "hideStructure": "Hide structure",
       "dayPrefix": "D"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all read",
+    "close": "Close",
+    "yourCoach": "Your Coach",
+    "types": {
+      "notification": "Notification",
+      "bookingConfirmed": "Booking Confirmed",
+      "reminder24h": "Reminder: Session Tomorrow",
+      "reminder1h": "Reminder: Session in 1 hour",
+      "bookingCancelled": "Booking Cancelled",
+      "coachFeedback": "Coach Feedback",
+      "waitlistSlotAvailable": "Slot Available",
+      "noShowAlert": "No-Show Alert",
+      "lateCancellation": "Late Cancellation",
+      "waitlistOfferExpired": "Offer Expired",
+      "packageLow": "Low Sessions",
+      "packageExpired": "Package Expired",
+      "bookingRescheduled": "Session Rescheduled"
+    },
+    "bookingDetails": "Session with {coachName} on {date} at {time}",
+    "feedbackDetails": "{coachName} left feedback on {workoutName}",
+    "waitlistSlotDetails": "A slot opened up on {date} at {time}",
+    "waitlistSlotGeneric": "A slot is now available!",
+    "noShowAlertDetails": "{clientName} missed {count}/{total} sessions",
+    "noShowAlertGeneric": "A client has high no-show rate",
+    "lateCancellationDetails": "{clientName} cancelled with only {hours}h notice",
+    "lateCancellationGeneric": "A booking was cancelled late",
+    "waitlistOfferExpiredDetails": "The waitlist slot offer has expired",
+    "packageLowDetails": "Only {sessions} sessions remaining in {package}",
+    "packageExpiredDetails": "Your {package} package has expired",
+    "rescheduledDetails": "Session rescheduled to {date} at {time}",
+    "rescheduledGeneric": "Your session has been rescheduled"
+  },
+  "packages": {
+    "expiring": {
+      "title": "Expiring Packages",
+      "expiresIn": "Expires in {days} days",
+      "expiresToday": "Expires today",
+      "sessionsRemaining": "{count} sessions remaining",
+      "noExpiring": "No packages expiring soon",
+      "contact": "Contact",
+      "extend": "Extend",
+      "expiresGroup": {
+        "today": "Expires Today",
+        "threeDays": "Expires in 3 Days",
+        "sevenDays": "Expires in 7 Days"
+      }
+    },
+    "upgrade": {
+      "title": "Upgrade Suggestions",
+      "completedFast": "Completed {sessions} sessions in {days} days!",
+      "suggest": "Suggest {sessions}-session package",
+      "suggestedSessions": "suggested sessions",
+      "dismiss": "Dismiss",
+      "sendMessage": "Send Message",
+      "noPending": "No upgrade suggestions",
+      "sent": "Sent"
+    },
+    "shared": {
+      "title": "Shared Package",
+      "description": "Allow multiple people to share this package",
+      "isShared": "This is a shared package",
+      "sharedWith": "Shared with",
+      "addPerson": "Add person",
+      "removePerson": "Remove",
+      "maxUsers": "Maximum users",
+      "people": "people",
+      "usageBreakdown": "Usage breakdown",
+      "selectClient": "Select a client",
+      "noClientsAvailable": "No clients available",
+      "slotsRemaining": "{current} of {max} slots used",
+      "primaryOwner": "Primary owner",
+      "owner": "Owner",
+      "sessions": "sessions",
+      "sessionsRemaining": "Sessions remaining",
+      "noUsageData": "No usage data yet"
     }
   }
 }

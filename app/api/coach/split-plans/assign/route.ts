@@ -144,15 +144,19 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // 1. Deactivate any existing split plans for the client
-    const { error: deactivateError } = await supabase
+    // 1. Archive any existing split plans for the client (preserve for restoration)
+    const { error: archiveError } = await supabase
       .from("split_plans")
-      .update({ active: false })
+      .update({
+        active: false,
+        archived_at: new Date().toISOString(),
+        archived_reason: "coach_replaced",
+      })
       .eq("user_id", clientId)
       .eq("active", true);
 
-    if (deactivateError) {
-      console.error("[AssignSplitPlan] Error deactivating old plans:", deactivateError);
+    if (archiveError) {
+      console.error("[AssignSplitPlan] Error archiving old plans:", archiveError);
     }
 
     // 2. Create new split plan for the client
@@ -170,14 +174,20 @@ export async function POST(request: NextRequest) {
       supabase
     );
 
+    // 2b. Mark the new split plan as coach-assigned
+    await supabase
+      .from("split_plans")
+      .update({ source: "coach" })
+      .eq("id", splitPlan.id);
+
     // 3. Update client's profile with the new split plan
+    // NOTE: We do NOT reset cycles_completed - progress is preserved
     const { error: profileError } = await supabase
       .from("user_profiles")
       .update({
         active_split_plan_id: splitPlan.id,
         current_cycle_day: 1,
         current_cycle_start_date: new Date().toISOString(),
-        cycles_completed: 0,
         preferred_split: splitPlanData.split_type,
       })
       .eq("user_id", clientId);

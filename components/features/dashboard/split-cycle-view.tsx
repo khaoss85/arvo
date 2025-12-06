@@ -27,6 +27,7 @@ interface NextWorkoutData {
   cycleDay: number
   totalCycleDays: number
   splitType: string
+  splitSource?: 'self' | 'coach' // Who created this split
   sessions?: Array<{
     day: number
     name: string
@@ -156,7 +157,14 @@ export function SplitCycleView({ userId }: SplitCycleViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold mb-1">{t('activeSplitPlan')}</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-2xl font-bold">{t('activeSplitPlan')}</h2>
+            {data?.splitSource === 'coach' && (
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-400 text-orange-900">
+                {t('fromCoach')}
+              </span>
+            )}
+          </div>
           <p className="text-purple-100 dark:text-purple-200 text-sm">
             {data?.splitType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </p>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/utils/auth.server";
 import { WorkoutService } from "@/lib/services/workout.service";
 import { SetLogService } from "@/lib/services/set-log.service";
+import { CoachService } from "@/lib/services/coach.service";
 import { WorkoutRecap } from "@/components/features/simple/workout/workout-recap";
 import { markWorkoutCompletedAction } from "@/app/actions/workout-actions";
 
@@ -60,6 +61,9 @@ export default async function SimpleWorkoutRecapPage({
     }
   }
 
+  // Get coach feedback if this workout was assigned by a coach
+  const coachFeedback = await CoachService.getWorkoutCoachFeedbackServer(params.id);
+
   return (
     <WorkoutRecap
       workoutId={workout.id}
@@ -68,6 +72,7 @@ export default async function SimpleWorkoutRecapPage({
       skippedExerciseCount={skippedExerciseCount}
       totalSets={totalSets}
       totalVolume={Math.round(totalVolume)}
+      coachFeedback={coachFeedback}
     />
   );
 }

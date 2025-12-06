@@ -5,8 +5,54 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
+ * GET /api/client/leave-coach
+ * Check if user has an archived split plan that can be restored
+ */
+export async function GET() {
+  try {
+    const supabase = await getSupabaseServerClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check for archived split plans
+    const { data: archivedSplit } = await supabase
+      .from("split_plans")
+      .select("id, split_type, archived_at")
+      .eq("user_id", user.id)
+      .eq("archived_reason", "coach_replaced")
+      .order("archived_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    return NextResponse.json({
+      hasArchivedSplit: !!archivedSplit,
+      archivedSplit: archivedSplit
+        ? {
+            id: archivedSplit.id,
+            splitType: archivedSplit.split_type,
+            archivedAt: archivedSplit.archived_at,
+          }
+        : null,
+    });
+  } catch (error) {
+    console.error("[LeaveCoach GET] Error:", error);
+    return NextResponse.json({ hasArchivedSplit: false, archivedSplit: null });
+  }
+}
+
+/**
  * POST /api/client/leave-coach
  * Client disconnects from their current coach
+ *
+ * Body: { restorePreviousSplit?: boolean }
+ * - If true, restores the client's previous split plan (archived by coach)
+ * - If false/undefined, keeps current split plan (becomes client-owned)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -20,10 +66,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Parse request body for options
+    let restorePreviousSplit = false;
+    try {
+      const body = await request.json();
+      restorePreviousSplit = body.restorePreviousSplit === true;
+    } catch {
+      // No body or invalid JSON - use default (keep current)
+    }
+
     // Get current user profile to find coach_id
     const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
-      .select("coach_id")
+      .select("coach_id, active_split_plan_id")
       .eq("user_id", user.id)
       .single();
 
@@ -77,15 +132,73 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to terminate relationship: ${updateError.message}`);
     }
 
-    // Clear coach_id from user profile
-    await supabase
-      .from("user_profiles")
-      .update({ coach_id: null })
-      .eq("user_id", user.id);
+    // Handle split plan based on user choice
+    let restoredSplitId: string | null = null;
+
+    if (restorePreviousSplit) {
+      // Find the most recent archived split that was replaced by coach
+      const { data: archivedSplit } = await supabase
+        .from("split_plans")
+        .select("id, split_type")
+        .eq("user_id", user.id)
+        .eq("archived_reason", "coach_replaced")
+        .order("archived_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (archivedSplit) {
+        // Deactivate current split (coach's split)
+        if (profile.active_split_plan_id) {
+          await supabase
+            .from("split_plans")
+            .update({ active: false })
+            .eq("id", profile.active_split_plan_id);
+        }
+
+        // Restore the archived split
+        await supabase
+          .from("split_plans")
+          .update({
+            active: true,
+            archived_at: null,
+            archived_reason: null,
+          })
+          .eq("id", archivedSplit.id);
+
+        restoredSplitId = archivedSplit.id;
+
+        // Update profile with restored split
+        await supabase
+          .from("user_profiles")
+          .update({
+            coach_id: null,
+            active_split_plan_id: archivedSplit.id,
+            current_cycle_day: 1,
+            current_cycle_start_date: new Date().toISOString(),
+            preferred_split: archivedSplit.split_type,
+          })
+          .eq("user_id", user.id);
+      } else {
+        // No archived split to restore, just clear coach_id
+        await supabase
+          .from("user_profiles")
+          .update({ coach_id: null })
+          .eq("user_id", user.id);
+      }
+    } else {
+      // Keep current split (it becomes client-owned), just clear coach_id
+      await supabase
+        .from("user_profiles")
+        .update({ coach_id: null })
+        .eq("user_id", user.id);
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Successfully disconnected from coach",
+      message: restorePreviousSplit && restoredSplitId
+        ? "Disconnected and restored previous plan"
+        : "Successfully disconnected from coach",
+      restoredSplitId,
     });
   } catch (error) {
     console.error("[LeaveCoach] Error:", error);

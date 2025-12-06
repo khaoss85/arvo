@@ -26,6 +26,9 @@ export interface CachedExercise {
 
 export class MuscleWikiCacheService {
   private static readonly CACHE_TTL_DAYS = 30
+  // Temporarily disabled due to Supabase PostgREST schema cache issue (406 errors)
+  // Re-enable once the table is recognized by PostgREST
+  private static readonly DB_CACHE_ENABLED = false
 
   /**
    * Normalize exercise name for consistent lookups
@@ -52,6 +55,8 @@ export class MuscleWikiCacheService {
    * Get a single exercise from the database cache
    */
   static async getFromDatabase(exerciseName: string): Promise<CachedExercise | null> {
+    if (!this.DB_CACHE_ENABLED) return null
+
     try {
       const supabase = getSupabaseBrowserClient()
       const normalizedName = this.normalizeName(exerciseName)
@@ -62,6 +67,7 @@ export class MuscleWikiCacheService {
         .eq('name_normalized', normalizedName)
         .single()
 
+      // Silently handle errors (406, RLS issues, etc.) - will fall back to API
       if (error || !data) {
         return null
       }
@@ -76,8 +82,8 @@ export class MuscleWikiCacheService {
       this.incrementAccessCount(data.id).catch(() => {})
 
       return data as unknown as CachedExercise
-    } catch (error) {
-      console.error('[MuscleWikiCache] Error fetching from database:', error)
+    } catch {
+      // Silently fail - will fall back to API fetch
       return null
     }
   }
@@ -91,6 +97,7 @@ export class MuscleWikiCacheService {
   ): Promise<Map<string, CachedExercise>> {
     const result = new Map<string, CachedExercise>()
 
+    if (!this.DB_CACHE_ENABLED) return result
     if (exerciseNames.length === 0) return result
 
     try {
@@ -114,8 +121,8 @@ export class MuscleWikiCacheService {
       }
 
       return result
-    } catch (error) {
-      console.error('[MuscleWikiCache] Error fetching multiple from database:', error)
+    } catch {
+      // Silently fail - will fall back to API fetch
       return result
     }
   }
@@ -124,6 +131,8 @@ export class MuscleWikiCacheService {
    * Save an exercise to the database cache (upsert)
    */
   static async saveToDatabase(exercise: MuscleWikiExercise): Promise<void> {
+    if (!this.DB_CACHE_ENABLED) return
+
     try {
       const supabase = getSupabaseBrowserClient()
       const normalizedName = this.normalizeName(exercise.name)
@@ -149,13 +158,12 @@ export class MuscleWikiCacheService {
         ignoreDuplicates: false,
       })
 
-      if (error) {
-        console.error('[MuscleWikiCache] Error saving to database:', error)
-      } else {
+      if (!error) {
         console.log(`[MuscleWikiCache] Saved "${exercise.name}" to database cache`)
       }
-    } catch (error) {
-      console.error('[MuscleWikiCache] Error saving to database:', error)
+      // Silently fail on error - caching is optional
+    } catch {
+      // Silently fail - caching is optional
     }
   }
 
@@ -163,6 +171,7 @@ export class MuscleWikiCacheService {
    * Save multiple exercises to the database cache
    */
   static async saveMultipleToDatabase(exercises: MuscleWikiExercise[]): Promise<void> {
+    if (!this.DB_CACHE_ENABLED) return
     if (exercises.length === 0) return
 
     try {
@@ -189,13 +198,12 @@ export class MuscleWikiCacheService {
         ignoreDuplicates: false,
       })
 
-      if (error) {
-        console.error('[MuscleWikiCache] Error batch saving to database:', error)
-      } else {
+      if (!error) {
         console.log(`[MuscleWikiCache] Saved ${exercises.length} exercises to database cache`)
       }
-    } catch (error) {
-      console.error('[MuscleWikiCache] Error batch saving to database:', error)
+      // Silently fail on error - caching is optional
+    } catch {
+      // Silently fail - caching is optional
     }
   }
 
@@ -203,6 +211,8 @@ export class MuscleWikiCacheService {
    * Increment access count for analytics/popularity tracking
    */
   static async incrementAccessCount(id: string): Promise<void> {
+    if (!this.DB_CACHE_ENABLED) return
+
     try {
       const supabase = getSupabaseBrowserClient()
 
@@ -250,6 +260,10 @@ export class MuscleWikiCacheService {
     staleCount: number
     mostAccessed: { name: string; count: number }[]
   }> {
+    if (!this.DB_CACHE_ENABLED) {
+      return { totalCached: 0, staleCount: 0, mostAccessed: [] }
+    }
+
     try {
       const supabase = getSupabaseBrowserClient()
 

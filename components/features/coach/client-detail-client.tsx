@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { ProgressChecksGallery } from "@/components/features/progress-checks/progress-checks-gallery";
 import { ClientBookingsTab } from "@/components/features/coach/client-bookings-tab";
+import { NoShowAlertBadge } from "@/components/features/coach/booking/no-show-alert-badge";
 import type {
   UserProfile,
   CoachClientRelationship,
@@ -94,9 +95,17 @@ export function ClientDetailClient({
               <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                {clientProfile.first_name || "Client"}
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {clientProfile.first_name || "Client"}
+                </h1>
+                <NoShowAlertBadge
+                  coachId={coachId}
+                  clientId={clientId}
+                  clientName={clientProfile.first_name || undefined}
+                  size="md"
+                />
+              </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {t("memberSince")}{" "}
                 {new Date(relationship.created_at || "").toLocaleDateString()}

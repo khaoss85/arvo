@@ -34,6 +34,7 @@ export interface PreGeneratedWorkoutData {
   status: 'draft' | 'ready';
   exercises: any[]; // Exercise data from workout
   workoutName: string;
+  assignedByCoachId?: string | null; // If assigned by a coach
 }
 
 /**

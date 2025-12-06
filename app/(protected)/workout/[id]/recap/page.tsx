@@ -52,12 +52,16 @@ export default async function WorkoutRecapPage({ params }: { params: { id: strin
   // Using server-side method for SSR compatibility
   const modifications = await SetLogService.getWorkoutModificationsServer(params.id)
 
+  // Get coach feedback if this workout was assigned by a coach
+  const coachFeedback = await CoachService.getWorkoutCoachFeedbackServer(params.id)
+
   return (
     <WorkoutRecap
       workout={workout}
       totalVolume={totalVolume}
       userId={user.id}
       modifications={modifications}
+      coachFeedback={coachFeedback}
     />
   )
 }
