@@ -634,7 +634,10 @@ export const bookingNotificationTypeSchema = z.enum([
   'no_show_alert',
   'waitlist_slot_available',
   'waitlist_offer_expired',
-  'late_cancellation'
+  'late_cancellation',
+  // Package management notification types
+  'package_expiring_soon',
+  'package_upgrade_suggestion'
 ]);
 export type BookingNotificationType = z.infer<typeof bookingNotificationTypeSchema>;
 
@@ -817,7 +820,7 @@ export const updateBookingSchema = insertBookingSchema.partial();
 // Booking Notification Schema
 export const bookingNotificationSchema = z.object({
   id: z.string().uuid(),
-  booking_id: z.string().uuid(),
+  booking_id: z.string().uuid().nullable(),
   recipient_id: z.string().uuid(),
   notification_type: bookingNotificationTypeSchema,
   channel: notificationChannelSchema,
@@ -1139,11 +1142,11 @@ export const packageUpgradeSuggestionSchema = z.object({
 export const insertPackageUpgradeSuggestionSchema = packageUpgradeSuggestionSchema.omit({
   id: true,
   created_at: true,
-  sent_at: true,
-  responded_at: true
 }).extend({
   id: z.string().uuid().optional(),
   created_at: z.string().datetime().optional(),
+  sent_at: z.string().datetime().nullable().optional(),
+  responded_at: z.string().datetime().nullable().optional(),
 });
 
 export const updatePackageUpgradeSuggestionSchema = z.object({

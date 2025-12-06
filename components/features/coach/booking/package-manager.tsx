@@ -96,7 +96,10 @@ export function PackageManager({
         end_date: formData.endDate || null,
         status: 'active',
         ai_suggested_slots: null,
-        slots_confirmed: false
+        slots_confirmed: false,
+        is_shared: false,
+        max_shared_users: 1,
+        shared_with_client_ids: []
       }
 
       const result = await createPackageAction(pkg)
@@ -125,7 +128,10 @@ export function PackageManager({
         end_date: null,
         status: 'active',
         ai_suggested_slots: null,
-        slots_confirmed: false
+        slots_confirmed: false,
+        is_shared: pkg.is_shared ?? false,
+        max_shared_users: pkg.max_shared_users ?? 1,
+        shared_with_client_ids: pkg.shared_with_client_ids ?? []
       }
 
       // Mark old package as completed
@@ -191,7 +197,10 @@ export function PackageManager({
         end_date: formData.endDate || null,
         status: 'active',
         ai_suggested_slots: slots,
-        slots_confirmed: true
+        slots_confirmed: true,
+        is_shared: false,
+        max_shared_users: 1,
+        shared_with_client_ids: []
       }
 
       const createResult = await createPackageAction(pkg)

@@ -1305,7 +1305,6 @@ export function RefineWorkoutPage({
                     e.stopPropagation()
                     setAnimationModalOpen(index)
                   }}
-                  disabled={!exercise.hasAnimation}
                   className="text-xs gap-1.5 h-8"
                 >
                   <PlayCircle className="w-3.5 h-3.5" />

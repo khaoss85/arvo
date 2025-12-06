@@ -247,7 +247,7 @@ export class BookingService {
         .order('scheduled_date', { ascending: true })
 
       if (simpleError) throw new Error('Failed to fetch bookings')
-      return (simpleData || []) as Array<Booking & { client_name?: string; package_name?: string }>
+      return (simpleData || []) as unknown as Array<Booking & { client_name?: string; package_name?: string }>
     }
 
     // Transform data to include client_name
@@ -291,7 +291,7 @@ export class BookingService {
         .eq('client_id', clientId)
         .order('scheduled_date', { ascending: true })
 
-      return (simpleData || []) as Array<Booking & { coach_name?: string }>
+      return (simpleData || []) as unknown as Array<Booking & { coach_name?: string }>
     }
 
     return (data || []).map(booking => ({
@@ -387,7 +387,7 @@ export class BookingService {
       await this.usePackageSession(bookingWithDefaults.package_id)
     }
 
-    return data as Booking
+    return data as unknown as Booking
   }
 
   /**
@@ -441,7 +441,7 @@ export class BookingService {
       throw new Error('Failed to update booking')
     }
 
-    return data as Booking
+    return data as unknown as Booking
   }
 
   /**
@@ -475,7 +475,7 @@ export class BookingService {
       await this.decrementPackageSession(data.package_id)
     }
 
-    return data as Booking
+    return data as unknown as Booking
   }
 
   /**
@@ -500,7 +500,7 @@ export class BookingService {
       throw new Error('Failed to complete booking')
     }
 
-    return data as Booking
+    return data as unknown as Booking
   }
 
   /**
@@ -524,7 +524,7 @@ export class BookingService {
       throw new Error('Failed to mark as no-show')
     }
 
-    return data as Booking
+    return data as unknown as Booking
   }
 
   // =====================================================
@@ -598,7 +598,7 @@ export class BookingService {
       throw new Error('Failed to create package')
     }
 
-    return data as BookingPackage
+    return data as unknown as BookingPackage
   }
 
   /**
@@ -625,7 +625,7 @@ export class BookingService {
       throw new Error('Failed to update package')
     }
 
-    return data as BookingPackage
+    return data as unknown as BookingPackage
   }
 
   /**
@@ -1101,7 +1101,7 @@ export class BookingService {
       throw new Error('Failed to fetch series bookings')
     }
 
-    return (data || []) as Booking[]
+    return (data || []) as unknown as Booking[]
   }
 
   /**
@@ -1145,7 +1145,7 @@ export class BookingService {
       await this.decrementPackageSession(booking.package_id)
     }
 
-    return updated as Booking
+    return updated as unknown as Booking
   }
 
   /**
@@ -1276,7 +1276,7 @@ export class BookingService {
       throw new Error('Failed to update package slots')
     }
 
-    return data as BookingPackage
+    return data as unknown as BookingPackage
   }
 
   /**
@@ -1371,6 +1371,6 @@ export class BookingService {
       return null
     }
 
-    return data as BookingPackage
+    return data as unknown as BookingPackage
   }
 }

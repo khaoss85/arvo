@@ -101,28 +101,34 @@ const EXERCISE_ALIASES: Record<string, string[]> = {
 
 /**
  * Map internal muscle group keys to MuscleWiki API muscle names
- * Our keys: 'lats', 'upper_back', 'chest_upper', etc.
- * MuscleWiki uses: 'Lats', 'Upper Back', 'Chest', etc.
+ * Based on actual API muscle list from /muscles endpoint
+ * API muscles: Lats (138), Traps (mid-back) (30), Front Shoulders (184), etc.
  */
-const MUSCLE_KEY_TO_API: Record<string, string> = {
-  lats: 'Lats',
-  upper_back: 'Upper Back',
-  lower_back: 'Lower Back',
-  chest_upper: 'Chest',
-  chest_lower: 'Chest',
-  shoulders_front: 'Front Deltoid',
-  shoulders_side: 'Lateral Deltoid',
-  shoulders_rear: 'Rear Deltoid',
-  biceps: 'Biceps',
-  triceps: 'Triceps',
-  forearms: 'Forearms',
-  quads: 'Quads',
-  hamstrings: 'Hamstrings',
-  glutes: 'Glutes',
-  calves: 'Calves',
-  abs: 'Abdominals',
-  obliques: 'Obliques',
-  traps: 'Traps',
+const MUSCLE_KEY_TO_API: Record<string, string[]> = {
+  // Back muscles - try multiple options
+  lats: ['Lats'],
+  upper_back: ['Traps (mid-back)', 'Lats'],  // No "Upper Back" in API, use alternatives
+  lower_back: ['Lower back'],
+  // Chest
+  chest_upper: ['Chest'],
+  chest_lower: ['Chest'],
+  // Shoulders - API uses "Front Shoulders", "Rear Shoulders", "Lateral Deltoid"
+  shoulders_front: ['Front Shoulders', 'Anterior Deltoid'],
+  shoulders_side: ['Lateral Deltoid', 'Shoulders'],
+  shoulders_rear: ['Rear Shoulders', 'Posterior Deltoid'],
+  // Arms
+  biceps: ['Biceps'],
+  triceps: ['Triceps'],
+  forearms: ['Forearms'],
+  // Legs
+  quads: ['Quads'],
+  hamstrings: ['Hamstrings'],
+  glutes: ['Glutes'],
+  calves: ['Calves'],
+  // Core
+  abs: ['Abdominals'],
+  obliques: ['Obliques'],
+  traps: ['Traps', 'Upper Traps'],
 }
 
 export class MuscleWikiService {
@@ -245,7 +251,7 @@ export class MuscleWikiService {
       terms.push(exerciseName.replace(/-/g, ' '))
     }
 
-    return [...new Set(terms)] // Remove duplicates
+    return Array.from(new Set(terms)) // Remove duplicates
   }
 
   /**
@@ -340,54 +346,59 @@ export class MuscleWikiService {
       return null
     }
 
-    // Map internal muscle key to API muscle name
+    // Map internal muscle key to API muscle names (try multiple)
     const muscleKey = primary[0]
-    const apiMuscle = MUSCLE_KEY_TO_API[muscleKey]
-    if (!apiMuscle) {
+    const apiMuscles = MUSCLE_KEY_TO_API[muscleKey]
+    if (!apiMuscles || apiMuscles.length === 0) {
       console.log(`[MuscleWiki] Unknown muscle mapping for "${muscleKey}"`)
       return null
     }
 
-    console.log(`[MuscleWiki] Trying muscle-based search: "${exerciseName}" → muscle "${apiMuscle}"`)
+    // Try each muscle option
+    for (const apiMuscle of apiMuscles) {
+      console.log(`[MuscleWiki] Trying muscle-based search: "${exerciseName}" → muscle "${apiMuscle}"`)
 
-    try {
-      await this.waitForRateLimit()
+      try {
+        await this.waitForRateLimit()
 
-      // Use exercises endpoint with muscle filter
-      const searchUrl = `${this.API_BASE}/exercises?muscles=${encodeURIComponent(apiMuscle)}&limit=50`
-      const response = await fetch(searchUrl, { headers: this.getHeaders() })
+        // Use exercises endpoint with muscle filter
+        const searchUrl = `${this.API_BASE}/exercises?muscles=${encodeURIComponent(apiMuscle)}&limit=50`
+        const response = await fetch(searchUrl, { headers: this.getHeaders() })
 
-      if (!response.ok) {
-        console.error(`[MuscleWiki] Muscle search API error: ${response.status}`)
-        return null
+        if (!response.ok) {
+          console.error(`[MuscleWiki] Muscle search API error: ${response.status}`)
+          continue
+        }
+
+        const data: { results?: MuscleWikiExercise[] } = await response.json()
+        const exercises = data.results || (Array.isArray(data) ? data : [])
+
+        if (exercises.length === 0) {
+          console.log(`[MuscleWiki] No exercises found for muscle "${apiMuscle}"`)
+          continue
+        }
+
+        // Find best match among muscle-filtered results
+        const bestMatch = this.findBestMatchForMuscleSearch(exerciseName, exercises)
+        if (!bestMatch) {
+          console.log(`[MuscleWiki] No good match among ${exercises.length} "${apiMuscle}" exercises`)
+          continue
+        }
+
+        // Save to caches
+        MuscleWikiCacheService.saveToDatabase(bestMatch).catch(() => {})
+        this.memoryCache.exercises.set(normalizedName, bestMatch)
+        this.memoryCache.exercises.set(this.normalizeName(bestMatch.name), bestMatch)
+
+        console.log(`[MuscleWiki] Found "${bestMatch.name}" via muscle "${apiMuscle}" for "${exerciseName}"`)
+        return bestMatch
+      } catch (error) {
+        console.error(`[MuscleWiki] Muscle search failed for "${apiMuscle}":`, error)
+        continue
       }
-
-      const data: { results?: MuscleWikiExercise[] } = await response.json()
-      const exercises = data.results || (Array.isArray(data) ? data : [])
-
-      if (exercises.length === 0) {
-        console.log(`[MuscleWiki] No exercises found for muscle "${apiMuscle}"`)
-        return null
-      }
-
-      // Find best match among muscle-filtered results
-      const bestMatch = this.findBestMatchForMuscleSearch(exerciseName, exercises)
-      if (!bestMatch) {
-        console.log(`[MuscleWiki] No good match among ${exercises.length} "${apiMuscle}" exercises`)
-        return null
-      }
-
-      // Save to caches
-      MuscleWikiCacheService.saveToDatabase(bestMatch).catch(() => {})
-      this.memoryCache.exercises.set(normalizedName, bestMatch)
-      this.memoryCache.exercises.set(this.normalizeName(bestMatch.name), bestMatch)
-
-      console.log(`[MuscleWiki] Found "${bestMatch.name}" via muscle search for "${exerciseName}"`)
-      return bestMatch
-    } catch (error) {
-      console.error(`[MuscleWiki] Muscle search failed:`, error)
-      return null
     }
+
+    return null
   }
 
   /**
@@ -399,9 +410,25 @@ export class MuscleWikiService {
     results: MuscleWikiExercise[]
   ): MuscleWikiExercise | null {
     const normalizedQuery = this.normalizeName(query)
-    // Extract key words from query (remove common modifiers)
+
+    // Modifiers to ignore when matching
+    const modifiers = ['standing', 'seated', 'lying', 'incline', 'decline', 'flat',
+                       'medium', 'wide', 'close', 'narrow', 'grip', 'single', 'arm',
+                       'leg', 'one', 'two', 'bilateral', 'unilateral', 'machine',
+                       'cable', 'barbell', 'dumbbell', 'ez', 'bar', 'band', 'kettlebell']
+
+    // Core exercise types that are important to match
+    const coreTypes = ['pulldown', 'pullup', 'row', 'press', 'curl', 'extension',
+                       'raise', 'fly', 'push', 'pull', 'squat', 'lunge', 'deadlift',
+                       'crunch', 'plank', 'dip', 'shrug', 'thrust']
+
+    // Extract key words from query (remove modifiers)
     const queryWords = normalizedQuery.split(' ')
-      .filter(w => !['standing', 'seated', 'lying', 'incline', 'decline', 'flat', 'medium', 'wide', 'close', 'grip', 'single', 'arm', 'leg'].includes(w))
+      .filter(w => !modifiers.includes(w) && w.length > 2)
+
+    // Find core exercise type in query
+    const queryCoreType = normalizedQuery.split(' ')
+      .find(w => coreTypes.includes(w))
 
     // Priority 1: Exact match
     const exactMatch = results.find(r => this.normalizeName(r.name) === normalizedQuery)
@@ -410,24 +437,33 @@ export class MuscleWikiService {
     // Priority 2: Name contains all key words
     const allWordsMatch = results.find(r => {
       const resultName = this.normalizeName(r.name)
-      return queryWords.every(word => resultName.includes(word))
+      return queryWords.length > 0 && queryWords.every(word => resultName.includes(word))
     })
     if (allWordsMatch) return allWordsMatch
 
-    // Priority 3: Name contains most key words (at least 2)
+    // Priority 3: Core type match (e.g., "pulldown" matches "Machine Pulldown")
+    if (queryCoreType) {
+      const coreMatch = results.find(r => {
+        const resultName = this.normalizeName(r.name)
+        return resultName.includes(queryCoreType)
+      })
+      if (coreMatch) return coreMatch
+    }
+
+    // Priority 4: Name contains most key words (at least 1)
     let bestScore = 0
     let bestResult: MuscleWikiExercise | null = null
     for (const result of results) {
       const resultName = this.normalizeName(result.name)
       const matchCount = queryWords.filter(word => resultName.includes(word)).length
-      if (matchCount > bestScore && matchCount >= 2) {
+      if (matchCount > bestScore && matchCount >= 1) {
         bestScore = matchCount
         bestResult = result
       }
     }
     if (bestResult) return bestResult
 
-    // Priority 4: Query starts with name or name starts with query
+    // Priority 5: Query starts with name or name starts with query
     const startsMatch = results.find(r => {
       const resultName = this.normalizeName(r.name)
       return normalizedQuery.startsWith(resultName) || resultName.startsWith(normalizedQuery)

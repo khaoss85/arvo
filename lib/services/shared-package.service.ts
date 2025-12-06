@@ -191,7 +191,7 @@ export class SharedPackageService {
 
     // Filter to only packages with remaining sessions
     return (data || []).filter(
-      (p) => p.sessions_used < p.total_sessions
+      (p) => (p.sessions_used ?? 0) < p.total_sessions
     ) as BookingPackage[];
   }
 

@@ -85,8 +85,7 @@ export class PackageExpirationService {
       .from('booking_packages')
       .select('id, coach_id, client_id, name, end_date, total_sessions, sessions_used')
       .eq('status', 'active')
-      .not('end_date', 'is', null)
-      .gt('total_sessions', supabase.rpc('sessions_used'));
+      .not('end_date', 'is', null);
 
     if (error) {
       console.error('Error fetching packages for expiration check:', error);
