@@ -170,7 +170,7 @@ export class WorkloadBalanceService {
     }
 
     // Get unique dates
-    const uniqueDates = [...new Set(bookings.map(b => b.scheduled_date))].sort().reverse()
+    const uniqueDates = Array.from(new Set(bookings.map(b => b.scheduled_date))).sort().reverse()
 
     if (uniqueDates.length === 0) return 0
 

@@ -372,6 +372,66 @@ export type Database = {
           },
         ]
       }
+      client_churn_risk_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          action_taken: string | null
+          action_taken_at: string | null
+          cancellation_rate: number
+          client_id: string
+          coach_id: string
+          coach_notes: string | null
+          created_at: string
+          days_since_last_booking: number
+          id: string
+          primary_trigger: string
+          resolution_reason: string | null
+          resolved_at: string | null
+          risk_level: string
+          risk_score: number
+          suggested_actions: string[]
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          action_taken?: string | null
+          action_taken_at?: string | null
+          cancellation_rate: number
+          client_id: string
+          coach_id: string
+          coach_notes?: string | null
+          created_at?: string
+          days_since_last_booking: number
+          id?: string
+          primary_trigger: string
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          risk_level: string
+          risk_score: number
+          suggested_actions?: string[]
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          action_taken?: string | null
+          action_taken_at?: string | null
+          cancellation_rate?: number
+          client_id?: string
+          coach_id?: string
+          coach_notes?: string | null
+          created_at?: string
+          days_since_last_booking?: number
+          id?: string
+          primary_trigger?: string
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          risk_level?: string
+          risk_score?: number
+          suggested_actions?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       caloric_phase_history: {
         Row: {
           avg_weight_change: number | null
@@ -2631,6 +2691,10 @@ export type Database = {
         Args: { p_client_id: string; p_coach_id: string }
         Returns: string
       }
+      check_churn_risk_threshold: {
+        Args: { p_client_id: string; p_coach_id: string }
+        Returns: string
+      }
       cleanup_expired_share_links: { Args: never; Returns: undefined }
       cleanup_old_generations: { Args: never; Returns: undefined }
       complete_cycle: {
@@ -2828,6 +2892,21 @@ export type Database = {
           no_show_count: number
           no_show_rate: number
           session_count: number
+        }[]
+      }
+      get_pending_churn_risk_alerts: {
+        Args: { p_coach_id: string }
+        Returns: {
+          alert_id: string
+          cancellation_rate: number
+          client_id: string
+          client_name: string
+          created_at: string
+          days_since_last_booking: number
+          primary_trigger: string
+          risk_level: string
+          risk_score: number
+          suggested_actions: string[]
         }[]
       }
       get_recent_split_modifications: {
